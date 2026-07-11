@@ -37,6 +37,14 @@ function AuthPage() {
     setInfo(null);
     setLoading(true);
     try {
+      if (mode === "forgot") {
+        const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (err) throw err;
+        setInfo(`تم إرسال رابط استعادة كلمة السر إلى ${email}. افتح البريد لإكمال العملية.`);
+        return;
+      }
       if (mode === "signup") {
         const { data, error: err } = await supabase.auth.signUp({
           email,
