@@ -58,11 +58,8 @@ export function Header() {
                 {t.nav.dashboard}
               </Link>
             )}
-            {isAdmin && (
-              <Link to="/admin" className="hover:text-brand transition-colors text-brand/80">
-                {t.nav.admin}
-              </Link>
-            )}
+            {/* Admin link hidden — access /admin directly and role is enforced server-side */}
+
           </div>
         </div>
 
