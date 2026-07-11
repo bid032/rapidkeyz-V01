@@ -146,7 +146,7 @@ function AdminProducts() {
             <tr className="text-start text-xs uppercase tracking-widest text-muted-foreground">
               <th className="p-4 text-start">{t.admin.name}</th>
               <th className="p-4 text-start">{t.admin.status}</th>
-              <th className="p-4 text-start">Plans</th>
+              <th className="p-4 text-start">العروض والمخزون</th>
               <th className="p-4 text-end">{t.admin.actions}</th>
             </tr>
           </thead>
@@ -162,7 +162,10 @@ function AdminProducts() {
                 }
                 return true;
               })
-              .map((p: any) => (
+              .map((p: any) => {
+                const totalStock = (p.product_plans ?? []).reduce((s: number, pl: any) => s + (pl.stock ?? 0), 0);
+                const plansCount = p.product_plans?.length ?? 0;
+                return (
               <tr key={p.id} className="border-t border-border">
                 <td className="p-4">
                   <div className="font-bold">{p.name_ar}</div>
@@ -176,11 +179,17 @@ function AdminProducts() {
                 <td className="p-4 text-sm">
                   <button
                     onClick={() => setPlanEditor(planEditor === p.id ? null : p.id)}
-                    className="text-brand hover:underline text-xs"
+                    className="px-3 py-1.5 bg-brand/10 text-brand hover:bg-brand/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-2"
+                    title="اضغط لتعديل الأسعار والمخزون"
                   >
-                    {p.product_plans?.length ?? 0} plans
+                    <span>{plansCount} عرض</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className={totalStock === 0 ? "text-destructive" : totalStock <= 10 ? "text-warning" : "text-success"}>
+                      📦 {totalStock}
+                    </span>
                   </button>
                 </td>
+
                 <td className="p-4 text-end">
                   <button
                     onClick={() => setEditing({
@@ -202,7 +211,7 @@ function AdminProducts() {
                   </button>
                 </td>
               </tr>
-            ))}
+            );})}
             {products.data?.length === 0 && (
               <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">No products yet</td></tr>
             )}
@@ -218,64 +227,87 @@ function AdminProducts() {
             <h2 className="text-xl font-bold mb-4">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              املأ بيانات المنتج بالعربي والإنجليزي. الحقول اللي عليها ⭐ إجباري.
+              <br />
+              <span className="text-warning font-bold">ملاحظة:</span> عدد العروض المتاحة (المخزون) و الأسعار بتتظبط من زرار <span className="text-brand font-bold">"Plans"</span> في جدول المنتجات بعد الحفظ.
+            </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-2 gap-3"
+              className="grid grid-cols-2 gap-4"
             >
-              <input required placeholder="slug" value={editing.slug}
-                onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
-                className="col-span-2 px-4 py-2 bg-background border border-border rounded-lg" />
-              <input required placeholder="Name (AR)" value={editing.name_ar}
-                onChange={(e) => setEditing({ ...editing, name_ar: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <input required placeholder="Name (EN)" value={editing.name_en}
-                onChange={(e) => setEditing({ ...editing, name_en: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <textarea placeholder="Description (AR)" value={editing.description_ar}
-                onChange={(e) => setEditing({ ...editing, description_ar: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <textarea placeholder="Description (EN)" value={editing.description_en}
-                onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
+              <Field label="⭐ الرابط (slug)" hint="الرابط اللي هيظهر في المتصفح، بالإنجليزي وبدون مسافات — مثال: netflix-premium" className="col-span-2">
+                <input required placeholder="netflix-premium" value={editing.slug}
+                  onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
+              </Field>
+              <Field label="⭐ الاسم بالعربي" hint="اسم المنتج اللي هيشوفه العميل في الواجهة العربية">
+                <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
+                  onChange={(e) => setEditing({ ...editing, name_ar: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
+              </Field>
+              <Field label="⭐ Name (English)" hint="Product name shown in the English UI">
+                <input required placeholder="Netflix Premium" value={editing.name_en}
+                  onChange={(e) => setEditing({ ...editing, name_en: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
+              </Field>
+              <Field label="الوصف بالعربي" hint="وصف مختصر يظهر في كارت المنتج وصفحته">
+                <textarea placeholder="اشترك في نتفليكس..." value={editing.description_ar}
+                  onChange={(e) => setEditing({ ...editing, description_ar: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg min-h-[80px]" />
+              </Field>
+              <Field label="Description (English)" hint="Short description shown on the card and product page">
+                <textarea placeholder="Subscribe to Netflix..." value={editing.description_en}
+                  onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg min-h-[80px]" />
+              </Field>
               <div className="col-span-2">
                 <ImageUpload
                   bucket="product-images"
-                  label="صورة المنتج / Product Image"
+                  label="🖼️ صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
                   value={editing.icon_url}
                   onChange={(url) => setEditing({ ...editing, icon_url: url })}
                 />
               </div>
-              <select value={editing.category_id ?? ""}
-                onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="">— category —</option>
-                {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
-              </select>
-              <select value={editing.status}
-                onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="active">active</option>
-                <option value="draft">draft</option>
-                <option value="archived">archived</option>
-              </select>
-              <select value={editing.delivery_type}
-                onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="instant">Instant</option>
-                <option value="manual">Manual</option>
-              </select>
-              <select value={editing.account_type}
-                onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="private">Private</option>
-                <option value="shared">Shared</option>
-              </select>
-              <label className="col-span-2 flex items-center gap-2 text-sm">
+              <Field label="📂 القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
+                <select value={editing.category_id ?? ""}
+                  onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="">— اختر قسم —</option>
+                  {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
+                </select>
+              </Field>
+              <Field label="🚦 الحالة" hint="active: ظاهر للعملاء · draft: مخفي (شغل جاري) · archived: مؤرشف">
+                <select value={editing.status}
+                  onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="active">active — ظاهر</option>
+                  <option value="draft">draft — مسودة</option>
+                  <option value="archived">archived — مؤرشف</option>
+                </select>
+              </Field>
+              <Field label="⚡ نوع التسليم" hint="instant: تلقائي فوري من المخزون · manual: الأدمن هيسلمه يدوي">
+                <select value={editing.delivery_type}
+                  onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="instant">Instant — تسليم فوري</option>
+                  <option value="manual">Manual — تسليم يدوي</option>
+                </select>
+              </Field>
+              <Field label="👤 نوع الحساب" hint="private: حساب خاص للعميل لوحده · shared: حساب مشترك مع ناس تانية">
+                <select value={editing.account_type}
+                  onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="private">Private — خاص</option>
+                  <option value="shared">Shared — مشترك</option>
+                </select>
+              </Field>
+              <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
-                Featured
+                <span>⭐ <b>Featured</b> — ثبّت المنتج في القسم المميز على الرئيسية</span>
               </label>
-              <div className="col-span-2 flex gap-3 justify-end pt-4">
+              <div className="col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
                   className="px-4 py-2 border border-border rounded-lg">{t.admin.cancel}</button>
                 <button type="submit" disabled={save.isPending}
@@ -285,9 +317,20 @@ function AdminProducts() {
               </div>
               {save.error && <p className="col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
             </form>
+
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function Field({ label, hint, className, children }: { label: string; hint?: string; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <label className="block text-sm font-bold mb-1">{label}</label>
+      {hint && <p className="text-xs text-muted-foreground mb-1.5 leading-relaxed">{hint}</p>}
+      {children}
     </div>
   );
 }
@@ -312,50 +355,108 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     },
   });
 
+  const updateStock = useMutation({
+    mutationFn: async ({ id, stock }: { id: string; stock: number }) => {
+      const { error } = await supabase.from("product_plans").update({ stock }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plans", productId] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+  });
+
   const del = useMutation({
     mutationFn: async (id: string) => { await supabase.from("product_plans").delete().eq("id", id); },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["plans", productId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plans", productId] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+    },
   });
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-      <div className="w-full max-w-xl bg-card border border-border rounded-2xl p-6">
-        <div className="flex justify-between mb-4">
-          <h3 className="font-bold">Plans</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
+      <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-6 my-8">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h3 className="font-bold text-lg">💼 العروض والأسعار والمخزون (Plans)</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              كل عرض = مدة اشتراك بسعر و مخزون. <b className="text-warning">المخزون (Stock)</b> = عدد النسخ المتاحة للبيع من العرض ده — لما يوصل صفر، يتحوّل تلقائيًا لـ "نفذ" ويتقفل الشراء عند العميل.
+            </p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
         </div>
-        <div className="space-y-2 mb-4">
+
+        <div className="space-y-2 my-4">
+          {plans.data?.length === 0 && (
+            <div className="p-4 text-center text-sm text-muted-foreground bg-background border border-dashed border-border rounded-lg">
+              مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 👇
+            </div>
+          )}
           {plans.data?.map((p: any) => (
-            <div key={p.id} className="flex justify-between items-center p-3 bg-background border border-border rounded-lg">
-              <div className="text-sm">
-                <span className="font-bold">{p.label_ar}</span>{" "}
-                <span className="text-muted-foreground">— {p.price} EGP · stock {p.stock}</span>
+            <div key={p.id} className="p-3 bg-background border border-border rounded-lg">
+              <div className="flex justify-between items-start mb-2">
+                <div className="text-sm">
+                  <div className="font-bold">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
+                  <div className="text-xs text-muted-foreground">{p.duration_days} يوم · {p.price} EGP</div>
+                </div>
+                <button onClick={() => { if (confirm("مسح العرض ده؟")) del.mutate(p.id); }} className="text-destructive text-xs hover:underline">مسح</button>
               </div>
-              <button onClick={() => del.mutate(p.id)} className="text-destructive text-xs">Delete</button>
+              <div className="flex items-center gap-2 pt-2 border-t border-border">
+                <label className="text-xs font-bold text-muted-foreground">📦 المخزون:</label>
+                <input
+                  type="number"
+                  min={0}
+                  defaultValue={p.stock}
+                  onBlur={(e) => {
+                    const v = +e.target.value;
+                    if (v !== p.stock) updateStock.mutate({ id: p.id, stock: v });
+                  }}
+                  className="w-24 px-2 py-1 bg-card border border-border rounded text-sm font-bold"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {p.stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> : p.stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> : "متاح"}
+                </span>
+              </div>
             </div>
           ))}
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="grid grid-cols-2 gap-2">
-          <input required placeholder="Label AR" value={form.label_ar}
-            onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input required placeholder="Label EN" value={form.label_en}
-            onChange={(e) => setForm({ ...form, label_en: e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input type="number" placeholder="Duration (days)" value={form.duration_days}
-            onChange={(e) => setForm({ ...form, duration_days: +e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input type="number" required placeholder="Price EGP" value={form.price}
-            onChange={(e) => setForm({ ...form, price: +e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input type="number" placeholder="Stock" value={form.stock}
-            onChange={(e) => setForm({ ...form, stock: +e.target.value })}
-            className="col-span-2 px-3 py-2 bg-background border border-border rounded" />
-          <button type="submit" className="col-span-2 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
-            + Add plan
+
+        <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
+          <h4 className="font-bold text-sm mb-3">➕ إضافة عرض جديد</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="الاسم بالعربي" hint="مثال: شهر واحد">
+              <input required value={form.label_ar}
+                onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="Label (English)" hint="e.g. 1 Month">
+              <input required value={form.label_en}
+                onChange={(e) => setForm({ ...form, label_en: e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="المدة (بالأيام)" hint="مدة الاشتراك — 30 = شهر · 90 = 3 شهور">
+              <input type="number" value={form.duration_days}
+                onChange={(e) => setForm({ ...form, duration_days: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="السعر (EGP)" hint="سعر البيع للعميل بالجنيه المصري">
+              <input type="number" required value={form.price}
+                onChange={(e) => setForm({ ...form, price: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="📦 المخزون (Stock)" hint="عدد النسخ المتاحة للبيع من العرض ده. لما يوصل 0 يتقفل الشراء تلقائيًا." className="col-span-2">
+              <input type="number" min={0} value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+          </div>
+          <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
+            + إضافة العرض
           </button>
         </form>
       </div>
     </div>
   );
 }
+
