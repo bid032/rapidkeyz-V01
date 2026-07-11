@@ -274,7 +274,7 @@ function CheckoutPage() {
               </div>
               <button
                 type="submit"
-                disabled={submitting || !user}
+                disabled={submitting || (requireLogin && !user)}
                 className="w-full mt-6 px-6 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
               >
                 {submitting ? t.common.loading : t.checkout.placeOrder}
