@@ -361,6 +361,7 @@ export type Database = {
       products: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
+          account_types: Database["public"]["Enums"]["account_type"][]
           category_id: string | null
           cover_url: string | null
           created_at: string
@@ -380,6 +381,7 @@ export type Database = {
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          account_types?: Database["public"]["Enums"]["account_type"][]
           category_id?: string | null
           cover_url?: string | null
           created_at?: string
@@ -399,6 +401,7 @@ export type Database = {
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
+          account_types?: Database["public"]["Enums"]["account_type"][]
           category_id?: string | null
           cover_url?: string | null
           created_at?: string
