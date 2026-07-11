@@ -2,7 +2,7 @@ import { useApp } from "@/contexts/AppContext";
 
 type Props = {
   productName: string;
-  accountTypes: ("private" | "shared" | "any")[];
+  accountTypes: ("private" | "shared" | "own" | "any")[];
 };
 
 export function ProductDetails({ productName, accountTypes }: Props) {
@@ -10,6 +10,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
   const isAr = lang === "ar";
   const hasShared = accountTypes.includes("shared");
   const hasPrivate = accountTypes.includes("private");
+  const hasOwn = accountTypes.includes("own");
 
   const features = isAr
     ? [
@@ -46,7 +47,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
       </div>
 
       {/* Account comparison */}
-      {(hasShared || hasPrivate) && (
+      {(hasShared || hasPrivate || hasOwn) && (
         <div>
           <div className="flex items-end justify-between mb-6 flex-wrap gap-3">
             <div>
@@ -59,7 +60,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {hasShared && (
               <div className="relative p-6 rounded-2xl border border-border bg-card overflow-hidden">
                 <div className="absolute -top-16 -right-16 w-40 h-40 bg-brand/5 rounded-full blur-2xl" />
@@ -138,6 +139,47 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                   {isAr
                     ? "مثالي للمحترفين والوكالات التي تحتاج مرونة بين أجهزة متعددة."
                     : "Ideal for professionals and agencies needing flexibility across multiple devices."}
+                </div>
+              </div>
+            )}
+
+            {hasOwn && (
+              <div className="relative p-6 rounded-2xl border border-success/40 bg-gradient-to-br from-success/5 via-card to-card overflow-hidden">
+                <div className="absolute -top-16 -right-16 w-40 h-40 bg-success/10 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-success mb-2">
+                    {isAr ? "تفعيل على حسابك" : "Activated on your account"}
+                  </div>
+                  <div className="text-xl font-extrabold mb-4">
+                    {isAr ? "حساب من عندنا" : "Our Own Account"}
+                  </div>
+                  <ul className="space-y-2.5 text-sm">
+                    {(isAr
+                      ? [
+                          "نوفر لك الحساب جاهز بالكامل",
+                          "بيانات دخول جديدة ومخصصة",
+                          "بدون الحاجة لحساب سابق منك",
+                          "استلام فوري بعد إتمام الطلب",
+                        ]
+                      : [
+                          "We provide a ready-made account",
+                          "Fresh, dedicated login credentials",
+                          "No prior account needed from you",
+                          "Instant delivery after checkout",
+                        ]
+                    ).map((li) => (
+                      <li key={li} className="flex gap-2">
+                        <span className="text-success mt-0.5">✓</span>
+                        <span className="text-muted-foreground">{li}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-5 p-3 rounded-lg bg-success/10 border border-success/20 text-xs leading-relaxed">
+                    💡{" "}
+                    {isAr
+                      ? "مثالي لمن يريد حساب جديد جاهز للاستخدام فوراً بدون أي إعداد."
+                      : "Ideal for anyone who wants a fresh, ready-to-use account with zero setup."}
+                  </div>
                 </div>
               </div>
             )}
