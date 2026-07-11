@@ -300,6 +300,7 @@ export const translations = {
       manual: "Manual Setup",
       private: "Private Account",
       shared: "Shared Slot",
+      both: "Private or Shared",
     },
     product: {
       buyNow: "Buy Now",
