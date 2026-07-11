@@ -128,11 +128,18 @@ function ProductPage() {
       <Header />
       <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-12">
         <div>
-          <div className="aspect-square bg-card border border-border rounded-2xl overflow-hidden grid place-items-center">
+          <div className="relative aspect-square bg-card border border-border rounded-2xl overflow-hidden grid place-items-center">
             {product.icon_url ? (
               <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
             ) : (
               <span className="text-6xl font-black text-brand">{name.slice(0, 2).toUpperCase()}</span>
+            )}
+            {hasDiscount && (
+              <span
+                className={`absolute top-4 ${lang === "ar" ? "right-4" : "left-4"} bg-destructive text-destructive-foreground text-lg font-black px-3 py-1.5 rounded-xl shadow-lg`}
+              >
+                -{discount}%
+              </span>
             )}
           </div>
         </div>
