@@ -59,6 +59,25 @@ function HomePage() {
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
   const cats = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+  const heroSetting = useQuery({
+    queryKey: ["site-settings", "hero"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
+      return (data?.value as any) ?? {};
+    },
+  });
+  const h = heroSetting.data ?? {};
+  const pick = (ar: string, en: string, fallback: string) =>
+    (lang === "ar" ? h[ar] : h[en])?.toString().trim() || fallback;
+  const hero = {
+    badge: pick("badge_ar", "badge_en", t.home.badge),
+    title1: pick("title1_ar", "title1_en", t.home.title1),
+    title2: pick("title2_ar", "title2_en", t.home.title2),
+    subtitle: pick("subtitle_ar", "subtitle_en", t.home.subtitle),
+    cta: pick("cta_ar", "cta_en", t.home.cta),
+    ctaSecondary: pick("cta_secondary_ar", "cta_secondary_en", t.home.ctaSecondary),
+    trusted: pick("trusted_ar", "trusted_en", t.home.trusted),
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
