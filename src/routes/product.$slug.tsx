@@ -60,9 +60,20 @@ function ProductPage() {
   if (!product) return null;
 
   const plans = (product.product_plans ?? []).filter((p: any) => p.is_active);
-  const selected = plans.find((p: any) => p.id === planId) ?? plans[0];
+  const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
+  const accountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
+  const hasAcctChoice = accountTypes.some((a) => a === "private" || a === "shared");
+  const effectiveAcct = accountType ?? accountTypes[0];
+  const filteredPlans = hasAcctChoice
+    ? enriched.filter((p: any) => p.acct === effectiveAcct)
+    : enriched;
+  const selected =
+    filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
   const name = lang === "ar" ? product.name_ar : product.name_en;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
+
+  const acctLabel = (a: string) =>
+    a === "private" ? t.badges.private : a === "shared" ? t.badges.shared : (lang === "ar" ? "قياسي" : "Standard");
 
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
