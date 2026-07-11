@@ -1,7 +1,9 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { useApp } from "@/contexts/AppContext";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
