@@ -281,6 +281,7 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description_ar: string | null
           description_en: string | null
+          discount_percent: number
           icon_url: string | null
           id: string
           is_featured: boolean
@@ -299,6 +300,7 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description_ar?: string | null
           description_en?: string | null
+          discount_percent?: number
           icon_url?: string | null
           id?: string
           is_featured?: boolean
@@ -317,6 +319,7 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description_ar?: string | null
           description_en?: string | null
+          discount_percent?: number
           icon_url?: string | null
           id?: string
           is_featured?: boolean
