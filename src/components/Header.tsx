@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import logoAsset from "@/assets/logo_rapid.png.asset.json";
 
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, cartCount } = useApp();
@@ -35,8 +36,11 @@ export function Header() {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8">
-          <Link to="/" className="text-2xl font-extrabold tracking-tighter text-brand">
-            RAPIDKEYZ
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoAsset.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
+            <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
+              RapidKeyz
+            </span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link to="/" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
@@ -44,6 +48,9 @@ export function Header() {
             </Link>
             <Link to="/shop" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.shop}
+            </Link>
+            <Link to="/about" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
+              {t.nav.about}
             </Link>
             {user && (
               <Link to="/dashboard" className="hover:text-foreground transition-colors">
