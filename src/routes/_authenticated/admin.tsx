@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -22,16 +23,32 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { t } = useApp();
-  const links: { to: string; label: string; exact?: boolean }[] = [
+
+  const pending = useQuery({
+    queryKey: ["admin-pending-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending");
+      return count ?? 0;
+    },
+    refetchInterval: 30_000,
+  });
+
+  const links: { to: string; label: string; exact?: boolean; badge?: number }[] = [
     { to: "/admin", label: t.admin.overview, exact: true },
     { to: "/admin/products", label: t.admin.products },
     { to: "/admin/categories", label: t.admin.categories },
-    { to: "/admin/orders", label: t.admin.orders },
+    { to: "/admin/orders", label: t.admin.orders, badge: pending.data ?? 0 },
     { to: "/admin/inventory", label: "مخزون التسليم" },
     { to: "/admin/users", label: t.admin.users },
     { to: "/admin/testimonials", label: t.admin.testimonials },
     { to: "/admin/settings", label: t.admin.settings },
   ];
+
+  const title = "لوحة تحكم الأدمن";
+  const words = title.split(" ");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -59,25 +76,24 @@ function AdminLayout() {
           Control Center
         </motion.div>
 
-        <h1 className="relative text-4xl md:text-6xl font-black tracking-tight leading-[1.05]">
-          {"لوحة تحكم الأدمن".split(" ").map((word, wi) => (
-            <span key={wi} className="inline-block mx-2 align-baseline">
-              {Array.from(word).map((ch, ci) => (
-                <motion.span
-                  key={ci}
-                  initial={{ opacity: 0, y: 24, rotateX: -60 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  transition={{
-                    delay: 0.15 + wi * 0.12 + ci * 0.035,
-                    duration: 0.55,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className="inline-block bg-gradient-to-b from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent"
-                >
-                  {ch}
-                </motion.span>
-              ))}
-            </span>
+        <h1
+          dir="rtl"
+          className="relative text-4xl md:text-6xl font-black tracking-tight leading-[1.15] flex flex-wrap justify-center gap-x-4 gap-y-2"
+        >
+          {words.map((word, wi) => (
+            <motion.span
+              key={wi}
+              initial={{ opacity: 0, y: 28, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{
+                delay: 0.15 + wi * 0.18,
+                duration: 0.7,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="inline-block bg-gradient-to-b from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent"
+            >
+              {word}
+            </motion.span>
           ))}
         </h1>
 
@@ -91,18 +107,21 @@ function AdminLayout() {
 
       <div className="max-w-7xl mx-auto px-6 py-6 grid md:grid-cols-[220px_1fr] gap-8">
         <aside className="h-fit md:sticky md:top-24 bg-card border border-border rounded-2xl p-3">
-
-
           <nav className="flex md:flex-col gap-1 overflow-x-auto">
             {links.map((l) => (
               <Link
                 key={l.to}
                 to={l.to as string}
                 activeOptions={{ exact: !!l.exact }}
-                className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted whitespace-nowrap transition"
+                className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted whitespace-nowrap transition flex items-center justify-between gap-2"
                 activeProps={{ className: "bg-brand/10 text-brand" }}
               >
-                {l.label}
+                <span>{l.label}</span>
+                {l.badge && l.badge > 0 ? (
+                  <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-warning/15 text-warning text-[11px] font-extrabold border border-warning/30 animate-pulse">
+                    {l.badge}
+                  </span>
+                ) : null}
               </Link>
             ))}
           </nav>
@@ -114,3 +133,4 @@ function AdminLayout() {
     </div>
   );
 }
+
