@@ -535,7 +535,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">📦 المخزون</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">المخزون</label>
                     <input
                       type="number"
                       min={0}
