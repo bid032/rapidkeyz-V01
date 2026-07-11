@@ -103,6 +103,12 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
         </div>
         <div className="text-sm font-bold">{item.unit_price} EGP</div>
       </div>
+      {item.subscription_email && (
+        <div className="text-xs mb-2">
+          <span className="text-muted-foreground">Activate on:</span>{" "}
+          <span className="font-mono font-bold">{item.subscription_email}</span>
+        </div>
+      )}
 
       {delivered ? (
         <div className="mt-2 p-3 bg-success/5 border border-success/20 rounded font-mono text-xs">
