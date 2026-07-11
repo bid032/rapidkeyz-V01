@@ -316,6 +316,16 @@ function AdminProducts() {
   );
 }
 
+function Field({ label, hint, className, children }: { label: string; hint?: string; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <label className="block text-sm font-bold mb-1">{label}</label>
+      {hint && <p className="text-xs text-muted-foreground mb-1.5 leading-relaxed">{hint}</p>}
+      {children}
+    </div>
+  );
+}
+
 function PlanEditor({ productId, onClose }: { productId: string; onClose: () => void }) {
   const qc = useQueryClient();
   const plans = useQuery({
@@ -336,50 +346,108 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     },
   });
 
+  const updateStock = useMutation({
+    mutationFn: async ({ id, stock }: { id: string; stock: number }) => {
+      const { error } = await supabase.from("product_plans").update({ stock }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plans", productId] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+    },
+  });
+
   const del = useMutation({
     mutationFn: async (id: string) => { await supabase.from("product_plans").delete().eq("id", id); },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["plans", productId] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["plans", productId] });
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+    },
   });
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-      <div className="w-full max-w-xl bg-card border border-border rounded-2xl p-6">
-        <div className="flex justify-between mb-4">
-          <h3 className="font-bold">Plans</h3>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
+      <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-6 my-8">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h3 className="font-bold text-lg">💼 العروض والأسعار والمخزون (Plans)</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              كل عرض = مدة اشتراك بسعر و مخزون. <b className="text-warning">المخزون (Stock)</b> = عدد النسخ المتاحة للبيع من العرض ده — لما يوصل صفر، يتحوّل تلقائيًا لـ "نفذ" ويتقفل الشراء عند العميل.
+            </p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
         </div>
-        <div className="space-y-2 mb-4">
+
+        <div className="space-y-2 my-4">
+          {plans.data?.length === 0 && (
+            <div className="p-4 text-center text-sm text-muted-foreground bg-background border border-dashed border-border rounded-lg">
+              مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 👇
+            </div>
+          )}
           {plans.data?.map((p: any) => (
-            <div key={p.id} className="flex justify-between items-center p-3 bg-background border border-border rounded-lg">
-              <div className="text-sm">
-                <span className="font-bold">{p.label_ar}</span>{" "}
-                <span className="text-muted-foreground">— {p.price} EGP · stock {p.stock}</span>
+            <div key={p.id} className="p-3 bg-background border border-border rounded-lg">
+              <div className="flex justify-between items-start mb-2">
+                <div className="text-sm">
+                  <div className="font-bold">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
+                  <div className="text-xs text-muted-foreground">{p.duration_days} يوم · {p.price} EGP</div>
+                </div>
+                <button onClick={() => { if (confirm("مسح العرض ده؟")) del.mutate(p.id); }} className="text-destructive text-xs hover:underline">مسح</button>
               </div>
-              <button onClick={() => del.mutate(p.id)} className="text-destructive text-xs">Delete</button>
+              <div className="flex items-center gap-2 pt-2 border-t border-border">
+                <label className="text-xs font-bold text-muted-foreground">📦 المخزون:</label>
+                <input
+                  type="number"
+                  min={0}
+                  defaultValue={p.stock}
+                  onBlur={(e) => {
+                    const v = +e.target.value;
+                    if (v !== p.stock) updateStock.mutate({ id: p.id, stock: v });
+                  }}
+                  className="w-24 px-2 py-1 bg-card border border-border rounded text-sm font-bold"
+                />
+                <span className="text-xs text-muted-foreground">
+                  {p.stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> : p.stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> : "متاح"}
+                </span>
+              </div>
             </div>
           ))}
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="grid grid-cols-2 gap-2">
-          <input required placeholder="Label AR" value={form.label_ar}
-            onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input required placeholder="Label EN" value={form.label_en}
-            onChange={(e) => setForm({ ...form, label_en: e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input type="number" placeholder="Duration (days)" value={form.duration_days}
-            onChange={(e) => setForm({ ...form, duration_days: +e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input type="number" required placeholder="Price EGP" value={form.price}
-            onChange={(e) => setForm({ ...form, price: +e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded" />
-          <input type="number" placeholder="Stock" value={form.stock}
-            onChange={(e) => setForm({ ...form, stock: +e.target.value })}
-            className="col-span-2 px-3 py-2 bg-background border border-border rounded" />
-          <button type="submit" className="col-span-2 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
-            + Add plan
+
+        <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
+          <h4 className="font-bold text-sm mb-3">➕ إضافة عرض جديد</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="الاسم بالعربي" hint="مثال: شهر واحد">
+              <input required value={form.label_ar}
+                onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="Label (English)" hint="e.g. 1 Month">
+              <input required value={form.label_en}
+                onChange={(e) => setForm({ ...form, label_en: e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="المدة (بالأيام)" hint="مدة الاشتراك — 30 = شهر · 90 = 3 شهور">
+              <input type="number" value={form.duration_days}
+                onChange={(e) => setForm({ ...form, duration_days: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="السعر (EGP)" hint="سعر البيع للعميل بالجنيه المصري">
+              <input type="number" required value={form.price}
+                onChange={(e) => setForm({ ...form, price: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="📦 المخزون (Stock)" hint="عدد النسخ المتاحة للبيع من العرض ده. لما يوصل 0 يتقفل الشراء تلقائيًا." className="col-span-2">
+              <input type="number" min={0} value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+          </div>
+          <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
+            + إضافة العرض
           </button>
         </form>
       </div>
     </div>
   );
 }
+
