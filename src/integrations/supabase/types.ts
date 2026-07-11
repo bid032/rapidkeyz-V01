@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_inventory: {
+        Row: {
+          account_email: string | null
+          account_password: string | null
+          account_username: string | null
+          created_at: string
+          delivered_at: string | null
+          delivered_order_item_id: string | null
+          extra_notes: string | null
+          id: string
+          plan_id: string
+          source: string
+          status: string
+        }
+        Insert: {
+          account_email?: string | null
+          account_password?: string | null
+          account_username?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivered_order_item_id?: string | null
+          extra_notes?: string | null
+          id?: string
+          plan_id: string
+          source?: string
+          status?: string
+        }
+        Update: {
+          account_email?: string | null
+          account_password?: string | null
+          account_username?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivered_order_item_id?: string | null
+          extra_notes?: string | null
+          id?: string
+          plan_id?: string
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_inventory_delivered_order_item_id_fkey"
+            columns: ["delivered_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_inventory_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "product_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -179,7 +236,7 @@ export type Database = {
           subtotal: number
           total: number
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -197,7 +254,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -215,9 +272,35 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
+      }
+      plan_costs: {
+        Row: {
+          cost_price: number
+          plan_id: string
+          updated_at: string
+        }
+        Insert: {
+          cost_price?: number
+          plan_id: string
+          updated_at?: string
+        }
+        Update: {
+          cost_price?: number
+          plan_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_costs_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: true
+            referencedRelation: "product_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_plans: {
         Row: {
@@ -230,6 +313,7 @@ export type Database = {
           label_en: string
           price: number
           product_id: string
+          sheet_csv_url: string | null
           sort_order: number
           stock: number
           updated_at: string
@@ -244,6 +328,7 @@ export type Database = {
           label_en: string
           price: number
           product_id: string
+          sheet_csv_url?: string | null
           sort_order?: number
           stock?: number
           updated_at?: string
@@ -258,6 +343,7 @@ export type Database = {
           label_en?: string
           price?: number
           product_id?: string
+          sheet_csv_url?: string | null
           sort_order?: number
           stock?: number
           updated_at?: string
@@ -441,6 +527,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_revenue_by_month: {
+        Args: never
+        Returns: {
+          month: string
+          orders_count: number
+          profit: number
+          revenue: number
+        }[]
+      }
+      admin_revenue_stats: {
+        Args: { _end?: string; _start?: string }
+        Returns: {
+          items_count: number
+          orders_count: number
+          profit: number
+          revenue: number
+        }[]
+      }
+      claim_inventory_for_item: {
+        Args: { _order_item_id: string; _plan_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -450,7 +558,7 @@ export type Database = {
       }
     }
     Enums: {
-      account_type: "private" | "shared" | "both"
+      account_type: "private" | "shared" | "both" | "own"
       app_role: "admin" | "user"
       delivery_type: "instant" | "manual"
       order_status:
@@ -589,7 +697,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["private", "shared", "both"],
+      account_type: ["private", "shared", "both", "own"],
       app_role: ["admin", "user"],
       delivery_type: ["instant", "manual"],
       order_status: [
