@@ -219,6 +219,7 @@ function ProductPage() {
           </div>
         </div>
       </div>
+      <ProductDetails productName={name} accountTypes={accountTypes} />
       <Footer />
     </div>
   );
