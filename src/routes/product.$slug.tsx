@@ -96,6 +96,10 @@ function ProductPage() {
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
+  const discount = Number((product as any).discount_percent ?? 0);
+  const hasDiscount = discount > 0;
+  const rawPrice = selected ? Number(selected.price) : 0;
+  const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
 
   const acctLabel = (a: string) =>
     a === "private" ? t.badges.private : t.badges.shared;
@@ -108,7 +112,7 @@ function ProductPage() {
       planId: selected.id,
       productName: name,
       planLabel: lang === "ar" ? selected.label_ar : selected.label_en,
-      price: Number(selected.price),
+      price: finalPrice,
       quantity: 1,
       iconUrl: product.icon_url,
       deliveryType: product.delivery_type,
