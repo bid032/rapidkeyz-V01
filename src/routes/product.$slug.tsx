@@ -75,12 +75,6 @@ function ProductPage() {
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
-  const effectiveAcct = accountType ?? accountTypes[0];
-  const filteredPlans = hasAcctChoice
-    ? enriched.filter((p: any) => p.acct === effectiveAcct)
-    : enriched;
-  const selected =
-    filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
   const name = lang === "ar" ? product.name_ar : product.name_en;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
 
