@@ -3,7 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import logoAsset from "@/assets/logo_rapid.png.asset.json";
+import logoDark from "@/assets/white_logo_rapid.png.asset.json";
+import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { ShoppingCart, Sun, Moon } from "lucide-react";
 
 export function Header() {
@@ -38,7 +39,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoAsset.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
+            <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
               RapidKeyz
             </span>
