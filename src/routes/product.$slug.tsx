@@ -255,14 +255,25 @@ function ProductPage() {
             </div>
 
             {selected && (
-              <div className="flex items-baseline gap-3 pt-2">
+              <div className="flex items-baseline gap-3 pt-2 flex-wrap">
                 <span className="text-3xl font-extrabold text-brand">
-                  {selected.price} {t.common.currency}
+                  {finalPrice} {t.common.currency}
                 </span>
-                {selected.compare_price && Number(selected.compare_price) > Number(selected.price) && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    {selected.compare_price} {t.common.currency}
-                  </span>
+                {hasDiscount ? (
+                  <>
+                    <span className="text-sm text-muted-foreground line-through">
+                      {rawPrice} {t.common.currency}
+                    </span>
+                    <span className="text-xs font-black bg-destructive/10 text-destructive px-2 py-0.5 rounded">
+                      -{discount}%
+                    </span>
+                  </>
+                ) : (
+                  selected.compare_price && Number(selected.compare_price) > Number(selected.price) && (
+                    <span className="text-sm text-muted-foreground line-through">
+                      {selected.compare_price} {t.common.currency}
+                    </span>
+                  )
                 )}
               </div>
             )}
