@@ -8,10 +8,21 @@ export const Route = createFileRoute("/_authenticated/admin/categories")({
   component: AdminCategories,
 });
 
+function slugify(input: string): string {
+  return input
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 function AdminCategories() {
-  const { t } = useApp();
+  const { t, confirm, notify } = useApp();
   const qc = useQueryClient();
-  const [form, setForm] = useState({ slug: "", name_ar: "", name_en: "", icon: "", sort_order: 0 });
+  const [form, setForm] = useState({ slug: "", name_ar: "", name_en: "", sort_order: 0 });
 
   const cats = useQuery({
     queryKey: ["admin-cats-list"],
@@ -20,13 +31,16 @@ function AdminCategories() {
 
   const add = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("categories").insert({ ...form, is_active: true });
+      const slug = form.slug || slugify(form.name_en || form.name_ar);
+      const { error } = await supabase.from("categories").insert({ ...form, slug, is_active: true });
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-cats-list"] });
-      setForm({ slug: "", name_ar: "", name_en: "", icon: "", sort_order: 0 });
+      setForm({ slug: "", name_ar: "", name_en: "", sort_order: 0 });
+      notify("تم إضافة التصنيف", "success");
     },
+    onError: (e: any) => notify(e.message || "خطأ", "error"),
   });
 
   const toggle = useMutation({
@@ -38,7 +52,7 @@ function AdminCategories() {
 
   const del = useMutation({
     mutationFn: async (id: string) => { await supabase.from("categories").delete().eq("id", id); },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-cats-list"] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-cats-list"] }); notify("تم الحذف", "success"); },
   });
 
   return (
@@ -47,20 +61,23 @@ function AdminCategories() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); add.mutate(); }}
-        className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6 p-4 bg-card border border-border rounded-2xl"
+        className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 p-4 bg-card border border-border rounded-2xl"
       >
-        <input required placeholder="slug" value={form.slug}
-          onChange={(e) => setForm({ ...form, slug: e.target.value })}
+        <input required placeholder="الاسم بالعربي" value={form.name_ar}
+          onChange={(e) => {
+            const name_ar = e.target.value;
+            setForm((prev) => ({ ...prev, name_ar, slug: prev.slug || slugify(prev.name_en || name_ar) }));
+          }}
           className="px-3 py-2 bg-background border border-border rounded" />
-        <input required placeholder="Name AR" value={form.name_ar}
-          onChange={(e) => setForm({ ...form, name_ar: e.target.value })}
+        <input required placeholder="Name (English)" value={form.name_en}
+          onChange={(e) => {
+            const name_en = e.target.value;
+            setForm((prev) => ({ ...prev, name_en, slug: slugify(name_en || prev.name_ar) }));
+          }}
           className="px-3 py-2 bg-background border border-border rounded" />
-        <input required placeholder="Name EN" value={form.name_en}
-          onChange={(e) => setForm({ ...form, name_en: e.target.value })}
-          className="px-3 py-2 bg-background border border-border rounded" />
-        <input placeholder="icon" value={form.icon}
-          onChange={(e) => setForm({ ...form, icon: e.target.value })}
-          className="px-3 py-2 bg-background border border-border rounded" />
+        <input placeholder="slug (تلقائي)" value={form.slug}
+          onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
+          className="px-3 py-2 bg-background border border-border rounded font-mono text-sm" />
         <button type="submit" className="px-3 py-2 bg-brand text-brand-foreground rounded font-bold">
           + {t.admin.addCategory}
         </button>
@@ -74,7 +91,7 @@ function AdminCategories() {
           <tbody>
             {cats.data?.map((c) => (
               <tr key={c.id} className="border-t border-border">
-                <td className="p-3">{c.slug}</td>
+                <td className="p-3 font-mono text-xs">{c.slug}</td>
                 <td className="p-3">{c.name_ar}</td>
                 <td className="p-3">{c.name_en}</td>
                 <td className="p-3">
@@ -84,7 +101,17 @@ function AdminCategories() {
                   </button>
                 </td>
                 <td className="p-3 text-end">
-                  <button onClick={() => confirm("Delete?") && del.mutate(c.id)} className="text-destructive text-xs">Delete</button>
+                  <button
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: "حذف التصنيف",
+                        message: `متأكد إنك عاوز تمسح "${c.name_ar}"؟`,
+                        tone: "danger",
+                        confirmLabel: "احذف",
+                      });
+                      if (ok) del.mutate(c.id);
+                    }}
+                    className="text-destructive text-xs">Delete</button>
                 </td>
               </tr>
             ))}
