@@ -14,6 +14,15 @@ function AdminSettings() {
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
   const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [hero, setHero] = useState<any>({
+    badge_ar: "", badge_en: "",
+    title1_ar: "", title1_en: "",
+    title2_ar: "", title2_en: "",
+    subtitle_ar: "", subtitle_en: "",
+    cta_ar: "", cta_en: "",
+    cta_secondary_ar: "", cta_secondary_en: "",
+    trusted_ar: "", trusted_en: "",
+  });
 
   const settings = useQuery({
     queryKey: ["site-settings"],
@@ -26,6 +35,7 @@ function AdminSettings() {
       if (s.key === "brand") setBrand(s.value);
       if (s.key === "contact") setContact(s.value);
       if (s.key === "payments") setPayments(s.value);
+      if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
     }
   }, [settings.data]);
 
@@ -35,6 +45,7 @@ function AdminSettings() {
         { key: "brand", value: brand },
         { key: "contact", value: contact },
         { key: "payments", value: payments },
+        { key: "hero", value: hero },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
@@ -43,6 +54,46 @@ function AdminSettings() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-extrabold">{t.admin.settings}</h1>
+
+      <section className="p-6 bg-card border border-border rounded-2xl">
+        <h2 className="font-bold mb-1">Hero Section / سيكشن الصفحة الرئيسية</h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          عدّل نصوص سيكشن الهيرو اللي في أعلى الصفحة الرئيسية. اتركها فارغة لاستخدام النص الافتراضي.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {[
+            ["badge_ar", "شارة علوية (AR)", "badge_en", "Top Badge (EN)"],
+            ["title1_ar", "العنوان الأول (AR)", "title1_en", "Title Line 1 (EN)"],
+            ["title2_ar", "العنوان الثاني — ملوّن (AR)", "title2_en", "Title Line 2 — accent (EN)"],
+            ["subtitle_ar", "الوصف (AR)", "subtitle_en", "Subtitle (EN)"],
+            ["cta_ar", "زر أساسي (AR)", "cta_en", "Primary CTA (EN)"],
+            ["cta_secondary_ar", "زر ثانوي (AR)", "cta_secondary_en", "Secondary CTA (EN)"],
+            ["trusted_ar", "نص الثقة (AR)", "trusted_en", "Trust text (EN)"],
+          ].map(([kAr, phAr, kEn, phEn]) => {
+            const isLong = kAr === "subtitle_ar";
+            const Cmp: any = isLong ? "textarea" : "input";
+            return (
+              <div key={kAr} className="contents">
+                <Cmp
+                  placeholder={phAr}
+                  value={hero[kAr] ?? ""}
+                  onChange={(e: any) => setHero({ ...hero, [kAr]: e.target.value })}
+                  className="px-3 py-2 bg-background border border-border rounded text-right"
+                  dir="rtl"
+                  rows={isLong ? 3 : undefined}
+                />
+                <Cmp
+                  placeholder={phEn}
+                  value={hero[kEn] ?? ""}
+                  onChange={(e: any) => setHero({ ...hero, [kEn]: e.target.value })}
+                  className="px-3 py-2 bg-background border border-border rounded"
+                  rows={isLong ? 3 : undefined}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="p-6 bg-card border border-border rounded-2xl">
         <h2 className="font-bold mb-4">Brand</h2>

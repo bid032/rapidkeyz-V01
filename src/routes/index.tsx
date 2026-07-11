@@ -59,6 +59,25 @@ function HomePage() {
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
   const cats = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+  const heroSetting = useQuery({
+    queryKey: ["site-settings", "hero"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
+      return (data?.value as any) ?? {};
+    },
+  });
+  const h = heroSetting.data ?? {};
+  const pick = (ar: string, en: string, fallback: string) =>
+    (lang === "ar" ? h[ar] : h[en])?.toString().trim() || fallback;
+  const hero = {
+    badge: pick("badge_ar", "badge_en", t.home.badge),
+    title1: pick("title1_ar", "title1_en", t.home.title1),
+    title2: pick("title2_ar", "title2_en", t.home.title2),
+    subtitle: pick("subtitle_ar", "subtitle_en", t.home.subtitle),
+    cta: pick("cta_ar", "cta_en", t.home.cta),
+    ctaSecondary: pick("cta_secondary_ar", "cta_secondary_en", t.home.ctaSecondary),
+    trusted: pick("trusted_ar", "trusted_en", t.home.trusted),
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -72,29 +91,29 @@ function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
             </span>
-            {t.home.badge}
+            {hero.badge}
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1] max-w-4xl">
-            {t.home.title1} <br />
+            {hero.title1} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">
-              {t.home.title2}
+              {hero.title2}
             </span>
           </h1>
           <p className="max-w-2xl text-muted-foreground text-lg mb-10 leading-relaxed">
-            {t.home.subtitle}
+            {hero.subtitle}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/shop"
               className="px-8 py-4 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow transition-all"
             >
-              {t.home.cta}
+              {hero.cta}
             </Link>
             <a
               href="#trending"
               className="px-8 py-4 rounded-xl font-bold border border-border hover:bg-muted transition-all"
             >
-              {t.home.ctaSecondary}
+              {hero.ctaSecondary}
             </a>
           </div>
           <div className="mt-10 flex items-center gap-3">
@@ -108,7 +127,7 @@ function HomePage() {
                 </div>
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">{t.home.trusted}</span>
+            <span className="text-sm text-muted-foreground">{hero.trusted}</span>
           </div>
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-0 opacity-50"></div>
