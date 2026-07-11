@@ -22,6 +22,7 @@ type ProductForm = {
   account_type: "private" | "shared" | "both";
   status: "active" | "draft" | "archived";
   is_featured: boolean;
+  discount_percent: number;
 };
 
 const emptyForm: ProductForm = {
@@ -36,6 +37,7 @@ const emptyForm: ProductForm = {
   account_type: "private",
   status: "active",
   is_featured: false,
+  discount_percent: 0,
 };
 
 /** Turn any text into a URL-safe slug (English + Arabic). */
