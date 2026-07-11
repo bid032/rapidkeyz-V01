@@ -41,8 +41,8 @@ function AdminLayout() {
             {links.map((l) => (
               <Link
                 key={l.to}
-                to={l.to}
-                activeOptions={{ exact: l.exact }}
+                to={l.to as string}
+                activeOptions={{ exact: !!l.exact }}
                 className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted whitespace-nowrap transition"
                 activeProps={{ className: "bg-brand/10 text-brand" }}
               >
