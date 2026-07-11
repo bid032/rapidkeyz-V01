@@ -218,64 +218,87 @@ function AdminProducts() {
             <h2 className="text-xl font-bold mb-4">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              املأ بيانات المنتج بالعربي والإنجليزي. الحقول اللي عليها ⭐ إجباري.
+              <br />
+              <span className="text-warning font-bold">ملاحظة:</span> عدد العروض المتاحة (المخزون) و الأسعار بتتظبط من زرار <span className="text-brand font-bold">"Plans"</span> في جدول المنتجات بعد الحفظ.
+            </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-2 gap-3"
+              className="grid grid-cols-2 gap-4"
             >
-              <input required placeholder="slug" value={editing.slug}
-                onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
-                className="col-span-2 px-4 py-2 bg-background border border-border rounded-lg" />
-              <input required placeholder="Name (AR)" value={editing.name_ar}
-                onChange={(e) => setEditing({ ...editing, name_ar: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <input required placeholder="Name (EN)" value={editing.name_en}
-                onChange={(e) => setEditing({ ...editing, name_en: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <textarea placeholder="Description (AR)" value={editing.description_ar}
-                onChange={(e) => setEditing({ ...editing, description_ar: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <textarea placeholder="Description (EN)" value={editing.description_en}
-                onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
-                className="px-4 py-2 bg-background border border-border rounded-lg" />
+              <Field label="⭐ الرابط (slug)" hint="الرابط اللي هيظهر في المتصفح، بالإنجليزي وبدون مسافات — مثال: netflix-premium" className="col-span-2">
+                <input required placeholder="netflix-premium" value={editing.slug}
+                  onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
+              </Field>
+              <Field label="⭐ الاسم بالعربي" hint="اسم المنتج اللي هيشوفه العميل في الواجهة العربية">
+                <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
+                  onChange={(e) => setEditing({ ...editing, name_ar: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
+              </Field>
+              <Field label="⭐ Name (English)" hint="Product name shown in the English UI">
+                <input required placeholder="Netflix Premium" value={editing.name_en}
+                  onChange={(e) => setEditing({ ...editing, name_en: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
+              </Field>
+              <Field label="الوصف بالعربي" hint="وصف مختصر يظهر في كارت المنتج وصفحته">
+                <textarea placeholder="اشترك في نتفليكس..." value={editing.description_ar}
+                  onChange={(e) => setEditing({ ...editing, description_ar: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg min-h-[80px]" />
+              </Field>
+              <Field label="Description (English)" hint="Short description shown on the card and product page">
+                <textarea placeholder="Subscribe to Netflix..." value={editing.description_en}
+                  onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg min-h-[80px]" />
+              </Field>
               <div className="col-span-2">
                 <ImageUpload
                   bucket="product-images"
-                  label="صورة المنتج / Product Image"
+                  label="🖼️ صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
                   value={editing.icon_url}
                   onChange={(url) => setEditing({ ...editing, icon_url: url })}
                 />
               </div>
-              <select value={editing.category_id ?? ""}
-                onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="">— category —</option>
-                {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
-              </select>
-              <select value={editing.status}
-                onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="active">active</option>
-                <option value="draft">draft</option>
-                <option value="archived">archived</option>
-              </select>
-              <select value={editing.delivery_type}
-                onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="instant">Instant</option>
-                <option value="manual">Manual</option>
-              </select>
-              <select value={editing.account_type}
-                onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
-                className="px-4 py-2 bg-background border border-border rounded-lg">
-                <option value="private">Private</option>
-                <option value="shared">Shared</option>
-              </select>
-              <label className="col-span-2 flex items-center gap-2 text-sm">
+              <Field label="📂 القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
+                <select value={editing.category_id ?? ""}
+                  onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="">— اختر قسم —</option>
+                  {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
+                </select>
+              </Field>
+              <Field label="🚦 الحالة" hint="active: ظاهر للعملاء · draft: مخفي (شغل جاري) · archived: مؤرشف">
+                <select value={editing.status}
+                  onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="active">active — ظاهر</option>
+                  <option value="draft">draft — مسودة</option>
+                  <option value="archived">archived — مؤرشف</option>
+                </select>
+              </Field>
+              <Field label="⚡ نوع التسليم" hint="instant: تلقائي فوري من المخزون · manual: الأدمن هيسلمه يدوي">
+                <select value={editing.delivery_type}
+                  onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="instant">Instant — تسليم فوري</option>
+                  <option value="manual">Manual — تسليم يدوي</option>
+                </select>
+              </Field>
+              <Field label="👤 نوع الحساب" hint="private: حساب خاص للعميل لوحده · shared: حساب مشترك مع ناس تانية">
+                <select value={editing.account_type}
+                  onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
+                  <option value="private">Private — خاص</option>
+                  <option value="shared">Shared — مشترك</option>
+                </select>
+              </Field>
+              <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
-                Featured
+                <span>⭐ <b>Featured</b> — ثبّت المنتج في القسم المميز على الرئيسية</span>
               </label>
-              <div className="col-span-2 flex gap-3 justify-end pt-4">
+              <div className="col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
                   className="px-4 py-2 border border-border rounded-lg">{t.admin.cancel}</button>
                 <button type="submit" disabled={save.isPending}
@@ -285,6 +308,7 @@ function AdminProducts() {
               </div>
               {save.error && <p className="col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
             </form>
+
           </div>
         </div>
       )}
