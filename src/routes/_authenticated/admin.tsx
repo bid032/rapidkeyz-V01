@@ -20,14 +20,14 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { t } = useApp();
-  const links = [
+  const links: { to: string; label: string; exact?: boolean }[] = [
     { to: "/admin", label: t.admin.overview, exact: true },
     { to: "/admin/products", label: t.admin.products },
     { to: "/admin/categories", label: t.admin.categories },
     { to: "/admin/orders", label: t.admin.orders },
     { to: "/admin/users", label: t.admin.users },
     { to: "/admin/settings", label: t.admin.settings },
-  ] as const;
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
