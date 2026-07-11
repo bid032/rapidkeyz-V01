@@ -45,8 +45,8 @@ export function Footer() {
               </span>
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase tracking-wide">{t.footer.phone}</span>
-                <a href="tel:+201023290446" className="hover:text-foreground font-medium" dir="ltr">
-                  +20 102 329 0446
+                <a href="tel:+201284234815" className="hover:text-foreground font-medium" dir="ltr">
+                  +20 128 423 4815
                 </a>
               </div>
             </li>
