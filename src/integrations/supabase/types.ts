@@ -447,7 +447,7 @@ export type Database = {
       }
     }
     Enums: {
-      account_type: "private" | "shared"
+      account_type: "private" | "shared" | "both"
       app_role: "admin" | "user"
       delivery_type: "instant" | "manual"
       order_status:
@@ -586,7 +586,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      account_type: ["private", "shared"],
+      account_type: ["private", "shared", "both"],
       app_role: ["admin", "user"],
       delivery_type: ["instant", "manual"],
       order_status: [
