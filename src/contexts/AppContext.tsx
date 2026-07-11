@@ -1,7 +1,9 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -22,6 +24,16 @@ export type CartItem = {
 
 type Theme = "dark" | "light";
 
+type ConfirmOptions = {
+  title?: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  tone?: "default" | "danger";
+};
+
+type ToastMsg = { id: number; type: "success" | "error" | "info"; message: string };
+
 type AppState = {
   lang: Lang;
   setLang: (l: Lang) => void;
@@ -35,6 +47,8 @@ type AppState = {
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
+  confirm: (opts: ConfirmOptions) => Promise<boolean>;
+  notify: (message: string, type?: ToastMsg["type"]) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -46,6 +60,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
+
+  // ---- Confirm modal ----
+  const [confirmState, setConfirmState] = useState<
+    (ConfirmOptions & { resolve: (v: boolean) => void }) | null
+  >(null);
+  const confirm = useCallback(
+    (opts: ConfirmOptions) =>
+      new Promise<boolean>((resolve) => setConfirmState({ ...opts, resolve })),
+    [],
+  );
+
+  // ---- Toasts ----
+  const [toasts, setToasts] = useState<ToastMsg[]>([]);
+  const toastId = useRef(0);
+  const notify = useCallback((message: string, type: ToastMsg["type"] = "info") => {
+    const id = ++toastId.current;
+    setToasts((prev) => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
+  }, []);
 
   // Hydrate from localStorage after mount (SSR-safe)
   useEffect(() => {
@@ -63,7 +96,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setHydrated(true);
   }, []);
 
-  // Apply direction + theme class
   useEffect(() => {
     if (!isBrowser) return;
     const html = document.documentElement;
@@ -86,8 +118,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [cart, hydrated]);
 
   const setLang = (l: Lang) => setLangState(l);
-  const toggleTheme = () =>
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
@@ -132,9 +163,84 @@ export function AppProvider({ children }: { children: ReactNode }) {
     clearCart,
     cartTotal,
     cartCount,
+    confirm,
+    notify,
   };
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  const isAr = lang === "ar";
+
+  return (
+    <AppContext.Provider value={value}>
+      {children}
+
+      {/* Custom branded confirm modal */}
+      {confirmState && (
+        <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm grid place-items-center p-6 animate-in fade-in">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-start gap-4 mb-5">
+              <div
+                className={`size-12 rounded-xl grid place-items-center shrink-0 ${
+                  confirmState.tone === "danger"
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-brand/10 text-brand"
+                }`}
+              >
+                <span className="text-2xl">
+                  {confirmState.tone === "danger" ? "⚠️" : "❓"}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-lg font-extrabold mb-1">
+                  {confirmState.title ?? (isAr ? "تأكيد" : "Confirm")}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {confirmState.message}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { confirmState.resolve(false); setConfirmState(null); }}
+                className="px-4 py-2 border border-border rounded-lg font-bold hover:bg-muted transition"
+              >
+                {confirmState.cancelLabel ?? (isAr ? "إلغاء" : "Cancel")}
+              </button>
+              <button
+                onClick={() => { confirmState.resolve(true); setConfirmState(null); }}
+                className={`px-5 py-2 rounded-lg font-bold transition ${
+                  confirmState.tone === "danger"
+                    ? "bg-destructive text-destructive-foreground hover:opacity-90"
+                    : "bg-brand text-brand-foreground hover:brand-glow"
+                }`}
+              >
+                {confirmState.confirmLabel ?? (isAr ? "تأكيد" : "Confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toasts */}
+      {toasts.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] flex flex-col gap-2 pointer-events-none">
+          {toasts.map((tt) => (
+            <div
+              key={tt.id}
+              className={`px-4 py-3 rounded-xl border shadow-lg text-sm font-bold pointer-events-auto backdrop-blur ${
+                tt.type === "success"
+                  ? "bg-success/15 border-success/30 text-success"
+                  : tt.type === "error"
+                  ? "bg-destructive/15 border-destructive/30 text-destructive"
+                  : "bg-card border-border text-foreground"
+              }`}
+            >
+              {tt.message}
+            </div>
+          ))}
+        </div>
+      )}
+    </AppContext.Provider>
+  );
 }
 
 export function useApp() {
