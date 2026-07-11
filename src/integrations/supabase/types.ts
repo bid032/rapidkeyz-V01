@@ -231,7 +231,9 @@ export type Database = {
           notes: string | null
           order_number: string
           payment_gateway: Database["public"]["Enums"]["payment_gateway"] | null
+          payment_proof_url: string | null
           payment_reference: string | null
+          payment_sender_phone: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -249,7 +251,9 @@ export type Database = {
           payment_gateway?:
             | Database["public"]["Enums"]["payment_gateway"]
             | null
+          payment_proof_url?: string | null
           payment_reference?: string | null
+          payment_sender_phone?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -267,7 +271,9 @@ export type Database = {
           payment_gateway?:
             | Database["public"]["Enums"]["payment_gateway"]
             | null
+          payment_proof_url?: string | null
           payment_reference?: string | null
+          payment_sender_phone?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -571,7 +577,7 @@ export type Database = {
         | "delivered"
         | "cancelled"
         | "refunded"
-      payment_gateway: "paymob" | "kashier" | "manual"
+      payment_gateway: "paymob" | "kashier" | "manual" | "wallet_instapay"
       product_status: "active" | "draft" | "archived"
     }
     CompositeTypes: {
@@ -711,7 +717,7 @@ export const Constants = {
         "cancelled",
         "refunded",
       ],
-      payment_gateway: ["paymob", "kashier", "manual"],
+      payment_gateway: ["paymob", "kashier", "manual", "wallet_instapay"],
       product_status: ["active", "draft", "archived"],
     },
   },
