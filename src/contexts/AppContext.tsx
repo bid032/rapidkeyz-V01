@@ -19,7 +19,7 @@ export type CartItem = {
   quantity: number;
   iconUrl?: string | null;
   deliveryType: "instant" | "manual";
-  accountType: "private" | "shared" | "both";
+  accountType: "private" | "shared" | "both" | "own";
 };
 
 type Theme = "dark" | "light";
