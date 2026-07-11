@@ -100,7 +100,7 @@ function CheckoutPage() {
       let allInstantDelivered = true;
       let hasInstant = false;
       for (const it of insertedItems ?? []) {
-        if (it.delivery_type === "instant") {
+        if (it.delivery_type === "instant" && it.plan_id) {
           hasInstant = true;
           const { data: claimedId } = await supabase.rpc("claim_inventory_for_item", {
             _order_item_id: it.id,
@@ -109,9 +109,9 @@ function CheckoutPage() {
           if (!claimedId) allInstantDelivered = false;
         }
       }
-      if (user && hasInstant && allInstantDelivered) {
-        // Only signed-in users have permission to update? Admins do; users don't.
-        // Best-effort: RPC would be needed. Skip client update for guests.
+      // Auto-flip status when everything was auto-delivered (admins may still adjust).
+      if (hasInstant && allInstantDelivered) {
+        await supabase.from("orders").update({ status: "delivered" }).eq("id", order.id);
       }
 
       clearCart();
