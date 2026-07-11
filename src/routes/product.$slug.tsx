@@ -150,7 +150,18 @@ function ProductPage() {
               {product.account_type === "private" ? t.badges.private : t.badges.shared}
             </span>
           </div>
-          <h1 className="text-4xl font-extrabold mb-4">{name}</h1>
+          <h1 className="text-4xl font-extrabold mb-3">{name}</h1>
+
+          <div className="flex items-center gap-2 mb-5 text-sm">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 animate-ping" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success" />
+            </span>
+            <span className="text-muted-foreground">
+              <span className="font-bold text-foreground">{viewers}</span> {t.product.viewersNow}
+            </span>
+          </div>
+
           {desc && <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{desc}</p>}
 
           <div className="mb-6 space-y-5">
