@@ -62,8 +62,33 @@ function CheckoutPage() {
         return;
       }
     }
+    if (gateway === "wallet_instapay") {
+      if (!proofFile) {
+        setError(lang === "ar" ? "يرجى رفع صورة إثبات الدفع" : "Please upload the payment screenshot");
+        return;
+      }
+      if (!/^[0-9+\s-]{6,20}$/.test(senderPhone.trim())) {
+        setError(
+          lang === "ar"
+            ? "يرجى إدخال رقم الهاتف الذي تم التحويل منه"
+            : "Please enter the phone number you transferred from"
+        );
+        return;
+      }
+    }
     setSubmitting(true);
     try {
+      let proofUrl: string | null = null;
+      if (gateway === "wallet_instapay" && proofFile) {
+        const ext = proofFile.name.split(".").pop() || "jpg";
+        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("payment-proofs")
+          .upload(path, proofFile, { contentType: proofFile.type, upsert: false });
+        if (upErr) throw upErr;
+        proofUrl = path;
+      }
+
       const { data: order, error: oErr } = await supabase
         .from("orders")
         .insert({
@@ -74,6 +99,8 @@ function CheckoutPage() {
           total: cartTotal,
           customer_email: email,
           customer_phone: phone,
+          payment_proof_url: proofUrl,
+          payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.trim() : null,
         })
         .select()
         .single();
