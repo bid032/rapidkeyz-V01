@@ -77,7 +77,9 @@ function ProductPage() {
   }
   if (!product) return null;
 
-  const plans = (product.product_plans ?? []).filter((p: any) => p.is_active);
+  const plans = (product.product_plans ?? [])
+    .filter((p: any) => p.is_active)
+    .sort((a: any, b: any) => Number(a.duration_days ?? 0) - Number(b.duration_days ?? 0));
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
   const rawAccountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
   const hasAcctChoice = rawAccountTypes.some((a) => a === "private" || a === "shared");
