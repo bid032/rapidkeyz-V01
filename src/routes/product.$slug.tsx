@@ -118,7 +118,9 @@ function ProductPage() {
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
     const acct: "private" | "shared" | "both" | "own" =
-      product.account_type === "both"
+      effectiveAcct === "own"
+        ? "own"
+        : product.account_type === "both"
         ? (effectiveAcct === "shared" ? "shared" : "private")
         : (product.account_type as "private" | "shared" | "both" | "own");
     addToCart({
