@@ -14,6 +14,15 @@ function AdminSettings() {
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
   const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [hero, setHero] = useState<any>({
+    badge_ar: "", badge_en: "",
+    title1_ar: "", title1_en: "",
+    title2_ar: "", title2_en: "",
+    subtitle_ar: "", subtitle_en: "",
+    cta_ar: "", cta_en: "",
+    cta_secondary_ar: "", cta_secondary_en: "",
+    trusted_ar: "", trusted_en: "",
+  });
 
   const settings = useQuery({
     queryKey: ["site-settings"],
@@ -26,6 +35,7 @@ function AdminSettings() {
       if (s.key === "brand") setBrand(s.value);
       if (s.key === "contact") setContact(s.value);
       if (s.key === "payments") setPayments(s.value);
+      if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
     }
   }, [settings.data]);
 
@@ -35,6 +45,7 @@ function AdminSettings() {
         { key: "brand", value: brand },
         { key: "contact", value: contact },
         { key: "payments", value: payments },
+        { key: "hero", value: hero },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
