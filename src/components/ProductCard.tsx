@@ -50,10 +50,16 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
               p.account_type === "private"
                 ? "bg-brand/10 text-brand border-brand/20"
+                : p.account_type === "both"
+                ? "bg-accent/10 text-accent-foreground border-accent/30"
                 : "bg-muted text-muted-foreground border-border"
             }`}
           >
-            {p.account_type === "private" ? t.badges.private : t.badges.shared}
+            {p.account_type === "private"
+              ? t.badges.private
+              : p.account_type === "both"
+              ? (t.badges as any).both
+              : t.badges.shared}
           </span>
         </div>
       </div>
