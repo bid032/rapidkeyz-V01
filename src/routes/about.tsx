@@ -1,0 +1,86 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { useApp } from "@/contexts/AppContext";
+import { Phone, Wrench, ShieldCheck, Zap } from "lucide-react";
+
+export const Route = createFileRoute("/about")({
+  head: () => ({
+    meta: [
+      { title: "About RapidKeyz — من نحن" },
+      { name: "description", content: "تعرف على RapidKeyz، شريكك الموثوق لاشتراكات الخدمات الرقمية الأصلية بأسعار تنافسية." },
+    ],
+  }),
+  component: AboutPage,
+});
+
+function FeaturesStrip() {
+  const { t } = useApp();
+  const items = [
+    { icon: Phone, ...t.features.support },
+    { icon: Wrench, ...t.features.fullSupport },
+    { icon: ShieldCheck, ...t.features.guarantee },
+    { icon: Zap, ...t.features.instant },
+  ];
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 border-t border-border pt-12">
+      {items.map((it) => (
+        <div key={it.title} className="text-center flex flex-col items-center gap-3">
+          <span className="size-12 grid place-items-center rounded-full bg-brand/10 text-brand">
+            <it.icon className="size-5" />
+          </span>
+          <h5 className="font-bold text-sm">{it.title}</h5>
+          <p className="text-xs text-muted-foreground max-w-[180px]">{it.desc}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AboutPage() {
+  const { t } = useApp();
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="max-w-4xl mx-auto px-6 py-16">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-brand text-center mb-16">{t.about.title}</h1>
+
+        <Section title={t.about.moreTitle}>
+          <p className="leading-loose text-muted-foreground">{t.about.moreBody}</p>
+        </Section>
+
+        <Section title={t.about.missionTitle}>
+          <p className="leading-loose text-muted-foreground">{t.about.missionBody}</p>
+        </Section>
+
+        <Section title={t.about.valuesTitle}>
+          <ul className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+            {t.about.values.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
+          </ul>
+        </Section>
+
+        <Section title={t.about.whyTitle}>
+          <ul className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+            {t.about.why.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
+          </ul>
+        </Section>
+
+        <Section title={t.about.visionTitle}>
+          <p className="leading-loose text-muted-foreground">{t.about.visionBody}</p>
+        </Section>
+
+        <FeaturesStrip />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mb-10">
+      <h2 className="text-xl font-bold text-brand mb-3">{title}</h2>
+      {children}
+    </section>
+  );
+}

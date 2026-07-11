@@ -1,36 +1,88 @@
+import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
+import logoAsset from "@/assets/logo_rapid.png.asset.json";
+import { Phone, Mail } from "lucide-react";
 
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="border-t border-border py-12 px-6 bg-card/30 mt-24">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex flex-col gap-2 text-center md:text-start">
-          <span className="text-lg font-extrabold tracking-tighter text-brand">RAPIDKEYZ</span>
-          <p className="text-xs text-muted-foreground max-w-xs">{t.footer.tagline}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
+    <footer className="border-t border-border pt-16 pb-8 px-6 bg-card/30 mt-24">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+        {/* Brand */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <img src={logoAsset.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
+            <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
+              RapidKeyz
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+            {t.footer.tagline}
           </p>
         </div>
-        <div className="flex flex-col gap-3 items-center md:items-end">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            {t.footer.payments}
-          </span>
-          <div className="flex flex-wrap justify-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md border border-border">
-              <span className="text-xs font-bold">Paymob</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md border border-border">
-              <span className="text-xs font-bold">Kashier</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md border border-border">
-              <span className="text-xs font-bold">InstaPay</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md border border-border">
-              <span className="text-xs font-bold">Vodafone Cash</span>
-            </div>
+
+        {/* Quick links */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
+            • {t.footer.quickLinks}
+          </h4>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li><Link to="/about" className="hover:text-foreground transition-colors">{t.footer.about}</Link></li>
+            <li><Link to="/privacy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
+            <li><Link to="/terms" className="hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
+          </ul>
+        </div>
+
+        {/* Contact */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
+            • {t.footer.contact}
+          </h4>
+          <ul className="space-y-3 text-sm text-muted-foreground">
+            <li className="flex items-center gap-3">
+              <span className="size-9 grid place-items-center rounded-full bg-brand/10 text-brand">
+                <Phone className="size-4" />
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wide">{t.footer.phone}</span>
+                <a href="tel:+201023290446" className="hover:text-foreground font-medium" dir="ltr">
+                  +20 102 329 0446
+                </a>
+              </div>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="size-9 grid place-items-center rounded-full bg-brand/10 text-brand">
+                <Mail className="size-4" />
+              </span>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-wide">{t.footer.emailLabel}</span>
+                <a href="mailto:support@rapidkeyz.com" className="hover:text-foreground font-medium" dir="ltr">
+                  support@rapidkeyz.com
+                </a>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        {/* Payments */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
+            • {t.footer.payments}
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {["Paymob", "Kashier", "InstaPay", "Vodafone Cash", "Visa"].map((p) => (
+              <span key={p} className="text-[11px] font-bold px-2.5 py-1.5 bg-muted rounded-md border border-border">
+                {p}
+              </span>
+            ))}
           </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 text-center">
+        <p className="text-[11px] text-muted-foreground">
+          © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
+        </p>
       </div>
     </footer>
   );
