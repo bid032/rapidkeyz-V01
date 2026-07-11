@@ -17,7 +17,7 @@ function AuthPage() {
   const { t } = useApp();
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -37,6 +37,14 @@ function AuthPage() {
     setInfo(null);
     setLoading(true);
     try {
+      if (mode === "forgot") {
+        const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (err) throw err;
+        setInfo(`تم إرسال رابط استعادة كلمة السر إلى ${email}. افتح البريد لإكمال العملية.`);
+        return;
+      }
       if (mode === "signup") {
         const { data, error: err } = await supabase.auth.signUp({
           email,
@@ -145,15 +153,28 @@ function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-background border border-border rounded-lg"
             />
-            <input
-              required
-              type="password"
-              minLength={6}
-              placeholder={t.auth.password}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg"
-            />
+            {mode !== "forgot" && (
+              <input
+                required
+                type="password"
+                minLength={6}
+                placeholder={t.auth.password}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+              />
+            )}
+            {mode === "signin" && (
+              <div className="text-left rtl:text-right">
+                <button
+                  type="button"
+                  onClick={() => { setMode("forgot"); setError(null); setInfo(null); }}
+                  className="text-xs font-bold text-brand hover:underline"
+                >
+                  نسيت كلمة السر؟ / Forgot password?
+                </button>
+              </div>
+            )}
             {error && <p className="text-destructive text-sm">{error}</p>}
             {info && (
               <p className="text-success text-sm bg-success/10 border border-success/30 rounded-lg p-3">
@@ -165,8 +186,23 @@ function AuthPage() {
               disabled={loading}
               className="w-full px-4 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow disabled:opacity-50"
             >
-              {loading ? t.common.loading : mode === "signin" ? t.auth.signIn : t.auth.signUp}
+              {loading
+                ? t.common.loading
+                : mode === "signin"
+                ? t.auth.signIn
+                : mode === "signup"
+                ? t.auth.signUp
+                : "إرسال رابط الاستعادة / Send reset link"}
             </button>
+            {mode === "forgot" && (
+              <button
+                type="button"
+                onClick={() => { setMode("signin"); setError(null); setInfo(null); }}
+                className="w-full text-xs font-bold text-muted-foreground hover:text-foreground"
+              >
+                ← الرجوع لتسجيل الدخول / Back to sign in
+              </button>
+            )}
           </form>
         </div>
       </div>
