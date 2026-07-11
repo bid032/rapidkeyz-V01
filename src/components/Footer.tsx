@@ -7,7 +7,7 @@ export function Footer() {
   const { t } = useApp();
   return (
     <footer className="border-t border-border pt-16 pb-8 px-6 bg-card/30 mt-24">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Brand */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -62,20 +62,6 @@ export function Footer() {
               </div>
             </li>
           </ul>
-        </div>
-
-        {/* Payments */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
-            • {t.footer.payments}
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {["Paymob", "Kashier", "InstaPay", "Vodafone Cash", "Visa"].map((p) => (
-              <span key={p} className="text-[11px] font-bold px-2.5 py-1.5 bg-muted rounded-md border border-border">
-                {p}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
