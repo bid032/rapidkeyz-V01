@@ -7,9 +7,45 @@ type Props = {
   onChange: (url: string) => void;
   label?: string;
   className?: string;
+  /** Force output to a square of this size (px). Default 1080. Set to 0 to keep original. */
+  size?: number;
 };
 
-export function ImageUpload({ bucket, value, onChange, label, className }: Props) {
+/** Resize/crop an image file to a centered square PNG of `size`×`size`. */
+async function resizeToSquare(file: File, size: number): Promise<Blob> {
+  const dataUrl = await new Promise<string>((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result as string);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error("Invalid image"));
+    i.src = dataUrl;
+  });
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, size, size);
+  // cover-crop centered
+  const scale = Math.max(size / img.width, size / img.height);
+  const w = img.width * scale;
+  const h = img.height * scale;
+  const dx = (size - w) / 2;
+  const dy = (size - h) / 2;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, dx, dy, w, h);
+  return await new Promise<Blob>((res, rej) =>
+    canvas.toBlob((b) => (b ? res(b) : rej(new Error("Encode failed"))), "image/png", 0.92)
+  );
+}
+
+export function ImageUpload({ bucket, value, onChange, label, className, size = 1080 }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,11 +53,13 @@ export function ImageUpload({ bucket, value, onChange, label, className }: Props
     setError(null);
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() ?? "png";
+      const blob = size > 0 ? await resizeToSquare(file, size) : file;
+      const ext = size > 0 ? "png" : (file.name.split(".").pop() ?? "png");
       const path = `${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from(bucket).upload(path, file, {
+      const { error: upErr } = await supabase.storage.from(bucket).upload(path, blob, {
         cacheControl: "3600",
         upsert: false,
+        contentType: size > 0 ? "image/png" : file.type,
       });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -46,7 +84,11 @@ export function ImageUpload({ bucket, value, onChange, label, className }: Props
         )}
         <label className="flex-1 cursor-pointer">
           <div className="px-4 py-2 border border-dashed border-border rounded-lg text-sm text-center hover:border-brand hover:bg-brand/5 transition">
-            {uploading ? "..." : value ? "استبدال الصورة / Replace" : "اختر صورة / Choose image"}
+            {uploading
+              ? "جاري الرفع... / Uploading…"
+              : value
+              ? "استبدال الصورة / Replace"
+              : "اختر صورة / Choose image"}
           </div>
           <input
             type="file"
@@ -61,6 +103,11 @@ export function ImageUpload({ bucket, value, onChange, label, className }: Props
           />
         </label>
       </div>
+      {size > 0 && (
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          هيتم قص وتحويل الصورة تلقائيًا إلى مقاس {size}×{size} بكسل مربع.
+        </p>
+      )}
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );

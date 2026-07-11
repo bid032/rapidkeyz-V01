@@ -19,7 +19,7 @@ type ProductForm = {
   icon_url: string;
   category_id: string | null;
   delivery_type: "instant" | "manual";
-  account_type: "private" | "shared";
+  account_type: "private" | "shared" | "both";
   status: "active" | "draft" | "archived";
   is_featured: boolean;
 };
@@ -37,6 +37,18 @@ const emptyForm: ProductForm = {
   status: "active",
   is_featured: false,
 };
+
+/** Turn any text into a URL-safe slug (English + Arabic). */
+function slugify(input: string): string {
+  return input
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, "") // Arabic diacritics
+    .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 
 function AdminProducts() {
   const { t } = useApp();
@@ -236,21 +248,45 @@ function AdminProducts() {
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
               className="grid grid-cols-2 gap-4"
             >
-              <Field label="⭐ الرابط (slug)" hint="الرابط اللي هيظهر في المتصفح، بالإنجليزي وبدون مسافات — مثال: netflix-premium" className="col-span-2">
-                <input required placeholder="netflix-premium" value={editing.slug}
-                  onChange={(e) => setEditing({ ...editing, slug: e.target.value })}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
-              </Field>
               <Field label="⭐ الاسم بالعربي" hint="اسم المنتج اللي هيشوفه العميل في الواجهة العربية">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
-                  onChange={(e) => setEditing({ ...editing, name_ar: e.target.value })}
+                  onChange={(e) => {
+                    const name_ar = e.target.value;
+                    setEditing((prev) => prev && {
+                      ...prev,
+                      name_ar,
+                      // auto-fill slug from Arabic only if English name is empty and slug wasn't manually set for existing product
+                      slug: !prev.id && !prev.name_en ? slugify(name_ar) : prev.slug,
+                    });
+                  }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="⭐ Name (English)" hint="Product name shown in the English UI">
+              <Field label="⭐ Name (English)" hint="Product name shown in the English UI — the slug is auto-generated from this">
                 <input required placeholder="Netflix Premium" value={editing.name_en}
-                  onChange={(e) => setEditing({ ...editing, name_en: e.target.value })}
+                  onChange={(e) => {
+                    const name_en = e.target.value;
+                    setEditing((prev) => prev && {
+                      ...prev,
+                      name_en,
+                      // auto-generate slug from English name for new products
+                      slug: !prev.id ? slugify(name_en) : prev.slug,
+                    });
+                  }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
+              <Field label="🔗 الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="col-span-2">
+                <div className="flex gap-2">
+                  <input required placeholder="netflix-premium" value={editing.slug}
+                    onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
+                    className="flex-1 px-4 py-2 bg-background border border-border rounded-lg font-mono text-sm" />
+                  <button type="button"
+                    onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
+                    className="px-3 py-2 text-xs font-bold border border-border rounded-lg hover:bg-muted">
+                    🔄 تحديث
+                  </button>
+                </div>
+              </Field>
+
               <Field label="الوصف بالعربي" hint="وصف مختصر يظهر في كارت المنتج وصفحته">
                 <textarea placeholder="اشترك في نتفليكس..." value={editing.description_ar}
                   onChange={(e) => setEditing({ ...editing, description_ar: e.target.value })}
@@ -294,12 +330,13 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="👤 نوع الحساب" hint="private: حساب خاص للعميل لوحده · shared: حساب مشترك مع ناس تانية">
+              <Field label="👤 نوع الحساب" hint="private: خاص للعميل لوحده · shared: مشترك مع ناس تانية · both: العميل يختار بين الاتنين">
                 <select value={editing.account_type}
                   onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
                   <option value="private">Private — خاص</option>
                   <option value="shared">Shared — مشترك</option>
+                  <option value="both">Both — العميل يختار</option>
                 </select>
               </Field>
               <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">

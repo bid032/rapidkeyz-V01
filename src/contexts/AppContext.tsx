@@ -17,7 +17,7 @@ export type CartItem = {
   quantity: number;
   iconUrl?: string | null;
   deliveryType: "instant" | "manual";
-  accountType: "private" | "shared";
+  accountType: "private" | "shared" | "both";
 };
 
 type Theme = "dark" | "light";
