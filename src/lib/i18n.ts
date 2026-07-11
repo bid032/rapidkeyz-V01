@@ -302,6 +302,7 @@ export const translations = {
       private: "Private Account",
       shared: "Shared Slot",
       both: "Private or Shared",
+      own: "Our Own Account",
     },
     product: {
       buyNow: "Buy Now",
