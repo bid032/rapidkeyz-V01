@@ -43,6 +43,9 @@ function AdminProducts() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ProductForm | null>(null);
   const [planEditor, setPlanEditor] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft" | "archived">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const products = useQuery({
     queryKey: ["admin-products"],
@@ -99,6 +102,44 @@ function AdminProducts() {
         </button>
       </div>
 
+      <div className="flex flex-wrap gap-3 mb-4 items-center">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="🔎 بحث بالاسم أو الـ slug / Search…"
+          className="flex-1 min-w-[220px] px-4 py-2 bg-card border border-border rounded-lg text-sm"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="px-3 py-2 bg-card border border-border rounded-lg text-sm"
+        >
+          <option value="all">كل الحالات / All statuses</option>
+          <option value="active">active</option>
+          <option value="draft">draft</option>
+          <option value="archived">archived</option>
+        </select>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="px-3 py-2 bg-card border border-border rounded-lg text-sm"
+        >
+          <option value="all">كل الأقسام / All categories</option>
+          {cats.data?.map((c) => (
+            <option key={c.id} value={c.id}>{c.name_ar}</option>
+          ))}
+        </select>
+        {(search || statusFilter !== "all" || categoryFilter !== "all") && (
+          <button
+            onClick={() => { setSearch(""); setStatusFilter("all"); setCategoryFilter("all"); }}
+            className="px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground"
+          >
+            ✕ مسح
+          </button>
+        )}
+      </div>
+
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <table className="w-full">
           <thead className="bg-muted">
@@ -110,7 +151,18 @@ function AdminProducts() {
             </tr>
           </thead>
           <tbody>
-            {products.data?.map((p: any) => (
+            {products.data
+              ?.filter((p: any) => {
+                if (statusFilter !== "all" && p.status !== statusFilter) return false;
+                if (categoryFilter !== "all" && p.category_id !== categoryFilter) return false;
+                if (search.trim()) {
+                  const q = search.trim().toLowerCase();
+                  const hay = `${p.name_ar} ${p.name_en} ${p.slug}`.toLowerCase();
+                  if (!hay.includes(q)) return false;
+                }
+                return true;
+              })
+              .map((p: any) => (
               <tr key={p.id} className="border-t border-border">
                 <td className="p-4">
                   <div className="font-bold">{p.name_ar}</div>

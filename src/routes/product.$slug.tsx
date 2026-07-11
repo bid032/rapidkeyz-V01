@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductDetails } from "@/components/ProductDetails";
@@ -39,6 +39,23 @@ function ProductPage() {
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
 
+  // Live viewers counter — seeded per-slug for stability, drifts every few seconds.
+  const seed = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+    return h;
+  }, [slug]);
+  const [viewers, setViewers] = useState(() => 9 + (seed % 22));
+  useEffect(() => {
+    const id = setInterval(() => {
+      setViewers((v) => {
+        const delta = Math.floor(Math.random() * 5) - 2; // -2..+2
+        return Math.max(6, Math.min(48, v + delta));
+      });
+    }, 4500);
+    return () => clearInterval(id);
+  }, []);
+
   const parsePlan = (pl: any) => {
     const en = String(pl.label_en ?? "");
     const ar = String(pl.label_ar ?? "");
@@ -64,7 +81,6 @@ function ProductPage() {
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
   const rawAccountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
   const hasAcctChoice = rawAccountTypes.some((a) => a === "private" || a === "shared");
-  // Hide the "any/Standard" option from the account-type chooser when private/shared exist
   const accountTypes = hasAcctChoice
     ? (rawAccountTypes.filter((a) => a !== "any") as ("private" | "shared")[])
     : rawAccountTypes;
@@ -74,6 +90,8 @@ function ProductPage() {
     : enriched;
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
+  const selectedStock = Number(selected?.stock ?? 0);
+  const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
 
@@ -132,7 +150,18 @@ function ProductPage() {
               {product.account_type === "private" ? t.badges.private : t.badges.shared}
             </span>
           </div>
-          <h1 className="text-4xl font-extrabold mb-4">{name}</h1>
+          <h1 className="text-4xl font-extrabold mb-3">{name}</h1>
+
+          <div className="flex items-center gap-2 mb-5 text-sm">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 animate-ping" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success" />
+            </span>
+            <span className="text-muted-foreground">
+              <span className="font-bold text-foreground">{viewers}</span> {t.product.viewersNow}
+            </span>
+          </div>
+
           {desc && <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{desc}</p>}
 
           <div className="mb-6 space-y-5">
@@ -169,17 +198,34 @@ function ProductPage() {
               <div className="flex flex-wrap gap-2">
                 {filteredPlans.map((pl: any) => {
                   const isSelected = (selected?.id) === pl.id;
+                  const planStock = Number(pl.stock ?? 0);
+                  const planSoldOut = planStock <= 0;
                   return (
                     <button
                       key={pl.id}
                       onClick={() => setPlanId(pl.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
-                        isSelected
-                          ? "border-brand bg-brand/10 text-brand"
-                          : "border-border bg-card hover:border-brand/40"
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition inline-flex items-center gap-2 ${
+                        planSoldOut
+                          ? isSelected
+                            ? "border-destructive/60 bg-destructive/10 text-destructive"
+                            : "border-border bg-muted text-muted-foreground hover:border-destructive/40"
+                          : isSelected
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-border bg-card hover:border-brand/40"
                       }`}
                     >
-                      {lang === "ar" ? pl.durAr : pl.durEn}
+                      <span className={planSoldOut ? "line-through opacity-70" : ""}>
+                        {lang === "ar" ? pl.durAr : pl.durEn}
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase ${
+                          planSoldOut
+                            ? "bg-destructive/15 text-destructive"
+                            : "bg-success/15 text-success"
+                        }`}
+                      >
+                        {planSoldOut ? t.product.soldOut : `${planStock} ${t.product.available}`}
+                      </span>
                     </button>
                   );
                 })}
@@ -203,23 +249,39 @@ function ProductPage() {
                 )}
               </div>
             )}
+
+            {selected && !selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
+              <p className="text-xs font-bold text-warning">
+                🔥 {t.product.stockLeft(selectedStock)}
+              </p>
+            )}
+            {selectedSoldOut && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm font-bold">
+                {t.product.soldOutHint}
+              </div>
+            )}
           </div>
+
 
 
           <div className="flex gap-3">
             <button
               onClick={() => handleAdd(true)}
-              disabled={!selected}
-              className="flex-1 px-6 py-4 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
+              disabled={!selected || selectedSoldOut}
+              className={`flex-1 px-6 py-4 rounded-xl font-bold transition disabled:cursor-not-allowed ${
+                selectedSoldOut
+                  ? "bg-muted text-muted-foreground border border-border"
+                  : "bg-brand text-brand-foreground hover:brand-glow disabled:opacity-50"
+              }`}
             >
-              {t.product.buyNow}
+              {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
             </button>
             <button
               onClick={() => handleAdd(false)}
-              disabled={!selected}
-              className="px-6 py-4 border border-border rounded-xl font-bold hover:bg-muted disabled:opacity-50"
+              disabled={!selected || selectedSoldOut}
+              className="px-6 py-4 border border-border rounded-xl font-bold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {t.product.addToCart}
+              {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
             </button>
           </div>
         </div>
