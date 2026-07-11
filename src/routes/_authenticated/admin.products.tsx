@@ -514,7 +514,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
 
                 <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
                   <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">💰 السعر (EGP)</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">السعر (EGP)</label>
                     <input
                       type="number"
                       min={0}
