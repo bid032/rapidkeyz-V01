@@ -22,6 +22,7 @@ type ProductForm = {
   account_type: "private" | "shared" | "both";
   status: "active" | "draft" | "archived";
   is_featured: boolean;
+  discount_percent: number;
 };
 
 const emptyForm: ProductForm = {
@@ -36,6 +37,7 @@ const emptyForm: ProductForm = {
   account_type: "private",
   status: "active",
   is_featured: false,
+  discount_percent: 0,
 };
 
 /** Turn any text into a URL-safe slug (English + Arabic). */
@@ -210,6 +212,7 @@ function AdminProducts() {
                       icon_url: p.icon_url ?? "", category_id: p.category_id,
                       delivery_type: p.delivery_type, account_type: p.account_type,
                       status: p.status, is_featured: p.is_featured,
+                      discount_percent: p.discount_percent ?? 0,
                     })}
                     className="text-brand text-sm hover:underline ml-3"
                   >
@@ -256,27 +259,25 @@ function AdminProducts() {
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
               className="grid grid-cols-2 gap-4"
             >
-              <Field label="⭐ الاسم بالعربي" hint="اسم المنتج اللي هيشوفه العميل في الواجهة العربية">
+              <Field label="⭐ الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
                   onChange={(e) => {
                     const name_ar = e.target.value;
                     setEditing((prev) => prev && {
                       ...prev,
                       name_ar,
-                      // auto-fill slug from Arabic only if English name is empty and slug wasn't manually set for existing product
                       slug: !prev.id && !prev.name_en ? slugify(name_ar) : prev.slug,
                     });
                   }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="⭐ Name (English)" hint="Product name shown in the English UI — the slug is auto-generated from this">
+              <Field label="⭐ Name (English)">
                 <input required placeholder="Netflix Premium" value={editing.name_en}
                   onChange={(e) => {
                     const name_en = e.target.value;
                     setEditing((prev) => prev && {
                       ...prev,
                       name_en,
-                      // auto-generate slug from English name for new products
                       slug: !prev.id ? slugify(name_en) : prev.slug,
                     });
                   }}
@@ -346,6 +347,16 @@ function AdminProducts() {
                   <option value="shared">Shared — مشترك</option>
                   <option value="both">Both — العميل يختار</option>
                 </select>
+              </Field>
+              <Field label="🏷️ نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={95}
+                  value={editing.discount_percent}
+                  onChange={(e) => setEditing({ ...editing, discount_percent: Math.max(0, Math.min(95, +e.target.value || 0)) })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg font-bold"
+                />
               </Field>
               <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
@@ -503,7 +514,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
 
                 <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
                   <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">💰 السعر (EGP)</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">السعر (EGP)</label>
                     <input
                       type="number"
                       min={0}
@@ -513,7 +524,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">🏷️ قبل الخصم</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">قبل الخصم</label>
                     <input
                       type="number"
                       min={0}
@@ -524,7 +535,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">📦 المخزون</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">المخزون</label>
                     <input
                       type="number"
                       min={0}
@@ -561,32 +572,32 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
           <h4 className="font-bold text-sm mb-3">➕ إضافة عرض جديد</h4>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="الاسم بالعربي" hint="مثال: شهر واحد">
+            <Field label="الاسم بالعربي">
               <input required value={form.label_ar}
                 onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="Label (English)" hint="e.g. 1 Month">
+            <Field label="Label (English)">
               <input required value={form.label_en}
                 onChange={(e) => setForm({ ...form, label_en: e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="⏱️ المدة (بالشهور)" hint="عدد الشهور — 1 = شهر · 3 = 3 شهور · 12 = سنة">
+            <Field label="المدة (بالشهور)">
               <input type="number" min={1} value={form.duration_months}
                 onChange={(e) => setForm({ ...form, duration_months: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="📦 المخزون (Stock)" hint="عدد النسخ المتاحة. لما يوصل 0 يتقفل الشراء تلقائيًا.">
+            <Field label="المخزون">
               <input type="number" min={0} value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="💰 السعر (EGP)" hint="سعر البيع للعميل بعد الخصم">
+            <Field label="السعر (EGP)">
               <input type="number" required min={0} value={form.price}
                 onChange={(e) => setForm({ ...form, price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="🏷️ السعر قبل الخصم (اختياري)" hint="لو حددته هيبان مشطوب جنب السعر الحالي">
+            <Field label="السعر قبل الخصم (اختياري)">
               <input type="number" min={0} value={form.compare_price}
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />

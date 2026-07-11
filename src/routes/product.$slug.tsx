@@ -96,6 +96,10 @@ function ProductPage() {
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
+  const discount = Number((product as any).discount_percent ?? 0);
+  const hasDiscount = discount > 0;
+  const rawPrice = selected ? Number(selected.price) : 0;
+  const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
 
   const acctLabel = (a: string) =>
     a === "private" ? t.badges.private : t.badges.shared;
@@ -108,7 +112,7 @@ function ProductPage() {
       planId: selected.id,
       productName: name,
       planLabel: lang === "ar" ? selected.label_ar : selected.label_en,
-      price: Number(selected.price),
+      price: finalPrice,
       quantity: 1,
       iconUrl: product.icon_url,
       deliveryType: product.delivery_type,
@@ -124,11 +128,18 @@ function ProductPage() {
       <Header />
       <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-12">
         <div>
-          <div className="aspect-square bg-card border border-border rounded-2xl overflow-hidden grid place-items-center">
+          <div className="relative aspect-square bg-card border border-border rounded-2xl overflow-hidden grid place-items-center">
             {product.icon_url ? (
               <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
             ) : (
               <span className="text-6xl font-black text-brand">{name.slice(0, 2).toUpperCase()}</span>
+            )}
+            {hasDiscount && (
+              <span
+                className={`absolute top-4 ${lang === "ar" ? "right-4" : "left-4"} bg-destructive text-destructive-foreground text-lg font-black px-3 py-1.5 rounded-xl shadow-lg`}
+              >
+                -{discount}%
+              </span>
             )}
           </div>
         </div>
@@ -244,14 +255,25 @@ function ProductPage() {
             </div>
 
             {selected && (
-              <div className="flex items-baseline gap-3 pt-2">
+              <div className="flex items-baseline gap-3 pt-2 flex-wrap">
                 <span className="text-3xl font-extrabold text-brand">
-                  {selected.price} {t.common.currency}
+                  {finalPrice} {t.common.currency}
                 </span>
-                {selected.compare_price && Number(selected.compare_price) > Number(selected.price) && (
-                  <span className="text-sm text-muted-foreground line-through">
-                    {selected.compare_price} {t.common.currency}
-                  </span>
+                {hasDiscount ? (
+                  <>
+                    <span className="text-sm text-muted-foreground line-through">
+                      {rawPrice} {t.common.currency}
+                    </span>
+                    <span className="text-xs font-black bg-destructive/10 text-destructive px-2 py-0.5 rounded">
+                      -{discount}%
+                    </span>
+                  </>
+                ) : (
+                  selected.compare_price && Number(selected.compare_price) > Number(selected.price) && (
+                    <span className="text-sm text-muted-foreground line-through">
+                      {selected.compare_price} {t.common.currency}
+                    </span>
+                  )
                 )}
               </div>
             )}

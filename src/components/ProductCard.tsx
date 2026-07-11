@@ -12,6 +12,7 @@ export type ProductCardData = {
   delivery_type: "instant" | "manual";
   account_type: "private" | "shared" | "both";
   minPrice: number | null;
+  discount_percent?: number | null;
   planLabel_ar?: string | null;
   planLabel_en?: string | null;
 };
@@ -21,6 +22,12 @@ export function ProductCard({ p }: { p: ProductCardData }) {
   const name = lang === "ar" ? p.name_ar : p.name_en;
   const desc = lang === "ar" ? p.description_ar : p.description_en;
   const planLabel = lang === "ar" ? p.planLabel_ar : p.planLabel_en;
+  const discount = Number(p.discount_percent ?? 0);
+  const hasDiscount = discount > 0 && p.minPrice !== null;
+  const finalPrice =
+    hasDiscount && p.minPrice !== null
+      ? Math.round(p.minPrice * (100 - discount)) / 100
+      : p.minPrice;
 
   return (
     <Link
@@ -29,11 +36,18 @@ export function ProductCard({ p }: { p: ProductCardData }) {
       className="group bg-card border border-border rounded-2xl p-6 hover:border-brand/40 transition-all flex flex-col"
     >
       <div className="flex justify-between items-start mb-6">
-        <div className="size-14 bg-muted rounded-xl grid place-items-center overflow-hidden border border-border">
+        <div className="relative size-14 bg-muted rounded-xl grid place-items-center overflow-hidden border border-border">
           {p.icon_url ? (
             <img src={p.icon_url} alt={name} className="size-full object-cover" />
           ) : (
             <span className="text-lg font-black text-brand">{name.slice(0, 2).toUpperCase()}</span>
+          )}
+          {hasDiscount && (
+            <span
+              className={`absolute top-0 ${lang === "ar" ? "right-0 rounded-bl-lg rounded-tr-xl" : "left-0 rounded-br-lg rounded-tl-xl"} bg-destructive text-destructive-foreground text-[10px] font-black px-1.5 py-0.5 shadow-md`}
+            >
+              -{discount}%
+            </span>
           )}
         </div>
         <div className="flex flex-col items-end gap-1.5">
@@ -72,9 +86,20 @@ export function ProductCard({ p }: { p: ProductCardData }) {
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
             {planLabel || t.product.priceStarting}
           </span>
-          <span className="text-2xl font-extrabold text-foreground">
-            {p.minPrice !== null ? `${p.minPrice} ${t.common.currency}` : "—"}
-          </span>
+          {finalPrice !== null ? (
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-extrabold text-foreground">
+                {finalPrice} {t.common.currency}
+              </span>
+              {hasDiscount && (
+                <span className="text-xs text-muted-foreground line-through">
+                  {p.minPrice} {t.common.currency}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-2xl font-extrabold text-foreground">—</span>
+          )}
         </div>
         <span className="px-5 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold text-sm group-hover:brand-glow transition-all">
           {t.product.buyNow}
