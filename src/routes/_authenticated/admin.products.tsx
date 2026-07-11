@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { ImageUpload } from "@/components/ImageUpload";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   component: AdminProducts,
@@ -184,9 +185,14 @@ function AdminProducts() {
               <textarea placeholder="Description (EN)" value={editing.description_en}
                 onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
                 className="px-4 py-2 bg-background border border-border rounded-lg" />
-              <input placeholder="Icon URL" value={editing.icon_url}
-                onChange={(e) => setEditing({ ...editing, icon_url: e.target.value })}
-                className="col-span-2 px-4 py-2 bg-background border border-border rounded-lg" />
+              <div className="col-span-2">
+                <ImageUpload
+                  bucket="product-images"
+                  label="صورة المنتج / Product Image"
+                  value={editing.icon_url}
+                  onChange={(url) => setEditing({ ...editing, icon_url: url })}
+                />
+              </div>
               <select value={editing.category_id ?? ""}
                 onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
                 className="px-4 py-2 bg-background border border-border rounded-lg">
