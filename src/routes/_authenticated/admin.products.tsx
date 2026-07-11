@@ -339,14 +339,32 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="👤 نوع الحساب" hint="private: خاص للعميل لوحده · shared: مشترك مع ناس تانية · both: العميل يختار بين الاتنين">
-                <select value={editing.account_type}
-                  onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
-                  <option value="private">Private — خاص</option>
-                  <option value="shared">Shared — مشترك</option>
-                  <option value="both">Both — العميل يختار</option>
-                </select>
+              <Field label="👤 نوع الحساب" hint="اختر النوع اللي هيتباع للعميل. لو (كلاهم) العميل هيختار بنفسه بين خاص أو مشترك." className="col-span-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {([
+                    { v: "shared", label: "🤝 شير (مشترك)" },
+                    { v: "private", label: "🔒 برايفت (خاص)" },
+                    { v: "own", label: "🎁 حساب من عندنا" },
+                    { v: "both", label: "🌟 كلاهم (شير + برايفت)" },
+                  ] as const).map((o) => {
+                    const active = editing.account_type === o.v;
+                    return (
+                      <button
+                        key={o.v}
+                        type="button"
+                        onClick={() => setEditing({ ...editing, account_type: o.v as any })}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-start ${
+                          active
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-border bg-background hover:border-brand/40"
+                        }`}
+                      >
+                        <span className="inline-block me-1">{active ? "☑" : "☐"}</span>
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </Field>
               <Field label="🏷️ نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
                 <input
