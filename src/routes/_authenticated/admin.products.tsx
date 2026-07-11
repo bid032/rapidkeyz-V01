@@ -572,32 +572,32 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
           <h4 className="font-bold text-sm mb-3">➕ إضافة عرض جديد</h4>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="الاسم بالعربي" hint="مثال: شهر واحد">
+            <Field label="الاسم بالعربي">
               <input required value={form.label_ar}
                 onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="Label (English)" hint="e.g. 1 Month">
+            <Field label="Label (English)">
               <input required value={form.label_en}
                 onChange={(e) => setForm({ ...form, label_en: e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="⏱️ المدة (بالشهور)" hint="عدد الشهور — 1 = شهر · 3 = 3 شهور · 12 = سنة">
+            <Field label="المدة (بالشهور)">
               <input type="number" min={1} value={form.duration_months}
                 onChange={(e) => setForm({ ...form, duration_months: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="📦 المخزون (Stock)" hint="عدد النسخ المتاحة. لما يوصل 0 يتقفل الشراء تلقائيًا.">
+            <Field label="المخزون">
               <input type="number" min={0} value={form.stock}
                 onChange={(e) => setForm({ ...form, stock: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="💰 السعر (EGP)" hint="سعر البيع للعميل بعد الخصم">
+            <Field label="السعر (EGP)">
               <input type="number" required min={0} value={form.price}
                 onChange={(e) => setForm({ ...form, price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="🏷️ السعر قبل الخصم (اختياري)" hint="لو حددته هيبان مشطوب جنب السعر الحالي">
+            <Field label="السعر قبل الخصم (اختياري)">
               <input type="number" min={0} value={form.compare_price}
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
