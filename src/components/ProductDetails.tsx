@@ -2,7 +2,7 @@ import { useApp } from "@/contexts/AppContext";
 
 type Props = {
   productName: string;
-  accountTypes: ("private" | "shared" | "any")[];
+  accountTypes: ("private" | "shared" | "own" | "any")[];
 };
 
 export function ProductDetails({ productName, accountTypes }: Props) {
@@ -10,6 +10,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
   const isAr = lang === "ar";
   const hasShared = accountTypes.includes("shared");
   const hasPrivate = accountTypes.includes("private");
+  const hasOwn = accountTypes.includes("own");
 
   const features = isAr
     ? [
