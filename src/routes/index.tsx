@@ -91,29 +91,29 @@ function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
             </span>
-            {t.home.badge}
+            {hero.badge}
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1] max-w-4xl">
-            {t.home.title1} <br />
+            {hero.title1} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">
-              {t.home.title2}
+              {hero.title2}
             </span>
           </h1>
           <p className="max-w-2xl text-muted-foreground text-lg mb-10 leading-relaxed">
-            {t.home.subtitle}
+            {hero.subtitle}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/shop"
               className="px-8 py-4 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow transition-all"
             >
-              {t.home.cta}
+              {hero.cta}
             </Link>
             <a
               href="#trending"
               className="px-8 py-4 rounded-xl font-bold border border-border hover:bg-muted transition-all"
             >
-              {t.home.ctaSecondary}
+              {hero.ctaSecondary}
             </a>
           </div>
           <div className="mt-10 flex items-center gap-3">
@@ -127,7 +127,7 @@ function HomePage() {
                 </div>
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">{t.home.trusted}</span>
+            <span className="text-sm text-muted-foreground">{hero.trusted}</span>
           </div>
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-0 opacity-50"></div>
