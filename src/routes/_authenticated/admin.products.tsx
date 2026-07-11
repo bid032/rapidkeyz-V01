@@ -414,19 +414,33 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   const { confirm, notify } = useApp();
   const plans = useQuery({
     queryKey: ["plans", productId],
-    queryFn: async () => (await supabase.from("product_plans").select("*").eq("product_id", productId).order("duration_days")).data ?? [],
+    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url").eq("product_id", productId).order("duration_days")).data ?? [],
   });
+  const costs = useQuery({
+    queryKey: ["plan-costs", productId],
+    enabled: !!plans.data,
+    queryFn: async () => {
+      const ids = (plans.data ?? []).map((p: any) => p.id);
+      if (ids.length === 0) return {} as Record<string, number>;
+      const { data } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", ids);
+      const m: Record<string, number> = {};
+      (data ?? []).forEach((r: any) => { m[r.plan_id] = Number(r.cost_price ?? 0); });
+      return m;
+    },
+  });
+
   const [form, setForm] = useState({
     label_ar: "",
     label_en: "",
     duration_months: 1,
     price: 0,
     compare_price: 0,
+    cost_price: 0,
     stock: 0,
   });
 
   // Local edits map keyed by plan id — apply on save
-  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number }>>({});
+  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number }>>({});
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
 
@@ -442,13 +456,17 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         stock: form.stock,
         is_active: true,
       };
-      const { error } = await supabase.from("product_plans").insert(payload);
+      const { data: inserted, error } = await supabase.from("product_plans").insert(payload).select().single();
       if (error) throw error;
+      if (form.cost_price > 0 && inserted) {
+        await supabase.from("plan_costs").upsert({ plan_id: inserted.id, cost_price: form.cost_price });
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
+      qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, stock: 0 });
+      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0 });
       notify("تم إضافة العرض", "success");
     },
     onError: (e: any) => notify(e.message || "خطأ", "error"),
@@ -462,11 +480,18 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       if (patchData.price !== undefined) clean.price = patchData.price;
       if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
       if (patchData.stock !== undefined) clean.stock = patchData.stock;
-      const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
-      if (error) throw error;
+      if (Object.keys(clean).length > 0) {
+        const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
+        if (error) throw error;
+      }
+      if (patchData.cost_price !== undefined) {
+        const { error } = await supabase.from("plan_costs").upsert({ plan_id: id, cost_price: patchData.cost_price });
+        if (error) throw error;
+      }
     },
     onSuccess: (_d, id) => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
+      qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setEdits((prev) => { const c = { ...prev }; delete c[id]; return c; });
       notify("تم حفظ التعديلات", "success");
@@ -490,7 +515,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
           <div>
             <h3 className="font-bold text-lg">💼 العروض والأسعار والمخزون</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              كل عرض = مدة اشتراك بسعر ومخزون. عدّل الأسعار والمخزون ثم اضغط <b className="text-brand">حفظ</b>. لما المخزون يوصل صفر، الشراء بيتقفل تلقائيًا عند العميل.
+              كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح — ومش بيظهر للعميل نهائيًا.
             </p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
@@ -507,8 +532,10 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
             const price = e.price ?? p.price;
             const compare = e.compare_price !== undefined ? e.compare_price : p.compare_price;
             const stock = e.stock ?? p.stock;
+            const cost = e.cost_price !== undefined ? e.cost_price : (costs.data?.[p.id] ?? 0);
             const dirty = !!edits[p.id];
             const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
+            const margin = Number(price) - Number(cost);
             return (
               <div key={p.id} className="p-4 bg-background border border-border rounded-xl">
                 <div className="flex justify-between items-start mb-3">
@@ -530,9 +557,9 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                   >مسح</button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border">
                   <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">السعر (EGP)</label>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">سعر البيع</label>
                     <input
                       type="number"
                       min={0}
@@ -553,6 +580,18 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                     />
                   </div>
                   <div>
+                    <label className="text-[11px] font-bold text-warning uppercase mb-1 block flex items-center gap-1">
+                      🔒 سعر الشراء
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={cost ?? 0}
+                      onChange={(ev) => patch(p.id, "cost_price", +ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-warning/5 border border-warning/30 rounded text-sm font-bold"
+                    />
+                  </div>
+                  <div>
                     <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">المخزون</label>
                     <input
                       type="number"
@@ -564,12 +603,17 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs">
-                    {stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> :
-                     stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> :
-                     <span className="text-success">متاح</span>}
-                  </span>
+                <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-3 text-xs">
+                    <span>
+                      {stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> :
+                       stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> :
+                       <span className="text-success">متاح</span>}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded font-bold ${margin > 0 ? "bg-success/10 text-success" : margin < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
+                      ربح/وحدة: {margin} EGP
+                    </span>
+                  </div>
                   <button
                     onClick={() => savePlan.mutate(p.id)}
                     disabled={!dirty || savePlan.isPending}
@@ -610,7 +654,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, stock: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="السعر (EGP)">
+            <Field label="سعر البيع (EGP)">
               <input type="number" required min={0} value={form.price}
                 onChange={(e) => setForm({ ...form, price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
@@ -619,6 +663,11 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
               <input type="number" min={0} value={form.compare_price}
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="🔒 سعر الشراء (خاص بيك فقط)" className="col-span-2">
+              <input type="number" min={0} value={form.cost_price}
+                onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
+                className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
             </Field>
           </div>
           <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
@@ -629,4 +678,5 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     </div>
   );
 }
+
 
