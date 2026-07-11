@@ -89,16 +89,23 @@ export function Header() {
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
-            className="size-9 grid place-items-center rounded-lg border border-border hover:bg-muted transition-colors"
+            className="size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
           >
-            {theme === "dark" ? "☀" : "☾"}
+            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
 
           <Link
             to="/cart"
-            className="relative size-9 grid place-items-center rounded-lg border border-border hover:bg-muted transition-colors"
+            aria-label="Cart"
+            className="relative size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
           >
-            <span aria-hidden>🛒</span>
+            <ShoppingCart className="size-4" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
+                {cartCount}
+              </span>
+            )}
+          </Link>
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
                 {cartCount}
