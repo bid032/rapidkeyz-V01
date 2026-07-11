@@ -22,6 +22,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,10 +34,11 @@ function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error: err } = await supabase.auth.signUp({
+        const { data, error: err } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -45,6 +47,14 @@ function AuthPage() {
           },
         });
         if (err) throw err;
+        if (!data.session) {
+          setInfo(
+            `تم إرسال رابط التأكيد إلى ${email}. يرجى فتح بريدك وتأكيد الحساب لإكمال التسجيل.`
+          );
+          setMode("signin");
+          setPassword("");
+          return;
+        }
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
@@ -56,6 +66,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   const handleGoogle = async () => {
     setError(null);
