@@ -107,6 +107,10 @@ function ProductPage() {
 
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
+    const acct: "private" | "shared" | "both" | "own" =
+      product.account_type === "both"
+        ? (effectiveAcct === "shared" ? "shared" : "private")
+        : (product.account_type as "private" | "shared" | "both" | "own");
     addToCart({
       productId: product.id,
       planId: selected.id,
@@ -116,9 +120,7 @@ function ProductPage() {
       quantity: 1,
       iconUrl: product.icon_url,
       deliveryType: product.delivery_type,
-      accountType: product.account_type === "both"
-        ? ((effectiveAcct === "shared" ? "shared" : "private") as "private" | "shared")
-        : product.account_type,
+      accountType: acct,
     });
     if (goToCart) navigate({ to: "/cart" });
   };
@@ -161,6 +163,8 @@ function ProductPage() {
                   ? "bg-brand/10 text-brand border-brand/20"
                   : product.account_type === "both"
                   ? "bg-accent/10 text-accent-foreground border-accent/30"
+                  : product.account_type === "own"
+                  ? "bg-success/10 text-success border-success/20"
                   : "bg-muted text-muted-foreground border-border"
               }`}
             >
@@ -168,6 +172,8 @@ function ProductPage() {
                 ? t.badges.private
                 : product.account_type === "both"
                 ? (t.badges as any).both
+                : product.account_type === "own"
+                ? (t.badges as any).own
                 : t.badges.shared}
             </span>
           </div>

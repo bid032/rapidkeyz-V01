@@ -10,7 +10,7 @@ export type ProductCardData = {
   description_en: string | null;
   icon_url: string | null;
   delivery_type: "instant" | "manual";
-  account_type: "private" | "shared" | "both";
+  account_type: "private" | "shared" | "both" | "own";
   minPrice: number | null;
   discount_percent?: number | null;
   planLabel_ar?: string | null;
@@ -66,6 +66,8 @@ export function ProductCard({ p }: { p: ProductCardData }) {
                 ? "bg-brand/10 text-brand border-brand/20"
                 : p.account_type === "both"
                 ? "bg-accent/10 text-accent-foreground border-accent/30"
+                : p.account_type === "own"
+                ? "bg-success/10 text-success border-success/20"
                 : "bg-muted text-muted-foreground border-border"
             }`}
           >
@@ -73,6 +75,8 @@ export function ProductCard({ p }: { p: ProductCardData }) {
               ? t.badges.private
               : p.account_type === "both"
               ? (t.badges as any).both
+              : p.account_type === "own"
+              ? (t.badges as any).own
               : t.badges.shared}
           </span>
         </div>
