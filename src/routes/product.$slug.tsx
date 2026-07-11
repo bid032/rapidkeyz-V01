@@ -144,10 +144,16 @@ function ProductPage() {
               className={`px-2 py-1 rounded text-xs font-bold border uppercase ${
                 product.account_type === "private"
                   ? "bg-brand/10 text-brand border-brand/20"
+                  : product.account_type === "both"
+                  ? "bg-accent/10 text-accent-foreground border-accent/30"
                   : "bg-muted text-muted-foreground border-border"
               }`}
             >
-              {product.account_type === "private" ? t.badges.private : t.badges.shared}
+              {product.account_type === "private"
+                ? t.badges.private
+                : product.account_type === "both"
+                ? (t.badges as any).both
+                : t.badges.shared}
             </span>
           </div>
           <h1 className="text-4xl font-extrabold mb-3">{name}</h1>
