@@ -39,6 +39,23 @@ function ProductPage() {
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
 
+  // Live viewers counter — seeded per-slug for stability, drifts every few seconds.
+  const seed = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+    return h;
+  }, [slug]);
+  const [viewers, setViewers] = useState(() => 9 + (seed % 22));
+  useEffect(() => {
+    const id = setInterval(() => {
+      setViewers((v) => {
+        const delta = Math.floor(Math.random() * 5) - 2; // -2..+2
+        return Math.max(6, Math.min(48, v + delta));
+      });
+    }, 4500);
+    return () => clearInterval(id);
+  }, []);
+
   const parsePlan = (pl: any) => {
     const en = String(pl.label_en ?? "");
     const ar = String(pl.label_ar ?? "");
