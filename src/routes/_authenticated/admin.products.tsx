@@ -211,7 +211,7 @@ function AdminProducts() {
                   </button>
                 </td>
               </tr>
-            ))}
+            );})}
             {products.data?.length === 0 && (
               <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">No products yet</td></tr>
             )}
