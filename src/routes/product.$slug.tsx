@@ -129,42 +129,76 @@ function ProductPage() {
           <h1 className="text-4xl font-extrabold mb-4">{name}</h1>
           {desc && <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{desc}</p>}
 
-          <div className="mb-6">
-            <p className="text-sm font-bold mb-3 uppercase tracking-wider text-muted-foreground">
-              {t.product.chooseDuration}
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {plans.map((pl: any) => {
-                const isSelected = (planId ?? plans[0]?.id) === pl.id;
-                return (
-                  <button
-                    key={pl.id}
-                    onClick={() => setPlanId(pl.id)}
-                    className={`text-start p-4 rounded-xl border transition ${
-                      isSelected
-                        ? "border-brand bg-brand/5"
-                        : "border-border bg-card hover:border-brand/40"
-                    }`}
-                  >
-                    <div className="text-sm font-bold">{lang === "ar" ? pl.label_ar : pl.label_en}</div>
-                    <div className="text-lg font-extrabold mt-1">
-                      {pl.price} {t.common.currency}
-                    </div>
-                    {pl.compare_price && (
-                      <div className="text-xs text-muted-foreground line-through">
-                        {pl.compare_price}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-              {plans.length === 0 && (
-                <div className="col-span-2 text-muted-foreground text-sm">
-                  {lang === "ar" ? "لا توجد خطط متاحة حالياً" : "No plans available"}
+          <div className="mb-6 space-y-5">
+            {hasAcctChoice && (
+              <div>
+                <p className="text-xs font-bold mb-2 uppercase tracking-wider text-muted-foreground">
+                  {lang === "ar" ? "نوع الحساب" : "Account Type"}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {accountTypes.map((a) => {
+                    const isSel = effectiveAcct === a;
+                    return (
+                      <button
+                        key={a}
+                        onClick={() => { setAccountType(a); setPlanId(null); }}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
+                          isSel
+                            ? "border-brand bg-brand text-brand-foreground"
+                            : "border-border bg-card hover:border-brand/40"
+                        }`}
+                      >
+                        {acctLabel(a)}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
+            )}
+
+            <div>
+              <p className="text-xs font-bold mb-2 uppercase tracking-wider text-muted-foreground">
+                {t.product.chooseDuration}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {filteredPlans.map((pl: any) => {
+                  const isSelected = (selected?.id) === pl.id;
+                  return (
+                    <button
+                      key={pl.id}
+                      onClick={() => setPlanId(pl.id)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
+                        isSelected
+                          ? "border-brand bg-brand/10 text-brand"
+                          : "border-border bg-card hover:border-brand/40"
+                      }`}
+                    >
+                      {lang === "ar" ? pl.durAr : pl.durEn}
+                    </button>
+                  );
+                })}
+                {filteredPlans.length === 0 && (
+                  <div className="text-muted-foreground text-sm">
+                    {lang === "ar" ? "لا توجد خطط متاحة حالياً" : "No plans available"}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {selected && (
+              <div className="flex items-baseline gap-3 pt-2">
+                <span className="text-3xl font-extrabold text-brand">
+                  {selected.price} {t.common.currency}
+                </span>
+                {selected.compare_price && Number(selected.compare_price) > Number(selected.price) && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    {selected.compare_price} {t.common.currency}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+
 
           <div className="flex gap-3">
             <button
