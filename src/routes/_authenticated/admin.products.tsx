@@ -146,7 +146,7 @@ function AdminProducts() {
             <tr className="text-start text-xs uppercase tracking-widest text-muted-foreground">
               <th className="p-4 text-start">{t.admin.name}</th>
               <th className="p-4 text-start">{t.admin.status}</th>
-              <th className="p-4 text-start">Plans</th>
+              <th className="p-4 text-start">العروض والمخزون</th>
               <th className="p-4 text-end">{t.admin.actions}</th>
             </tr>
           </thead>
@@ -162,7 +162,10 @@ function AdminProducts() {
                 }
                 return true;
               })
-              .map((p: any) => (
+              .map((p: any) => {
+                const totalStock = (p.product_plans ?? []).reduce((s: number, pl: any) => s + (pl.stock ?? 0), 0);
+                const plansCount = p.product_plans?.length ?? 0;
+                return (
               <tr key={p.id} className="border-t border-border">
                 <td className="p-4">
                   <div className="font-bold">{p.name_ar}</div>
@@ -176,11 +179,17 @@ function AdminProducts() {
                 <td className="p-4 text-sm">
                   <button
                     onClick={() => setPlanEditor(planEditor === p.id ? null : p.id)}
-                    className="text-brand hover:underline text-xs"
+                    className="px-3 py-1.5 bg-brand/10 text-brand hover:bg-brand/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-2"
+                    title="اضغط لتعديل الأسعار والمخزون"
                   >
-                    {p.product_plans?.length ?? 0} plans
+                    <span>{plansCount} عرض</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className={totalStock === 0 ? "text-destructive" : totalStock <= 10 ? "text-warning" : "text-success"}>
+                      📦 {totalStock}
+                    </span>
                   </button>
                 </td>
+
                 <td className="p-4 text-end">
                   <button
                     onClick={() => setEditing({
