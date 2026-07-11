@@ -47,7 +47,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
       </div>
 
       {/* Account comparison */}
-      {(hasShared || hasPrivate) && (
+      {(hasShared || hasPrivate || hasOwn) && (
         <div>
           <div className="flex items-end justify-between mb-6 flex-wrap gap-3">
             <div>
