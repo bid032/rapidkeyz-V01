@@ -3,7 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import logoAsset from "@/assets/logo_rapid.png.asset.json";
+import logoDark from "@/assets/white_logo_rapid.png.asset.json";
+import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { ShoppingCart, Sun, Moon } from "lucide-react";
 
 export function Header() {
