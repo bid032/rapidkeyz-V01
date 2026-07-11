@@ -14,17 +14,18 @@ export function ProductDetails({ productName, accountTypes }: Props) {
 
   const features = isAr
     ? [
-        { icon: "", title: "تفعيل فوري", desc: "استلم اشتراكك خلال دقائق من الشراء" },
-        { icon: "", title: "ضمان كامل", desc: "استبدال فوري طوال مدة الاشتراك" },
-        { icon: "", title: "خدمة أصلية", desc: "اشتراكات رسمية 100% وليست معدلة" },
-        { icon: "", title: "دعم فني 24/7", desc: "فريق متاح للرد على كل استفساراتك" },
+        { title: "تفعيل فوري", desc: "استلم اشتراكك خلال دقائق من الشراء" },
+        { title: "ضمان كامل", desc: "استبدال فوري طوال مدة الاشتراك" },
+        { title: "خدمة أصلية", desc: "اشتراكات رسمية 100% وليست معدلة" },
+        { title: "دعم فني 24/7", desc: "فريق متاح للرد على كل استفساراتك" },
       ]
     : [
-        { icon: "", title: "Instant Activation", desc: "Get your subscription within minutes" },
-        { icon: "", title: "Full Warranty", desc: "Instant replacement throughout your plan" },
-        { icon: "", title: "Genuine Service", desc: "100% official subscriptions, never modified" },
-        { icon: "", title: "24/7 Support", desc: "Team ready to answer all your questions" },
+        { title: "Instant Activation", desc: "Get your subscription within minutes" },
+        { title: "Full Warranty", desc: "Instant replacement throughout your plan" },
+        { title: "Genuine Service", desc: "100% official subscriptions, never modified" },
+        { title: "24/7 Support", desc: "Team ready to answer all your questions" },
       ];
+
 
   return (
     <section className="max-w-6xl mx-auto px-6 pb-16 space-y-16">
