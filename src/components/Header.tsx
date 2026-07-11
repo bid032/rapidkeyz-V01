@@ -4,6 +4,7 @@ import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import logoAsset from "@/assets/logo_rapid.png.asset.json";
+import { ShoppingCart, Sun, Moon } from "lucide-react";
 
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, cartCount } = useApp();
