@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "RapidKeyz: Swift Access"
+const SITE_NAME = "RapidKeyz"
 const ROOT_DOMAIN = "rapidkeyz.com"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
