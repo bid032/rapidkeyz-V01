@@ -216,7 +216,15 @@ function AdminProducts() {
                     {t.admin.edit}
                   </button>
                   <button
-                    onClick={() => { if (confirm("Delete?")) remove.mutate(p.id); }}
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: "حذف الخدمة",
+                        message: `متأكد إنك عاوز تمسح "${p.name_ar}"؟ الإجراء ده مش هيرجع.`,
+                        tone: "danger",
+                        confirmLabel: "احذف",
+                      });
+                      if (ok) remove.mutate(p.id);
+                    }}
                     className="text-destructive text-sm hover:underline ml-3"
                   >
                     {t.admin.delete}
