@@ -78,6 +78,10 @@ function CheckoutPage() {
         quantity: c.quantity,
         delivery_type: c.deliveryType,
         account_type: c.accountType,
+        subscription_email:
+          c.accountType === "private"
+            ? (subEmails[c.productId + c.planId] ?? "").trim()
+            : null,
       }));
       const { error: iErr } = await supabase.from("order_items").insert(items);
       if (iErr) throw iErr;
