@@ -19,6 +19,10 @@ function CheckoutPage() {
   const [gateway, setGateway] = useState<Gateway>("paymob");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subEmails, setSubEmails] = useState<Record<string, string>>({});
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const privateItems = cart.filter((c) => c.accountType === "private");
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
