@@ -27,7 +27,7 @@ function AdminOverview() {
     queryKey: ["admin-stats", month],
     queryFn: async () => {
       const [rev, products, users, pending] = await Promise.all([
-        supabase.rpc("admin_revenue_stats", { _start: range.start, _end: range.end }),
+        supabase.rpc("admin_revenue_stats", { _start: range.start ?? undefined, _end: range.end ?? undefined }),
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
