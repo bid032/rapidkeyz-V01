@@ -143,12 +143,19 @@ function CheckoutPage() {
             <div className="space-y-6">
               <section className="p-6 bg-card border border-border rounded-2xl">
                 <h2 className="font-bold mb-4">{t.checkout.contact}</h2>
-                {!user && (
+                {!user && requireLogin && (
                   <p className="text-sm text-warning mb-4">
                     {t.checkout.loginRequired} —{" "}
                     <Link to="/auth" search={{ redirect: "/checkout" }} className="text-brand underline">
                       {t.auth.signIn}
                     </Link>
+                  </p>
+                )}
+                {!user && !requireLogin && (
+                  <p className="text-xs text-muted-foreground mb-4">
+                    {lang === "ar"
+                      ? "تقدر تكمل الشراء كضيف — بس بيانات التواصل ضرورية لتسليم الطلب."
+                      : "You can check out as a guest — contact details are required for delivery."}
                   </p>
                 )}
                 <div className="grid gap-3">
