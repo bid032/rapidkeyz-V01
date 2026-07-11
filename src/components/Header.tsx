@@ -106,12 +106,6 @@ export function Header() {
               </span>
             )}
           </Link>
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 size-5 rounded-full bg-brand text-brand-foreground text-[10px] font-bold grid place-items-center">
-                {cartCount}
-              </span>
-            )}
-          </Link>
 
           {user ? (
             <Link
