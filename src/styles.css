@@ -36,8 +36,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: "Inter", "Cairo", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Inter", "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Dark (default: Modern Tech Noir) */
