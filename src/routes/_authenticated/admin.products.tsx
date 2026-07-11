@@ -330,12 +330,13 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="👤 نوع الحساب" hint="private: حساب خاص للعميل لوحده · shared: حساب مشترك مع ناس تانية">
+              <Field label="👤 نوع الحساب" hint="private: خاص للعميل لوحده · shared: مشترك مع ناس تانية · both: العميل يختار بين الاتنين">
                 <select value={editing.account_type}
                   onChange={(e) => setEditing({ ...editing, account_type: e.target.value as any })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
                   <option value="private">Private — خاص</option>
                   <option value="shared">Shared — مشترك</option>
+                  <option value="both">Both — العميل يختار</option>
                 </select>
               </Field>
               <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
