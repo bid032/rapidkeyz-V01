@@ -62,8 +62,12 @@ function ProductPage() {
 
   const plans = (product.product_plans ?? []).filter((p: any) => p.is_active);
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
-  const accountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
-  const hasAcctChoice = accountTypes.some((a) => a === "private" || a === "shared");
+  const rawAccountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
+  const hasAcctChoice = rawAccountTypes.some((a) => a === "private" || a === "shared");
+  // Hide the "any/Standard" option from the account-type chooser when private/shared exist
+  const accountTypes = hasAcctChoice
+    ? (rawAccountTypes.filter((a) => a !== "any") as ("private" | "shared")[])
+    : rawAccountTypes;
   const effectiveAcct = accountType ?? accountTypes[0];
   const filteredPlans = hasAcctChoice
     ? enriched.filter((p: any) => p.acct === effectiveAcct)
@@ -74,7 +78,8 @@ function ProductPage() {
   const desc = lang === "ar" ? product.description_ar : product.description_en;
 
   const acctLabel = (a: string) =>
-    a === "private" ? t.badges.private : a === "shared" ? t.badges.shared : (lang === "ar" ? "قياسي" : "Standard");
+    a === "private" ? t.badges.private : t.badges.shared;
+
 
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
