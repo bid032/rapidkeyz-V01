@@ -212,6 +212,7 @@ function AdminProducts() {
                       icon_url: p.icon_url ?? "", category_id: p.category_id,
                       delivery_type: p.delivery_type, account_type: p.account_type,
                       status: p.status, is_featured: p.is_featured,
+                      discount_percent: p.discount_percent ?? 0,
                     })}
                     className="text-brand text-sm hover:underline ml-3"
                   >
