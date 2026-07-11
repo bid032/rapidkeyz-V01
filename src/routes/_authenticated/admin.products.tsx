@@ -9,6 +9,8 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
   component: AdminProducts,
 });
 
+type AccountType = "private" | "shared" | "both" | "own";
+
 type ProductForm = {
   id?: string;
   slug: string;
@@ -19,7 +21,8 @@ type ProductForm = {
   icon_url: string;
   category_id: string | null;
   delivery_type: "instant" | "manual";
-  account_type: "private" | "shared" | "both" | "own";
+  account_type: AccountType;
+  account_types: AccountType[];
   status: "active" | "draft" | "archived";
   is_featured: boolean;
   discount_percent: number;
@@ -34,11 +37,23 @@ const emptyForm: ProductForm = {
   icon_url: "",
   category_id: null,
   delivery_type: "instant",
-  account_type: "private",
+  account_type: "shared",
+  account_types: ["shared"],
   status: "active",
   is_featured: false,
   discount_percent: 0,
 };
+
+/** Reduce a multi-select array into the legacy single account_type enum for backward compat. */
+function deriveLegacyAccountType(types: AccountType[]): AccountType {
+  const s = new Set(types);
+  if (s.has("shared") && s.has("private")) return "both";
+  if (s.has("both")) return "both";
+  if (s.has("own")) return s.size === 1 ? "own" : "both";
+  if (s.has("private")) return "private";
+  if (s.has("shared")) return "shared";
+  return "shared";
+}
 
 /** Turn any text into a URL-safe slug (English + Arabic). */
 function slugify(input: string): string {
