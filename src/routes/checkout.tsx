@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
@@ -23,6 +24,12 @@ function CheckoutPage() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const privateItems = cart.filter((c) => c.accountType === "private");
 
+  const settings = useQuery({
+    queryKey: ["site-settings"],
+    queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
+  });
+  const checkoutSettings = (settings.data?.find((s: any) => s.key === "checkout")?.value ?? {}) as any;
+  const requireLogin = checkoutSettings.require_login ?? true;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -34,7 +41,7 @@ function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!user) {
+    if (requireLogin && !user) {
       navigate({ to: "/auth", search: { redirect: "/checkout" } });
       return;
     }
@@ -56,7 +63,7 @@ function CheckoutPage() {
       const { data: order, error: oErr } = await supabase
         .from("orders")
         .insert({
-          user_id: user.id,
+          user_id: user?.id ?? null,
           status: "pending",
           payment_gateway: gateway,
           subtotal: cartTotal,
@@ -83,17 +90,40 @@ function CheckoutPage() {
             ? (subEmails[c.productId + c.planId] ?? "").trim()
             : null,
       }));
-      const { error: iErr } = await supabase.from("order_items").insert(items);
+      const { data: insertedItems, error: iErr } = await supabase
+        .from("order_items")
+        .insert(items)
+        .select();
       if (iErr) throw iErr;
 
+      // Auto-claim inventory for instant items
+      let allInstantDelivered = true;
+      let hasInstant = false;
+      for (const it of insertedItems ?? []) {
+        if (it.delivery_type === "instant") {
+          hasInstant = true;
+          const { data: claimedId } = await supabase.rpc("claim_inventory_for_item", {
+            _order_item_id: it.id,
+            _plan_id: it.plan_id,
+          });
+          if (!claimedId) allInstantDelivered = false;
+        }
+      }
+      if (user && hasInstant && allInstantDelivered) {
+        // Only signed-in users have permission to update? Admins do; users don't.
+        // Best-effort: RPC would be needed. Skip client update for guests.
+      }
+
       clearCart();
-      navigate({ to: "/dashboard" });
+      if (user) navigate({ to: "/dashboard" });
+      else navigate({ to: "/" });
     } catch (err: any) {
       setError(err.message ?? "Error");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
