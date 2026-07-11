@@ -14,17 +14,18 @@ export function ProductDetails({ productName, accountTypes }: Props) {
 
   const features = isAr
     ? [
-        { icon: "⚡", title: "تفعيل فوري", desc: "استلم اشتراكك خلال دقائق من الشراء" },
-        { icon: "🛡️", title: "ضمان كامل", desc: "استبدال فوري طوال مدة الاشتراك" },
-        { icon: "🎯", title: "خدمة أصلية", desc: "اشتراكات رسمية 100% وليست معدلة" },
-        { icon: "💬", title: "دعم فني 24/7", desc: "فريق متاح للرد على كل استفساراتك" },
+        { title: "تفعيل فوري", desc: "استلم اشتراكك خلال دقائق من الشراء" },
+        { title: "ضمان كامل", desc: "استبدال فوري طوال مدة الاشتراك" },
+        { title: "خدمة أصلية", desc: "اشتراكات رسمية 100% وليست معدلة" },
+        { title: "دعم فني 24/7", desc: "فريق متاح للرد على كل استفساراتك" },
       ]
     : [
-        { icon: "⚡", title: "Instant Activation", desc: "Get your subscription within minutes" },
-        { icon: "🛡️", title: "Full Warranty", desc: "Instant replacement throughout your plan" },
-        { icon: "🎯", title: "Genuine Service", desc: "100% official subscriptions, never modified" },
-        { icon: "💬", title: "24/7 Support", desc: "Team ready to answer all your questions" },
+        { title: "Instant Activation", desc: "Get your subscription within minutes" },
+        { title: "Full Warranty", desc: "Instant replacement throughout your plan" },
+        { title: "Genuine Service", desc: "100% official subscriptions, never modified" },
+        { title: "24/7 Support", desc: "Team ready to answer all your questions" },
       ];
+
 
   return (
     <section className="max-w-6xl mx-auto px-6 pb-16 space-y-16">
@@ -33,16 +34,12 @@ export function ProductDetails({ productName, accountTypes }: Props) {
         {features.map((f) => (
           <div
             key={f.title}
-            className="group relative p-5 rounded-2xl border border-border bg-gradient-to-br from-card to-card/40 hover:border-brand/40 hover:-translate-y-1 transition-all duration-300 flex items-center gap-4"
+            className="group relative p-5 rounded-2xl border border-border bg-gradient-to-br from-card to-card/40 hover:border-brand/40 hover:-translate-y-1 transition-all duration-300"
           >
-            <div className="shrink-0 w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center text-2xl leading-none">
-              {f.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-extrabold text-base mb-1">{f.title}</div>
-              <div className="text-xs text-muted-foreground leading-relaxed">{f.desc}</div>
-            </div>
+            <div className="font-extrabold text-base mb-1">{f.title}</div>
+            <div className="text-xs text-muted-foreground leading-relaxed">{f.desc}</div>
           </div>
+
         ))}
       </div>
 
@@ -93,7 +90,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                     ))}
                   </ul>
                   <div className="mt-5 p-3 rounded-lg bg-muted/50 text-xs leading-relaxed">
-                    💡{" "}
+                    {" "}
                     {isAr
                       ? "مثالي لمن يعمل على جهاز واحد ويريد الاستفادة الكاملة بأقل تكلفة."
                       : "Ideal for anyone working on a single device who wants full value at the lowest cost."}
@@ -135,7 +132,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                   ))}
                 </ul>
                 <div className="mt-5 p-3 rounded-lg bg-brand/10 border border-brand/20 text-xs leading-relaxed">
-                  💡{" "}
+                  {" "}
                   {isAr
                     ? "مثالي للمحترفين والوكالات التي تحتاج مرونة بين أجهزة متعددة."
                     : "Ideal for professionals and agencies needing flexibility across multiple devices."}
@@ -175,7 +172,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                     ))}
                   </ul>
                   <div className="mt-5 p-3 rounded-lg bg-success/10 border border-success/20 text-xs leading-relaxed">
-                    💡{" "}
+                    {" "}
                     {isAr
                       ? "مثالي لمن يريد حساب جديد جاهز للاستخدام فوراً بدون أي إعداد."
                       : "Ideal for anyone who wants a fresh, ready-to-use account with zero setup."}

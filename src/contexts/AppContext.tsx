@@ -186,7 +186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 }`}
               >
                 <span className="text-2xl">
-                  {confirmState.tone === "danger" ? "⚠️" : "❓"}
+                  {confirmState.tone === "danger" ? "" : ""}
                 </span>
               </div>
               <div className="min-w-0 flex-1">
