@@ -60,7 +60,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {hasShared && (
               <div className="relative p-6 rounded-2xl border border-border bg-card overflow-hidden">
                 <div className="absolute -top-16 -right-16 w-40 h-40 bg-brand/5 rounded-full blur-2xl" />
