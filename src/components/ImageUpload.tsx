@@ -128,11 +128,15 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
           />
         </label>
       </div>
-      {size > 0 && (
+      {requireExactDimensions ? (
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط (نسبة 4:5). أي مقاس مختلف مش هيتقبل.
+        </p>
+      ) : size > 0 ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
           هيتم قص وتحويل الصورة تلقائيًا إلى مقاس {size}×{size} بكسل مربع.
         </p>
-      )}
+      ) : null}
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );
