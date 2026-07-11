@@ -76,7 +76,10 @@ function AdminTestimonials() {
                 {t.is_active ? "ظاهر" : "مخفي"}
               </button>
               <button
-                onClick={() => confirm("Delete?") && remove.mutate(t.id)}
+                onClick={async () => {
+                  const ok = await confirm({ message: "متأكد إنك عاوز تمسح الصورة دي؟", tone: "danger", confirmLabel: "احذف" });
+                  if (ok) remove.mutate(t.id);
+                }}
                 className="text-xs text-destructive hover:underline"
               >
                 حذف
