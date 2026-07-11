@@ -6,6 +6,9 @@ export const translations = {
     nav: {
       home: "الرئيسية",
       shop: "المتجر",
+      about: "من نحن",
+      terms: "الشروط والأحكام",
+      privacy: "الاسترداد والخصوصية",
       ai: "أدوات AI",
       entertainment: "الترفيه",
       dashboard: "حسابي",
@@ -117,15 +120,136 @@ export const translations = {
       cancel: "إلغاء",
       accessDenied: "غير مصرح لك بالوصول لهذه الصفحة",
     },
+    features: {
+      support: { title: "خدمة عملاء", desc: "متواجدون دائماً للرد على استفساراتك وحل مشاكلك" },
+      fullSupport: { title: "دعم كامل للخدمة", desc: "نضمن استمرارية الخدمة طوال فترة الاشتراك" },
+      guarantee: { title: "ضمان 100%", desc: "جميع خدماتنا مضمونة وتعمل بكفاءة" },
+      instant: { title: "استلام سريع", desc: "احصل على اشتراكاتك وخدماتك فوراً" },
+    },
+    about: {
+      title: "معلومات عن RapidKeyz",
+      moreTitle: "أكثر من مجرد متجر رقمي",
+      moreBody:
+        "في RapidKeyz نحن أكثر من مجرد متجر رقمي، نحن شريكك الموثوق لتسهيل وصولك إلى المنتجات والخدمات الرقمية الرسمية. منذ انطلاقتنا ركزنا على دعم الأفراد والشركات والمبدعين عبر تزويدهم بالاشتراكات والخطط المدفوعة للبرامج والمواقع المختلفة، وبأسعار مخفضة تضمن لهم الاستفادة القصوى من وقتهم وميزانيتهم.",
+      missionTitle: "رسالتنا",
+      missionBody:
+        "نسعى جاهدين لأن نجعل عالم الخدمات الرقمية أكثر سهولة ومرونة للجميع، وذلك من خلال توفير اشتراكات أصلية مضمونة، وحلول دفع آمنة وسريعة. مما يمنح عملاءنا تجربة متكاملة تساعدهم على التركيز على الإبداع والعمل دون قلق. نريد أن تكون تجربتك معنا استثماراً حقيقياً في نجاحك الشخصي والمهني.",
+      valuesTitle: "قيمنا",
+      values: [
+        "الشفافية: نؤمن بأهمية الوضوح في كل ما نقدمه من منتجات وخدمات.",
+        "الأمان: نحرص على توفير حلول دفع موثوقة تحمي عملاءنا وتمنحهم الطمأنينة.",
+        "رضا العميل: نجاحنا يقاس بمدى رضاك، لذلك نضعك دائماً في صدارة أولوياتنا.",
+        "الالتزام: نوفر اشتراكات أصلية وضمان حقيقي لنضمن لك راحة البال.",
+        "الابتكار: نعمل باستمرار على تطوير خدماتنا لتواكب احتياجات السوق الحديثة.",
+      ],
+      whyTitle: "لماذا نحن؟",
+      why: [
+        "أسعار مخفضة تناسب الجميع مع الحفاظ على الجودة والأصالة.",
+        "ضمان حقيقي لكل اشتراك وخدمة نقدمها.",
+        "أكثر من +1300 عميل سعيد من مختلف الدول حول العالم.",
+        "دعم فني متخصص عبر فريق من المهندسين والخبراء جاهزين دائماً لخدمتك.",
+        "تجربة سلسة وآمنة في كل خطوة من لحظة اختيار المنتج وحتى إتمام عملية الدفع.",
+      ],
+      visionTitle: "رؤيتنا",
+      visionBody:
+        "نؤمن في RapidKeyz أن التكنولوجيا يجب أن تكون في متناول الجميع. لذلك نسعى إلى أن نكون الخيار الأول للأفراد والشركات الباحثين عن منتجات رقمية رسمية وخدمات موثوقة بأسعار عادلة. نعمل كل يوم على تحسين خدماتنا وتوسيع نطاق منتجاتنا لنقدم لك حلولاً مبتكرة تنقل عملك وإبداعك لمستوى أعلى.",
+    },
+    terms: {
+      title: "الشروط والأحكام",
+      welcome: "مرحباً بك في RapidKeyz",
+      welcomeBody:
+        "من خلال دخولك إلى موقعنا واستخدام خدماتنا أو شراء أي من منتجاتنا الرقمية فأنت توافق على الالتزام بالشروط والأحكام التالية. يرجى قراءتها بعناية فهي مصممة لحماية حقوقك وتوضيح التزاماتنا معنا.",
+      sections: [
+        {
+          h: "1. الاشتراكات الأصلية",
+          items: [
+            "جميع الاشتراكات التي نوفرها أصلية 100% ومضمونة بالكامل.",
+            "نلتزم بضمان وصول كامل لجميع الخدمات والمميزات المعلن عنها.",
+            "في حالة وجود أي مشكلة تفعيل، نضمن حلها أو تعويض العميل حسب سياستنا.",
+          ],
+        },
+        {
+          h: "2. الأسعار التنافسية",
+          items: [
+            "نقدم أسعاراً مخفضة نتيجة الشراء بالجملة أو أنظمة الحسابات المشتركة.",
+            "الأسعار معروضة بوضوح على الموقع وقد يتم تحديثها في أي وقت دون إشعار مسبق، وذلك دون التأثير على الطلبات المؤكدة مسبقاً.",
+          ],
+        },
+        {
+          h: "3. التسليم السريع",
+          items: [
+            "يتم تسليم معظم الحسابات في غضون دقائق قليلة بعد إتمام الطلب.",
+            "قد تستغرق بعض الاشتراكات أو الخدمات المحددة ما يصل إلى 24 ساعة كحد أقصى، حسب نوع الخدمة.",
+            "إذا تأخر التسليم عن المدة المذكورة، يحق للعميل التواصل مع الدعم للمتابعة.",
+          ],
+        },
+        {
+          h: "4. التجديد",
+          items: [
+            "سيتم إرسال بريد تذكيري قبل انتهاء الاشتراك.",
+            "لن يتم التجديد إلا إذا طلب العميل ذلك، لضمان عدم وجود أي رسوم غير مرغوبة.",
+            "العملاء مسؤولون عن متابعة بريدهم الإلكتروني وتأكيد التجديد قبل انتهاء الاشتراك.",
+          ],
+        },
+        {
+          h: "5. سياسة الوصول",
+          items: [
+            "يمكن استخدام الحسابات المشتركة من أي مكان في العالم مع توفر الإنترنت.",
+            "لا يمكن استخدام بيانات تسجيل الدخول على أكثر من عدد الأجهزة المتفق عليه وقت الشراء.",
+            "التكرار في الانتهاك قد يؤدي إلى رسوم إضافية أو إيقاف الاشتراك دون تعويض.",
+            "مشاركة أو إساءة استخدام بيانات الدخول قد تؤدي إلى تعليق الحساب.",
+          ],
+        },
+        {
+          h: "6. طرق الدفع",
+          items: [
+            "نقبل المحافظ الإلكترونية، إنستا باي، فودافون كاش، البطاقات الائتمانية والخصم المباشر، باي بال، والعملات الرقمية. تتم جميع عمليات الدفع بشكل آمن عبر بوابات موثوقة.",
+          ],
+        },
+        {
+          h: "7. الدعم الفني",
+          items: [
+            "فريق الدعم متاح عبر واتساب والدردشة المباشرة للإجابة عن الاستفسارات وحل المشكلات. نلتزم بتقديم استجابات سريعة واحترافية لضمان رضا العملاء.",
+          ],
+        },
+        {
+          h: "8. التعديلات",
+          items: [
+            "تحتفظ RapidKeyz بحق تحديث أو تعديل هذه الشروط والأحكام في أي وقت. تسري التغييرات فور نشرها على الموقع. استمرار استخدام الموقع يُعتبر موافقة على الشروط المحدثة.",
+          ],
+        },
+      ],
+    },
+    privacy: {
+      title: "سياسة الاسترداد والخصوصية",
+      refundTitle: "سياسة الإلغاء والاسترداد",
+      refund: [
+        "يمكن للعملاء إلغاء الاشتراك وطلب استرداد في الحسابات المشتركة خلال 6 ساعات فقط من تفعيل الخدمة بشرط عدم استخدام الخدمة، ولا يسري الإسترجاع على الحسابات الخاصة بعد تفعيلها للعميل خصيصاً.",
+        "بعد هذه المدة، يتم قبول الإلغاء والاسترداد فقط في حالة وجود مشكلة كبيرة مثبتة في الخدمة.",
+        "سيتم إصدار المبالغ المستردة عبر نفس وسيلة الدفع خلال فترة زمنية تتراوح من 3 إلى 7 أيام عمل.",
+      ],
+      privacyTitle: "سياسة الخصوصية",
+      privacy: [
+        "نلتزم بحماية خصوصية عملائنا والحفاظ على بياناتهم الشخصية.",
+        "لن يتم مشاركة بيانات العملاء مع أي طرف ثالث دون موافقة صريحة، إلا إذا كان مطلوباً بموجب القانون.",
+        "بيانات تسجيل الدخول تُستخدم فقط لتمكين العملاء من الاستفادة من الخدمة.",
+        "بالنسبة للاشتراكات المشتركة: لا يمكن للعميل تغيير البريد أو كلمة المرور لضمان الأمان والخصوصية.",
+        "بالنسبة للاشتراكات الخاصة: يمكن للعميل تغيير البريد أو كلمة المرور حسب نوع الخدمة.",
+      ],
+    },
     footer: {
       tagline: "المتجر العربي الأول لاشتراكات الخدمات الرقمية",
-      quickLinks: "روابط سريعة",
+      quickLinks: "روابط هامة",
+      categories: "الأقسام",
+      contact: "تواصل معنا",
+      phone: "هاتف / واتساب",
+      emailLabel: "البريد الإلكتروني",
+      about: "من نحن",
+      terms: "الشروط والأحكام",
+      privacy: "الاسترداد والخصوصية",
       support: "الدعم",
       faq: "الأسئلة الشائعة",
-      terms: "شروط الاستخدام",
-      privacy: "سياسة الخصوصية",
       refund: "سياسة الاستبدال",
-      contact: "تواصل معنا",
       rights: "جميع الحقوق محفوظة",
       payments: "بوابات الدفع الآمنة",
     },
@@ -140,6 +264,9 @@ export const translations = {
     nav: {
       home: "Home",
       shop: "Shop",
+      about: "About",
+      terms: "Terms",
+      privacy: "Refund & Privacy",
       ai: "AI Tools",
       entertainment: "Entertainment",
       dashboard: "Dashboard",
@@ -251,15 +378,136 @@ export const translations = {
       cancel: "Cancel",
       accessDenied: "You don't have permission to access this page",
     },
+    features: {
+      support: { title: "Customer Care", desc: "Always available to answer questions and resolve issues" },
+      fullSupport: { title: "Full Service Support", desc: "We guarantee service continuity throughout your subscription" },
+      guarantee: { title: "100% Guarantee", desc: "All our services are guaranteed and work efficiently" },
+      instant: { title: "Instant Delivery", desc: "Get your subscriptions and services instantly" },
+    },
+    about: {
+      title: "About RapidKeyz",
+      moreTitle: "More than just a digital store",
+      moreBody:
+        "At RapidKeyz we are more than a digital store — we are your trusted partner for accessing official digital products and services. Since day one we've focused on supporting individuals, companies, and creators by providing paid subscriptions and plans for various tools and websites at competitive prices that maximize your time and budget.",
+      missionTitle: "Our Mission",
+      missionBody:
+        "We strive to make the world of digital services simpler and more flexible for everyone by providing genuine, guaranteed subscriptions and secure, fast payment solutions — giving our customers an integrated experience that lets them focus on creativity and work without worry.",
+      valuesTitle: "Our Values",
+      values: [
+        "Transparency: We believe in clarity across everything we offer.",
+        "Security: Trusted payment solutions that protect and reassure our customers.",
+        "Customer Satisfaction: Your happiness is our benchmark.",
+        "Commitment: Genuine subscriptions and a real guarantee for peace of mind.",
+        "Innovation: We continuously evolve to match modern market needs.",
+      ],
+      whyTitle: "Why us?",
+      why: [
+        "Affordable pricing without compromising quality or authenticity.",
+        "A real guarantee on every subscription and service.",
+        "More than 1300+ happy customers across the globe.",
+        "Specialized technical support from engineers and experts.",
+        "Smooth, secure experience from product selection to checkout.",
+      ],
+      visionTitle: "Our Vision",
+      visionBody:
+        "We believe technology should be accessible to everyone. We aim to be the first choice for individuals and companies looking for official digital products and reliable services at fair prices.",
+    },
+    terms: {
+      title: "Terms & Conditions",
+      welcome: "Welcome to RapidKeyz",
+      welcomeBody:
+        "By accessing our site, using our services, or purchasing any of our digital products, you agree to the following terms and conditions. Please read them carefully — they are designed to protect your rights and clarify our commitments.",
+      sections: [
+        {
+          h: "1. Genuine Subscriptions",
+          items: [
+            "All subscriptions we provide are 100% genuine and fully guaranteed.",
+            "We commit to full access to all advertised services and features.",
+            "In case of any activation issue, we guarantee a fix or compensation per our policy.",
+          ],
+        },
+        {
+          h: "2. Competitive Pricing",
+          items: [
+            "We offer discounted pricing thanks to bulk purchasing or shared account systems.",
+            "Prices are clearly listed on the site and may be updated at any time without prior notice, without affecting already-confirmed orders.",
+          ],
+        },
+        {
+          h: "3. Fast Delivery",
+          items: [
+            "Most accounts are delivered within minutes after order completion.",
+            "Some specific subscriptions or services may take up to 24 hours depending on the service type.",
+            "If delivery is delayed beyond the stated time, the customer may contact support to follow up.",
+          ],
+        },
+        {
+          h: "4. Renewal",
+          items: [
+            "A reminder email is sent before the subscription expires.",
+            "Renewal only happens upon customer request, to avoid unwanted charges.",
+            "Customers are responsible for monitoring their email and confirming renewal in time.",
+          ],
+        },
+        {
+          h: "5. Access Policy",
+          items: [
+            "Shared accounts can be used anywhere with internet access.",
+            "Login credentials must not be used on more devices than agreed at purchase.",
+            "Repeated violations may lead to additional fees or suspension without compensation.",
+            "Sharing or misusing login data may result in account suspension.",
+          ],
+        },
+        {
+          h: "6. Payment Methods",
+          items: [
+            "We accept e-wallets, InstaPay, Vodafone Cash, credit/debit cards, PayPal, and digital currencies. All payments are processed securely via trusted gateways.",
+          ],
+        },
+        {
+          h: "7. Technical Support",
+          items: [
+            "Support is available via WhatsApp and live chat for questions and issue resolution. We commit to quick, professional responses.",
+          ],
+        },
+        {
+          h: "8. Amendments",
+          items: [
+            "RapidKeyz reserves the right to update or modify these terms at any time. Changes take effect once posted. Continued use of the site is deemed acceptance of the updated terms.",
+          ],
+        },
+      ],
+    },
+    privacy: {
+      title: "Refund & Privacy Policy",
+      refundTitle: "Cancellation & Refund Policy",
+      refund: [
+        "Customers may cancel and request a refund for shared accounts within 6 hours of activation, provided the service was not used. Refunds do not apply to private accounts once activated for the customer.",
+        "After that period, cancellations and refunds are accepted only for a proven major service issue.",
+        "Refunds are issued via the same payment method within 3 to 7 business days.",
+      ],
+      privacyTitle: "Privacy Policy",
+      privacy: [
+        "We are committed to protecting our customers' privacy and personal data.",
+        "Customer data will not be shared with any third party without explicit consent, unless required by law.",
+        "Login data is used solely to enable customers to benefit from the service.",
+        "For shared subscriptions: customers cannot change the email or password to ensure security and privacy.",
+        "For private subscriptions: customers may change the email or password depending on the service type.",
+      ],
+    },
     footer: {
       tagline: "The MENA hub for premium digital subscriptions",
       quickLinks: "Quick Links",
+      categories: "Categories",
+      contact: "Contact us",
+      phone: "Phone / WhatsApp",
+      emailLabel: "Email",
+      about: "About us",
+      terms: "Terms & Conditions",
+      privacy: "Refund & Privacy",
       support: "Support",
       faq: "FAQ",
-      terms: "Terms",
-      privacy: "Privacy",
       refund: "Refund Policy",
-      contact: "Contact",
       rights: "All rights reserved",
       payments: "Secure Payment Gateways",
     },
