@@ -9,6 +9,8 @@ export const Route = createFileRoute("/_authenticated/admin/products")({
   component: AdminProducts,
 });
 
+type AccountType = "private" | "shared" | "both" | "own";
+
 type ProductForm = {
   id?: string;
   slug: string;
@@ -19,7 +21,8 @@ type ProductForm = {
   icon_url: string;
   category_id: string | null;
   delivery_type: "instant" | "manual";
-  account_type: "private" | "shared" | "both" | "own";
+  account_type: AccountType;
+  account_types: AccountType[];
   status: "active" | "draft" | "archived";
   is_featured: boolean;
   discount_percent: number;
@@ -34,11 +37,23 @@ const emptyForm: ProductForm = {
   icon_url: "",
   category_id: null,
   delivery_type: "instant",
-  account_type: "private",
+  account_type: "shared",
+  account_types: ["shared"],
   status: "active",
   is_featured: false,
   discount_percent: 0,
 };
+
+/** Reduce a multi-select array into the legacy single account_type enum for backward compat. */
+function deriveLegacyAccountType(types: AccountType[]): AccountType {
+  const s = new Set(types);
+  if (s.has("shared") && s.has("private")) return "both";
+  if (s.has("both")) return "both";
+  if (s.has("own")) return s.size === 1 ? "own" : "both";
+  if (s.has("private")) return "private";
+  if (s.has("shared")) return "shared";
+  return "shared";
+}
 
 /** Turn any text into a URL-safe slug (English + Arabic). */
 function slugify(input: string): string {
@@ -80,7 +95,12 @@ function AdminProducts() {
 
   const save = useMutation({
     mutationFn: async (f: ProductForm) => {
-      const payload: any = { ...f };
+      const types = f.account_types.length > 0 ? f.account_types : ["shared" as const];
+      const payload: any = {
+        ...f,
+        account_types: types,
+        account_type: deriveLegacyAccountType(types),
+      };
       if (f.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", f.id);
         if (error) throw error;
@@ -206,14 +226,23 @@ function AdminProducts() {
 
                 <td className="p-4 text-end">
                   <button
-                    onClick={() => setEditing({
-                      id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
-                      description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
-                      icon_url: p.icon_url ?? "", category_id: p.category_id,
-                      delivery_type: p.delivery_type, account_type: p.account_type,
-                      status: p.status, is_featured: p.is_featured,
-                      discount_percent: p.discount_percent ?? 0,
-                    })}
+                    onClick={() => {
+                      const existing = ((p as any).account_types as AccountType[] | null) ?? [];
+                      const initTypes: AccountType[] = existing.length > 0
+                        ? existing
+                        : p.account_type === "both"
+                          ? ["shared", "private"]
+                          : [p.account_type as AccountType];
+                      setEditing({
+                        id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
+                        description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
+                        icon_url: p.icon_url ?? "", category_id: p.category_id,
+                        delivery_type: p.delivery_type, account_type: p.account_type,
+                        account_types: initTypes,
+                        status: p.status, is_featured: p.is_featured,
+                        discount_percent: p.discount_percent ?? 0,
+                      });
+                    }}
                     className="text-brand text-sm hover:underline ml-3"
                   >
                     {t.admin.edit}
@@ -339,20 +368,24 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="👤 نوع الحساب" hint="اختر النوع اللي هيتباع للعميل. لو (كلاهم) العميل هيختار بنفسه بين خاص أو مشترك." className="col-span-2">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <Field label="👤 أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="col-span-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {([
                     { v: "shared", label: "🤝 شير (مشترك)" },
                     { v: "private", label: "🔒 برايفت (خاص)" },
                     { v: "own", label: "🎁 حساب من عندنا" },
-                    { v: "both", label: "🌟 كلاهم (شير + برايفت)" },
                   ] as const).map((o) => {
-                    const active = editing.account_type === o.v;
+                    const active = editing.account_types.includes(o.v as AccountType);
                     return (
                       <button
                         key={o.v}
                         type="button"
-                        onClick={() => setEditing({ ...editing, account_type: o.v as any })}
+                        onClick={() => {
+                          const set = new Set(editing.account_types);
+                          if (set.has(o.v as AccountType)) set.delete(o.v as AccountType);
+                          else set.add(o.v as AccountType);
+                          setEditing({ ...editing, account_types: Array.from(set) as AccountType[] });
+                        }}
                         className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-start ${
                           active
                             ? "border-brand bg-brand/10 text-brand"
@@ -365,6 +398,9 @@ function AdminProducts() {
                     );
                   })}
                 </div>
+                {editing.account_types.length === 0 && (
+                  <p className="text-[11px] text-destructive mt-2">اختر نوع واحد على الأقل.</p>
+                )}
               </Field>
               <Field label="🏷️ نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
                 <input
