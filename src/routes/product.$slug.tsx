@@ -59,11 +59,12 @@ function ProductPage() {
   const parsePlan = (pl: any) => {
     const en = String(pl.label_en ?? "");
     const ar = String(pl.label_ar ?? "");
-    let acct: "private" | "shared" | "any" = "any";
+    let acct: "private" | "shared" | "own" | "any" = "any";
     if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) acct = "private";
     else if (/shared/i.test(en) || /مشترك|شير/i.test(ar)) acct = "shared";
-    const durEn = en.replace(/^(private|shared)\s*account\s*-\s*/i, "").trim() || en;
-    const durAr = ar.replace(/^(Private|Shared)\s*Account\s*-\s*/i, "").trim() || ar;
+    else if (/\bown\b|our own/i.test(en) || /من عندنا|من عندك|بحسابك|حسابك/i.test(ar)) acct = "own";
+    const durEn = en.replace(/^(private|shared|own|our own)\s*account\s*-\s*/i, "").trim() || en;
+    const durAr = ar.replace(/^(Private|Shared|Own|من عندنا)\s*(Account\s*-\s*)?/i, "").trim() || ar;
     return { acct, durEn, durAr };
   };
 
@@ -81,14 +82,19 @@ function ProductPage() {
     .filter((p: any) => p.is_active)
     .sort((a: any, b: any) => Number(a.duration_days ?? 0) - Number(b.duration_days ?? 0));
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
-  const rawAccountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
-  const hasAcctChoice = rawAccountTypes.some((a) => a === "private" || a === "shared");
-  const accountTypes = hasAcctChoice
-    ? (rawAccountTypes.filter((a) => a !== "any") as ("private" | "shared")[])
-    : rawAccountTypes;
-  const effectiveAcct = accountType ?? accountTypes[0];
+  const productAcctTypes = (Array.isArray((product as any).account_types)
+    ? ((product as any).account_types as string[]).filter((a) => a === "private" || a === "shared" || a === "own")
+    : []) as ("private" | "shared" | "own")[];
+  const derivedFromPlans = Array.from(new Set(enriched.map((p: any) => p.acct))).filter(
+    (a) => a === "private" || a === "shared" || a === "own",
+  ) as ("private" | "shared" | "own")[];
+  const accountTypes = (
+    productAcctTypes.length > 0 ? productAcctTypes : derivedFromPlans
+  ) as ("private" | "shared" | "own")[];
+  const hasAcctChoice = accountTypes.length > 0;
+  const effectiveAcct = (accountType as "private" | "shared" | "own" | undefined) ?? accountTypes[0];
   const filteredPlans = hasAcctChoice
-    ? enriched.filter((p: any) => p.acct === effectiveAcct)
+    ? enriched.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
     : enriched;
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
@@ -102,7 +108,11 @@ function ProductPage() {
   const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
 
   const acctLabel = (a: string) =>
-    a === "private" ? t.badges.private : t.badges.shared;
+    a === "private"
+      ? t.badges.private
+      : a === "own"
+      ? (t.badges as any).own
+      : t.badges.shared;
 
 
   const handleAdd = (goToCart: boolean) => {
