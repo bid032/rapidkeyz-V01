@@ -38,6 +38,18 @@ const emptyForm: ProductForm = {
   is_featured: false,
 };
 
+/** Turn any text into a URL-safe slug (English + Arabic). */
+function slugify(input: string): string {
+  return input
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, "") // Arabic diacritics
+    .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 function AdminProducts() {
   const { t } = useApp();
   const qc = useQueryClient();
