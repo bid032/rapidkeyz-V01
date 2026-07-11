@@ -198,17 +198,34 @@ function ProductPage() {
               <div className="flex flex-wrap gap-2">
                 {filteredPlans.map((pl: any) => {
                   const isSelected = (selected?.id) === pl.id;
+                  const planStock = Number(pl.stock ?? 0);
+                  const planSoldOut = planStock <= 0;
                   return (
                     <button
                       key={pl.id}
                       onClick={() => setPlanId(pl.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
-                        isSelected
-                          ? "border-brand bg-brand/10 text-brand"
-                          : "border-border bg-card hover:border-brand/40"
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition inline-flex items-center gap-2 ${
+                        planSoldOut
+                          ? isSelected
+                            ? "border-destructive/60 bg-destructive/10 text-destructive"
+                            : "border-border bg-muted text-muted-foreground hover:border-destructive/40"
+                          : isSelected
+                            ? "border-brand bg-brand/10 text-brand"
+                            : "border-border bg-card hover:border-brand/40"
                       }`}
                     >
-                      {lang === "ar" ? pl.durAr : pl.durEn}
+                      <span className={planSoldOut ? "line-through opacity-70" : ""}>
+                        {lang === "ar" ? pl.durAr : pl.durEn}
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase ${
+                          planSoldOut
+                            ? "bg-destructive/15 text-destructive"
+                            : "bg-success/15 text-success"
+                        }`}
+                      >
+                        {planSoldOut ? t.product.soldOut : `${planStock} ${t.product.available}`}
+                      </span>
                     </button>
                   );
                 })}
@@ -232,7 +249,19 @@ function ProductPage() {
                 )}
               </div>
             )}
+
+            {selected && !selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
+              <p className="text-xs font-bold text-warning">
+                🔥 {t.product.stockLeft(selectedStock)}
+              </p>
+            )}
+            {selectedSoldOut && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm font-bold">
+                {t.product.soldOutHint}
+              </div>
+            )}
           </div>
+
 
 
           <div className="flex gap-3">
