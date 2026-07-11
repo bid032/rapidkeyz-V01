@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
@@ -10,22 +10,53 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
 
 const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "refunded"] as const;
 
+type Tab = "all" | "expiring";
+
 function AdminOrders() {
   const { t, lang } = useApp();
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("all");
 
   const orders = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*, delivered_accounts(*))")
+        .select("*, order_items(*, product_plans(duration_days), delivered_accounts(*))")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
+
+  // Compute per-order min days-remaining (over delivered items with duration)
+  const expiring = useMemo(() => {
+    const now = Date.now();
+    return (orders.data ?? []).map((o: any) => {
+      let minDays = Infinity;
+      for (const it of o.order_items ?? []) {
+        const dur = Number(it.product_plans?.duration_days ?? 0);
+        const dAcc = it.delivered_accounts?.[0];
+        const startAt = dAcc ? new Date(dAcc.delivered_at).getTime() : new Date(o.created_at).getTime();
+        if (dur > 0) {
+          const endAt = startAt + dur * 86400_000;
+          const days = Math.ceil((endAt - now) / 86400_000);
+          if (days < minDays) minDays = days;
+        }
+      }
+      return { order: o, minDays: minDays === Infinity ? null : minDays };
+    });
+  }, [orders.data]);
+
+  const visible = useMemo(() => {
+    if (tab === "expiring") {
+      return expiring
+        .filter((e) => e.minDays !== null && e.minDays <= 30 && e.minDays > -365)
+        .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
+    }
+    return expiring;
+  }, [expiring, tab]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -48,9 +79,32 @@ function AdminOrders() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-6">{t.admin.orders}</h1>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <h1 className="text-3xl font-extrabold">{t.admin.orders}</h1>
+        <div className="flex bg-muted rounded-lg p-1">
+          {([
+            { k: "all", label: "كل الطلبات" },
+            { k: "expiring", label: "⏰ خدمات شارفت على الانتهاء" },
+          ] as const).map((x) => (
+            <button
+              key={x.k}
+              onClick={() => setTab(x.k)}
+              className={`px-4 py-2 text-sm font-bold rounded-md transition ${
+                tab === x.k ? "bg-brand text-brand-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {x.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {tab === "expiring" && (
+        <p className="text-xs text-muted-foreground mb-4">
+          كل خدمة فاضل عليها شهر أو أقل قبل الانتهاء. الحساب بيبدأ من تاريخ التسليم الفعلي، أو من تاريخ الطلب لو لسه ما اتسلمش.
+        </p>
+      )}
       <div className="space-y-3">
-        {orders.data?.map((o: any) => (
+        {visible.map(({ order: o, minDays }) => (
           <div key={o.id} className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="p-4 flex flex-wrap justify-between items-center gap-3">
               <div>
@@ -58,6 +112,13 @@ function AdminOrders() {
                 <div className="text-xs text-muted-foreground">
                   {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")} · {o.customer_email}
                 </div>
+                {minDays !== null && (
+                  <div className={`text-xs font-bold mt-1 ${
+                    minDays < 0 ? "text-destructive" : minDays <= 7 ? "text-destructive" : minDays <= 30 ? "text-warning" : "text-muted-foreground"
+                  }`}>
+                    {minDays < 0 ? `⚠️ انتهت من ${Math.abs(minDays)} يوم` : `⏳ باقي ${minDays} يوم`}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-3">
                 <select value={o.status}
@@ -81,11 +142,16 @@ function AdminOrders() {
             )}
           </div>
         ))}
-        {orders.data?.length === 0 && <p className="text-muted-foreground text-center py-16">No orders yet</p>}
+        {visible.length === 0 && (
+          <p className="text-muted-foreground text-center py-16">
+            {tab === "expiring" ? "مفيش خدمات قربت تنتهي" : "No orders yet"}
+          </p>
+        )}
       </div>
     </div>
   );
 }
+
 
 function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => void }) {
   const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
