@@ -28,15 +28,19 @@ export function ProductDetails({ productName, accountTypes }: Props) {
   return (
     <section className="max-w-6xl mx-auto px-6 pb-16 space-y-16">
       {/* Feature strip */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 gap-4">
         {features.map((f) => (
           <div
             key={f.title}
-            className="group relative p-5 rounded-2xl border border-border bg-gradient-to-br from-card to-card/40 hover:border-brand/40 hover:-translate-y-1 transition-all duration-300"
+            className="group relative p-5 rounded-2xl border border-border bg-gradient-to-br from-card to-card/40 hover:border-brand/40 hover:-translate-y-1 transition-all duration-300 flex items-center gap-4"
           >
-            <div className="text-3xl mb-3">{f.icon}</div>
-            <div className="font-extrabold text-sm mb-1">{f.title}</div>
-            <div className="text-xs text-muted-foreground leading-relaxed">{f.desc}</div>
+            <div className="shrink-0 w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center text-2xl leading-none">
+              {f.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-extrabold text-base mb-1">{f.title}</div>
+              <div className="text-xs text-muted-foreground leading-relaxed">{f.desc}</div>
+            </div>
           </div>
         ))}
       </div>
