@@ -103,7 +103,7 @@
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv11";
   }
-  html[dir="rtl"] body { font-family: "Cairo", "Inter", sans-serif; }
+  html[dir="rtl"] body { font-family: "IBM Plex Sans Arabic", sans-serif; }
 }
 
 @utility brand-glow {
@@ -113,4 +113,13 @@
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
+}
+
+@utility fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
