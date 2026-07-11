@@ -59,7 +59,8 @@ function AdminTestimonials() {
       <div className="bg-card border border-border rounded-2xl p-5 mb-6">
         <ImageUpload
           bucket="testimonial-images"
-          label="+ إضافة صورة رأي عميل"
+          label="+ إضافة صورة رأي عميل (1080×1350 بكسل — نسبة 4:5)"
+          requireExactDimensions={{ width: 1080, height: 1350 }}
           onChange={(url) => add.mutate(url)}
         />
       </div>
