@@ -259,27 +259,25 @@ function AdminProducts() {
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
               className="grid grid-cols-2 gap-4"
             >
-              <Field label="⭐ الاسم بالعربي" hint="اسم المنتج اللي هيشوفه العميل في الواجهة العربية">
+              <Field label="⭐ الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
                   onChange={(e) => {
                     const name_ar = e.target.value;
                     setEditing((prev) => prev && {
                       ...prev,
                       name_ar,
-                      // auto-fill slug from Arabic only if English name is empty and slug wasn't manually set for existing product
                       slug: !prev.id && !prev.name_en ? slugify(name_ar) : prev.slug,
                     });
                   }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="⭐ Name (English)" hint="Product name shown in the English UI — the slug is auto-generated from this">
+              <Field label="⭐ Name (English)">
                 <input required placeholder="Netflix Premium" value={editing.name_en}
                   onChange={(e) => {
                     const name_en = e.target.value;
                     setEditing((prev) => prev && {
                       ...prev,
                       name_en,
-                      // auto-generate slug from English name for new products
                       slug: !prev.id ? slugify(name_en) : prev.slug,
                     });
                   }}
