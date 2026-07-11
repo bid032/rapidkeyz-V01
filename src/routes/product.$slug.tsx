@@ -77,7 +77,9 @@ function ProductPage() {
   }
   if (!product) return null;
 
-  const plans = (product.product_plans ?? []).filter((p: any) => p.is_active);
+  const plans = (product.product_plans ?? [])
+    .filter((p: any) => p.is_active)
+    .sort((a: any, b: any) => Number(a.duration_days ?? 0) - Number(b.duration_days ?? 0));
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
   const rawAccountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
   const hasAcctChoice = rawAccountTypes.some((a) => a === "private" || a === "shared");
@@ -225,15 +227,11 @@ function ProductPage() {
                       <span className={planSoldOut ? "line-through opacity-70" : ""}>
                         {lang === "ar" ? pl.durAr : pl.durEn}
                       </span>
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase ${
-                          planSoldOut
-                            ? "bg-destructive/15 text-destructive"
-                            : "bg-success/15 text-success"
-                        }`}
-                      >
-                        {planSoldOut ? t.product.soldOut : `${planStock} ${t.product.available}`}
-                      </span>
+                      {planSoldOut && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-destructive/15 text-destructive">
+                          {t.product.soldOut}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

@@ -33,7 +33,15 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-7xl mx-auto px-6 py-8 grid md:grid-cols-[220px_1fr] gap-8">
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-4 text-center">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+          <span className="bg-gradient-to-r from-brand to-accent bg-clip-text text-transparent">
+            {t.admin.title}
+          </span>
+        </h1>
+        <div className="mx-auto mt-3 h-1 w-20 rounded-full bg-brand/60" />
+      </div>
+      <div className="max-w-7xl mx-auto px-6 py-6 grid md:grid-cols-[220px_1fr] gap-8">
         <aside className="h-fit md:sticky md:top-24 bg-card border border-border rounded-2xl p-3">
           <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-3 py-2">
             {t.admin.title}
