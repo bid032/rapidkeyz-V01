@@ -226,14 +226,23 @@ function AdminProducts() {
 
                 <td className="p-4 text-end">
                   <button
-                    onClick={() => setEditing({
-                      id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
-                      description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
-                      icon_url: p.icon_url ?? "", category_id: p.category_id,
-                      delivery_type: p.delivery_type, account_type: p.account_type,
-                      status: p.status, is_featured: p.is_featured,
-                      discount_percent: p.discount_percent ?? 0,
-                    })}
+                    onClick={() => {
+                      const existing = ((p as any).account_types as AccountType[] | null) ?? [];
+                      const initTypes: AccountType[] = existing.length > 0
+                        ? existing
+                        : p.account_type === "both"
+                          ? ["shared", "private"]
+                          : [p.account_type as AccountType];
+                      setEditing({
+                        id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
+                        description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
+                        icon_url: p.icon_url ?? "", category_id: p.category_id,
+                        delivery_type: p.delivery_type, account_type: p.account_type,
+                        account_types: initTypes,
+                        status: p.status, is_featured: p.is_featured,
+                        discount_percent: p.discount_percent ?? 0,
+                      });
+                    }}
                     className="text-brand text-sm hover:underline ml-3"
                   >
                     {t.admin.edit}
