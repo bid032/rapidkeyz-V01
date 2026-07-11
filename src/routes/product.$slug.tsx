@@ -267,17 +267,21 @@ function ProductPage() {
           <div className="flex gap-3">
             <button
               onClick={() => handleAdd(true)}
-              disabled={!selected}
-              className="flex-1 px-6 py-4 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
+              disabled={!selected || selectedSoldOut}
+              className={`flex-1 px-6 py-4 rounded-xl font-bold transition disabled:cursor-not-allowed ${
+                selectedSoldOut
+                  ? "bg-muted text-muted-foreground border border-border"
+                  : "bg-brand text-brand-foreground hover:brand-glow disabled:opacity-50"
+              }`}
             >
-              {t.product.buyNow}
+              {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
             </button>
             <button
               onClick={() => handleAdd(false)}
-              disabled={!selected}
-              className="px-6 py-4 border border-border rounded-xl font-bold hover:bg-muted disabled:opacity-50"
+              disabled={!selected || selectedSoldOut}
+              className="px-6 py-4 border border-border rounded-xl font-bold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {t.product.addToCart}
+              {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
             </button>
           </div>
         </div>
