@@ -163,6 +163,8 @@ function HomePage() {
         )}
       </main>
 
+      <Testimonials />
+
       <Footer />
     </div>
   );
