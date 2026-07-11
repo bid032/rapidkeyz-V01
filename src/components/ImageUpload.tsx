@@ -9,7 +9,23 @@ type Props = {
   className?: string;
   /** Force output to a square of this size (px). Default 1080. Set to 0 to keep original. */
   size?: number;
+  /** If set, reject uploads whose exact pixel dimensions don't match (no resize). */
+  requireExactDimensions?: { width: number; height: number };
 };
+
+async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  const url = URL.createObjectURL(file);
+  try {
+    return await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res({ width: i.naturalWidth, height: i.naturalHeight });
+      i.onerror = () => rej(new Error("Invalid image"));
+      i.src = url;
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 /** Resize/crop an image file to a centered square PNG of `size`×`size`. */
 async function resizeToSquare(file: File, size: number): Promise<Blob> {
