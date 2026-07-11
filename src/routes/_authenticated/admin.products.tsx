@@ -382,33 +382,67 @@ function Field({ label, hint, className, children }: { label: string; hint?: str
 
 function PlanEditor({ productId, onClose }: { productId: string; onClose: () => void }) {
   const qc = useQueryClient();
+  const { confirm, notify } = useApp();
   const plans = useQuery({
     queryKey: ["plans", productId],
-    queryFn: async () => (await supabase.from("product_plans").select("*").eq("product_id", productId).order("sort_order")).data ?? [],
+    queryFn: async () => (await supabase.from("product_plans").select("*").eq("product_id", productId).order("duration_days")).data ?? [],
   });
-  const [form, setForm] = useState({ label_ar: "", label_en: "", duration_days: 30, price: 0, stock: 0 });
+  const [form, setForm] = useState({
+    label_ar: "",
+    label_en: "",
+    duration_months: 1,
+    price: 0,
+    compare_price: 0,
+    stock: 0,
+  });
+
+  // Local edits map keyed by plan id — apply on save
+  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number }>>({});
+  const patch = (id: string, k: string, v: any) =>
+    setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
 
   const add = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("product_plans").insert({ product_id: productId, ...form, is_active: true });
+      const payload = {
+        product_id: productId,
+        label_ar: form.label_ar,
+        label_en: form.label_en,
+        duration_days: Math.max(1, form.duration_months) * 30,
+        price: form.price,
+        compare_price: form.compare_price > 0 ? form.compare_price : null,
+        stock: form.stock,
+        is_active: true,
+      };
+      const { error } = await supabase.from("product_plans").insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setForm({ label_ar: "", label_en: "", duration_days: 30, price: 0, stock: 0 });
+      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, stock: 0 });
+      notify("تم إضافة العرض", "success");
     },
+    onError: (e: any) => notify(e.message || "خطأ", "error"),
   });
 
-  const updateStock = useMutation({
-    mutationFn: async ({ id, stock }: { id: string; stock: number }) => {
-      const { error } = await supabase.from("product_plans").update({ stock }).eq("id", id);
+  const savePlan = useMutation({
+    mutationFn: async (id: string) => {
+      const patchData = edits[id];
+      if (!patchData) return;
+      const clean: any = {};
+      if (patchData.price !== undefined) clean.price = patchData.price;
+      if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
+      if (patchData.stock !== undefined) clean.stock = patchData.stock;
+      const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_d, id) => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setEdits((prev) => { const c = { ...prev }; delete c[id]; return c; });
+      notify("تم حفظ التعديلات", "success");
     },
+    onError: (e: any) => notify(e.message || "خطأ", "error"),
   });
 
   const del = useMutation({
@@ -416,55 +450,112 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      notify("تم مسح العرض", "success");
     },
   });
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-      <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-6 my-8">
+      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-6 my-8">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h3 className="font-bold text-lg">💼 العروض والأسعار والمخزون (Plans)</h3>
+            <h3 className="font-bold text-lg">💼 العروض والأسعار والمخزون</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              كل عرض = مدة اشتراك بسعر و مخزون. <b className="text-warning">المخزون (Stock)</b> = عدد النسخ المتاحة للبيع من العرض ده — لما يوصل صفر، يتحوّل تلقائيًا لـ "نفذ" ويتقفل الشراء عند العميل.
+              كل عرض = مدة اشتراك بسعر ومخزون. عدّل الأسعار والمخزون ثم اضغط <b className="text-brand">حفظ</b>. لما المخزون يوصل صفر، الشراء بيتقفل تلقائيًا عند العميل.
             </p>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
         </div>
 
-        <div className="space-y-2 my-4">
+        <div className="space-y-3 my-4">
           {plans.data?.length === 0 && (
             <div className="p-4 text-center text-sm text-muted-foreground bg-background border border-dashed border-border rounded-lg">
               مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 👇
             </div>
           )}
-          {plans.data?.map((p: any) => (
-            <div key={p.id} className="p-3 bg-background border border-border rounded-lg">
-              <div className="flex justify-between items-start mb-2">
-                <div className="text-sm">
-                  <div className="font-bold">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
-                  <div className="text-xs text-muted-foreground">{p.duration_days} يوم · {p.price} EGP</div>
+          {plans.data?.map((p: any) => {
+            const e = edits[p.id] ?? {};
+            const price = e.price ?? p.price;
+            const compare = e.compare_price !== undefined ? e.compare_price : p.compare_price;
+            const stock = e.stock ?? p.stock;
+            const dirty = !!edits[p.id];
+            const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
+            return (
+              <div key={p.id} className="p-4 bg-background border border-border rounded-xl">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="text-sm">
+                    <div className="font-bold">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
+                    <div className="text-xs text-muted-foreground mt-0.5">مدة: {months} شهر</div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: "حذف العرض",
+                        message: `مسح عرض "${p.label_ar}"؟`,
+                        tone: "danger",
+                        confirmLabel: "احذف",
+                      });
+                      if (ok) del.mutate(p.id);
+                    }}
+                    className="text-destructive text-xs hover:underline"
+                  >مسح</button>
                 </div>
-                <button onClick={() => { if (confirm("مسح العرض ده؟")) del.mutate(p.id); }} className="text-destructive text-xs hover:underline">مسح</button>
+
+                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">💰 السعر (EGP)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={price ?? 0}
+                      onChange={(ev) => patch(p.id, "price", +ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">🏷️ قبل الخصم</label>
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder="اختياري"
+                      value={compare ?? ""}
+                      onChange={(ev) => patch(p.id, "compare_price", ev.target.value === "" ? null : +ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">📦 المخزون</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={stock ?? 0}
+                      onChange={(ev) => patch(p.id, "stock", +ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs">
+                    {stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> :
+                     stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> :
+                     <span className="text-success">متاح</span>}
+                  </span>
+                  <button
+                    onClick={() => savePlan.mutate(p.id)}
+                    disabled={!dirty || savePlan.isPending}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${
+                      dirty
+                        ? "bg-brand text-brand-foreground hover:brand-glow"
+                        : "bg-muted text-muted-foreground cursor-not-allowed"
+                    }`}
+                  >
+                    {dirty ? "💾 حفظ" : "محفوظ"}
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2 pt-2 border-t border-border">
-                <label className="text-xs font-bold text-muted-foreground">📦 المخزون:</label>
-                <input
-                  type="number"
-                  min={0}
-                  defaultValue={p.stock}
-                  onBlur={(e) => {
-                    const v = +e.target.value;
-                    if (v !== p.stock) updateStock.mutate({ id: p.id, stock: v });
-                  }}
-                  className="w-24 px-2 py-1 bg-card border border-border rounded text-sm font-bold"
-                />
-                <span className="text-xs text-muted-foreground">
-                  {p.stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> : p.stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> : "متاح"}
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
@@ -480,19 +571,24 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, label_en: e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="المدة (بالأيام)" hint="مدة الاشتراك — 30 = شهر · 90 = 3 شهور">
-              <input type="number" value={form.duration_days}
-                onChange={(e) => setForm({ ...form, duration_days: +e.target.value })}
+            <Field label="⏱️ المدة (بالشهور)" hint="عدد الشهور — 1 = شهر · 3 = 3 شهور · 12 = سنة">
+              <input type="number" min={1} value={form.duration_months}
+                onChange={(e) => setForm({ ...form, duration_months: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="السعر (EGP)" hint="سعر البيع للعميل بالجنيه المصري">
-              <input type="number" required value={form.price}
+            <Field label="📦 المخزون (Stock)" hint="عدد النسخ المتاحة. لما يوصل 0 يتقفل الشراء تلقائيًا.">
+              <input type="number" min={0} value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: +e.target.value })}
+                className="w-full px-3 py-2 bg-background border border-border rounded" />
+            </Field>
+            <Field label="💰 السعر (EGP)" hint="سعر البيع للعميل بعد الخصم">
+              <input type="number" required min={0} value={form.price}
                 onChange={(e) => setForm({ ...form, price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="📦 المخزون (Stock)" hint="عدد النسخ المتاحة للبيع من العرض ده. لما يوصل 0 يتقفل الشراء تلقائيًا." className="col-span-2">
-              <input type="number" min={0} value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: +e.target.value })}
+            <Field label="🏷️ السعر قبل الخصم (اختياري)" hint="لو حددته هيبان مشطوب جنب السعر الحالي">
+              <input type="number" min={0} value={form.compare_price}
+                onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
           </div>
