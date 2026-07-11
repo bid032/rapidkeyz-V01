@@ -10,7 +10,7 @@ export type ProductCardData = {
   description_en: string | null;
   icon_url: string | null;
   delivery_type: "instant" | "manual";
-  account_type: "private" | "shared" | "both";
+  account_type: "private" | "shared" | "both" | "own";
   minPrice: number | null;
   discount_percent?: number | null;
   planLabel_ar?: string | null;
