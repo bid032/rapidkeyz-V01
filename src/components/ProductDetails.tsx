@@ -14,16 +14,16 @@ export function ProductDetails({ productName, accountTypes }: Props) {
 
   const features = isAr
     ? [
-        { icon: "⚡", title: "تفعيل فوري", desc: "استلم اشتراكك خلال دقائق من الشراء" },
-        { icon: "🛡️", title: "ضمان كامل", desc: "استبدال فوري طوال مدة الاشتراك" },
-        { icon: "🎯", title: "خدمة أصلية", desc: "اشتراكات رسمية 100% وليست معدلة" },
-        { icon: "💬", title: "دعم فني 24/7", desc: "فريق متاح للرد على كل استفساراتك" },
+        { icon: "", title: "تفعيل فوري", desc: "استلم اشتراكك خلال دقائق من الشراء" },
+        { icon: "", title: "ضمان كامل", desc: "استبدال فوري طوال مدة الاشتراك" },
+        { icon: "", title: "خدمة أصلية", desc: "اشتراكات رسمية 100% وليست معدلة" },
+        { icon: "", title: "دعم فني 24/7", desc: "فريق متاح للرد على كل استفساراتك" },
       ]
     : [
-        { icon: "⚡", title: "Instant Activation", desc: "Get your subscription within minutes" },
-        { icon: "🛡️", title: "Full Warranty", desc: "Instant replacement throughout your plan" },
-        { icon: "🎯", title: "Genuine Service", desc: "100% official subscriptions, never modified" },
-        { icon: "💬", title: "24/7 Support", desc: "Team ready to answer all your questions" },
+        { icon: "", title: "Instant Activation", desc: "Get your subscription within minutes" },
+        { icon: "", title: "Full Warranty", desc: "Instant replacement throughout your plan" },
+        { icon: "", title: "Genuine Service", desc: "100% official subscriptions, never modified" },
+        { icon: "", title: "24/7 Support", desc: "Team ready to answer all your questions" },
       ];
 
   return (
@@ -93,7 +93,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                     ))}
                   </ul>
                   <div className="mt-5 p-3 rounded-lg bg-muted/50 text-xs leading-relaxed">
-                    💡{" "}
+                    {" "}
                     {isAr
                       ? "مثالي لمن يعمل على جهاز واحد ويريد الاستفادة الكاملة بأقل تكلفة."
                       : "Ideal for anyone working on a single device who wants full value at the lowest cost."}
@@ -135,7 +135,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                   ))}
                 </ul>
                 <div className="mt-5 p-3 rounded-lg bg-brand/10 border border-brand/20 text-xs leading-relaxed">
-                  💡{" "}
+                  {" "}
                   {isAr
                     ? "مثالي للمحترفين والوكالات التي تحتاج مرونة بين أجهزة متعددة."
                     : "Ideal for professionals and agencies needing flexibility across multiple devices."}
@@ -175,7 +175,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
                     ))}
                   </ul>
                   <div className="mt-5 p-3 rounded-lg bg-success/10 border border-success/20 text-xs leading-relaxed">
-                    💡{" "}
+                    {" "}
                     {isAr
                       ? "مثالي لمن يريد حساب جديد جاهز للاستخدام فوراً بدون أي إعداد."
                       : "Ideal for anyone who wants a fresh, ready-to-use account with zero setup."}

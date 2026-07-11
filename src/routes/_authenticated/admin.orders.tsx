@@ -84,7 +84,7 @@ function AdminOrders() {
         <div className="flex bg-muted rounded-lg p-1">
           {([
             { k: "all", label: "كل الطلبات" },
-            { k: "expiring", label: "⏰ خدمات شارفت على الانتهاء" },
+            { k: "expiring", label: "خدمات شارفت على الانتهاء" },
           ] as const).map((x) => (
             <button
               key={x.k}
@@ -116,7 +116,7 @@ function AdminOrders() {
                   <div className={`text-xs font-bold mt-1 ${
                     minDays < 0 ? "text-destructive" : minDays <= 7 ? "text-destructive" : minDays <= 30 ? "text-warning" : "text-muted-foreground"
                   }`}>
-                    {minDays < 0 ? `⚠️ انتهت من ${Math.abs(minDays)} يوم` : `⏳ باقي ${minDays} يوم`}
+                    {minDays < 0 ? ` انتهت من ${Math.abs(minDays)} يوم` : ` باقي ${minDays} يوم`}
                   </div>
                 )}
               </div>

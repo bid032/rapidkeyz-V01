@@ -82,7 +82,7 @@ function AdminInventory() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-2">📦 مخزون التسليم الفوري</h1>
+      <h1 className="text-3xl font-extrabold mb-2">مخزون التسليم الفوري</h1>
       <p className="text-sm text-muted-foreground mb-6">
         كل خدمة "تسليم فوري" لازم يكون لها مخزون حسابات جاهزة. لما العميل يشتري، النظام هيسحب أول حساب متاح تلقائيًا ويثبّت الطلب "تم التسليم".
         <br />
@@ -219,7 +219,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     <div className="mt-3 pt-3 border-t border-border space-y-4">
       <div className="grid md:grid-cols-2 gap-3">
         <div className="p-3 bg-card border border-border rounded-lg">
-          <div className="text-xs font-bold mb-2">📤 رفع ملف CSV</div>
+          <div className="text-xs font-bold mb-2">رفع ملف CSV</div>
           <p className="text-[11px] text-muted-foreground mb-2">
             الصفوف: <code>email, username, password, notes</code> — أول صف Header.
           </p>
@@ -232,7 +232,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
           />
         </div>
         <div className="p-3 bg-card border border-border rounded-lg">
-          <div className="text-xs font-bold mb-2">🔗 لينك Google Sheets (CSV)</div>
+          <div className="text-xs font-bold mb-2">لينك Google Sheets (CSV)</div>
           <div className="flex gap-2">
             <input
               value={sheetUrl}

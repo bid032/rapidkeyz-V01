@@ -141,7 +141,7 @@ function AdminProducts() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="🔎 بحث بالاسم أو الـ slug / Search…"
+          placeholder="بحث بالاسم أو الـ slug / Search…"
           className="flex-1 min-w-[220px] px-4 py-2 bg-card border border-border rounded-lg text-sm"
         />
         <select
@@ -219,7 +219,7 @@ function AdminProducts() {
                     <span>{plansCount} عرض</span>
                     <span className="text-muted-foreground">·</span>
                     <span className={totalStock === 0 ? "text-destructive" : totalStock <= 10 ? "text-warning" : "text-success"}>
-                      📦 {totalStock}
+                      {totalStock}
                     </span>
                   </button>
                 </td>
@@ -280,7 +280,7 @@ function AdminProducts() {
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              املأ بيانات المنتج بالعربي والإنجليزي. الحقول اللي عليها ⭐ إجباري.
+              املأ بيانات المنتج بالعربي والإنجليزي. الحقول اللي عليها إجباري.
               <br />
               <span className="text-warning font-bold">ملاحظة:</span> عدد العروض المتاحة (المخزون) و الأسعار بتتظبط من زرار <span className="text-brand font-bold">"Plans"</span> في جدول المنتجات بعد الحفظ.
             </p>
@@ -288,7 +288,7 @@ function AdminProducts() {
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
               className="grid grid-cols-2 gap-4"
             >
-              <Field label="⭐ الاسم بالعربي">
+              <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
                   onChange={(e) => {
                     const name_ar = e.target.value;
@@ -300,7 +300,7 @@ function AdminProducts() {
                   }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="⭐ Name (English)">
+              <Field label="Name (English)">
                 <input required placeholder="Netflix Premium" value={editing.name_en}
                   onChange={(e) => {
                     const name_en = e.target.value;
@@ -312,7 +312,7 @@ function AdminProducts() {
                   }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="🔗 الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="col-span-2">
+              <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="col-span-2">
                 <div className="flex gap-2">
                   <input required placeholder="netflix-premium" value={editing.slug}
                     onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
@@ -320,7 +320,7 @@ function AdminProducts() {
                   <button type="button"
                     onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
                     className="px-3 py-2 text-xs font-bold border border-border rounded-lg hover:bg-muted">
-                    🔄 تحديث
+                    تحديث
                   </button>
                 </div>
               </Field>
@@ -338,12 +338,12 @@ function AdminProducts() {
               <div className="col-span-2">
                 <ImageUpload
                   bucket="product-images"
-                  label="🖼️ صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
+                  label="صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
                   value={editing.icon_url}
                   onChange={(url) => setEditing({ ...editing, icon_url: url })}
                 />
               </div>
-              <Field label="📂 القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
+              <Field label="القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
                 <select value={editing.category_id ?? ""}
                   onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
@@ -351,7 +351,7 @@ function AdminProducts() {
                   {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
                 </select>
               </Field>
-              <Field label="🚦 الحالة" hint="active: ظاهر للعملاء · draft: مخفي (شغل جاري) · archived: مؤرشف">
+              <Field label="الحالة" hint="active: ظاهر للعملاء · draft: مخفي (شغل جاري) · archived: مؤرشف">
                 <select value={editing.status}
                   onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
@@ -360,7 +360,7 @@ function AdminProducts() {
                   <option value="archived">archived — مؤرشف</option>
                 </select>
               </Field>
-              <Field label="⚡ نوع التسليم" hint="instant: تلقائي فوري من المخزون · manual: الأدمن هيسلمه يدوي">
+              <Field label="نوع التسليم" hint="instant: تلقائي فوري من المخزون · manual: الأدمن هيسلمه يدوي">
                 <select value={editing.delivery_type}
                   onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
@@ -368,12 +368,12 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="👤 أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="col-span-2">
+              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="col-span-2">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {([
-                    { v: "shared", label: "🤝 شير (مشترك)" },
-                    { v: "private", label: "🔒 برايفت (خاص)" },
-                    { v: "own", label: "🎁 حساب من عندنا" },
+                    { v: "shared", label: "شير (مشترك)" },
+                    { v: "private", label: "برايفت (خاص)" },
+                    { v: "own", label: "حساب من عندنا" },
                   ] as const).map((o) => {
                     const active = editing.account_types.includes(o.v as AccountType);
                     return (
@@ -402,7 +402,7 @@ function AdminProducts() {
                   <p className="text-[11px] text-destructive mt-2">اختر نوع واحد على الأقل.</p>
                 )}
               </Field>
-              <Field label="🏷️ نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
+              <Field label="نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
                 <input
                   type="number"
                   min={0}
@@ -415,7 +415,7 @@ function AdminProducts() {
               <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
-                <span>⭐ <b>Featured</b> — ثبّت المنتج في القسم المميز على الرئيسية</span>
+                <span><b>Featured</b> — ثبّت المنتج في القسم المميز على الرئيسية</span>
               </label>
               <div className="col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
@@ -549,7 +549,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-6 my-8">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h3 className="font-bold text-lg">💼 العروض والأسعار والمخزون</h3>
+            <h3 className="font-bold text-lg">العروض والأسعار والمخزون</h3>
             <p className="text-xs text-muted-foreground mt-1">
               كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح — ومش بيظهر للعميل نهائيًا.
             </p>
@@ -560,7 +560,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         <div className="space-y-3 my-4">
           {plans.data?.length === 0 && (
             <div className="p-4 text-center text-sm text-muted-foreground bg-background border border-dashed border-border rounded-lg">
-              مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 👇
+              مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 
             </div>
           )}
           {plans.data?.map((p: any) => {
@@ -617,7 +617,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                   </div>
                   <div>
                     <label className="text-[11px] font-bold text-warning uppercase mb-1 block flex items-center gap-1">
-                      🔒 سعر الشراء
+                      سعر الشراء
                     </label>
                     <input
                       type="number"
@@ -642,7 +642,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
                   <div className="flex items-center gap-3 text-xs">
                     <span>
-                      {stock === 0 ? <span className="text-destructive font-bold">⚠️ نفذ</span> :
+                      {stock === 0 ? <span className="text-destructive font-bold">نفذ</span> :
                        stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> :
                        <span className="text-success">متاح</span>}
                     </span>
@@ -659,7 +659,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                         : "bg-muted text-muted-foreground cursor-not-allowed"
                     }`}
                   >
-                    {dirty ? "💾 حفظ" : "محفوظ"}
+                    {dirty ? "حفظ" : "محفوظ"}
                   </button>
                 </div>
               </div>
@@ -668,7 +668,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
-          <h4 className="font-bold text-sm mb-3">➕ إضافة عرض جديد</h4>
+          <h4 className="font-bold text-sm mb-3">إضافة عرض جديد</h4>
           <div className="grid grid-cols-2 gap-3">
             <Field label="الاسم بالعربي">
               <input required value={form.label_ar}
@@ -700,7 +700,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="🔒 سعر الشراء (خاص بيك فقط)" className="col-span-2">
+            <Field label="سعر الشراء (خاص بيك فقط)" className="col-span-2">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />

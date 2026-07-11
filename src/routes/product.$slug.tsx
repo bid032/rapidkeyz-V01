@@ -298,7 +298,7 @@ function ProductPage() {
 
             {selected && !selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
               <p className="text-xs font-bold text-warning">
-                🔥 {t.product.stockLeft(selectedStock)}
+                {t.product.stockLeft(selectedStock)}
               </p>
             )}
             {selectedSoldOut && (
