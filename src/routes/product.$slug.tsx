@@ -163,6 +163,8 @@ function ProductPage() {
                   ? "bg-brand/10 text-brand border-brand/20"
                   : product.account_type === "both"
                   ? "bg-accent/10 text-accent-foreground border-accent/30"
+                  : product.account_type === "own"
+                  ? "bg-success/10 text-success border-success/20"
                   : "bg-muted text-muted-foreground border-border"
               }`}
             >
@@ -170,6 +172,8 @@ function ProductPage() {
                 ? t.badges.private
                 : product.account_type === "both"
                 ? (t.badges as any).both
+                : product.account_type === "own"
+                ? (t.badges as any).own
                 : t.badges.shared}
             </span>
           </div>
