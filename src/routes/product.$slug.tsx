@@ -64,10 +64,17 @@ function ProductPage() {
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
   const rawAccountTypes = Array.from(new Set(enriched.map((p: any) => p.acct))) as ("private" | "shared" | "any")[];
   const hasAcctChoice = rawAccountTypes.some((a) => a === "private" || a === "shared");
-  // Hide the "any/Standard" option from the account-type chooser when private/shared exist
   const accountTypes = hasAcctChoice
     ? (rawAccountTypes.filter((a) => a !== "any") as ("private" | "shared")[])
     : rawAccountTypes;
+  const effectiveAcct = accountType ?? accountTypes[0];
+  const filteredPlans = hasAcctChoice
+    ? enriched.filter((p: any) => p.acct === effectiveAcct)
+    : enriched;
+  const selected =
+    filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
+  const selectedStock = Number(selected?.stock ?? 0);
+  const selectedSoldOut = !!selected && selectedStock <= 0;
   const effectiveAcct = accountType ?? accountTypes[0];
   const filteredPlans = hasAcctChoice
     ? enriched.filter((p: any) => p.acct === effectiveAcct)
