@@ -368,20 +368,24 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="👤 نوع الحساب" hint="اختر النوع اللي هيتباع للعميل. لو (كلاهم) العميل هيختار بنفسه بين خاص أو مشترك." className="col-span-2">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <Field label="👤 أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="col-span-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {([
                     { v: "shared", label: "🤝 شير (مشترك)" },
                     { v: "private", label: "🔒 برايفت (خاص)" },
                     { v: "own", label: "🎁 حساب من عندنا" },
-                    { v: "both", label: "🌟 كلاهم (شير + برايفت)" },
                   ] as const).map((o) => {
-                    const active = editing.account_type === o.v;
+                    const active = editing.account_types.includes(o.v as AccountType);
                     return (
                       <button
                         key={o.v}
                         type="button"
-                        onClick={() => setEditing({ ...editing, account_type: o.v as any })}
+                        onClick={() => {
+                          const set = new Set(editing.account_types);
+                          if (set.has(o.v as AccountType)) set.delete(o.v as AccountType);
+                          else set.add(o.v as AccountType);
+                          setEditing({ ...editing, account_types: Array.from(set) as AccountType[] });
+                        }}
                         className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-start ${
                           active
                             ? "border-brand bg-brand/10 text-brand"
@@ -394,6 +398,9 @@ function AdminProducts() {
                     );
                   })}
                 </div>
+                {editing.account_types.length === 0 && (
+                  <p className="text-[11px] text-destructive mt-2">اختر نوع واحد على الأقل.</p>
+                )}
               </Field>
               <Field label="🏷️ نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
                 <input
