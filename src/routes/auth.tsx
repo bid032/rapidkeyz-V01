@@ -155,6 +155,11 @@ function AuthPage() {
               className="w-full px-4 py-3 bg-background border border-border rounded-lg"
             />
             {error && <p className="text-destructive text-sm">{error}</p>}
+            {info && (
+              <p className="text-success text-sm bg-success/10 border border-success/30 rounded-lg p-3">
+                {info}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading}
