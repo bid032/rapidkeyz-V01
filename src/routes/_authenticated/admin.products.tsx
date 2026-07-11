@@ -43,6 +43,9 @@ function AdminProducts() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ProductForm | null>(null);
   const [planEditor, setPlanEditor] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "draft" | "archived">("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const products = useQuery({
     queryKey: ["admin-products"],
