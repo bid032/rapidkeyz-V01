@@ -26,6 +26,7 @@ function AdminLayout() {
     { to: "/admin/categories", label: t.admin.categories },
     { to: "/admin/orders", label: t.admin.orders },
     { to: "/admin/users", label: t.admin.users },
+    { to: "/admin/testimonials", label: t.admin.testimonials },
     { to: "/admin/settings", label: t.admin.settings },
   ];
 
