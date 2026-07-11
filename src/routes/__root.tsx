@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "@/contexts/AppContext";
+import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -134,6 +135,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <Outlet />
+        <WhatsAppFloat />
       </AppProvider>
     </QueryClientProvider>
   );
