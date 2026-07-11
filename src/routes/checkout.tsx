@@ -9,7 +9,9 @@ import type { User } from "@supabase/supabase-js";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
-type Gateway = "paymob" | "kashier" | "manual";
+type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual";
+
+const WHATSAPP_NUMBER = "201284234815";
 
 function CheckoutPage() {
   const { t, cart, cartTotal, clearCart, lang } = useApp();
@@ -21,6 +23,8 @@ function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [subEmails, setSubEmails] = useState<Record<string, string>>({});
+  const [senderPhone, setSenderPhone] = useState("");
+  const [proofFile, setProofFile] = useState<File | null>(null);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const privateItems = cart.filter((c) => c.accountType === "private");
 
