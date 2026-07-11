@@ -14,16 +14,421 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description_ar: string | null
+          description_en: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          name_ar: string
+          name_en: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          name_en: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description_ar?: string | null
+          description_en?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          name_en?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      delivered_accounts: {
+        Row: {
+          account_email: string | null
+          account_password: string | null
+          account_username: string | null
+          delivered_at: string
+          delivered_by: string | null
+          extra_notes: string | null
+          id: string
+          order_item_id: string
+        }
+        Insert: {
+          account_email?: string | null
+          account_password?: string | null
+          account_username?: string | null
+          delivered_at?: string
+          delivered_by?: string | null
+          extra_notes?: string | null
+          id?: string
+          order_item_id: string
+        }
+        Update: {
+          account_email?: string | null
+          account_password?: string | null
+          account_username?: string | null
+          delivered_at?: string
+          delivered_by?: string | null
+          extra_notes?: string | null
+          id?: string
+          order_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivered_accounts_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          created_at: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
+          id: string
+          order_id: string
+          plan_id: string | null
+          plan_label: string
+          product_id: string | null
+          product_name: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          created_at?: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
+          id?: string
+          order_id: string
+          plan_id?: string | null
+          plan_label: string
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          unit_price: number
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          id?: string
+          order_id?: string
+          plan_id?: string | null
+          plan_label?: string
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "product_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_email: string | null
+          customer_phone: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          payment_gateway: Database["public"]["Enums"]["payment_gateway"] | null
+          payment_reference: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_phone?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          payment_gateway?:
+            | Database["public"]["Enums"]["payment_gateway"]
+            | null
+          payment_reference?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_email?: string | null
+          customer_phone?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          payment_gateway?:
+            | Database["public"]["Enums"]["payment_gateway"]
+            | null
+          payment_reference?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      product_plans: {
+        Row: {
+          compare_price: number | null
+          created_at: string
+          duration_days: number | null
+          id: string
+          is_active: boolean
+          label_ar: string
+          label_en: string
+          price: number
+          product_id: string
+          sort_order: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          compare_price?: number | null
+          created_at?: string
+          duration_days?: number | null
+          id?: string
+          is_active?: boolean
+          label_ar: string
+          label_en: string
+          price: number
+          product_id: string
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          compare_price?: number | null
+          created_at?: string
+          duration_days?: number | null
+          id?: string
+          is_active?: boolean
+          label_ar?: string
+          label_en?: string
+          price?: number
+          product_id?: string
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_plans_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          category_id: string | null
+          cover_url: string | null
+          created_at: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
+          description_ar: string | null
+          description_en: string | null
+          icon_url: string | null
+          id: string
+          is_featured: boolean
+          name_ar: string
+          name_en: string
+          slug: string
+          sort_order: number
+          status: Database["public"]["Enums"]["product_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          category_id?: string | null
+          cover_url?: string | null
+          created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          description_ar?: string | null
+          description_en?: string | null
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean
+          name_ar: string
+          name_en: string
+          slug: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          category_id?: string | null
+          cover_url?: string | null
+          created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          description_ar?: string | null
+          description_en?: string | null
+          icon_url?: string | null
+          id?: string
+          is_featured?: boolean
+          name_ar?: string
+          name_en?: string
+          slug?: string
+          sort_order?: number
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          preferred_language: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      account_type: "private" | "shared"
+      app_role: "admin" | "user"
+      delivery_type: "instant" | "manual"
+      order_status:
+        | "pending"
+        | "paid"
+        | "processing"
+        | "delivered"
+        | "cancelled"
+        | "refunded"
+      payment_gateway: "paymob" | "kashier" | "manual"
+      product_status: "active" | "draft" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +555,20 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ["private", "shared"],
+      app_role: ["admin", "user"],
+      delivery_type: ["instant", "manual"],
+      order_status: [
+        "pending",
+        "paid",
+        "processing",
+        "delivered",
+        "cancelled",
+        "refunded",
+      ],
+      payment_gateway: ["paymob", "kashier", "manual"],
+      product_status: ["active", "draft", "archived"],
+    },
   },
 } as const
