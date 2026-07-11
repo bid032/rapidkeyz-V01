@@ -78,7 +78,8 @@ function ProductPage() {
   const desc = lang === "ar" ? product.description_ar : product.description_en;
 
   const acctLabel = (a: string) =>
-    a === "private" ? t.badges.private : a === "shared" ? t.badges.shared : (lang === "ar" ? "قياسي" : "Standard");
+    a === "private" ? t.badges.private : t.badges.shared;
+
 
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
