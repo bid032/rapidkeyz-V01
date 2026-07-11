@@ -253,6 +253,10 @@ function CheckoutPage() {
                     [
                       { id: "paymob", label: t.checkout.paymob },
                       { id: "kashier", label: t.checkout.kashier },
+                      {
+                        id: "wallet_instapay",
+                        label: lang === "ar" ? "محفظة / انستاباي (تحويل يدوي)" : "Wallet / Instapay (manual transfer)",
+                      },
                       { id: "manual", label: t.checkout.manual },
                     ] as { id: Gateway; label: string }[]
                   ).map((g) => (
@@ -273,11 +277,100 @@ function CheckoutPage() {
                     </label>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground mt-4">
-                  {lang === "ar"
-                    ? "بعد التأكيد ستُنقل إلى بوابة الدفع لإتمام العملية."
-                    : "You will be redirected to the payment gateway after confirming."}
-                </p>
+
+                {gateway === "wallet_instapay" ? (
+                  <div className="mt-4 space-y-4 p-4 rounded-xl bg-brand/5 border border-brand/30">
+                    <div className="text-sm leading-relaxed">
+                      {lang === "ar" ? (
+                        <>
+                          <p className="font-bold mb-2">خطوات الدفع:</p>
+                          <ol className="list-decimal ps-5 space-y-1">
+                            <li>
+                              حوّل مبلغ <span className="font-bold">{cartTotal} ج.م</span> عبر
+                              انستاباي أو أي محفظة إلكترونية على الرقم:
+                            </li>
+                            <li>
+                              <a
+                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono font-bold text-brand text-lg underline"
+                                dir="ltr"
+                              >
+                                +{WHATSAPP_NUMBER}
+                              </a>{" "}
+                              <span className="text-xs text-muted-foreground">
+                                (نفس رقم الواتساب)
+                              </span>
+                            </li>
+                            <li>ارفع صورة إيصال التحويل واكتب الرقم اللي حولت منه بالأسفل.</li>
+                          </ol>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-bold mb-2">Payment steps:</p>
+                          <ol className="list-decimal ps-5 space-y-1">
+                            <li>
+                              Transfer <span className="font-bold">{cartTotal} EGP</span> via
+                              Instapay or any e-wallet to:
+                            </li>
+                            <li>
+                              <a
+                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-mono font-bold text-brand text-lg underline"
+                                dir="ltr"
+                              >
+                                +{WHATSAPP_NUMBER}
+                              </a>{" "}
+                              <span className="text-xs text-muted-foreground">
+                                (same WhatsApp number)
+                              </span>
+                            </li>
+                            <li>Upload the receipt screenshot and enter the sending number below.</li>
+                          </ol>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold text-muted-foreground">
+                        {lang === "ar" ? "الرقم الذي تم التحويل منه" : "Phone number you transferred from"}
+                      </label>
+                      <input
+                        required
+                        type="tel"
+                        value={senderPhone}
+                        onChange={(e) => setSenderPhone(e.target.value)}
+                        placeholder={lang === "ar" ? "01xxxxxxxxx" : "01xxxxxxxxx"}
+                        className="px-4 py-3 bg-background border border-border rounded-lg"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <label className="text-xs font-bold text-muted-foreground">
+                        {lang === "ar" ? "صورة إيصال الدفع" : "Payment receipt screenshot"}
+                      </label>
+                      <input
+                        required
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                        className="px-4 py-3 bg-background border border-border rounded-lg text-sm file:me-3 file:px-3 file:py-1 file:rounded-md file:border-0 file:bg-brand file:text-brand-foreground"
+                      />
+                      {proofFile && (
+                        <p className="text-xs text-muted-foreground truncate">{proofFile.name}</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    {lang === "ar"
+                      ? "بعد التأكيد ستُنقل إلى بوابة الدفع لإتمام العملية."
+                      : "You will be redirected to the payment gateway after confirming."}
+                  </p>
+                )}
               </section>
 
               {error && <p className="text-destructive text-sm">{error}</p>}
