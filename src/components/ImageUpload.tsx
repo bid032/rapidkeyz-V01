@@ -9,7 +9,23 @@ type Props = {
   className?: string;
   /** Force output to a square of this size (px). Default 1080. Set to 0 to keep original. */
   size?: number;
+  /** If set, reject uploads whose exact pixel dimensions don't match (no resize). */
+  requireExactDimensions?: { width: number; height: number };
 };
+
+async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  const url = URL.createObjectURL(file);
+  try {
+    return await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res({ width: i.naturalWidth, height: i.naturalHeight });
+      i.onerror = () => rej(new Error("Invalid image"));
+      i.src = url;
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 /** Resize/crop an image file to a centered square PNG of `size`×`size`. */
 async function resizeToSquare(file: File, size: number): Promise<Blob> {
@@ -45,7 +61,7 @@ async function resizeToSquare(file: File, size: number): Promise<Blob> {
   );
 }
 
-export function ImageUpload({ bucket, value, onChange, label, className, size = 1080 }: Props) {
+export function ImageUpload({ bucket, value, onChange, label, className, size = 1080, requireExactDimensions }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,13 +69,22 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
     setError(null);
     setUploading(true);
     try {
-      const blob = size > 0 ? await resizeToSquare(file, size) : file;
-      const ext = size > 0 ? "png" : (file.name.split(".").pop() ?? "png");
+      if (requireExactDimensions) {
+        const { width, height } = await getImageDimensions(file);
+        if (width !== requireExactDimensions.width || height !== requireExactDimensions.height) {
+          throw new Error(
+            `مقاس الصورة لازم يكون ${requireExactDimensions.width}×${requireExactDimensions.height} بكسل بالظبط (نسبة 4:5). الصورة اللي رفعتها ${width}×${height}.`
+          );
+        }
+      }
+      const useResize = size > 0 && !requireExactDimensions;
+      const blob = useResize ? await resizeToSquare(file, size) : file;
+      const ext = useResize ? "png" : (file.name.split(".").pop() ?? "png");
       const path = `${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage.from(bucket).upload(path, blob, {
         cacheControl: "3600",
         upsert: false,
-        contentType: size > 0 ? "image/png" : file.type,
+        contentType: useResize ? "image/png" : file.type,
       });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -103,11 +128,15 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
           />
         </label>
       </div>
-      {size > 0 && (
+      {requireExactDimensions ? (
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط (نسبة 4:5). أي مقاس مختلف مش هيتقبل.
+        </p>
+      ) : size > 0 ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
           هيتم قص وتحويل الصورة تلقائيًا إلى مقاس {size}×{size} بكسل مربع.
         </p>
-      )}
+      ) : null}
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );
