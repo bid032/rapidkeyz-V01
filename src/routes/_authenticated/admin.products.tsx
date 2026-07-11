@@ -350,6 +350,16 @@ function AdminProducts() {
                   <option value="both">Both — العميل يختار</option>
                 </select>
               </Field>
+              <Field label="🏷️ نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={95}
+                  value={editing.discount_percent}
+                  onChange={(e) => setEditing({ ...editing, discount_percent: Math.max(0, Math.min(95, +e.target.value || 0)) })}
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg font-bold"
+                />
+              </Field>
               <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
