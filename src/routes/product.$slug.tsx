@@ -110,7 +110,9 @@ function ProductPage() {
       quantity: 1,
       iconUrl: product.icon_url,
       deliveryType: product.delivery_type,
-      accountType: product.account_type,
+      accountType: product.account_type === "both"
+        ? ((effectiveAcct === "shared" ? "shared" : "private") as "private" | "shared")
+        : product.account_type,
     });
     if (goToCart) navigate({ to: "/cart" });
   };
