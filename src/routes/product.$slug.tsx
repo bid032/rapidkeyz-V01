@@ -107,6 +107,10 @@ function ProductPage() {
 
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
+    const acct: "private" | "shared" | "both" | "own" =
+      product.account_type === "both"
+        ? (effectiveAcct === "shared" ? "shared" : "private")
+        : (product.account_type as "private" | "shared" | "both" | "own");
     addToCart({
       productId: product.id,
       planId: selected.id,
@@ -116,9 +120,7 @@ function ProductPage() {
       quantity: 1,
       iconUrl: product.icon_url,
       deliveryType: product.delivery_type,
-      accountType: product.account_type === "both"
-        ? ((effectiveAcct === "shared" ? "shared" : "private") as "private" | "shared")
-        : product.account_type,
+      accountType: acct,
     });
     if (goToCart) navigate({ to: "/cart" });
   };
