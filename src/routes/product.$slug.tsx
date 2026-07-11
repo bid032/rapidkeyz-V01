@@ -35,7 +35,19 @@ function ProductPage() {
     queryKey: ["product", slug],
     queryFn: () => fetchProduct(slug),
   });
+  const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
+
+  const parsePlan = (pl: any) => {
+    const en = String(pl.label_en ?? "");
+    const ar = String(pl.label_ar ?? "");
+    let acct: "private" | "shared" | "any" = "any";
+    if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) acct = "private";
+    else if (/shared/i.test(en) || /مشترك|شير/i.test(ar)) acct = "shared";
+    const durEn = en.replace(/^(private|shared)\s*account\s*-\s*/i, "").trim() || en;
+    const durAr = ar.replace(/^(Private|Shared)\s*Account\s*-\s*/i, "").trim() || ar;
+    return { acct, durEn, durAr };
+  };
 
   if (isLoading) {
     return (
