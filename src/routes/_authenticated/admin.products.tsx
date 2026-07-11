@@ -95,7 +95,12 @@ function AdminProducts() {
 
   const save = useMutation({
     mutationFn: async (f: ProductForm) => {
-      const payload: any = { ...f };
+      const types = f.account_types.length > 0 ? f.account_types : ["shared" as const];
+      const payload: any = {
+        ...f,
+        account_types: types,
+        account_type: deriveLegacyAccountType(types),
+      };
       if (f.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", f.id);
         if (error) throw error;
