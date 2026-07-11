@@ -19,7 +19,7 @@ type ProductForm = {
   icon_url: string;
   category_id: string | null;
   delivery_type: "instant" | "manual";
-  account_type: "private" | "shared" | "both";
+  account_type: "private" | "shared" | "both" | "own";
   status: "active" | "draft" | "archived";
   is_featured: boolean;
   discount_percent: number;
