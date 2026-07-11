@@ -19,6 +19,10 @@ function CheckoutPage() {
   const [gateway, setGateway] = useState<Gateway>("paymob");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subEmails, setSubEmails] = useState<Record<string, string>>({});
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const privateItems = cart.filter((c) => c.accountType === "private");
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -35,6 +39,18 @@ function CheckoutPage() {
       return;
     }
     if (cart.length === 0) return;
+    for (const it of privateItems) {
+      const key = it.productId + it.planId;
+      const v = (subEmails[key] ?? "").trim();
+      if (!emailRegex.test(v)) {
+        setError(
+          lang === "ar"
+            ? `يرجى إدخال بريد إلكتروني صحيح لتفعيل الاشتراك الخاص (${it.productName})`
+            : `Please enter a valid email for the private subscription (${it.productName})`
+        );
+        return;
+      }
+    }
     setSubmitting(true);
     try {
       const { data: order, error: oErr } = await supabase
@@ -62,6 +78,10 @@ function CheckoutPage() {
         quantity: c.quantity,
         delivery_type: c.deliveryType,
         account_type: c.accountType,
+        subscription_email:
+          c.accountType === "private"
+            ? (subEmails[c.productId + c.planId] ?? "").trim()
+            : null,
       }));
       const { error: iErr } = await supabase.from("order_items").insert(items);
       if (iErr) throw iErr;
@@ -120,6 +140,43 @@ function CheckoutPage() {
                   />
                 </div>
               </section>
+
+              {privateItems.length > 0 && (
+                <section className="p-6 bg-card border border-border rounded-2xl">
+                  <h2 className="font-bold mb-1">
+                    {lang === "ar" ? "بريد تفعيل الاشتراك الخاص" : "Private subscription email"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    {lang === "ar"
+                      ? "أدخل البريد الإلكتروني الذي تريد تفعيل الاشتراك عليه لكل منتج خاص."
+                      : "Enter the email you want the subscription activated on for each private product."}
+                  </p>
+                  <div className="grid gap-3">
+                    {privateItems.map((it) => {
+                      const key = it.productId + it.planId;
+                      return (
+                        <div key={key} className="grid gap-1">
+                          <label className="text-xs font-bold text-muted-foreground">
+                            {it.productName} — {it.planLabel}
+                          </label>
+                          <input
+                            required
+                            type="email"
+                            placeholder={lang === "ar" ? "example@email.com" : "example@email.com"}
+                            value={subEmails[key] ?? ""}
+                            onChange={(e) =>
+                              setSubEmails((s) => ({ ...s, [key]: e.target.value }))
+                            }
+                            className="px-4 py-3 bg-background border border-border rounded-lg"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+
 
               <section className="p-6 bg-card border border-border rounded-2xl">
                 <h2 className="font-bold mb-4">{t.checkout.payment}</h2>
