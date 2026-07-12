@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Testimonials } from "@/components/Testimonials";
 import { TrustSection } from "@/components/TrustSection";
+import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
