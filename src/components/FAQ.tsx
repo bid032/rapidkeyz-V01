@@ -109,8 +109,8 @@ export function FAQ() {
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground mt-3">
           {lang === "ar"
-            ? "إجابات سريعة عن ChatGPT Plus وMidjourney وNetflix والدفع والتسليم والضمان."
-            : "Quick answers about ChatGPT Plus, Midjourney, Netflix, payment, delivery and warranty."}
+            ? "إجابات سريعة عن ChatGPT Plus وMidjourney والدفع والتسليم والضمان."
+            : "Quick answers about ChatGPT Plus, Midjourney, payment, delivery and warranty."}
         </p>
       </motion.div>
 
