@@ -193,7 +193,9 @@ function ProductPage() {
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold mb-3">{name}</h1>
 
-          <div className="flex items-center gap-2 mb-5 text-sm">
+          {desc && <p className="text-muted-foreground text-lg mb-5 leading-relaxed">{desc}</p>}
+
+          <div className="flex items-center gap-2 mb-8 text-sm">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 animate-ping" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-success" />
@@ -203,7 +205,6 @@ function ProductPage() {
             </span>
           </div>
 
-          {desc && <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{desc}</p>}
 
           <div className="mb-6">
             <PricingConfigurator
