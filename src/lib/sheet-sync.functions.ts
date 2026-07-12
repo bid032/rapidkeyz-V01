@@ -18,11 +18,11 @@ export const getSheetInfo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { spreadsheetId: string }) => d)
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    const [{ data: isAdmin }, { data: isMod }] = await Promise.all([
+      context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" }),
+      context.supabase.rpc("has_role", { _user_id: context.userId, _role: "moderator" }),
+    ]);
+    if (!isAdmin && !isMod) throw new Error("Forbidden");
     const url = `${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`;
     const res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) {
