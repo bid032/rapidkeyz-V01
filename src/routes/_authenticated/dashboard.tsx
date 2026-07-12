@@ -131,3 +131,35 @@ function Dashboard() {
     </div>
   );
 }
+
+function CopyRow({ label, value, lang }: { label: string; value: string; lang: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="text-xs font-bold text-muted-foreground shrink-0 min-w-[70px]">{label}:</span>
+      <code className="flex-1 min-w-0 text-xs font-mono bg-background/60 px-2 py-1 rounded border border-border/60 break-all">
+        {value}
+      </code>
+      <button
+        type="button"
+        onClick={copy}
+        className={`shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold border transition ${
+          copied
+            ? "bg-success/15 border-success/40 text-success"
+            : "bg-brand/10 border-brand/30 text-brand hover:bg-brand hover:text-brand-foreground"
+        }`}
+        aria-label={lang === "ar" ? "نسخ" : "Copy"}
+      >
+        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+        <span>{copied ? (lang === "ar" ? "تم" : "Copied") : (lang === "ar" ? "نسخ" : "Copy")}</span>
+      </button>
+    </div>
+  );
+}
