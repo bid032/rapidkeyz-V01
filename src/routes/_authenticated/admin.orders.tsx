@@ -192,12 +192,18 @@ function AdminOrders() {
                     className="px-4 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50"
                   >تم التسليم</button>
                   <button
-                    onClick={() => { if (confirm("تأكيد إلغاء الطلب؟")) updateStatus.mutate({ id: o.id, status: "cancelled" }); }}
+                    onClick={async () => {
+                      const ok = await confirm({ title: "إلغاء الطلب", message: "متأكد إنك عاوز تلغي الطلب ده؟", tone: "danger", confirmLabel: "ألغِ الطلب" });
+                      if (ok) updateStatus.mutate({ id: o.id, status: "cancelled" });
+                    }}
                     disabled={o.status === "cancelled"}
                     className="px-4 py-2 bg-destructive text-white rounded font-bold text-sm disabled:opacity-50"
                   >✗ إلغاء</button>
                   <button
-                    onClick={() => { if (confirm("حذف الطلب نهائياً؟ لا يمكن التراجع.")) deleteOrder.mutate(o.id); }}
+                    onClick={async () => {
+                      const ok = await confirm({ title: "حذف الطلب نهائيًا", message: "حذف الطلب نهائيًا؟ لا يمكن التراجع.", tone: "danger", confirmLabel: "احذف نهائيًا" });
+                      if (ok) deleteOrder.mutate(o.id);
+                    }}
                     className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
                   >🗑 حذف نهائي</button>
                 </div>
