@@ -25,6 +25,16 @@ function CheckoutPage() {
   const [subEmails, setSubEmails] = useState<Record<string, string>>({});
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [copied, setCopied] = useState(false);
+  const copyNumber = async () => {
+    try {
+      await navigator.clipboard.writeText(WHATSAPP_NUMBER);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* ignore */
+    }
+  };
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const privateItems = cart.filter((c) => c.accountType === "private");
 
