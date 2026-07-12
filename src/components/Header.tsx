@@ -9,7 +9,7 @@ import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Header() {
-  const { lang, setLang, t, theme, toggleTheme, cartCount } = useApp();
+  const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount } = useApp();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
