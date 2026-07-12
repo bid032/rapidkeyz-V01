@@ -58,27 +58,41 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
         .in("orders.status", ["paid", "delivered"])
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as any[];
+      const items = (data ?? []) as any[];
+      const planIds = Array.from(new Set(items.map((r) => r.plan_id).filter(Boolean)));
+      const costMap = new Map<string, number>();
+      if (planIds.length) {
+        const { data: costs } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", planIds);
+        (costs ?? []).forEach((c: any) => costMap.set(c.plan_id, Number(c.cost_price ?? 0)));
+      }
+      return items.map((r) => {
+        const cost = costMap.get(r.plan_id) ?? 0;
+        const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
+        return { ...r, _cost: cost, _profit: profit };
+      });
     },
   });
 
   const exportSalesXlsx = () => {
     const rows = (sales.data ?? []).map((r) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
+      const total = Number(r.unit_price) * Number(r.quantity);
       return {
         "رقم الطلب": r.orders?.order_number,
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
         "سعر الوحدة": Number(r.unit_price),
-        "الإجمالي": Number(r.unit_price) * Number(r.quantity),
+        "الإجمالي": total,
+        "سعر الشراء": r._cost ?? 0,
+        "الربح": r._profit ?? 0,
         "التاريخ": d.toLocaleDateString("en-GB"),
         "الوقت": d.toLocaleTimeString("en-GB"),
         "الحالة": r.orders?.status,
@@ -235,6 +249,7 @@ function AdminOverview() {
                 <th className="p-2 text-start">الخطة</th>
                 <th className="p-2 text-start">الكمية</th>
                 <th className="p-2 text-start">السعر</th>
+                <th className="p-2 text-start">الربح</th>
                 <th className="p-2 text-start">التاريخ</th>
                 <th className="p-2 text-start">الوقت</th>
                 <th className="p-2 text-start">الطلب</th>
@@ -243,12 +258,14 @@ function AdminOverview() {
             <tbody>
               {sales.data?.map((r: any) => {
                 const d = new Date(r.orders?.created_at ?? r.created_at);
+                const profit = Number(r._profit ?? 0);
                 return (
                   <tr key={r.id} className="border-b border-border/60">
                     <td className="p-2 font-bold">{r.product_name}</td>
                     <td className="p-2 text-muted-foreground">{r.plan_label}</td>
                     <td className="p-2">{r.quantity}</td>
                     <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                    <td className={`p-2 font-bold ${profit >= 0 ? "text-success" : "text-destructive"}`}>{Math.round(profit)} {t.common.currency}</td>
                     <td className="p-2 font-mono text-xs">{d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
                     <td className="p-2 font-mono text-xs">{d.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
                     <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
@@ -256,7 +273,7 @@ function AdminOverview() {
                 );
               })}
               {!sales.data?.length && (
-                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
+                <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
               )}
             </tbody>
           </table>
