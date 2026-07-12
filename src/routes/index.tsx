@@ -257,7 +257,7 @@ function HomePage() {
           transition={{ duration: 0.5 }}
           className="flex items-center justify-between mb-8 sm:mb-12"
         >
-          <h2 className="text-xl sm:text-2xl font-bold">{t.home.trending}</h2>
+          <h2 data-gsap="scramble" className="text-xl sm:text-2xl font-bold">{t.home.trending}</h2>
           <Link to="/shop" className="text-xs sm:text-sm font-bold text-brand hover:underline">
             {t.home.viewAll} →
           </Link>
