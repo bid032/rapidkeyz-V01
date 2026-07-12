@@ -379,6 +379,53 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_active: boolean
+          lang: string
+          product_id: string
+          rating: number
+          reviewer_name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lang?: string
+          product_id: string
+          rating: number
+          reviewer_name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          lang?: string
+          product_id?: string
+          rating?: number
+          reviewer_name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
