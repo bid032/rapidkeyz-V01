@@ -64,7 +64,7 @@ export function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <div className="flex bg-muted rounded-full p-1">
             <button
               onClick={() => setLang("en")}
