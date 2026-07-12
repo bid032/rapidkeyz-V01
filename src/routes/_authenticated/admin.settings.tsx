@@ -47,6 +47,10 @@ function AdminSettings() {
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
       if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "stats") setStats((v: any) => ({ ...v, ...(s.value as any) }));
+      if (s.key === "theme_mode") {
+        const m = (s.value as any)?.mode;
+        if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
+      }
     }
   }, [settings.data]);
 
@@ -59,6 +63,7 @@ function AdminSettings() {
         { key: "hero", value: hero },
         { key: "socials", value: socials },
         { key: "stats", value: stats },
+        { key: "theme_mode", value: { mode: themeMode } },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
