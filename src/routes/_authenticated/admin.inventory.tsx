@@ -297,6 +297,44 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
               {busy ? "..." : "استيراد"}
             </button>
           </div>
+          {initialSheetUrl && (
+            <button
+              onClick={async () => {
+                const ok = await confirm({
+                  title: "إلغاء الاسترداد من الشيت",
+                  message: "هيتم مسح اللينك وحذف كل الحسابات المتاحة اللي جت من الشيت ده. (الحسابات اللي اتسلمت للعملاء هتفضل محفوظة). متأكد؟",
+                  tone: "danger",
+                  confirmLabel: "ألغِ الاسترداد",
+                });
+                if (!ok) return;
+                setBusy(true);
+                try {
+                  const { error } = await supabase
+                    .from("account_inventory")
+                    .delete()
+                    .eq("plan_id", planId)
+                    .eq("source", "sheet")
+                    .eq("status", "available");
+                  if (error) throw error;
+                  await supabase.from("product_plans").update({ sheet_csv_url: null }).eq("id", planId);
+                  await syncStock();
+                  setSheetUrl("");
+                  notify("تم إلغاء الاسترداد ومسح اللينك", "success");
+                  qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
+                  qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
+                  onChange();
+                } catch (e: any) {
+                  notify(e.message || "خطأ في الإلغاء", "error");
+                } finally {
+                  setBusy(false);
+                }
+              }}
+              disabled={busy}
+              className="mt-2 px-2 py-1 bg-destructive/10 text-destructive rounded text-[11px] font-bold disabled:opacity-50"
+            >
+              إلغاء الاسترداد من هذا الشيت ومسح اللينك
+            </button>
+          )}
         </div>
       </div>
 
