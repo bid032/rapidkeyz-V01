@@ -150,8 +150,8 @@ function AdminOverview() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-3xl font-extrabold">{t.admin.overview}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.overview}</h1>
         <div className="flex items-center gap-2">
           <label className="text-xs font-bold text-muted-foreground">فلتر الشهر:</label>
           <select
