@@ -219,7 +219,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
       onChange();
     } catch (e: any) {
-      notify(e.message || "خطأ في الرفع", "error");
+      showError(e, notify, lang);
     } finally {
       setBusy(false);
     }
