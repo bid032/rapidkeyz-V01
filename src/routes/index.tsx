@@ -241,7 +241,7 @@ function HomePage() {
 
       <Testimonials />
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
