@@ -290,3 +290,22 @@ function AdminSettings() {
     </div>
   );
 }
+
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  return (
+    <details
+      open={defaultOpen}
+      className="group bg-card border border-border rounded-2xl overflow-hidden [&[open]>summary_.chev]:rotate-180"
+    >
+      <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 p-4 sm:p-5 hover:bg-muted/40 transition">
+        <h2 className="font-bold text-sm sm:text-base min-w-0 truncate">{title}</h2>
+        <svg className="chev shrink-0 w-4 h-4 text-muted-foreground transition-transform" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </summary>
+      <div className="p-4 sm:p-6 pt-0 sm:pt-0 border-t border-border">
+        {children}
+      </div>
+    </details>
+  );
+}
