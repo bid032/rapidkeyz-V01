@@ -4,11 +4,16 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getSheetInfo } from "@/lib/sheet-sync.functions";
+import {
+  previewProductSheetTabs,
+  importAllTabsForProduct,
+} from "@/lib/sheet-product-import.functions";
 import { friendlyErrorMessage, showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   component: AdminInventory,
 });
+
 
 // Very small CSV parser (handles quoted fields with commas & escaped quotes)
 function parseCsv(text: string): string[][] {
