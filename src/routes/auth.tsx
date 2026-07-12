@@ -22,7 +22,7 @@ export const Route = createFileRoute("/auth")({
 
 
 function AuthPage() {
-  const { t } = useApp();
+  const { t, lang } = useApp();
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
