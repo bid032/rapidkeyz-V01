@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 type MonthKey = string; // YYYY-MM or "all"
 
 function AdminOverview() {
-  const { t, notify } = useApp();
+  const { t, lang, notify } = useApp();
   const qc = useQueryClient();
   const [month, setMonth] = useState<MonthKey>("all");
 
