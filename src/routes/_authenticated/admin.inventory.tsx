@@ -300,6 +300,46 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         </div>
       </div>
 
+      {!!batches.data?.length && (
+        <div className="border border-border rounded-lg overflow-hidden">
+          <div className="p-2 bg-muted text-xs font-bold">عمليات الاسترداد ({batches.data.length})</div>
+          <div className="max-h-48 overflow-y-auto divide-y divide-border">
+            {batches.data.map((b) => (
+              <div key={b.id} className="p-2 flex items-center justify-between gap-2 text-xs">
+                <div className="min-w-0">
+                  <div className="font-mono truncate">{new Date(b.created_at).toLocaleString("ar-EG")}</div>
+                  <div className="text-muted-foreground text-[11px]">
+                    {b.source === "sheet" ? "Google Sheet" : "CSV"} · {b.total} حساب ·
+                    <span className="text-success"> متاح {b.available}</span> ·
+                    <span> مسلَّم {b.delivered}</span>
+                  </div>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  {b.available > 0 && (
+                    <button
+                      onClick={() => delBatch(b.id, { onlyAvailable: true })}
+                      className="px-2 py-1 bg-destructive/10 text-destructive rounded font-bold text-[11px]"
+                      title="حذف المتاح فقط"
+                    >
+                      حذف المتاح
+                    </button>
+                  )}
+                  <button
+                    onClick={() => delBatch(b.id, { onlyAvailable: false })}
+                    className="px-2 py-1 bg-destructive text-destructive-foreground rounded font-bold text-[11px]"
+                    title="حذف الكل من هذه العملية"
+                  >
+                    حذف الكل
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
+
       {(() => {
         const COLS: { key: string; label: string; mask?: boolean }[] = [
           { key: "account_email", label: "Email" },
