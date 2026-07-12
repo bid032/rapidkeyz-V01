@@ -46,14 +46,26 @@ function AdminUsers() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-users"] }),
   });
 
+  const toggleRole = useMutation({
+    mutationFn: async ({ userId, role, add }: { userId: string; role: "admin" | "moderator"; add: boolean }) => {
+      if (add) {
+        await supabase.from("user_roles").insert({ user_id: userId, role });
+      } else {
+        await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", role);
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-users"] }),
+  });
+
   return (
     <div>
       <h1 className="text-2xl sm:text-3xl font-extrabold mb-6">{t.admin.users}</h1>
       <div className="bg-card border border-border rounded-2xl overflow-x-auto">
-        <table className="w-full text-sm min-w-[520px]">
+        <table className="w-full text-sm min-w-[620px]">
           <thead className="bg-muted">
             <tr><th className="p-3 text-start">Name</th><th className="p-3 text-start">Phone</th><th className="p-3 text-start">Roles</th><th className="p-3"></th></tr>
           </thead>
+
           <tbody>
             {users.data?.map((u: any) => {
               const isAdmin = u.user_roles?.some((r: any) => r.role === "admin");
