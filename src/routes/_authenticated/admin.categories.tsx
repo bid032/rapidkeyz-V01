@@ -21,7 +21,7 @@ function slugify(input: string): string {
 }
 
 function AdminCategories() {
-  const { t, confirm, notify } = useApp();
+  const { t, lang, confirm, notify } = useApp();
   const qc = useQueryClient();
   const [form, setForm] = useState({ slug: "", name_ar: "", name_en: "", sort_order: 0 });
 
