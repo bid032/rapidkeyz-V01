@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 
 
 function AdminUsers() {
-  const { t } = useApp();
+  const { t, lang, notify } = useApp();
   const qc = useQueryClient();
 
   const users = useQuery({
