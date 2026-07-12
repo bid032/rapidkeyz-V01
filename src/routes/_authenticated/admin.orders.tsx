@@ -235,15 +235,15 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
 
   return (
     <div className="p-4 bg-background border border-border rounded-xl">
-      <div className="flex justify-between mb-2">
-        <div className="text-sm">
+      <div className="flex justify-between mb-2 gap-2 flex-wrap">
+        <div className="text-sm min-w-0">
           <span className="font-bold">{item.product_name}</span>{" "}
           <span className="text-muted-foreground">— {item.plan_label} × {item.quantity}</span>
           <span className={`ml-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
           </span>
         </div>
-        <div className="text-sm font-bold">{item.unit_price} EGP</div>
+        <div className="text-sm font-bold shrink-0">{item.unit_price} EGP</div>
       </div>
       {item.subscription_email && (
         <div className="text-xs mb-2">
