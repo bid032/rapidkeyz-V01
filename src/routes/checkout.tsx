@@ -27,6 +27,7 @@ function CheckoutPage() {
   const [subEmails, setSubEmails] = useState<Record<string, string>>({});
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [successOrder, setSuccessOrder] = useState<{ number: string; delivered: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const copyNumber = async () => {
     try {
