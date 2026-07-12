@@ -32,23 +32,51 @@ function parseCsv(text: string): string[][] {
   return rows.filter((r) => r.some((c) => c.trim() !== ""));
 }
 
-/** Map CSV rows → inventory records. Expects header row with any of:
- * email, username, password, notes (case-insensitive; extras ignored). */
+/** Map CSV rows → inventory records. Recognizes any of:
+ * email, username/user, password/pass, key/code/license/product, notes/note (case-insensitive).
+ * "status" column is ignored (managed by the system).
+ * If a column doesn't match any known header, it's kept as a fallback. */
 function mapRows(rows: string[][]) {
   if (rows.length === 0) return [];
   const header = rows[0].map((h) => h.trim().toLowerCase());
-  const idx = (name: string) => header.findIndex((h) => h === name || h.includes(name));
-  const iE = idx("email");
-  const iU = idx("user");
-  const iP = idx("pass");
-  const iN = idx("note");
-  return rows.slice(1).map((r) => ({
-    account_email: iE >= 0 ? (r[iE] ?? "").trim() || null : null,
-    account_username: iU >= 0 ? (r[iU] ?? "").trim() || null : null,
-    account_password: iP >= 0 ? (r[iP] ?? "").trim() || null : null,
-    extra_notes: iN >= 0 ? (r[iN] ?? "").trim() || null : null,
-  }));
+  const findIdx = (matchers: string[]) =>
+    header.findIndex((h) => matchers.some((m) => h === m || h.includes(m)));
+
+  const iE = findIdx(["email", "mail", "ايميل"]);
+  const iU = findIdx(["username", "user", "login", "يوزر"]);
+  const iP = findIdx(["password", "pass", "pwd", "باسورد", "كلمة"]);
+  const iK = findIdx(["key", "code", "license", "licence", "serial", "product", "مفتاح", "كود"]);
+  const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
+  const iStatus = findIdx(["status", "state", "حالة"]);
+
+  // Fallback: if none of email/user/pass/key matched, treat first non-status column as key.
+  const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
+  const iFallback = iE < 0 && iU < 0 && iP < 0 && iK < 0
+    ? header.findIndex((_, i) => !used.has(i))
+    : -1;
+
+  const clean = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() || null : null);
+
+  return rows
+    .slice(1)
+    .map((r) => {
+      const email = clean(r, iE);
+      const pass = clean(r, iP);
+      const notes = clean(r, iN);
+      // Prefer explicit username, then key/code, then fallback column.
+      const usernameOrKey = clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback);
+      return {
+        account_email: email,
+        account_username: usernameOrKey,
+        account_password: pass,
+        extra_notes: notes,
+      };
+    })
+    .filter((rec) =>
+      rec.account_email || rec.account_username || rec.account_password || rec.extra_notes
+    );
 }
+
 
 function AdminInventory() {
   const { notify } = useApp();
@@ -381,7 +409,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       {(() => {
         const COLS: { key: string; label: string; mask?: boolean }[] = [
           { key: "account_email", label: "Email" },
-          { key: "account_username", label: "User" },
+          { key: "account_username", label: "Key / User" },
           { key: "account_password", label: "Pass", mask: true },
           { key: "extra_notes", label: "Notes" },
         ];
