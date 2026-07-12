@@ -92,7 +92,8 @@ function AuthPage() {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      setError(result.error.message ?? "OAuth error");
+      console.error("google oauth failed", result.error);
+      setError(friendlyErrorMessage(result.error, lang));
       return;
     }
     if (result.redirected) return;
