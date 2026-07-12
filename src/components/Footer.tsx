@@ -1,13 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
-import { useAdminRole } from "@/hooks/useAdminRole";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import { Phone, Mail, Shield } from "lucide-react";
+import { Phone, Mail } from "lucide-react";
 
 export function Footer() {
   const { t, theme, lang } = useApp();
-  const { canModerate } = useAdminRole();
 
   return (
     <footer className="relative pt-12 sm:pt-16 pb-8 px-3 sm:px-6 bg-card/30 mt-16 sm:mt-24">
