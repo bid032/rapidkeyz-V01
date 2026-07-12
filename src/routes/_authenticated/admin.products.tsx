@@ -765,6 +765,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
             + إضافة العرض
           </button>
         </form>
+        </div>
       </div>
     </div>
   );
