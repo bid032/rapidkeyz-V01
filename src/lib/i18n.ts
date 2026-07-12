@@ -290,7 +290,7 @@ export const translations = {
       subtitle:
         "Premium access to ChatGPT Plus, Midjourney, Netflix, and more. Delivered instantly. 100% Secure. Guaranteed uptime.",
       cta: "Browse Subscriptions",
-      ctaSecondary: "How it works",
+      ctaSecondary: "Contact Us",
       trending: "Best Sellers",
       trusted: "Trusted by 5k+ Professionals",
       viewAll: "View all",
