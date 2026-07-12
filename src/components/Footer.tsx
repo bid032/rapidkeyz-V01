@@ -6,7 +6,7 @@ import { Phone, Mail } from "lucide-react";
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="relative border-t border-border pt-16 pb-8 px-6 bg-card/30 mt-24">
+    <footer className="relative pt-16 pb-8 px-6 bg-card/30 mt-24">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 relative">
 
 
