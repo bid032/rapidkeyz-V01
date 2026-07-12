@@ -26,18 +26,18 @@ type StatItem = {
 };
 
 const DEFAULT_STATS: StatItem[] = [
-  { key: "years",     icon: <Award className="size-6" />,          value: 3,     suffix: "+", label_ar: "سنين خبرة في المجال",           label_en: "Years of experience" },
-  { key: "staff",     icon: <MessagesSquare className="size-6" />, value: 5,     suffix: "+", label_ar: "موظفين دعم في خدمتك",           label_en: "Support staff at your service" },
-  { key: "services",  icon: <Monitor className="size-6" />,        value: 30,    suffix: "+", label_ar: "اشتراك وخدمة رقمية مختلفة",     label_en: "Different digital services" },
-  { key: "orders",    icon: <ShoppingBag className="size-6" />,    value: 12000, suffix: "+", label_ar: "عملية شراء ناجحة",              label_en: "Successful orders" },
-  { key: "customers", icon: <Users className="size-6" />,          value: 2100,  suffix: "+", label_ar: "شخص وشركة يثق بينا",             label_en: "Customers & companies trust us" },
+  { key: "years",     icon: <Award className="size-8" />,          value: 3,     suffix: "+", label_ar: "سنين خبرة في المجال",           label_en: "Years of experience" },
+  { key: "staff",     icon: <MessagesSquare className="size-8" />, value: 5,     suffix: "+", label_ar: "موظفين دعم في خدمتك",           label_en: "Support staff at your service" },
+  { key: "services",  icon: <Monitor className="size-8" />,        value: 30,    suffix: "+", label_ar: "اشتراك وخدمة رقمية مختلفة",     label_en: "Different digital services" },
+  { key: "orders",    icon: <ShoppingBag className="size-8" />,    value: 12000, suffix: "+", label_ar: "عملية شراء ناجحة",              label_en: "Successful orders" },
+  { key: "customers", icon: <Users className="size-8" />,          value: 2100,  suffix: "+", label_ar: "شخص وشركة يثق بينا",             label_en: "Customers & companies trust us" },
 ];
 
 const FEATURES = [
-  { icon: <Phone className="size-6" />,        title_ar: "خدمة عملاء",       title_en: "Customer Care",       desc_ar: "متواجدون دائماً للرد على استفساراتك وحل مشاكلك",  desc_en: "Always available to answer & solve your issues" },
-  { icon: <Settings2 className="size-6" />,    title_ar: "دعم كامل للخدمة", title_en: "Full Support",        desc_ar: "نضمن استمرارية الخدمة طوال فترة الاشتراك",         desc_en: "We ensure continuity through your subscription" },
-  { icon: <ShieldCheck className="size-6" />,  title_ar: "ضمان 100%",         title_en: "100% Guarantee",      desc_ar: "جميع خدماتنا مضمونة وتعمل بكفاءة",                  desc_en: "All services guaranteed and working" },
-  { icon: <Zap className="size-6" />,          title_ar: "استلام سريع",       title_en: "Instant Delivery",    desc_ar: "احصل على اشتراكاتك وخدماتك فوراً",                  desc_en: "Get your subscriptions instantly" },
+  { icon: <Phone className="size-8" />,        title_ar: "خدمة عملاء",       title_en: "Customer Care",       desc_ar: "متواجدون دائماً للرد على استفساراتك وحل مشاكلك",  desc_en: "Always available to answer & solve your issues" },
+  { icon: <Settings2 className="size-8" />,    title_ar: "دعم كامل للخدمة", title_en: "Full Support",        desc_ar: "نضمن استمرارية الخدمة طوال فترة الاشتراك",         desc_en: "We ensure continuity through your subscription" },
+  { icon: <ShieldCheck className="size-8" />,  title_ar: "ضمان 100%",         title_en: "100% Guarantee",      desc_ar: "جميع خدماتنا مضمونة وتعمل بكفاءة",                  desc_en: "All services guaranteed and working" },
+  { icon: <Zap className="size-8" />,          title_ar: "استلام سريع",       title_en: "Instant Delivery",    desc_ar: "احصل على اشتراكاتك وخدماتك فوراً",                  desc_en: "Get your subscriptions instantly" },
 ];
 
 function AnimatedNumber({ value, suffix }: { value: number; suffix?: string }) {
@@ -131,7 +131,7 @@ export function TrustSection() {
             >
               <div className="absolute -top-8 -right-8 size-24 rounded-full bg-brand/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex items-center gap-3 sm:gap-4">
-                <div className="size-11 shrink-0 grid place-items-center rounded-xl bg-brand/10 text-brand border border-brand/20">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20">
                   {s.icon}
                 </div>
                 <div className="min-w-0 flex-1 flex flex-col items-start text-start">
@@ -158,15 +158,19 @@ export function TrustSection() {
               transition={{ delay: 0.15 + i * 0.08, duration: 0.5 }}
               className="group relative p-5 sm:p-6 rounded-2xl bg-card/60 border border-border hover:border-brand/40 hover:-translate-y-1 transition-all"
             >
-              <div className="size-12 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 mb-4 group-hover:brand-glow transition-all">
-                {f.icon}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow transition-all">
+                  {f.icon}
+                </div>
+                <div className="min-w-0 flex-1 flex flex-col items-start text-start">
+                  <h3 className="font-bold text-sm sm:text-base mb-1">
+                    {lang === "ar" ? f.title_ar : f.title_en}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {lang === "ar" ? f.desc_ar : f.desc_en}
+                  </p>
+                </div>
               </div>
-              <h3 className="font-bold text-sm sm:text-base mb-1.5">
-                {lang === "ar" ? f.title_ar : f.title_en}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                {lang === "ar" ? f.desc_ar : f.desc_en}
-              </p>
             </motion.div>
           ))}
         </div>
