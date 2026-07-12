@@ -205,110 +205,25 @@ function ProductPage() {
 
           {desc && <p className="text-muted-foreground text-lg mb-8 leading-relaxed">{desc}</p>}
 
-          <div className="mb-6 space-y-5">
-            {hasAcctChoice && (
-              <div>
-                <p className="text-xs font-bold mb-2 uppercase tracking-wider text-muted-foreground">
-                  {lang === "ar" ? "نوع الحساب" : "Account Type"}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {accountTypes.map((a) => {
-                    const isSel = effectiveAcct === a;
-                    return (
-                      <button
-                        key={a}
-                        onClick={() => { setAccountType(a); setPlanId(null); }}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${
-                          isSel
-                            ? "border-brand bg-brand text-brand-foreground"
-                            : "border-border bg-card hover:border-brand/40"
-                        }`}
-                      >
-                        {acctLabel(a)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <div>
-              <p className="text-xs font-bold mb-2 uppercase tracking-wider text-muted-foreground">
-                {t.product.chooseDuration}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {filteredPlans.map((pl: any) => {
-                  const isSelected = (selected?.id) === pl.id;
-                  const planStock = Number(pl.stock ?? 0);
-                  const planSoldOut = planStock <= 0;
-                  return (
-                    <button
-                      key={pl.id}
-                      onClick={() => setPlanId(pl.id)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold border transition inline-flex items-center gap-2 ${
-                        planSoldOut
-                          ? isSelected
-                            ? "border-destructive/60 bg-destructive/10 text-destructive"
-                            : "border-border bg-muted text-muted-foreground hover:border-destructive/40"
-                          : isSelected
-                            ? "border-brand bg-brand/10 text-brand"
-                            : "border-border bg-card hover:border-brand/40"
-                      }`}
-                    >
-                      <span className={planSoldOut ? "line-through opacity-70" : ""}>
-                        {lang === "ar" ? pl.durAr : pl.durEn}
-                      </span>
-                      {planSoldOut && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-black uppercase bg-destructive/15 text-destructive">
-                          {t.product.soldOut}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-                {filteredPlans.length === 0 && (
-                  <div className="text-muted-foreground text-sm">
-                    {lang === "ar" ? "لا توجد خطط متاحة حالياً" : "No plans available"}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {selected && (
-              <div className="flex items-baseline gap-3 pt-2 flex-wrap">
-                <span className="text-3xl font-extrabold text-brand">
-                  {finalPrice} {t.common.currency}
-                </span>
-                {hasDiscount ? (
-                  <>
-                    <span className="text-sm text-muted-foreground line-through">
-                      {rawPrice} {t.common.currency}
-                    </span>
-                    <span className="text-xs font-black bg-destructive/10 text-destructive px-2 py-0.5 rounded">
-                      -{discount}%
-                    </span>
-                  </>
-                ) : (
-                  selected.compare_price && Number(selected.compare_price) > Number(selected.price) && (
-                    <span className="text-sm text-muted-foreground line-through">
-                      {selected.compare_price} {t.common.currency}
-                    </span>
-                  )
-                )}
-              </div>
-            )}
-
-            {selected && !selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-              <p className="text-xs font-bold text-warning">
-                {t.product.stockLeft(selectedStock)}
-              </p>
-            )}
-            {selectedSoldOut && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm font-bold">
-                {t.product.soldOutHint}
-              </div>
-            )}
+          <div className="mb-6">
+            <PricingConfigurator
+              accountTypes={accountTypes}
+              effectiveAcct={effectiveAcct}
+              onAcctChange={(a) => {
+                setAccountType(a);
+                setPlanId(null);
+              }}
+              plans={filteredPlans as any}
+              selectedId={selected?.id}
+              onSelectPlan={(id) => setPlanId(id)}
+              discount={discount}
+              minRawPrice={Math.min(
+                ...filteredPlans.map((p: any) => Number(p.price)),
+                Number.POSITIVE_INFINITY,
+              ) === Number.POSITIVE_INFINITY ? 0 : Math.min(...filteredPlans.map((p: any) => Number(p.price)))}
+            />
           </div>
+
 
 
 
