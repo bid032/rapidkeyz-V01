@@ -32,43 +32,52 @@ function CartPage() {
               {cart.map((item) => (
                 <div
                   key={item.productId + item.planId}
-                  className="flex items-center gap-4 p-4 bg-card border border-border rounded-xl"
+                  className="p-3 sm:p-4 bg-card border border-border rounded-xl"
                 >
-                  <div className="size-14 bg-muted rounded-lg grid place-items-center overflow-hidden">
-                    {item.iconUrl ? (
-                      <img src={item.iconUrl} alt="" className="size-full object-cover" />
-                    ) : (
-                      <span className="font-bold text-brand">{item.productName.slice(0, 2)}</span>
-                    )}
+                  <div className="flex items-start gap-3">
+                    <div className="size-14 shrink-0 bg-muted rounded-lg grid place-items-center overflow-hidden">
+                      {item.iconUrl ? (
+                        <img src={item.iconUrl} alt="" className="size-full object-cover" />
+                      ) : (
+                        <span className="font-bold text-brand">{item.productName.slice(0, 2)}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold truncate">{item.productName}</div>
+                      <div className="text-xs text-muted-foreground truncate">{item.planLabel}</div>
+                      <div className="mt-1 font-bold text-brand sm:hidden">
+                        {item.price * item.quantity} {t.common.currency}
+                      </div>
+                    </div>
+                    <div className="hidden sm:block font-bold min-w-24 text-end">
+                      {item.price * item.quantity} {t.common.currency}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-bold">{item.productName}</div>
-                    <div className="text-xs text-muted-foreground">{item.planLabel}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  <div className="mt-3 pt-3 border-t border-border/60 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => updateQty(item.productId, item.planId, item.quantity - 1)}
+                        className="size-8 border border-border rounded"
+                        aria-label="-"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 text-center font-bold">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQty(item.productId, item.planId, item.quantity + 1)}
+                        className="size-8 border border-border rounded"
+                        aria-label="+"
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
-                      onClick={() => updateQty(item.productId, item.planId, item.quantity - 1)}
-                      className="size-8 border border-border rounded"
+                      onClick={() => removeFromCart(item.productId, item.planId)}
+                      className="text-destructive text-xs font-bold hover:underline"
                     >
-                      -
-                    </button>
-                    <span className="w-8 text-center font-bold">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQty(item.productId, item.planId, item.quantity + 1)}
-                      className="size-8 border border-border rounded"
-                    >
-                      +
+                      {t.cart.remove}
                     </button>
                   </div>
-                  <div className="font-bold min-w-24 text-end">
-                    {item.price * item.quantity} {t.common.currency}
-                  </div>
-                  <button
-                    onClick={() => removeFromCart(item.productId, item.planId)}
-                    className="text-destructive text-xs hover:underline"
-                  >
-                    {t.cart.remove}
-                  </button>
                 </div>
               ))}
             </div>
