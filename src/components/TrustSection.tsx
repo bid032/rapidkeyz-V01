@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
+import { useInView } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { BrandName } from "@/components/BrandName";
 import {
   Award,
   MessagesSquare,
