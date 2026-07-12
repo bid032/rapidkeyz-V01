@@ -551,6 +551,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_users: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+        }[]
+      }
       admin_revenue_by_month: {
         Args: never
         Returns: {
