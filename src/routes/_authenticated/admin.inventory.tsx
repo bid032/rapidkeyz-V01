@@ -215,18 +215,34 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     await insertRows(parsed, "csv");
   };
 
+  const normalizeSheetUrl = (raw: string): string => {
+    const url = raw.trim();
+    if (/output=csv/i.test(url) || /[?&]format=csv/i.test(url)) return url;
+    const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (m) {
+      const id = m[1];
+      const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
+      const gid = gidMatch ? gidMatch[1] : "0";
+      return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+    }
+    return url;
+  };
+
   const handleFetchSheet = async () => {
     if (!sheetUrl.trim()) return;
     setBusy(true);
     try {
-      const res = await fetch(sheetUrl.trim());
+      const res = await fetch(normalizeSheetUrl(sheetUrl));
       if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
       const text = await res.text();
+      if (/^\s*<(!doctype|html)/i.test(text)) {
+        throw new Error("اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link — Viewer، أو File → Share → Publish to web → CSV.");
+      }
       const parsed = mapRows(parseCsv(text));
       await supabase.from("product_plans").update({ sheet_csv_url: sheetUrl.trim() }).eq("id", planId);
       await insertRows(parsed, "sheet");
     } catch (e: any) {
-      notify(`تعذر قراءة الشيت: ${e.message}. تأكد إنه Published to web كـ CSV.`, "error");
+      notify(`تعذر قراءة الشيت: ${e.message}`, "error");
     } finally {
       setBusy(false);
     }
