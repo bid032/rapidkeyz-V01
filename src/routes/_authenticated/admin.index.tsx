@@ -24,8 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 type MonthKey = string; // YYYY-MM or "all"
 
 function AdminOverview() {
-  const { t, lang, notify } = useApp();
-  const qc = useQueryClient();
+  const { t, lang } = useApp();
   const [month, setMonth] = useState<MonthKey>("all");
 
   const range = useMemo(() => {
