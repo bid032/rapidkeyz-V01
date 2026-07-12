@@ -179,6 +179,13 @@ function CheckoutPage() {
       }
 
       clearCart();
+      if (gateway === "simulate") {
+        setSuccessOrder({
+          number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
+          delivered: hasInstant && allInstantDelivered,
+        });
+        return;
+      }
       if (user) navigate({ to: "/dashboard" });
       else navigate({ to: "/" });
     } catch (err: any) {
