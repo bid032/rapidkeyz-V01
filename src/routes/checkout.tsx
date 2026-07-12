@@ -325,17 +325,17 @@ function CheckoutPage() {
                               Instapay or any e-wallet to:
                             </li>
                             <li>
-                              <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-mono font-bold text-brand text-lg underline"
+                              <button
+                                type="button"
+                                onClick={copyNumber}
+                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-lg underline decoration-dotted hover:text-brand/80"
                                 dir="ltr"
+                                title="Click to copy"
                               >
                                 +{WHATSAPP_NUMBER}
-                              </a>{" "}
+                              </button>{" "}
                               <span className="text-xs text-muted-foreground">
-                                (same WhatsApp number)
+                                {copied ? "(Copied ✓)" : "(Click the number to copy)"}
                               </span>
                             </li>
                             <li>Upload the receipt screenshot and enter the sending number below.</li>
