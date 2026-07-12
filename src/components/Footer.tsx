@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import { Phone, Mail } from "lucide-react";
+import { Phone, Mail, Shield } from "lucide-react";
 
 export function Footer() {
   const { t, theme, lang } = useApp();
+  const { canModerate } = useAdminRole();
 
   return (
     <footer className="relative pt-12 sm:pt-16 pb-8 px-3 sm:px-6 bg-card/30 mt-16 sm:mt-24">
@@ -35,6 +37,14 @@ export function Footer() {
             <li><Link to="/about" className="hover:text-foreground transition-colors">{t.footer.about}</Link></li>
             <li><Link to="/privacy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
             <li><Link to="/terms" className="hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
+            {canModerate && (
+              <li>
+                <Link to="/admin" className="inline-flex items-center gap-1.5 text-brand font-bold hover:underline">
+                  <Shield className="size-3.5" />
+                  {lang === "ar" ? "لوحة الأدمن" : "Admin Panel"}
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
