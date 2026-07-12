@@ -24,6 +24,7 @@ export type CartItem = {
 };
 
 type Theme = "dark" | "light";
+type ThemeMode = "light" | "dark" | "both";
 
 type ConfirmOptions = {
   title?: string;
@@ -41,6 +42,7 @@ type AppState = {
   t: Dict;
   theme: Theme;
   toggleTheme: () => void;
+  themeMode: ThemeMode;
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string, planId: string) => void;
