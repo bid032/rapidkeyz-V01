@@ -57,6 +57,12 @@ export function Header() {
             <Link to="/about" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.about}
             </Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
+              {t.nav.terms}
+            </Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
+              {t.nav.privacy}
+            </Link>
             {user && (
               <Link to="/dashboard" className="hover:text-foreground transition-colors">
                 {t.nav.dashboard}
@@ -156,6 +162,12 @@ export function Header() {
                 </Link>
                 <Link to="/about" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
                   {t.nav.about}
+                </Link>
+                <Link to="/terms" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
+                  {t.nav.terms}
+                </Link>
+                <Link to="/privacy" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
+                  {t.nav.privacy}
                 </Link>
                 {user && (
                   <Link to="/dashboard" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
