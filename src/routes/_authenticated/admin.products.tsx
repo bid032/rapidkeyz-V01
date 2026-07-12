@@ -174,8 +174,8 @@ function AdminProducts() {
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <table className="w-full">
+      <div className="bg-card border border-border rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-muted">
             <tr className="text-start text-xs uppercase tracking-widest text-muted-foreground">
               <th className="p-4 text-start">{t.admin.name}</th>
