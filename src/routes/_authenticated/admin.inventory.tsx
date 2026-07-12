@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { getSheetInfo } from "@/lib/sheet-sync.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   component: AdminInventory,
