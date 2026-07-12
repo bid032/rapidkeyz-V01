@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
@@ -11,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 type MonthKey = string; // YYYY-MM or "all"
 
 function AdminOverview() {
-  const { t, notify } = useApp();
+  const { t, lang, notify } = useApp();
   const qc = useQueryClient();
   const [month, setMonth] = useState<MonthKey>("all");
 
@@ -51,6 +52,45 @@ function AdminOverview() {
       return (data ?? []) as { month: string; revenue: number; profit: number; orders_count: number }[];
     },
   });
+
+  const sales = useQuery({
+    queryKey: ["admin-sales-details", month],
+    queryFn: async () => {
+      let q = supabase
+        .from("order_items")
+        .select("id, product_name, plan_label, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
+        .in("orders.status", ["paid", "delivered"])
+        .order("created_at", { ascending: false });
+      if (range.start) q = q.gte("orders.created_at", range.start);
+      if (range.end) q = q.lt("orders.created_at", range.end);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+
+  const exportSalesXlsx = () => {
+    const rows = (sales.data ?? []).map((r) => {
+      const d = new Date(r.orders?.created_at ?? r.created_at);
+      return {
+        "رقم الطلب": r.orders?.order_number,
+        "الخدمة": r.product_name,
+        "الخطة": r.plan_label,
+        "الكمية": r.quantity,
+        "سعر الوحدة": Number(r.unit_price),
+        "الإجمالي": Number(r.unit_price) * Number(r.quantity),
+        "التاريخ": d.toLocaleDateString("en-GB"),
+        "الوقت": d.toLocaleTimeString("en-GB"),
+        "الحالة": r.orders?.status,
+        "العميل": r.orders?.customer_email,
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sales");
+    const suffix = month === "all" ? "all" : month;
+    XLSX.writeFile(wb, `sales-${suffix}.xlsx`);
+  };
 
   const settings = useQuery({
     queryKey: ["site-settings"],
@@ -165,6 +205,58 @@ function AdminOverview() {
               ))}
               {!monthly.data?.length && (
                 <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">مفيش بيانات إيرادات لسه</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="p-6 bg-card border border-border rounded-2xl mt-6">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 className="font-bold text-lg">تفاصيل المبيعات</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {month === "all" ? "كل المبيعات" : `مبيعات شهر ${month}`} — {sales.data?.length ?? 0} عملية
+            </p>
+          </div>
+          <button
+            onClick={exportSalesXlsx}
+            disabled={!sales.data?.length}
+            className="px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold text-sm disabled:opacity-50"
+          >
+            ⬇ تحميل Excel
+          </button>
+        </div>
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-card">
+              <tr className="text-start text-xs uppercase text-muted-foreground border-b border-border">
+                <th className="p-2 text-start">الخدمة</th>
+                <th className="p-2 text-start">الخطة</th>
+                <th className="p-2 text-start">الكمية</th>
+                <th className="p-2 text-start">السعر</th>
+                <th className="p-2 text-start">التاريخ</th>
+                <th className="p-2 text-start">الوقت</th>
+                <th className="p-2 text-start">الطلب</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sales.data?.map((r: any) => {
+                const d = new Date(r.orders?.created_at ?? r.created_at);
+                return (
+                  <tr key={r.id} className="border-b border-border/60">
+                    <td className="p-2 font-bold">{r.product_name}</td>
+                    <td className="p-2 text-muted-foreground">{r.plan_label}</td>
+                    <td className="p-2">{r.quantity}</td>
+                    <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                    <td className="p-2 font-mono text-xs">{d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
+                    <td className="p-2 font-mono text-xs">{d.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
+                    <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
+                  </tr>
+                );
+              })}
+              {!sales.data?.length && (
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
               )}
             </tbody>
           </table>
