@@ -83,13 +83,16 @@ function AdminOverview() {
   const exportSalesXlsx = () => {
     const rows = (sales.data ?? []).map((r) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
+      const total = Number(r.unit_price) * Number(r.quantity);
       return {
         "رقم الطلب": r.orders?.order_number,
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
         "سعر الوحدة": Number(r.unit_price),
-        "الإجمالي": Number(r.unit_price) * Number(r.quantity),
+        "الإجمالي": total,
+        "سعر الشراء": r._cost ?? 0,
+        "الربح": r._profit ?? 0,
         "التاريخ": d.toLocaleDateString("en-GB"),
         "الوقت": d.toLocaleTimeString("en-GB"),
         "الحالة": r.orders?.status,
