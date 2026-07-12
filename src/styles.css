@@ -140,3 +140,16 @@
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Hide Lovable badge on published site */
+#lovable-badge,
+a[href*="lovable.dev"][href*="badge"],
+a[aria-label*="Lovable" i],
+a[aria-label*="Edit with Lovable" i],
+[data-lovable-badge],
+iframe[src*="lovable.dev"][src*="badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
