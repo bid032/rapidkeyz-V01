@@ -58,7 +58,7 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at), plan_costs:plan_id(cost_price)")
         .in("orders.status", ["paid", "delivered"])
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
