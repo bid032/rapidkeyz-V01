@@ -131,7 +131,9 @@ function HomePage() {
               {hero.cta}
             </Link>
             <a
-              href="#trending"
+              href="https://wa.me/201284234815"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold border border-border hover:bg-muted transition-all"
             >
               {hero.ctaSecondary}
