@@ -76,23 +76,19 @@ function ResetPasswordPage() {
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                required
-                type="password"
-                minLength={6}
-                placeholder="كلمة السر الجديدة"
+              <PasswordField
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                onChange={setPassword}
+                show={showPassword}
+                onToggle={() => setShowPassword((v) => !v)}
+                placeholder="كلمة السر الجديدة"
               />
-              <input
-                required
-                type="password"
-                minLength={6}
-                placeholder="تأكيد كلمة السر"
+              <PasswordField
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                onChange={setConfirm}
+                show={showConfirm}
+                onToggle={() => setShowConfirm((v) => !v)}
+                placeholder="تأكيد كلمة السر"
               />
               {error && <p className="text-destructive text-sm">{error}</p>}
               {info && (
