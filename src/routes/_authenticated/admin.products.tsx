@@ -599,16 +599,17 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
-      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="font-bold text-lg">العروض والأسعار والمخزون</h3>
-            <p className="text-xs text-muted-foreground mt-1">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
+      <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
+        <div className="w-full max-w-3xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8">
+        <div className="flex justify-between items-start gap-2 mb-2">
+          <div className="min-w-0">
+            <h3 className="font-bold text-base sm:text-lg">العروض والأسعار والمخزون</h3>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
               كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح — ومش بيظهر للعميل نهائيًا.
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
+          <button onClick={onClose} className="shrink-0 text-muted-foreground hover:text-foreground text-xl leading-none">✕</button>
         </div>
 
         <div className="space-y-3 my-4">
