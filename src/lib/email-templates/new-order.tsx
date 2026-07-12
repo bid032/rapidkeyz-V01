@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {
-  Body, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text,
-} from '@react-email/components'
+import { Html, Preview, Link, Section } from '@react-email/components'
+import { BrandLayout, styles, Head, Heading, Text, Hr } from './_brand'
 
 interface Item {
   product_name: string
@@ -32,42 +31,48 @@ export const NewOrderEmail = ({
   <Html lang="ar" dir="rtl">
     <Head />
     <Preview>{`طلب جديد #${orderNumber} — ${total} ${currency}`}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>طلب جديد #{orderNumber}</Heading>
-        <Text style={text}>
-          <b>المبلغ:</b> {total} {currency}<br />
-          <b>طريقة الدفع:</b> {paymentGateway}<br />
-          <b>العميل:</b> {customerEmail}{customerPhone ? ` — ${customerPhone}` : ''}
-          {paymentSenderPhone ? <><br /><b>رقم المحفظة المُحوَّل منه:</b> {paymentSenderPhone}</> : null}
-          {paymentProofUrl ? <><br /><b>إثبات الدفع:</b> {paymentProofUrl}</> : null}
-        </Text>
-        <Hr />
-        <Section>
-          {items.map((it, i) => (
-            <Text key={i} style={text}>
-              • {it.product_name} — {it.plan_label} × {it.quantity} — {it.unit_price} {currency}
-              {' '}<span style={{ color: '#888' }}>({it.delivery_type})</span>
-              {it.subscription_email ? <><br />&nbsp;&nbsp;تفعيل على: {it.subscription_email}</> : null}
-            </Text>
-          ))}
+    <BrandLayout preview={`طلب جديد #${orderNumber}`} lang="ar">
+      <Heading style={styles.h1}>🔔 طلب جديد #{orderNumber}</Heading>
+      <Text style={styles.text}>
+        وصل طلب جديد ينتظر المراجعة والتنفيذ.
+      </Text>
+
+      <Section style={styles.card}>
+        <Text style={styles.line}><b style={{ color: '#fff' }}>المبلغ:</b> <span style={styles.mono}>{total} {currency}</span></Text>
+        <Text style={styles.line}><b style={{ color: '#fff' }}>طريقة الدفع:</b> {paymentGateway}</Text>
+        <Text style={styles.line}><b style={{ color: '#fff' }}>العميل:</b> {customerEmail}{customerPhone ? ` — ${customerPhone}` : ''}</Text>
+        {paymentSenderPhone && (
+          <Text style={styles.line}><b style={{ color: '#fff' }}>رقم المحفظة:</b> <span style={styles.mono}>{paymentSenderPhone}</span></Text>
+        )}
+        {paymentProofUrl && (
+          <Text style={styles.line}><b style={{ color: '#fff' }}>إثبات الدفع:</b> <Link href={paymentProofUrl} style={styles.link}>عرض الصورة</Link></Text>
+        )}
+      </Section>
+
+      <Heading as="h2" style={styles.h2}>تفاصيل الطلب</Heading>
+      {items.map((it, i) => (
+        <Section key={i} style={styles.card}>
+          <Text style={styles.cardTitle}>{it.product_name}</Text>
+          <Text style={styles.line}>{it.plan_label} × {it.quantity} — {it.unit_price} {currency}</Text>
+          <Text style={styles.line}><span style={{ color: styles.h2.color }}>{it.delivery_type}</span></Text>
+          {it.subscription_email && (
+            <Text style={styles.line}>تفعيل على: <span style={styles.mono}>{it.subscription_email}</span></Text>
+          )}
         </Section>
-        <Hr />
-        <Text style={text}>
-          <Link href={adminUrl} style={link}>فتح لوحة الطلبات</Link>
-        </Text>
-      </Container>
-    </Body>
+      ))}
+
+      <Hr style={styles.hr} />
+      <Section style={{ textAlign: 'center', margin: '10px 0 4px' }}>
+        <Link href={adminUrl} style={styles.button}>فتح لوحة الطلبات</Link>
+      </Section>
+      <Text style={{ ...styles.muted, textAlign: 'center', marginTop: '12px' }}>
+        RapidKeyz Admin Panel
+      </Text>
+    </BrandLayout>
   </Html>
 )
 
 export default NewOrderEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#000', margin: '0 0 20px' }
-const text = { fontSize: '14px', color: '#333', lineHeight: '1.6', margin: '0 0 12px' }
-const link = { color: '#0066cc', textDecoration: 'underline' }
 
 export const template = {
   component: NewOrderEmail,

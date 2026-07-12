@@ -1,7 +1,6 @@
 import * as React from 'react'
-import {
-  Body, Container, Head, Heading, Hr, Html, Preview, Section, Text,
-} from '@react-email/components'
+import { Html, Preview, Section } from '@react-email/components'
+import { BrandLayout, styles, Head, Heading, Text, Hr } from './_brand'
 
 interface DeliveredAccount {
   product_name: string
@@ -25,54 +24,43 @@ export const OrderDeliveredEmail = ({
   <Html lang="ar" dir="rtl">
     <Head />
     <Preview>{`طلبك #${orderNumber} جاهز — بيانات الحساب في الإيميل`}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>تم تسليم طلبك ✓</Heading>
-        <Text style={text}>
-          شكراً لشرائك من <b>RapidKeyz</b>.<br />
-          رقم الطلب: <b>#{orderNumber}</b> — المبلغ: <b>{total} {currency}</b>
-        </Text>
-        <Hr />
-        <Heading as="h2" style={h2}>بيانات الحسابات:</Heading>
-        {accounts.map((a, i) => (
-          <Section key={i} style={card}>
-            <Text style={cardTitle}>
-              {a.product_name} — <span style={{ color: '#666', fontWeight: 400 }}>{a.plan_label}</span>
-            </Text>
-            {a.account_email && (
-              <Text style={line}><b>البريد:</b> <span style={mono}>{a.account_email}</span></Text>
-            )}
-            {a.account_username && (
-              <Text style={line}><b>اسم المستخدم:</b> <span style={mono}>{a.account_username}</span></Text>
-            )}
-            {a.account_password && (
-              <Text style={line}><b>كلمة السر:</b> <span style={mono}>{a.account_password}</span></Text>
-            )}
-            {a.extra_notes && (
-              <Text style={line}><b>ملاحظات:</b> {a.extra_notes}</Text>
-            )}
-          </Section>
-        ))}
-        <Hr />
-        <Text style={{ ...text, fontSize: '12px', color: '#888' }}>
-          لو حصل أي مشكلة في الدخول، تواصل معانا على واتساب أو رد على الإيميل ده.
-        </Text>
-      </Container>
-    </Body>
+    <BrandLayout preview={`طلبك #${orderNumber} جاهز`} lang="ar">
+      <Heading style={styles.h1}>✓ تم تسليم طلبك</Heading>
+      <Text style={styles.text}>
+        شكراً لشرائك من <b style={{ color: '#fff' }}>RapidKeyz</b> 🎉<br />
+        رقم الطلب: <span style={styles.mono}>#{orderNumber}</span> — المبلغ: <span style={styles.mono}>{total} {currency}</span>
+      </Text>
+
+      <Heading as="h2" style={styles.h2}>بيانات الحسابات</Heading>
+      {accounts.map((a, i) => (
+        <Section key={i} style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>— {a.plan_label}</span>
+          </Text>
+          {a.account_email && (
+            <Text style={styles.line}><b style={{ color: '#fff' }}>البريد:</b> <span style={styles.mono}>{a.account_email}</span></Text>
+          )}
+          {a.account_username && (
+            <Text style={styles.line}><b style={{ color: '#fff' }}>اسم المستخدم:</b> <span style={styles.mono}>{a.account_username}</span></Text>
+          )}
+          {a.account_password && (
+            <Text style={styles.line}><b style={{ color: '#fff' }}>كلمة السر:</b> <span style={styles.mono}>{a.account_password}</span></Text>
+          )}
+          {a.extra_notes && (
+            <Text style={styles.line}><b style={{ color: '#fff' }}>ملاحظات:</b> {a.extra_notes}</Text>
+          )}
+        </Section>
+      ))}
+
+      <Hr style={styles.hr} />
+      <Text style={styles.muted}>
+        لو حصل أي مشكلة في الدخول، تواصل معانا على واتساب أو رد على الإيميل ده وهنساعدك فوراً.
+      </Text>
+    </BrandLayout>
   </Html>
 )
 
 export default OrderDeliveredEmail
-
-const main = { backgroundColor: '#f6f8fb', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '24px', maxWidth: '600px', margin: '0 auto', backgroundColor: '#fff' }
-const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#0f766e', margin: '0 0 16px' }
-const h2 = { fontSize: '16px', fontWeight: 'bold' as const, color: '#111', margin: '18px 0 10px' }
-const text = { fontSize: '14px', color: '#333', lineHeight: '1.7', margin: '0 0 12px' }
-const card = { padding: '14px 16px', border: '1px solid #e5e7eb', borderRadius: '10px', marginBottom: '10px', backgroundColor: '#fafafa' }
-const cardTitle = { fontSize: '14px', fontWeight: 'bold' as const, color: '#111', margin: '0 0 8px' }
-const line = { fontSize: '13px', color: '#333', margin: '2px 0', lineHeight: '1.5' }
-const mono = { fontFamily: 'ui-monospace, Menlo, Consolas, monospace', backgroundColor: '#eef2ff', padding: '1px 6px', borderRadius: '4px' }
 
 export const template = {
   component: OrderDeliveredEmail,
