@@ -81,10 +81,10 @@ export function Footer() {
   });
 
   return (
-    <footer className="relative pt-12 sm:pt-16 pb-8 px-3 sm:px-6 bg-card/30 mt-16 sm:mt-24">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-10 relative">
+    <footer className="relative pt-10 sm:pt-16 pb-8 px-4 sm:px-6 bg-card/30 mt-16 sm:mt-24">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 relative">
         {/* Brand */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:col-span-2 md:col-span-1 text-center sm:text-start items-center sm:items-start">
           <div className="flex items-center gap-2">
             <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
             <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
@@ -96,7 +96,7 @@ export function Footer() {
           </p>
 
           {activeSocials.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
               {activeSocials.map(({ key, label, Icon }) => (
                 <a
                   key={key}
