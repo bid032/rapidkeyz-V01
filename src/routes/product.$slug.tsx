@@ -249,6 +249,7 @@ function ProductPage() {
           </div>
         </div>
       </div>
+      <ProductTabs productName={name} description={desc} deliveryType={product.delivery_type} />
       <ProductDetails productName={name} accountTypes={accountTypes} />
       <Footer />
     </div>
