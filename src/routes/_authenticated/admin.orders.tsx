@@ -80,7 +80,11 @@ function AdminOrders() {
       const { error } = await supabase.from("orders").update({ status: status as any }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم تحديث الحالة" : "Status updated", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const deliver = useMutation({
@@ -91,7 +95,11 @@ function AdminOrders() {
       });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم التسليم" : "Delivered", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const deleteOrder = useMutation({
@@ -99,7 +107,11 @@ function AdminOrders() {
       const { error } = await supabase.from("orders").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم حذف الطلب" : "Order deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
