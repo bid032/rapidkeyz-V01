@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getSheetInfo } from "@/lib/sheet-sync.functions";
+import { friendlyErrorMessage, showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   component: AdminInventory,
@@ -182,7 +183,7 @@ function AdminInventory() {
 }
 
 function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: string; initialSheetUrl: string; onChange: () => void }) {
-  const { notify, confirm } = useApp();
+  const { notify, confirm, lang } = useApp();
   const qc = useQueryClient();
   const [sheetUrl, setSheetUrl] = useState(initialSheetUrl);
   const [busy, setBusy] = useState(false);
@@ -201,7 +202,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
   });
 
   const insertRows = async (records: any[], source: string) => {
-    if (records.length === 0) { notify("مفيش صفوف صالحة في الملف", "error"); return; }
+    if (records.length === 0) { notify(lang === "ar" ? "مفيش صفوف صالحة في الملف" : "No valid rows in the file", "error"); return; }
     setBusy(true);
     try {
       const batchId = (crypto as any).randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
@@ -218,7 +219,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
       onChange();
     } catch (e: any) {
-      notify(e.message || "خطأ في الرفع", "error");
+      showError(e, notify, lang);
     } finally {
       setBusy(false);
     }
@@ -289,7 +290,8 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         notify("تم الاستيراد بدون مزامنة تلقائية. أضف عمود اسمه 'status' في الشيت عشان يتحدّث تلقائيًا لما يتباع.", "info");
       }
     } catch (e: any) {
-      notify(`تعذر قراءة الشيت: ${e.message}`, "error");
+      console.error("sheet import failed", e);
+      notify((lang === "ar" ? "تعذر قراءة الشيت: " : "Failed to read the sheet: ") + friendlyErrorMessage(e, lang), "error");
     } finally {
       setBusy(false);
     }
@@ -345,7 +347,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     let q = supabase.from("account_inventory").delete().eq("plan_id", planId).eq("import_batch_id", batchId);
     if (opts.onlyAvailable) q = q.eq("status", "available");
     const { error } = await q;
-    if (error) { notify(error.message, "error"); return; }
+    if (error) { showError(error, notify, lang); return; }
     await syncStock();
     notify("تم حذف عملية الاسترداد", "success");
     qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
@@ -415,7 +417,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
                   qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
                   onChange();
                 } catch (e: any) {
-                  notify(e.message || "خطأ في الإلغاء", "error");
+                  showError(e, notify, lang);
                 } finally {
                   setBusy(false);
                 }

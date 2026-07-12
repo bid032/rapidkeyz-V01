@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2, Save, X, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { friendlyErrorMessage } from "@/lib/error-handler";
+import { useApp } from "@/contexts/AppContext";
 
 export const Route = createFileRoute("/_authenticated/admin/reviews")({
   component: AdminReviews,
@@ -23,6 +25,7 @@ type Review = {
 
 function AdminReviews() {
   const qc = useQueryClient();
+  const { lang } = useApp();
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<Review>>({
@@ -97,12 +100,12 @@ function AdminReviews() {
       }
     },
     onSuccess: () => {
-      toast.success("تم الحفظ");
+      toast.success(lang === "ar" ? "تم الحفظ" : "Saved");
       resetDraft();
       qc.invalidateQueries({ queryKey: ["admin-product-reviews", selectedProduct] });
       qc.invalidateQueries({ queryKey: ["product-reviews", selectedProduct] });
     },
-    onError: (e: any) => toast.error(e.message ?? "فشل الحفظ"),
+    onError: (e) => { console.error(e); toast.error(friendlyErrorMessage(e, lang)); },
   });
 
   const del = useMutation({
@@ -111,10 +114,11 @@ function AdminReviews() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("اتحذف");
+      toast.success(lang === "ar" ? "تم الحذف" : "Deleted");
       qc.invalidateQueries({ queryKey: ["admin-product-reviews", selectedProduct] });
       qc.invalidateQueries({ queryKey: ["product-reviews", selectedProduct] });
     },
+    onError: (e) => { console.error(e); toast.error(friendlyErrorMessage(e, lang)); },
   });
 
   const toggleActive = useMutation({
@@ -129,6 +133,7 @@ function AdminReviews() {
       qc.invalidateQueries({ queryKey: ["admin-product-reviews", selectedProduct] });
       qc.invalidateQueries({ queryKey: ["product-reviews", selectedProduct] });
     },
+    onError: (e) => { console.error(e); toast.error(friendlyErrorMessage(e, lang)); },
   });
 
   const selectedName = useMemo(() => {

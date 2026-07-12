@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { ImageUpload } from "@/components/ImageUpload";
+import { showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   component: AdminProducts,
@@ -68,7 +69,7 @@ function slugify(input: string): string {
 }
 
 function AdminProducts() {
-  const { t, confirm, notify } = useApp();
+  const { t, lang, confirm, notify } = useApp();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ProductForm | null>(null);
   const [planEditor, setPlanEditor] = useState<string | null>(null);
@@ -113,7 +114,9 @@ function AdminProducts() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setEditing(null);
+      notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
     },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const remove = useMutation({
@@ -121,7 +124,11 @@ function AdminProducts() {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-products"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      notify(lang === "ar" ? "تم حذف المنتج" : "Product deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
@@ -501,7 +508,7 @@ function Field({ label, hint, className, children }: { label: string; hint?: str
 
 function PlanEditor({ productId, onClose }: { productId: string; onClose: () => void }) {
   const qc = useQueryClient();
-  const { confirm, notify } = useApp();
+  const { lang, confirm, notify } = useApp();
   const plans = useQuery({
     queryKey: ["plans", productId],
     queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url").eq("product_id", productId).order("duration_days")).data ?? [],
@@ -557,9 +564,9 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0 });
-      notify("تم إضافة العرض", "success");
+      notify(lang === "ar" ? "تم إضافة العرض" : "Plan added", "success");
     },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const savePlan = useMutation({
@@ -584,18 +591,22 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setEdits((prev) => { const c = { ...prev }; delete c[id]; return c; });
-      notify("تم حفظ التعديلات", "success");
+      notify(lang === "ar" ? "تم حفظ التعديلات" : "Changes saved", "success");
     },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await supabase.from("product_plans").delete().eq("id", id); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("product_plans").delete().eq("id", id);
+      if (error) throw error;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      notify("تم مسح العرض", "success");
+      notify(lang === "ar" ? "تم مسح العرض" : "Plan deleted", "success");
     },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
   beforeLoad: async () => {
@@ -24,7 +25,7 @@ const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "re
 type Tab = "all" | "expiring";
 
 function AdminOrders() {
-  const { t, lang, confirm } = useApp();
+  const { t, lang, confirm, notify } = useApp();
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("all");
@@ -79,7 +80,11 @@ function AdminOrders() {
       const { error } = await supabase.from("orders").update({ status: status as any }).eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم تحديث الحالة" : "Status updated", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const deliver = useMutation({
@@ -90,7 +95,11 @@ function AdminOrders() {
       });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم التسليم" : "Delivered", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const deleteOrder = useMutation({
@@ -98,7 +107,11 @@ function AdminOrders() {
       const { error } = await supabase.from("orders").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم حذف الطلب" : "Order deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (

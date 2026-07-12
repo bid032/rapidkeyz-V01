@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUpload } from "@/components/ImageUpload";
 import { useApp } from "@/contexts/AppContext";
+import { showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/testimonials")({
   component: AdminTestimonials,
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/testimonials")({
 
 function AdminTestimonials() {
   const qc = useQueryClient();
-  const { confirm } = useApp();
+  const { confirm, notify, lang } = useApp();
 
   const list = useQuery({
     queryKey: ["admin-testimonials"],
@@ -30,7 +31,11 @@ function AdminTestimonials() {
       const { error } = await supabase.from("testimonial_images").insert({ image_url: url });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-testimonials"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
+      notify(lang === "ar" ? "تمت الإضافة" : "Added", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const toggleActive = useMutation({
@@ -39,6 +44,7 @@ function AdminTestimonials() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-testimonials"] }),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const remove = useMutation({
@@ -46,7 +52,11 @@ function AdminTestimonials() {
       const { error } = await supabase.from("testimonial_images").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-testimonials"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
+      notify(lang === "ar" ? "تم الحذف" : "Deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (

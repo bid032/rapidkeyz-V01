@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 
 
 function AdminUsers() {
-  const { t } = useApp();
+  const { t, lang, notify } = useApp();
   const qc = useQueryClient();
 
   const users = useQuery({
@@ -49,7 +50,11 @@ function AdminUsers() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-users"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      notify(lang === "ar" ? "تم تحديث الصلاحيات" : "Roles updated", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (

@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { friendlyErrorMessage } from "@/lib/error-handler";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/auth")({
 
 
 function AuthPage() {
-  const { t } = useApp();
+  const { t, lang } = useApp();
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
@@ -77,7 +78,8 @@ function AuthPage() {
       }
       navigate({ to: redirect ?? "/dashboard" });
     } catch (err: any) {
-      setError(err.message ?? "Error");
+      console.error("auth failed", err);
+      setError(friendlyErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
@@ -90,7 +92,8 @@ function AuthPage() {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      setError(result.error.message ?? "OAuth error");
+      console.error("google oauth failed", result.error);
+      setError(friendlyErrorMessage(result.error, lang));
       return;
     }
     if (result.redirected) return;

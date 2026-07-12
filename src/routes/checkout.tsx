@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
+import { friendlyErrorMessage } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -198,7 +199,8 @@ function CheckoutPage() {
       if (user) navigate({ to: "/dashboard" });
       else navigate({ to: "/" });
     } catch (err: any) {
-      setError(err.message ?? "Error");
+      console.error("checkout failed", err);
+      setError(friendlyErrorMessage(err, lang));
     } finally {
       setSubmitting(false);
     }
