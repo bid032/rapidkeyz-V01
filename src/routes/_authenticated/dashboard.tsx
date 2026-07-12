@@ -43,21 +43,20 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3 flex-wrap">
-          <div className="min-w-0">
-            <h1 className="text-2xl sm:text-4xl font-extrabold">{t.dashboard.title}</h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base break-all">
-              {t.dashboard.welcome}, {user?.email}
-            </p>
-          </div>
+      <PageHero
+        title={t.dashboard.title}
+        eyebrow={user?.email ? `${t.dashboard.welcome} · ${user.email}` : t.dashboard.welcome}
+      />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
+        <div className="flex justify-end mb-6">
           <button
             onClick={handleSignOut}
-            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40 shrink-0"
+            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
           >
             {t.nav.logout}
           </button>
         </div>
+
 
         <section className="mb-12">
           <h2 className="text-xl font-bold mb-4">{t.dashboard.myOrders}</h2>
