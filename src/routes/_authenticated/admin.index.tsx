@@ -102,8 +102,9 @@ function AdminOverview() {
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sales");
+    const siteName = (document.title || "site").replace(/[\\/:*?"<>|]+/g, "").trim() || "site";
     const suffix = month === "all" ? "all" : month;
-    XLSX.writeFile(wb, `sales-${suffix}.xlsx`);
+    XLSX.writeFile(wb, `${siteName} - ${suffix}.xlsx`);
   };
 
   const settings = useQuery({
