@@ -210,6 +210,58 @@ function AdminOverview() {
           </table>
         </div>
       </section>
+
+      <section className="p-6 bg-card border border-border rounded-2xl mt-6">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 className="font-bold text-lg">تفاصيل المبيعات</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {month === "all" ? "كل المبيعات" : `مبيعات شهر ${month}`} — {sales.data?.length ?? 0} عملية
+            </p>
+          </div>
+          <button
+            onClick={exportSalesXlsx}
+            disabled={!sales.data?.length}
+            className="px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold text-sm disabled:opacity-50"
+          >
+            ⬇ تحميل Excel
+          </button>
+        </div>
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-card">
+              <tr className="text-start text-xs uppercase text-muted-foreground border-b border-border">
+                <th className="p-2 text-start">الخدمة</th>
+                <th className="p-2 text-start">الخطة</th>
+                <th className="p-2 text-start">الكمية</th>
+                <th className="p-2 text-start">السعر</th>
+                <th className="p-2 text-start">التاريخ</th>
+                <th className="p-2 text-start">الوقت</th>
+                <th className="p-2 text-start">الطلب</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sales.data?.map((r: any) => {
+                const d = new Date(r.orders?.created_at ?? r.created_at);
+                return (
+                  <tr key={r.id} className="border-b border-border/60">
+                    <td className="p-2 font-bold">{r.product_name}</td>
+                    <td className="p-2 text-muted-foreground">{r.plan_label}</td>
+                    <td className="p-2">{r.quantity}</td>
+                    <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                    <td className="p-2 font-mono text-xs">{d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
+                    <td className="p-2 font-mono text-xs">{d.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
+                    <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
+                  </tr>
+                );
+              })}
+              {!sales.data?.length && (
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }
