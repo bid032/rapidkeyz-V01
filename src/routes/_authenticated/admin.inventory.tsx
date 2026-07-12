@@ -183,7 +183,7 @@ function AdminInventory() {
 }
 
 function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: string; initialSheetUrl: string; onChange: () => void }) {
-  const { notify, confirm } = useApp();
+  const { notify, confirm, lang } = useApp();
   const qc = useQueryClient();
   const [sheetUrl, setSheetUrl] = useState(initialSheetUrl);
   const [busy, setBusy] = useState(false);
