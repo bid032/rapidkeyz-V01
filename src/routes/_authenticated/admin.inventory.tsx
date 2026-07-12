@@ -347,7 +347,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     let q = supabase.from("account_inventory").delete().eq("plan_id", planId).eq("import_batch_id", batchId);
     if (opts.onlyAvailable) q = q.eq("status", "available");
     const { error } = await q;
-    if (error) { notify(error.message, "error"); return; }
+    if (error) { showError(error, notify, lang); return; }
     await syncStock();
     notify("تم حذف عملية الاسترداد", "success");
     qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
