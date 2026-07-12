@@ -126,7 +126,7 @@ function HomePage() {
             </span>
             {hero.badge}
           </motion.div>
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-4 sm:mb-6 leading-[1.1] max-w-4xl">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 sm:mb-6 leading-[1.1] max-w-4xl">
             <motion.span
               initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
