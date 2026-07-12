@@ -86,7 +86,7 @@ export function TrustSection() {
     value: Number(overrides[s.key] ?? s.value) || s.value,
   }));
 
-  const title = lang === "ar" ? "آلاف العملاء في مصر يثقون بـ RapidKeyz\u00a0\nلشراء اشتراكاتهم الرقمية" : "Thousands of customers in Egypt trust RapidKeyz for their digital subscriptions";
+  const title = lang === "ar" ? "آلاف العملاء في مصر يثقون بـ RapidKeyz\nلشراء اشتراكاتهم الرقمية" : "Thousands of customers in Egypt trust RapidKeyz for their digital subscriptions";
   const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع، مش مجرد كلام" : "Real numbers from the field , not just words";
 
   return (
@@ -107,7 +107,7 @@ export function TrustSection() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
             <span className="size-1.5 rounded-full bg-brand" />
-            {lang === "ar" ? "الثقة أرقام" : "Trust in numbers"}
+            {lang === "ar" ? "الثقة" : "Trust in numbers"}
           </div>
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
             {title.split(" ").slice(0, -2).join(" ")}{" "}
@@ -157,12 +157,12 @@ export function TrustSection() {
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
             <span className="size-1.5 rounded-full bg-brand" />
-            {lang === "ar" ? "لأن اللي بيميزنا" : "What sets us apart"}
+            {lang === "ar" ? "مميزاتنا" : "What sets us apart"}
           </div>
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
             {lang === "ar" ? (
               <>
-                ليه RapidKeyz\nأفضل متجر اشتراكات في مصر؟
+                ليه RapidKeyz&nbsp;أفضل متجر اشتراكات في مصر؟
               </>
             ) : (
               <>

@@ -39,12 +39,12 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
       >
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-4">
           <Sparkles className="size-3.5" />
-          {lang === "ar" ? "تصفح حسب القسم" : "Browse by category"}
+          {lang === "ar" ? "الأقسام" : "Browse by category"}
         </div>
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
           {lang === "ar" ? (
             <>
-              تسوّق حسب <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">القسم</span> ، أدوات الذكاء الاصطناعي وبرامج التصميم في مصر
+              تسوّق حسب <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">القسم</span> :
             </>
           ) : (
             <>
