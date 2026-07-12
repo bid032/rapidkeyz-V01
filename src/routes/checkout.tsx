@@ -307,7 +307,7 @@ function CheckoutPage() {
                                 dir="ltr"
                                 title="اضغط للنسخ"
                               >
-                                +{WHATSAPP_NUMBER}
+                                {WHATSAPP_NUMBER}
                               </button>{" "}
                               <span className="text-xs text-muted-foreground">
                                 {copied ? "(تم النسخ ✓)" : "(اضغط على الرقم لنسخه)"}
@@ -332,7 +332,7 @@ function CheckoutPage() {
                                 dir="ltr"
                                 title="Click to copy"
                               >
-                                +{WHATSAPP_NUMBER}
+                                {WHATSAPP_NUMBER}
                               </button>{" "}
                               <span className="text-xs text-muted-foreground">
                                 {copied ? "(Copied ✓)" : "(Click the number to copy)"}
