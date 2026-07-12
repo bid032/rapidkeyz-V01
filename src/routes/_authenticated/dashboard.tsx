@@ -93,12 +93,12 @@ function Dashboard() {
                 <div className="space-y-2">
                   {o.order_items?.map((it: any) => (
                     <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm">
+                      <div className="flex justify-between items-center gap-2 flex-wrap">
+                        <div className="text-sm min-w-0">
                           <span className="font-bold">{it.product_name}</span>{" "}
                           <span className="text-muted-foreground">— {it.plan_label} × {it.quantity}</span>
                         </div>
-                        <div className="text-sm font-bold">{it.unit_price * it.quantity} {t.common.currency}</div>
+                        <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                       </div>
                       {it.delivered_accounts?.map((acc: any) => (
                         <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded font-mono text-xs">
