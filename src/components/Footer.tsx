@@ -69,22 +69,25 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 text-center relative">
-        <p className="text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
-        </p>
-        <p className="text-[11px] text-muted-foreground mt-2">
-          {lang === "ar" ? "تصميم وبرمجة" : "Designed & Developed by"}{" "}
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 relative">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-[11px] text-muted-foreground text-center">
+          <p>
+            © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
+          </p>
+          <span className="hidden sm:inline opacity-50">•</span>
+          <p>
+            {lang === "ar" ? "تصميم وبرمجة" : "Designed & Developed by"}{" "}
+            <a
+              href="https://www.facebook.com/bid032"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-brand hover:underline"
+            >
+              Bido
+            </a>
+          </p>
+        </div>
 
-          <a
-            href="https://www.facebook.com/bid032"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-bold text-brand hover:underline"
-          >
-            Bido
-          </a>
-        </p>
 
       </div>
     </footer>
