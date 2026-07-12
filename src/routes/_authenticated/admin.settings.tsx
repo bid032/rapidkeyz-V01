@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { translations } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
@@ -73,12 +75,13 @@ function AdminSettings() {
             const isLong = kAr === "subtitle_ar";
             const Cmp: any = isLong ? "textarea" : "input";
             // Live-shown defaults come from i18n so admin sees what's actually on the site
-            const defAr = (t as any).home?.[fallbackKey] ?? "";
-            const defEn = "See site";
+            const defAr = (translations.ar.home as any)?.[fallbackKey] ?? "";
+            const defEn = (translations.en.home as any)?.[fallbackKey] ?? "";
+
             const valAr = hero[kAr] ?? "";
             const valEn = hero[kEn] ?? "";
             const shownAr = (valAr || "").toString().trim() || defAr;
-            const shownEn = (valEn || "").toString().trim() || `(default fallback shown to English visitors)`;
+            const shownEn = (valEn || "").toString().trim() || defEn;
             return (
               <div key={kAr} className="contents">
                 <div className="flex flex-col gap-1">
@@ -98,12 +101,16 @@ function AdminSettings() {
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-bold text-muted-foreground">{phEn}</label>
                   <Cmp
-                    placeholder={phEn}
+                    placeholder={defEn || phEn}
                     value={valEn}
                     onChange={(e: any) => setHero({ ...hero, [kEn]: e.target.value })}
                     className="px-3 py-2 bg-background border border-border rounded"
                     rows={isLong ? 3 : undefined}
                   />
+                  <p className="text-[10px] text-muted-foreground truncate" title={shownEn}>
+                    Currently shown: {shownEn}
+                  </p>
+
                   <p className="text-[10px] text-muted-foreground truncate" title={shownEn}>
                     Currently shown: {(valEn || "").toString().trim() || shownEn}
                   </p>
