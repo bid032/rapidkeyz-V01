@@ -130,11 +130,11 @@ export function TrustSection() {
               className="group relative p-4 sm:p-5 rounded-2xl bg-card border border-border overflow-hidden hover:border-brand/40 transition-colors"
             >
               <div className="absolute -top-8 -right-8 size-24 rounded-full bg-brand/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center gap-3 sm:gap-4">
-                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20">
+              <div className="relative flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 mb-3 sm:mb-0">
                   {s.icon}
                 </div>
-                <div className="min-w-0 flex-1 flex flex-col items-start text-start">
+                <div className="min-w-0 flex-1 flex flex-col items-center sm:items-start">
                   <div className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-b from-foreground to-brand leading-none">
                     <AnimatedNumber value={s.value} suffix={s.suffix} />
                   </div>
@@ -158,11 +158,11 @@ export function TrustSection() {
               transition={{ delay: 0.15 + i * 0.08, duration: 0.5 }}
               className="group relative p-5 sm:p-6 rounded-2xl bg-card/60 border border-border hover:border-brand/40 hover:-translate-y-1 transition-all"
             >
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow transition-all">
+              <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow transition-all mb-3 sm:mb-0">
                   {f.icon}
                 </div>
-                <div className="min-w-0 flex-1 flex flex-col items-start text-start">
+                <div className="min-w-0 flex-1 flex flex-col items-center sm:items-start">
                   <h3 className="font-bold text-sm sm:text-base mb-1">
                     {lang === "ar" ? f.title_ar : f.title_en}
                   </h3>
