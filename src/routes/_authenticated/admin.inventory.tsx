@@ -251,39 +251,56 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         </div>
       </div>
 
-      <div className="max-h-64 overflow-y-auto border border-border rounded-lg">
-        <table className="w-full text-xs">
-          <thead className="bg-muted sticky top-0">
-            <tr className="text-start">
-              <th className="p-2 text-start">Email</th>
-              <th className="p-2 text-start">User</th>
-              <th className="p-2 text-start">Pass</th>
-              <th className="p-2 text-start">Status</th>
-              <th className="p-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.data?.map((r: any) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="p-2 font-mono truncate max-w-[160px]">{r.account_email}</td>
-                <td className="p-2 font-mono truncate max-w-[100px]">{r.account_username}</td>
-                <td className="p-2 font-mono truncate max-w-[100px]">{r.account_password ? "••••" : ""}</td>
-                <td className="p-2">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${r.status === "available" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                    {r.status}
-                  </span>
-                </td>
-                <td className="p-2 text-end">
-                  <button onClick={() => delRow(r.id)} className="text-destructive hover:underline">مسح</button>
-                </td>
-              </tr>
-            ))}
-            {!rows.data?.length && (
-              <tr><td colSpan={5} className="p-4 text-center text-muted-foreground">مفيش حسابات</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {(() => {
+        const COLS: { key: string; label: string; mask?: boolean }[] = [
+          { key: "account_email", label: "Email" },
+          { key: "account_username", label: "User" },
+          { key: "account_password", label: "Pass", mask: true },
+          { key: "extra_notes", label: "Notes" },
+        ];
+        const visible = COLS.filter((c) =>
+          (rows.data ?? []).some((r: any) => r[c.key] != null && String(r[c.key]).trim() !== "")
+        );
+        const colSpan = visible.length + 2;
+        return (
+          <div className="max-h-64 overflow-y-auto border border-border rounded-lg">
+            <table className="w-full text-xs">
+              <thead className="bg-muted sticky top-0">
+                <tr className="text-start">
+                  {visible.map((c) => (
+                    <th key={c.key} className="p-2 text-start">{c.label}</th>
+                  ))}
+                  <th className="p-2 text-start">Status</th>
+                  <th className="p-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.data?.map((r: any) => (
+                  <tr key={r.id} className="border-t border-border">
+                    {visible.map((c) => (
+                      <td key={c.key} className="p-2 font-mono truncate max-w-[160px]">
+                        {c.mask ? (r[c.key] ? "••••" : "") : r[c.key]}
+                      </td>
+                    ))}
+                    <td className="p-2">
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${r.status === "available" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                        {r.status === "delivered" ? "تم البيع" : r.status}
+                      </span>
+                    </td>
+                    <td className="p-2 text-end">
+                      <button onClick={() => delRow(r.id)} className="text-destructive hover:underline">مسح</button>
+                    </td>
+                  </tr>
+                ))}
+                {!rows.data?.length && (
+                  <tr><td colSpan={colSpan} className="p-4 text-center text-muted-foreground">مفيش حسابات</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
+
     </div>
   );
 }
