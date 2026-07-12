@@ -25,9 +25,7 @@ export function Testimonials() {
 
   return (
     <section className="relative">
-      {/* Blue glow rising from the footer edge, fading up into white */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-brand/30 via-cyan-300/15 to-transparent" />
-      <div className="pointer-events-none absolute left-1/2 -bottom-32 -translate-x-1/2 w-[1200px] h-[400px] bg-brand/25 rounded-full blur-3xl" />
+
 
       <div className="max-w-7xl mx-auto px-6 py-24 relative">
         <div className="relative flex items-end justify-between mb-12 flex-wrap gap-4">
