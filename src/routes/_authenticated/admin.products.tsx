@@ -324,19 +324,20 @@ function AdminProducts() {
       {planEditor && <PlanEditor productId={planEditor} onClose={() => setPlanEditor(null)} />}
 
       {editing && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
-          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
+          <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
+            <div className="w-full max-w-2xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8">
+            <h2 className="text-lg sm:text-xl font-bold mb-3">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4">
               املأ بيانات المنتج بالعربي والإنجليزي. الحقول اللي عليها إجباري.
               <br />
               <span className="text-warning font-bold">ملاحظة:</span> عدد العروض المتاحة (المخزون) و الأسعار بتتظبط من زرار <span className="text-brand font-bold">"Plans"</span> في جدول المنتجات بعد الحفظ.
             </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
             >
               <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
