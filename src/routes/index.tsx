@@ -126,6 +126,7 @@ function HomePage() {
             }}
           />
         </div>
+        <HeroCanvas />
 
         <section className="relative z-10 max-w-5xl mx-auto text-center">
           {/* Trust badge */}
