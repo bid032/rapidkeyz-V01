@@ -167,11 +167,11 @@ function AdminOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {cards.map((c) => (
-          <div key={c.label} className="p-6 bg-card border border-border rounded-2xl">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">{c.label}</div>
-            <div className={`text-3xl font-extrabold ${
+          <div key={c.label} className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+            <div className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground mb-2">{c.label}</div>
+            <div className={`text-xl sm:text-3xl font-extrabold break-words ${
               c.tone === "brand" ? "text-brand" :
               c.tone === "success" ? "text-success" :
               c.tone === "warning" ? "text-warning" : ""
