@@ -261,6 +261,8 @@ function HomePage() {
         )}
       </main>
 
+      <TrustSection />
+
       <Testimonials />
 
       <Footer />
