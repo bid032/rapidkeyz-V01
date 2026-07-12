@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { translations } from "@/lib/i18n";
@@ -76,8 +76,7 @@ function AdminSettings() {
     <div className="space-y-6">
       <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.settings}</h1>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-1">Hero Section / سيكشن الصفحة الرئيسية</h2>
+      <Section title={"Hero Section / سيكشن الصفحة الرئيسية"}>
         <p className="text-xs text-muted-foreground mb-4">
           عدّل نصوص سيكشن الهيرو اللي في أعلى الصفحة الرئيسية. النص الرمادي تحت كل خانة هو الظاهر حالياً على الموقع (لو الخانة فاضية بيتم استخدام النص الافتراضي).
         </p>
@@ -135,11 +134,10 @@ function AdminSettings() {
             );
           })}
         </div>
-      </section>
+      </Section>
 
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-4">Brand</h2>
+      <Section title={"Brand"}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input placeholder="Name AR" value={brand.name_ar ?? ""}
             onChange={(e) => setBrand({ ...brand, name_ar: e.target.value })}
@@ -154,10 +152,9 @@ function AdminSettings() {
             onChange={(e) => setBrand({ ...brand, tagline_en: e.target.value })}
             className="px-3 py-2 bg-background border border-border rounded" />
         </div>
-      </section>
+      </Section>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-4">Contact</h2>
+      <Section title={"Contact"}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <input placeholder="WhatsApp" value={contact.whatsapp ?? ""}
             onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
@@ -169,10 +166,9 @@ function AdminSettings() {
             onChange={(e) => setContact({ ...contact, email: e.target.value })}
             className="px-3 py-2 bg-background border border-border rounded" />
         </div>
-      </section>
+      </Section>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-4">Payment Gateways</h2>
+      <Section title={"Payment Gateways"}>
         <div className="space-y-2">
           {(["paymob_enabled", "kashier_enabled", "manual_enabled"] as const).map((k) => (
             <label key={k} className="flex items-center gap-2">
@@ -185,10 +181,9 @@ function AdminSettings() {
         <p className="text-xs text-muted-foreground mt-3">
           To fully enable Paymob or Kashier live payments, provide their API keys via the app settings. This admin toggles their visibility on checkout.
         </p>
-      </section>
+      </Section>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold text-lg mb-1">إعدادات الشراء</h2>
+      <Section title={"إعدادات الشراء"}>
         <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
         <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer">
           <input
@@ -205,10 +200,9 @@ function AdminSettings() {
             </div>
           </div>
         </label>
-      </section>
+      </Section>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-1">Social Media / حسابات السوشيال</h2>
+      <Section title={"Social Media / حسابات السوشيال"}>
         <p className="text-xs text-muted-foreground mb-4">
           حط اللينك كامل (https://...). الخانات الفاضية مش هتظهر في الفوتر.
         </p>
@@ -232,10 +226,9 @@ function AdminSettings() {
             />
           ))}
         </div>
-      </section>
+      </Section>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-1">Trust Stats / أرقام الثقة</h2>
+      <Section title={"Trust Stats / أرقام الثقة"}>
         <p className="text-xs text-muted-foreground mb-4">
           الأرقام اللي بتظهر في سيكشن "ليه العملاء بيثقوا فينا" على الصفحة الرئيسية.
         </p>
@@ -260,10 +253,9 @@ function AdminSettings() {
             </div>
           ))}
         </div>
-      </section>
+      </Section>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold mb-1">Theme Mode / وضع الألوان</h2>
+      <Section title={"Theme Mode / وضع الألوان"}>
         <p className="text-xs text-muted-foreground mb-4">
           تحكم في وضع الألوان للموقع بالكامل: فاتح فقط، داكن فقط، أو خليه اليوزر يختار.
         </p>
@@ -288,7 +280,7 @@ function AdminSettings() {
             </button>
           ))}
         </div>
-      </section>
+      </Section>
 
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
@@ -296,5 +288,24 @@ function AdminSettings() {
         {save.isPending ? t.common.loading : t.admin.save}
       </button>
     </div>
+  );
+}
+
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: ReactNode }) {
+  return (
+    <details
+      open={defaultOpen}
+      className="group bg-card border border-border rounded-2xl overflow-hidden [&[open]>summary_.chev]:rotate-180"
+    >
+      <summary className="list-none cursor-pointer select-none flex items-center justify-between gap-3 p-4 sm:p-5 hover:bg-muted/40 transition">
+        <h2 className="font-bold text-sm sm:text-base min-w-0 truncate">{title}</h2>
+        <svg className="chev shrink-0 w-4 h-4 text-muted-foreground transition-transform" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </summary>
+      <div className="p-4 sm:p-6 pt-0 sm:pt-0 border-t border-border">
+        {children}
+      </div>
+    </details>
   );
 }

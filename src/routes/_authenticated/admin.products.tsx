@@ -324,19 +324,20 @@ function AdminProducts() {
       {planEditor && <PlanEditor productId={planEditor} onClose={() => setPlanEditor(null)} />}
 
       {editing && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
-          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
+          <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
+            <div className="w-full max-w-2xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8">
+            <h2 className="text-lg sm:text-xl font-bold mb-3">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4">
               املأ بيانات المنتج بالعربي والإنجليزي. الحقول اللي عليها إجباري.
               <br />
               <span className="text-warning font-bold">ملاحظة:</span> عدد العروض المتاحة (المخزون) و الأسعار بتتظبط من زرار <span className="text-brand font-bold">"Plans"</span> في جدول المنتجات بعد الحفظ.
             </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
             >
               <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
@@ -480,6 +481,7 @@ function AdminProducts() {
               {save.error && <p className="col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
             </form>
 
+            </div>
           </div>
         </div>
       )}
@@ -597,16 +599,17 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
-      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="font-bold text-lg">العروض والأسعار والمخزون</h3>
-            <p className="text-xs text-muted-foreground mt-1">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
+      <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
+        <div className="w-full max-w-3xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8">
+        <div className="flex justify-between items-start gap-2 mb-2">
+          <div className="min-w-0">
+            <h3 className="font-bold text-base sm:text-lg">العروض والأسعار والمخزون</h3>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
               كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح — ومش بيظهر للعميل نهائيًا.
             </p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl">✕</button>
+          <button onClick={onClose} className="shrink-0 text-muted-foreground hover:text-foreground text-xl leading-none">✕</button>
         </div>
 
         <div className="space-y-3 my-4">
@@ -762,6 +765,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
             + إضافة العرض
           </button>
         </form>
+        </div>
       </div>
     </div>
   );
