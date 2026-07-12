@@ -110,11 +110,8 @@ function AdminSettings() {
                   <p className="text-[10px] text-muted-foreground truncate" title={shownEn}>
                     Currently shown: {shownEn}
                   </p>
-
-                  <p className="text-[10px] text-muted-foreground truncate" title={shownEn}>
-                    Currently shown: {(valEn || "").toString().trim() || shownEn}
-                  </p>
                 </div>
+
               </div>
             );
           })}
