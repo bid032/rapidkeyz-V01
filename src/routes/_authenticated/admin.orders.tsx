@@ -264,7 +264,7 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
           ))}
         </div>
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-2 gap-2 mt-2">
+        <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           <input placeholder="Account email" value={creds.account_email}
             onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
             className="px-3 py-2 bg-card border border-border rounded text-sm" />
@@ -277,7 +277,7 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
           <input placeholder="Notes" value={creds.extra_notes}
             onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
             className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <button type="submit" className="col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
+          <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
             Deliver credentials
           </button>
         </form>
