@@ -53,6 +53,45 @@ function AdminOverview() {
     },
   });
 
+  const sales = useQuery({
+    queryKey: ["admin-sales-details", month],
+    queryFn: async () => {
+      let q = supabase
+        .from("order_items")
+        .select("id, product_name, plan_label, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
+        .in("orders.status", ["paid", "delivered"])
+        .order("created_at", { ascending: false });
+      if (range.start) q = q.gte("orders.created_at", range.start);
+      if (range.end) q = q.lt("orders.created_at", range.end);
+      const { data, error } = await q;
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+
+  const exportSalesXlsx = () => {
+    const rows = (sales.data ?? []).map((r) => {
+      const d = new Date(r.orders?.created_at ?? r.created_at);
+      return {
+        "رقم الطلب": r.orders?.order_number,
+        "الخدمة": r.product_name,
+        "الخطة": r.plan_label,
+        "الكمية": r.quantity,
+        "سعر الوحدة": Number(r.unit_price),
+        "الإجمالي": Number(r.unit_price) * Number(r.quantity),
+        "التاريخ": d.toLocaleDateString("en-GB"),
+        "الوقت": d.toLocaleTimeString("en-GB"),
+        "الحالة": r.orders?.status,
+        "العميل": r.orders?.customer_email,
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sales");
+    const suffix = month === "all" ? "all" : month;
+    XLSX.writeFile(wb, `sales-${suffix}.xlsx`);
+  };
+
   const settings = useQuery({
     queryKey: ["site-settings"],
     queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
