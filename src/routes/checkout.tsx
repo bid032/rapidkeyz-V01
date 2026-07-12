@@ -300,17 +300,17 @@ function CheckoutPage() {
                               انستاباي أو أي محفظة إلكترونية على الرقم:
                             </li>
                             <li>
-                              <a
-                                href={`https://wa.me/${WHATSAPP_NUMBER}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="font-mono font-bold text-brand text-lg underline"
+                              <button
+                                type="button"
+                                onClick={copyNumber}
+                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-lg underline decoration-dotted hover:text-brand/80"
                                 dir="ltr"
+                                title="اضغط للنسخ"
                               >
                                 +{WHATSAPP_NUMBER}
-                              </a>{" "}
+                              </button>{" "}
                               <span className="text-xs text-muted-foreground">
-                                (نفس رقم الواتساب)
+                                {copied ? "(تم النسخ ✓)" : "(اضغط على الرقم لنسخه)"}
                               </span>
                             </li>
                             <li>ارفع صورة إيصال التحويل واكتب الرقم اللي حولت منه بالأسفل.</li>
