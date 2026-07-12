@@ -286,7 +286,7 @@ function AdminProducts() {
             </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
               <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
@@ -669,7 +669,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
           <h4 className="font-bold text-sm mb-3">إضافة عرض جديد</h4>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="الاسم بالعربي">
               <input required value={form.label_ar}
                 onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
