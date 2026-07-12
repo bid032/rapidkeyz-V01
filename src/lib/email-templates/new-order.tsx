@@ -32,7 +32,7 @@ export const NewOrderEmail = ({
     <Head />
     <Preview>{`طلب جديد #${orderNumber} — ${total} ${currency}`}</Preview>
     <BrandLayout preview={`طلب جديد #${orderNumber}`} lang="ar">
-      <Heading style={styles.h1}>🔔 طلب جديد #{orderNumber}</Heading>
+      <Heading style={styles.h1}>طلب جديد #{orderNumber}</Heading>
       <Text style={styles.text}>
         وصل طلب جديد ينتظر المراجعة والتنفيذ.
       </Text>
