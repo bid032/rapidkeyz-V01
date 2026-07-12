@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,8 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 type MonthKey = string; // YYYY-MM or "all"
 
 function AdminOverview() {
-  const { t, lang, notify } = useApp();
-  const qc = useQueryClient();
+  const { t, lang } = useApp();
   const [month, setMonth] = useState<MonthKey>("all");
 
   const range = useMemo(() => {
@@ -122,25 +121,6 @@ function AdminOverview() {
     XLSX.writeFile(wb, `${siteName} - ${suffix}.xlsx`);
   };
 
-  const settings = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
-  });
-  const checkoutSettings = (settings.data?.find((s: any) => s.key === "checkout")?.value ?? {}) as any;
-  const requireLogin = checkoutSettings.require_login ?? true;
-
-  const setRequireLogin = useMutation({
-    mutationFn: async (val: boolean) => {
-      const next = { ...checkoutSettings, require_login: val };
-      const { error } = await supabase.from("site_settings").upsert({ key: "checkout", value: next });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["site-settings"] });
-      notify("تم التحديث", "success");
-    },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
-  });
 
   const monthOptions = useMemo(() => {
     const arr = (monthly.data ?? []).map((r) => r.month.slice(0, 7));
@@ -193,25 +173,6 @@ function AdminOverview() {
         ))}
       </div>
 
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mb-6">
-        <h2 className="font-bold text-lg mb-1">إعدادات الشراء</h2>
-        <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
-        <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer">
-          <input
-            type="checkbox"
-            checked={requireLogin}
-            onChange={(e) => setRequireLogin.mutate(e.target.checked)}
-            className="mt-1"
-          />
-          <div>
-            <div className="font-bold">إجبار العميل على تسجيل الدخول قبل الشراء</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              لو مفعّل: العميل لازم يعمل تسجيل دخول علشان يكمل الشراء.<br />
-              لو مقفول: العميل يقدر يشتري كضيف (بس هيدخل إيميل وموبايل).
-            </div>
-          </div>
-        </label>
-      </section>
 
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mt-6">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">

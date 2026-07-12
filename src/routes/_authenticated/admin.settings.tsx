@@ -16,6 +16,7 @@ function AdminSettings() {
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
   const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [checkout, setCheckout] = useState<any>({ require_login: true });
   const [socials, setSocials] = useState<any>({
     facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
   });
@@ -44,6 +45,7 @@ function AdminSettings() {
       if (s.key === "brand") setBrand(s.value);
       if (s.key === "contact") setContact(s.value);
       if (s.key === "payments") setPayments(s.value);
+      if (s.key === "checkout") setCheckout((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
       if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "stats") setStats((v: any) => ({ ...v, ...(s.value as any) }));
@@ -60,6 +62,7 @@ function AdminSettings() {
         { key: "brand", value: brand },
         { key: "contact", value: contact },
         { key: "payments", value: payments },
+        { key: "checkout", value: checkout },
         { key: "hero", value: hero },
         { key: "socials", value: socials },
         { key: "stats", value: stats },
@@ -182,6 +185,26 @@ function AdminSettings() {
         <p className="text-xs text-muted-foreground mt-3">
           To fully enable Paymob or Kashier live payments, provide their API keys via the app settings. This admin toggles their visibility on checkout.
         </p>
+      </section>
+
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+        <h2 className="font-bold text-lg mb-1">إعدادات الشراء</h2>
+        <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
+        <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer">
+          <input
+            type="checkbox"
+            checked={checkout.require_login ?? true}
+            onChange={(e) => setCheckout({ ...checkout, require_login: e.target.checked })}
+            className="mt-1"
+          />
+          <div>
+            <div className="font-bold">إجبار العميل على تسجيل الدخول قبل الشراء</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              لو مفعّل: العميل لازم يعمل تسجيل دخول علشان يكمل الشراء.<br />
+              لو مقفول: العميل يقدر يشتري كضيف (بس هيدخل إيميل وموبايل).
+            </div>
+          </div>
+        </label>
       </section>
 
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
