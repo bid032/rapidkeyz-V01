@@ -11,6 +11,8 @@ type Props = {
   size?: number;
   /** If set, reject uploads whose exact pixel dimensions don't match (no resize). */
   requireExactDimensions?: { width: number; height: number };
+  /** If set, only accept images whose aspect ratio matches (e.g. {w:4,h:5}). No resize. */
+  requireAspectRatio?: { w: number; h: number; tolerance?: number };
 };
 
 async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
