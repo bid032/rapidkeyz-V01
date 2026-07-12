@@ -119,10 +119,10 @@ function AdminOrders() {
       <div className="space-y-3">
         {visible.map(({ order: o, minDays }) => (
           <div key={o.id} className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-4 flex flex-wrap justify-between items-center gap-3">
-              <div>
+            <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
+              <div className="min-w-0">
                 <div className="font-bold">#{o.order_number}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground break-all">
                   {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")} · {o.customer_email}
                 </div>
                 {minDays !== null && (
@@ -133,7 +133,7 @@ function AdminOrders() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <select value={o.status}
                   onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
                   className="px-3 py-1.5 bg-background border border-border rounded text-sm">
