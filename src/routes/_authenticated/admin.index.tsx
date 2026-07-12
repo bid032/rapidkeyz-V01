@@ -187,7 +187,7 @@ function AdminOverview() {
             disabled={!sales.data?.length}
             className="px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold text-sm disabled:opacity-50"
           >
-            ⬇ تحميل Excel
+            تحميل Excel
           </button>
         </div>
         <div className="overflow-x-auto max-h-[500px] overflow-y-auto">

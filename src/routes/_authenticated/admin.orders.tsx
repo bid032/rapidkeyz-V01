@@ -217,7 +217,7 @@ function AdminOrders() {
                       if (ok) deleteOrder.mutate(o.id);
                     }}
                     className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
-                  >🗑 حذف نهائي</button>
+                  >حذف نهائي</button>
                 </div>
 
                 {/* Items */}

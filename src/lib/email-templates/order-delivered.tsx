@@ -36,7 +36,7 @@ export const OrderDeliveredEmail = ({
     <BrandLayout preview={`طلبك #${orderNumber} جاهز`} lang="ar">
       <Heading style={styles.h1}>✓ تم تسليم طلبك</Heading>
       <Text style={styles.text}>
-        شكراً لشرائك من <b style={{ color: '#fff' }}>RapidKeyz</b> 🎉<br />
+        شكراً لشرائك من <b style={{ color: '#fff' }}>RapidKeyz</b> <br />
         رقم الطلب: <span style={styles.mono}>#{orderNumber}</span> — المبلغ: <span style={styles.mono}>{total} {currency}</span>
       </Text>
 

@@ -294,7 +294,7 @@ function CheckoutPage() {
                     [
                       {
                         id: "simulate",
-                        label: lang === "ar" ? "⚡ ادفع الآن — محاكاة (تجريبي)" : "⚡ Pay Now — Simulation (test)",
+                        label: lang === "ar" ? "ادفع الآن — محاكاة (تجريبي)" : "Pay Now — Simulation (test)",
                         hint: lang === "ar"
                           ? "دفع فوري وهمي لعرض الشكل — بيتبعت الإيميل تلقائي لو المنتج instant."
                           : "Instant fake payment for demo — auto-emails credentials when the product is instant.",
@@ -430,7 +430,7 @@ function CheckoutPage() {
                   <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30 text-sm leading-relaxed">
                     {lang === "ar" ? (
                       <>
-                        <p className="font-bold mb-2">🧪 وضع المحاكاة</p>
+                        <p className="font-bold mb-2">وضع المحاكاة</p>
                         <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
                           <li>هيتم إنشاء الطلب بحالة <b>paid</b> فورًا بدون بوابة دفع حقيقية.</li>
                           <li>لو المنتج تسليمه <b>instant</b>: هيتم سحب حساب متاح من المخزون تلقائيًا.</li>
@@ -440,7 +440,7 @@ function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        <p className="font-bold mb-2">🧪 Simulation mode</p>
+                        <p className="font-bold mb-2">Simulation mode</p>
                         <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
                           <li>Order is created as <b>paid</b> instantly — no real gateway involved.</li>
                           <li>Instant products auto-claim an account from inventory.</li>
@@ -504,7 +504,7 @@ function CheckoutPage() {
               </svg>
             </div>
             <h3 className="text-xl sm:text-2xl font-extrabold mb-2">
-              {lang === "ar" ? "تم الدفع بنجاح 🎉" : "Payment successful 🎉"}
+              {lang === "ar" ? "تم الدفع بنجاح " : "Payment successful "}
             </h3>
             <p className="text-sm text-muted-foreground mb-1">
               {lang === "ar" ? "رقم الطلب:" : "Order number:"}{" "}
