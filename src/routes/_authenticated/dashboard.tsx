@@ -71,15 +71,15 @@ function Dashboard() {
           )}
           <div className="space-y-4">
             {orders.data?.map((o: any) => (
-              <div key={o.id} className="p-6 bg-card border border-border rounded-2xl">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
+              <div key={o.id} className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+                <div className="flex justify-between items-start mb-4 gap-3 flex-wrap">
+                  <div className="min-w-0">
                     <div className="font-bold">{t.dashboard.order} #{o.order_number}</div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")}
                     </div>
                   </div>
-                  <div className="text-end">
+                  <div className="text-end shrink-0">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                       o.status === "delivered" || o.status === "paid" ? "bg-success/10 text-success" :
                       o.status === "pending" ? "bg-warning/10 text-warning" :
