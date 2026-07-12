@@ -24,6 +24,7 @@ export type Database = {
           delivered_order_item_id: string | null
           extra_notes: string | null
           id: string
+          import_batch_id: string | null
           plan_id: string
           source: string
           status: string
@@ -37,6 +38,7 @@ export type Database = {
           delivered_order_item_id?: string | null
           extra_notes?: string | null
           id?: string
+          import_batch_id?: string | null
           plan_id: string
           source?: string
           status?: string
@@ -50,6 +52,7 @@ export type Database = {
           delivered_order_item_id?: string | null
           extra_notes?: string | null
           id?: string
+          import_batch_id?: string | null
           plan_id?: string
           source?: string
           status?: string
