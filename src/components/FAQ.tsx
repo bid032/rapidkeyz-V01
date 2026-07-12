@@ -96,11 +96,11 @@ export function FAQ() {
         <h2 id="faq-heading" className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
           {lang === "ar" ? (
             <>
-              كل ما تريد <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">معرفته عن اشتراكاتنا</span>
+              الأسئلة الشائعة عن اشتراكات <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT وNetflix وMidjourney في مصر</span>
             </>
           ) : (
             <>
-              Everything about <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">our subscriptions</span>
+              FAQ about <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT, Netflix & Midjourney in Egypt</span>
             </>
           )}
         </h2>

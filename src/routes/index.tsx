@@ -16,17 +16,17 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RapidKeyz ، اشتراكات ChatGPT Plus وMidjourney وNetflix بأسعار مصرية وتسليم فوري" },
+      { title: "اشتراكات ChatGPT Plus و Netflix و Midjourney في مصر | RapidKeyz" },
       {
         name: "description",
         content:
-          "اشترِ اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي بالجنيه المصري ، تسليم فوري خلال دقائق ودعم عربي 24/7 عبر واتساب.",
+          "اشترِ اشتراكات ChatGPT Plus، Netflix، Midjourney، Office 365 وأدوات الذكاء الاصطناعي بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
       },
-      { name: "keywords", content: "شراء ChatGPT Plus مصر, اشتراك Midjourney بالجنيه, Netflix مشترك, Canva Pro اشتراك, أدوات ذكاء اصطناعي, RapidKeyz" },
-      { property: "og:title", content: "RapidKeyz ، اشتراكات ChatGPT وMidjourney وNetflix بأسعار مصرية" },
+      { name: "keywords", content: "شراء ChatGPT Plus مصر, اشتراك Midjourney بالجنيه, Netflix مشترك, Canva Pro اشتراك, Office 365, أدوات ذكاء اصطناعي, RapidKeyz" },
+      { property: "og:title", content: "اشتراكات ChatGPT Plus و Netflix و Midjourney في مصر | RapidKeyz" },
       {
         property: "og:description",
-        content: "متجر عربي موثوق لاشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات AI ، تسليم فوري ودفع آمن بالجنيه المصري.",
+        content: "اشترِ اشتراكات ChatGPT Plus، Netflix، Midjourney، Office 365 وأدوات الذكاء الاصطناعي بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
       },
       { property: "og:url", content: "/" },
     ],
