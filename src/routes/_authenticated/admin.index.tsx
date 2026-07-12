@@ -200,35 +200,6 @@ function AdminOverview() {
         </label>
       </section>
 
-      <section className="p-6 bg-card border border-border rounded-2xl">
-        <h2 className="font-bold text-lg mb-4">الإيرادات شهر بشهر</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-start text-xs uppercase text-muted-foreground border-b border-border">
-                <th className="p-2 text-start">الشهر</th>
-                <th className="p-2 text-start">الإيراد</th>
-                <th className="p-2 text-start">الأرباح</th>
-                <th className="p-2 text-start">عدد الطلبات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {monthly.data?.map((r) => (
-                <tr key={r.month} className="border-b border-border/60">
-                  <td className="p-2 font-mono">{r.month.slice(0, 7)}</td>
-                  <td className="p-2 font-bold">{Math.round(Number(r.revenue))} {t.common.currency}</td>
-                  <td className="p-2 font-bold text-success">{Math.round(Number(r.profit))} {t.common.currency}</td>
-                  <td className="p-2">{r.orders_count}</td>
-                </tr>
-              ))}
-              {!monthly.data?.length && (
-                <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">مفيش بيانات إيرادات لسه</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <section className="p-6 bg-card border border-border rounded-2xl mt-6">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
