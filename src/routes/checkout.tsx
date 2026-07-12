@@ -199,7 +199,8 @@ function CheckoutPage() {
       if (user) navigate({ to: "/dashboard" });
       else navigate({ to: "/" });
     } catch (err: any) {
-      setError(err.message ?? "Error");
+      console.error("checkout failed", err);
+      setError(friendlyErrorMessage(err, lang));
     } finally {
       setSubmitting(false);
     }
