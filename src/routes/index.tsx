@@ -10,6 +10,7 @@ import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
 import { HeroCanvas } from "@/components/HeroCanvas";
+import { BrandMarquee } from "@/components/BrandMarquee";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -185,7 +186,9 @@ function HomePage() {
           >
             <Link
               to="/shop"
-              className="group relative w-full sm:w-auto px-8 py-4 bg-brand text-brand-foreground font-bold rounded-xl transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-[0_0_20px_-4px_color-mix(in_oklab,var(--brand)_50%,transparent)] hover:shadow-[0_0_30px_-4px_color-mix(in_oklab,var(--brand)_70%,transparent)] text-center"
+              data-gsap="magnetic"
+              data-strength="0.35"
+              className="group relative w-full sm:w-auto px-8 py-4 bg-brand text-brand-foreground font-bold rounded-xl transition-shadow duration-300 shadow-[0_0_20px_-4px_color-mix(in_oklab,var(--brand)_50%,transparent)] hover:shadow-[0_0_40px_-4px_color-mix(in_oklab,var(--brand)_80%,transparent)] text-center"
             >
               {hero.cta}
             </Link>
@@ -193,6 +196,8 @@ function HomePage() {
               href="https://wa.me/201284234815"
               target="_blank"
               rel="noopener noreferrer"
+              data-gsap="magnetic"
+              data-strength="0.25"
               className="w-full sm:w-auto px-8 py-4 bg-card/50 hover:bg-card border border-border text-foreground font-medium rounded-xl transition-all flex items-center justify-center gap-2"
             >
               <span>{hero.ctaSecondary}</span>
@@ -242,6 +247,10 @@ function HomePage() {
       {/* Categories , centered creative pill grid */}
       <CategoriesShowcase />
 
+      {/* GSAP infinite brand marquee */}
+      <BrandMarquee />
+
+
 
 
       {/* Products */}
@@ -253,7 +262,7 @@ function HomePage() {
           transition={{ duration: 0.5 }}
           className="flex items-center justify-between mb-8 sm:mb-12"
         >
-          <h2 className="text-xl sm:text-2xl font-bold">{t.home.trending}</h2>
+          <h2 data-gsap="scramble" className="text-xl sm:text-2xl font-bold">{t.home.trending}</h2>
           <Link to="/shop" className="text-xs sm:text-sm font-bold text-brand hover:underline">
             {t.home.viewAll} →
           </Link>
@@ -274,17 +283,11 @@ function HomePage() {
           </div>
         )}
         {products.data && products.data.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {products.data.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 24, scale: 0.97 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: (i % 3) * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              >
+          <div data-gsap="reveal-stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {products.data.map((p) => (
+              <div key={p.id} data-gsap="tilt">
                 <ProductCard p={p} />
-              </motion.div>
+              </div>
             ))}
           </div>
         )}

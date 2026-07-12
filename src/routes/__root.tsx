@@ -13,6 +13,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "@/contexts/AppContext";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { SplashLoader } from "@/components/SplashLoader";
+import { GsapEffects } from "@/components/GsapEffects";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -168,6 +169,7 @@ function RootComponent() {
       <AppProvider>
         <SplashLoader />
         <Outlet />
+        <GsapEffects />
         <WhatsAppFloat />
       </AppProvider>
     </QueryClientProvider>

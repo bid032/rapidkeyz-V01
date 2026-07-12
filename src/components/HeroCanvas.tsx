@@ -164,8 +164,8 @@ export function HeroCanvas() {
     <div
       ref={mountRef}
       aria-hidden="true"
-      className="absolute inset-0 -z-10 pointer-events-none"
-      style={{ maskImage: "radial-gradient(ellipse at center, black 55%, transparent 90%)" }}
+      className="absolute inset-0 -z-10 pointer-events-none opacity-90"
+      style={{ maskImage: "radial-gradient(ellipse at center, black 60%, transparent 100%)" }}
     />
   );
 }
