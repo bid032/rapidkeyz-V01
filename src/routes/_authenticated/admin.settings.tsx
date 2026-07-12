@@ -188,6 +188,26 @@ function AdminSettings() {
       </section>
 
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+        <h2 className="font-bold text-lg mb-1">إعدادات الشراء</h2>
+        <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
+        <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer">
+          <input
+            type="checkbox"
+            checked={checkout.require_login ?? true}
+            onChange={(e) => setCheckout({ ...checkout, require_login: e.target.checked })}
+            className="mt-1"
+          />
+          <div>
+            <div className="font-bold">إجبار العميل على تسجيل الدخول قبل الشراء</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              لو مفعّل: العميل لازم يعمل تسجيل دخول علشان يكمل الشراء.<br />
+              لو مقفول: العميل يقدر يشتري كضيف (بس هيدخل إيميل وموبايل).
+            </div>
+          </div>
+        </label>
+      </section>
+
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
         <h2 className="font-bold mb-1">Social Media / حسابات السوشيال</h2>
         <p className="text-xs text-muted-foreground mb-4">
           حط اللينك كامل (https://...). الخانات الفاضية مش هتظهر في الفوتر.
