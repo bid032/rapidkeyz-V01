@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, notFound } from "@tanstack/react-router";
+
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/Header";
@@ -105,8 +106,19 @@ function ProductPage() {
   const navigate = useNavigate();
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
-    queryFn: () => fetchProduct(slug),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, product_plans(*)")
+        .eq("slug", slug)
+        .eq("status", "active")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw notFound();
+      return data;
+    },
   });
+
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
 
