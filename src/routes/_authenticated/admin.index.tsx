@@ -58,14 +58,25 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at), plan_costs:plan_id(cost_price)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
         .in("orders.status", ["paid", "delivered"])
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
       const { data, error } = await q;
       if (error) throw error;
-      return (data ?? []) as any[];
+      const items = (data ?? []) as any[];
+      const planIds = Array.from(new Set(items.map((r) => r.plan_id).filter(Boolean)));
+      const costMap = new Map<string, number>();
+      if (planIds.length) {
+        const { data: costs } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", planIds);
+        (costs ?? []).forEach((c: any) => costMap.set(c.plan_id, Number(c.cost_price ?? 0)));
+      }
+      return items.map((r) => {
+        const cost = costMap.get(r.plan_id) ?? 0;
+        const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
+        return { ...r, _cost: cost, _profit: profit };
+      });
     },
   });
 
