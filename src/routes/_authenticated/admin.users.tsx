@@ -26,16 +26,13 @@ function AdminUsers() {
   const users = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data: list, error } = await supabase.rpc("admin_list_users");
       if (error) throw error;
       const { data: roles, error: rolesErr } = await supabase
         .from("user_roles")
         .select("user_id, role");
       if (rolesErr) throw rolesErr;
-      return (profiles ?? []).map((p: any) => ({
+      return (list ?? []).map((p: any) => ({
         ...p,
         user_roles: (roles ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => ({ role: r.role })),
       }));
@@ -63,7 +60,7 @@ function AdminUsers() {
           <thead className="bg-muted">
             <tr>
               <th className="p-3 text-start">Name</th>
-              <th className="p-3 text-start">Phone</th>
+              <th className="p-3 text-start">Email</th>
               <th className="p-3 text-start">Roles</th>
               <th className="p-3 text-end">Actions</th>
             </tr>
@@ -76,7 +73,7 @@ function AdminUsers() {
               return (
                 <tr key={u.id} className="border-t border-border">
                   <td className="p-3">{u.display_name ?? "—"}</td>
-                  <td className="p-3">{u.phone ?? "—"}</td>
+                  <td className="p-3" dir="ltr">{u.email ?? "—"}</td>
                   <td className="p-3">
                     {u.user_roles?.map((r: any) => (
                       <span key={r.role} className="text-xs px-2 py-0.5 bg-muted rounded mr-1">{r.role}</span>
