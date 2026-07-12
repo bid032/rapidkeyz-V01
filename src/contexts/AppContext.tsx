@@ -181,6 +181,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     t: translations[lang] as Dict,
     theme,
     toggleTheme,
+    themeMode,
     cart,
     addToCart,
     removeFromCart,
