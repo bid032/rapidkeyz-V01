@@ -112,56 +112,78 @@ function HomePage() {
       <Header />
 
       {/* Hero */}
-      <header className="relative py-12 sm:py-20 md:py-24 px-3 sm:px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
+      <header className="relative py-16 sm:py-24 md:py-28 px-4 sm:px-6 overflow-hidden">
+        {/* Decorative background */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand/10 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-brand/5 blur-[120px]" />
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage: "radial-gradient(hsl(var(--brand)) 0.5px, transparent 0.5px)",
+              backgroundSize: "24px 24px",
+            }}
+          />
+        </div>
+
+        <section className="relative z-10 max-w-5xl mx-auto text-center">
+          {/* Trust badge */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold mb-4 sm:mb-6 tracking-wide uppercase"
+            className="mb-6 sm:mb-8 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand/20 bg-brand/5 text-brand text-xs sm:text-sm font-medium"
           >
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
             </span>
-            {hero.badge}
+            <span>{hero.badge}</span>
           </motion.div>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-4 sm:mb-6 leading-[1.1] max-w-4xl">
-            <motion.span
-              initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-block"
-            >
-              {hero.title1}
-            </motion.span>{" "}
-            <br />
-            <motion.span
-              initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.28, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400"
-            >
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-3xl sm:text-5xl md:text-6xl font-bold text-foreground tracking-tight mb-5 sm:mb-6"
+            style={{ lineHeight: 1.15 }}
+          >
+            {hero.title1}
+          </motion.h1>
+
+          {/* Gradient subline */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28, duration: 0.6 }}
+            className="inline-block mb-6 sm:mb-8"
+          >
+            <p className="text-xl sm:text-2xl md:text-3xl font-semibold bg-gradient-to-r from-brand via-foreground to-brand bg-clip-text text-transparent">
               {hero.title2}
-            </motion.span>
-          </h1>
+            </p>
+          </motion.div>
+
+          {/* Description */}
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45, duration: 0.6 }}
-            className="max-w-2xl text-muted-foreground text-sm sm:text-base md:text-lg mb-6 sm:mb-10 leading-relaxed px-2"
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="max-w-2xl mx-auto text-muted-foreground text-base sm:text-lg md:text-xl leading-relaxed mb-10 sm:mb-12 px-2"
           >
             {hero.subtitle}
           </motion.p>
+
+          {/* CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-            className="flex flex-wrap justify-center gap-3 sm:gap-4"
+            transition={{ delay: 0.55, duration: 0.6 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-12 sm:mb-16"
           >
             <Link
               to="/shop"
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-brand text-brand-foreground rounded-xl text-sm sm:text-base font-bold hover:brand-glow transition-all hover:scale-[1.03]"
+              className="group relative w-full sm:w-auto px-8 py-4 bg-brand text-brand-foreground font-bold rounded-xl transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-[0_0_20px_-4px_color-mix(in_oklab,var(--brand)_50%,transparent)] hover:shadow-[0_0_30px_-4px_color-mix(in_oklab,var(--brand)_70%,transparent)] text-center"
             >
               {hero.cta}
             </Link>
@@ -169,32 +191,51 @@ function HomePage() {
               href="https://wa.me/201284234815"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold border border-border hover:bg-muted transition-all"
+              className="w-full sm:w-auto px-8 py-4 bg-card/50 hover:bg-card border border-border text-foreground font-medium rounded-xl transition-all flex items-center justify-center gap-2"
             >
-              {hero.ctaSecondary}
+              <span>{hero.ctaSecondary}</span>
+              <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
             </a>
           </motion.div>
+
+          {/* Social proof */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.85, duration: 0.6 }}
-            className="mt-8 sm:mt-10 flex items-center gap-3"
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="flex flex-col items-center gap-4"
           >
-            <div className="flex -space-x-3 rtl:space-x-reverse">
-              {["AI", "DS", "EN"].map((i) => (
-                <div
-                  key={i}
-                  className="size-9 sm:size-10 rounded-full border-2 border-background bg-card grid place-items-center text-[10px] font-bold"
-                >
-                  {i}
-                </div>
-              ))}
+            <p className="text-muted-foreground text-xs sm:text-sm font-medium">{hero.trusted}</p>
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2 rtl:space-x-reverse">
+                {["AI", "DS", "EN"].map((i) => (
+                  <div
+                    key={i}
+                    className="w-10 h-10 rounded-full bg-card border-2 border-background flex items-center justify-center text-[10px] font-bold text-muted-foreground uppercase tracking-tighter"
+                  >
+                    {i}
+                  </div>
+                ))}
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-1 text-brand">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span className="text-sm font-bold tracking-wide">4.9/5</span>
+              </div>
             </div>
-            <span className="text-xs sm:text-sm text-muted-foreground">{hero.trusted}</span>
           </motion.div>
-        </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-0 opacity-50"></div>
+        </section>
       </header>
+
 
       {/* Categories , centered creative pill grid */}
       <CategoriesShowcase />
