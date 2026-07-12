@@ -62,6 +62,11 @@ export function Header() {
                 {t.nav.dashboard}
               </Link>
             )}
+            {isAdmin && (
+              <Link to="/admin" className="text-brand font-bold hover:underline">
+                {t.nav.admin}
+              </Link>
+            )}
           </div>
         </div>
 
