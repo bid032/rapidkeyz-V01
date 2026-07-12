@@ -92,7 +92,7 @@ function AuthPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-md mx-auto px-6 py-16">
+      <div className="max-w-md mx-auto px-3 sm:px-6 py-10 sm:py-16">
         <div className="bg-card border border-border rounded-2xl p-8">
           <h1 className="text-2xl font-extrabold mb-2">{t.auth.welcome}</h1>
           <p className="text-muted-foreground text-sm mb-6">{t.auth.welcomeDesc}</p>

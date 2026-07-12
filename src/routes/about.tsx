@@ -42,8 +42,9 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-brand text-center mb-16">{t.about.title}</h1>
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-10 sm:py-16">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-brand text-center mb-10 sm:mb-16">{t.about.title}</h1>
+
 
         <Section title={t.about.moreTitle}>
           <p className="leading-loose text-muted-foreground">{t.about.moreBody}</p>
