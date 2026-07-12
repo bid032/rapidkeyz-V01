@@ -1,72 +1,68 @@
-# خطة تحسين SEO لموقع RapidKeyz
+# ربط المنتجات بـ Google Sheets للتسليم التلقائي
 
-هدف الخطة: رفع ظهور الموقع في نتائج جوجل للكلمات المفتاحية العربية المتعلقة باشتراكات ChatGPT وMidjourney وNetflix وأدوات الذكاء الاصطناعي، وتحسين تجربة الزحف والفهرسة والمشاركة على السوشيال.
+## الفكرة
 
-## 1) البنية التحتية للفهرسة (Crawling & Indexing)
-- إنشاء `src/routes/sitemap[.]xml.ts` يولّد Sitemap ديناميكي يشمل: الصفحة الرئيسية، `/shop`، `/about`، `/terms`، `/privacy`، وكل صفحات المنتجات `/product/$slug` مأخوذة من قاعدة البيانات (فقط المنتجات `status = active`).
-- إنشاء/تحديث `public/robots.txt` للسماح بالزحف مع منع مسارات الأدمن والمصادقة، وإضافة رابط الـSitemap بعد نشر الدومين.
-- إضافة Canonical URL لكل صفحة (نسبي حالياً حتى يُثبَّت الدومين).
-- ربط Google Search Console والتحقق عبر meta tag بعد النشر.
+كل منتج (زي CapCut) بيرتبط بملف جوجل شيتس واحد. جوّه الملف كذا Tab (شيت)، كل tab اسمه = اسم الخطة/المدة (مثلاً "1 شهر"، "3 شهور"، "سنة"). لما زبون يشتري خطة معينة، النظام يفتح الـ tab المطابق ويسحب أول صف متاح ويعلّم عليه Delivered.
 
-## 2) ميتاداتا لكل صفحة (Head Metadata)
-- كل route يحصل على `title` و`description` و`og:title` و`og:description` و`og:type` و`og:url` فريدة.
-- الصفحات المستهدفة:
-  - `/` — الصفحة الرئيسية (Keyword: اشتراكات ذكاء اصطناعي، شحن ChatGPT Plus مصر).
-  - `/shop` — المتجر (Keyword: متجر اشتراكات رقمية).
-  - `/product/$slug` — ديناميكي من بيانات المنتج (اسم + وصف + سعر + صورة).
-  - `/about`, `/terms`, `/privacy`, `/auth`, `/cart`, `/checkout` (الأخيرة `noindex`).
-- استخدام `og:image` من `icon_url` للمنتج على leaf routes فقط.
+## المرونة في شكل الأعمدة
 
-## 3) البيانات المنظمة (JSON-LD Structured Data)
-- `__root.tsx`: Organization + WebSite (مع SearchAction).
-- `/product/$slug`: Product schema (name, description, image, offers.price, priceCurrency=EGP, availability, aggregateRating من التقييمات إن وجدت).
-- `/shop`: BreadcrumbList + ItemList.
-- الصفحة الرئيسية: FAQPage للأسئلة الشائعة إن أُضيفت.
+كل شيت هيبدأ بصف Header يحدد الأعمدة. النظام يقرأ الـ header ويفهم شكل البيانات تلقائياً. الأسماء المدعومة (case-insensitive):
 
-## 4) المحتوى والكلمات المفتاحية
-- كتابة أوصاف عربية غنية (150-160 حرفاً) لكل منتج ولكل صفحة.
-- إضافة H1 واحد واضح لكل صفحة (حالياً الرئيسية بها H1 لكن باقي الصفحات تحتاج مراجعة).
-- استخدام هيكل عناوين هرمي H1 → H2 → H3.
-- إضافة قسم FAQ في الصفحة الرئيسية أو صفحة المنتج.
+- `key` أو `code` أو `activation_key` — مفتاح تفعيل
+- `email` — الإيميل
+- `password` — الباسورد
+- `username` أو `user` — اسم المستخدم
+- `notes` أو `extra` — ملاحظات
+- `status` — إجباري (available / delivered)
+- `delivered_at`, `order_id` — النظام يكتب فيهم بعد التسليم
 
-## 5) الأداء (Core Web Vitals)
-- إضافة `loading="lazy"` و`width/height` لكل الصور.
-- تحويل الصور إلى WebP/AVIF عند الإمكان.
-- تقليل حجم الـfonts (تحميل أوزان `IBM Plex Sans Arabic` المستخدمة فعلاً فقط: 400/500/700 مثلاً بدلاً من 5 أوزان).
-- استخدام `font-display: swap` (موجود بالفعل عبر Google Fonts).
+يعني نفس النظام يشتغل مع:
+- شيت فيه `key | status`
+- شيت فيه `email | password | status`
+- شيت فيه `email | password | username | status`
+- شيت فيه `username | password | status`
 
-## 6) إمكانية الوصول والـSemantic HTML
-- استخدام عناصر `<main>`, `<nav>`, `<article>`, `<section>` بشكل صحيح.
-- `alt` نصي وصفي لكل الصور (خاصة أيقونات المنتجات).
-- `aria-label` للأزرار الأيقونية (WhatsApp Float, إلخ).
-- `lang="ar"` و`dir="rtl"` موجودان على `<html>` — جيد.
+## تغييرات قاعدة البيانات
 
-## 7) SEO المحلي والدولي
-- إضافة `hreflang` لو أُضيفت نسخة إنجليزية منفصلة (حالياً i18n داخل نفس الصفحة، لذا يكفي `lang="ar"`).
-- إضافة `geo.region` meta tag لمصر إن كان الاستهداف مصرياً.
+إضافة عمودين على `product_plans`:
+- `google_spreadsheet_id` (text) — ID الملف من الرابط
+- `google_sheet_tab` (text) — اسم الـ tab داخل الملف
 
-## 8) Social & Sharing
-- توليد صورة `og:image` احترافية للصفحة الرئيسية (1200×630) وحفظها في `public/`.
-- التأكد من `twitter:card` = `summary_large_image` مع `twitter:image`.
+خطة واحدة تحدد الملف + الـ tab بتاعها. لو نفس المنتج له 3 خطط، الـ 3 هيشاوروا على نفس `spreadsheet_id` بس بأسماء tabs مختلفة (الأدمن ممكن يعمل copy-paste من خطة لأخرى).
 
-## 9) الروابط الداخلية
-- ربط المنتجات المرتبطة في `/product/$slug`.
-- إضافة breadcrumbs مرئية في صفحات المنتج والمتجر.
-- روابط داخلية من الـFooter لأهم الفئات.
+## سيرفر فنكشن `claim_from_google_sheet`
 
-## 10) تشغيل فحص SEO
-- بعد التطبيق: تشغيل SEO scan داخلي وإصلاح ما يظهر من findings.
+خطوات التسليم:
+1. يقرأ header الـ tab (`{tab}!1:1`) ويحدد أرقام الأعمدة.
+2. يقرأ الصفوف (`{tab}!A2:Z`) ويلاقي أول صف status = فاضي أو "available".
+3. يبني object فيه {email, password, username, key, notes} حسب اللي موجود.
+4. يعمل PUT على خانة status = "delivered" + delivered_at + order_id في نفس الصف.
+5. يحفظ نسخة في جدول `delivered_accounts` الموجود عشان الزبون يشوفها بعدين والأدمن يعمل audit.
 
----
+يستدعى تلقائياً من نفس المكان اللي بيستدعي `claim_inventory_for_item` حالياً (بعد الدفع). لو الخطة معاها `google_spreadsheet_id` → يستخدم جوجل شيتس. لو لأ → يفضل يستخدم نظام `account_inventory` الموجود.
 
-## Technical Implementation Order
-1. Sitemap ديناميكي + robots.txt.
-2. Head metadata لكل route + canonical + og:url.
-3. JSON-LD (Organization, WebSite, Product, BreadcrumbList).
-4. Alt texts + aria-labels + lazy loading.
-5. Breadcrumbs مرئية.
-6. FAQ section + Related products.
-7. og:image افتراضي.
-8. تشغيل SEO scan نهائي.
+## واجهة الأدمن
 
-هل توافق على تنفيذ الخطة كاملة أم تفضل البدء بمرحلة معينة أولاً؟
+في صفحة تعديل الخطط (`admin.inventory` أو صفحة المنتج)، حقلين جديدين لكل خطة:
+- Google Spreadsheet ID (مع زر Extract من الرابط)
+- Tab Name (اسم الشيت)
+
+زر "Test Connection" يقرأ header الـ tab ويعرض الأعمدة اللي فهمها النظام + عدد الصفوف المتاحة، عشان الأدمن يتأكد قبل ما يشتغل.
+
+## الاتصال بجوجل شيتس
+
+الـ connector `GOOGLE_SHEETS_API_KEY` موجود ومربوط بالفعل. كل الاستدعاءات تعدي على gateway باستخدام حساب الجوجل بتاع الأدمن.
+
+## ملاحظات تقنية
+
+- الأدمن لازم يشير الملف Read/Write مع نفس حساب الجوجل المتصل بـ connector.
+- النظام هيتعامل مع الشيت كمخزون بطيء — يقرأ عند الطلب بس، مش على interval.
+- لو حصل فشل من جوجل (429/5xx)، نعمل retry واحد، ولو فشل تاني نرجع للـ order status "manual_delivery" عشان الأدمن يتدخل.
+- الـ status column لازم تكون موجودة في الشيت، لو مش موجودة النظام هيرفض ويقول للأدمن يضيفها.
+
+## ملفات هيتم تعديلها/إنشاؤها
+
+- migration جديد يضيف `google_spreadsheet_id` و `google_sheet_tab` على `product_plans`.
+- `src/lib/google-sheets-inventory.functions.ts` — سيرفر فنكشن `claimFromGoogleSheet` و `testSheetConnection`.
+- تعديل المكان اللي بيستدعي التسليم عشان يفرّق بين جوجل شيت و DB inventory.
+- تعديل صفحة الأدمن (خطط المنتجات) عشان تضيف الحقول + زر الاختبار.
