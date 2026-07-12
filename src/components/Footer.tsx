@@ -73,6 +73,18 @@ export function Footer() {
         <p className="text-[11px] text-muted-foreground">
           © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
         </p>
+        <p className="text-[11px] text-muted-foreground mt-2">
+          {t.footer.designedBy ?? "Designed & Developed by"}{" "}
+          <a
+            href="https://www.facebook.com/bid032"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-brand hover:underline"
+          >
+            Bido
+          </a>
+        </p>
+
       </div>
     </footer>
   );
