@@ -2,6 +2,15 @@ import * as React from 'react'
 import { Html, Preview, Section } from '@react-email/components'
 import { BrandLayout, styles, Head, Heading, Text, Hr } from './_brand'
 
+function looksLikeActivationKey(v?: string | null): boolean {
+  if (!v) return false
+  const s = v.trim()
+  if (!s || s.includes('@') || /\s/.test(s)) return false
+  if (/^[A-Z0-9]{4,}(-[A-Z0-9]{4,}){1,}$/i.test(s)) return true
+  if (/^[A-Z0-9]{16,}$/.test(s)) return true
+  return false
+}
+
 interface DeliveredAccount {
   product_name: string
   plan_label: string
