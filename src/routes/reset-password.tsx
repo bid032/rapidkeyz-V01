@@ -17,6 +17,7 @@ export const Route = createFileRoute("/reset-password")({
 
 
 function ResetPasswordPage() {
+  const { lang } = useApp();
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
