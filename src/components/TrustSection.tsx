@@ -26,18 +26,18 @@ type StatItem = {
 };
 
 const DEFAULT_STATS: StatItem[] = [
-  { key: "years",     icon: <Award className="size-6" />,          value: 3,     suffix: "+", label_ar: "سنين خبرة في المجال",           label_en: "Years of experience" },
-  { key: "staff",     icon: <MessagesSquare className="size-6" />, value: 5,     suffix: "+", label_ar: "موظفين دعم في خدمتك",           label_en: "Support staff at your service" },
-  { key: "services",  icon: <Monitor className="size-6" />,        value: 30,    suffix: "+", label_ar: "اشتراك وخدمة رقمية مختلفة",     label_en: "Different digital services" },
-  { key: "orders",    icon: <ShoppingBag className="size-6" />,    value: 12000, suffix: "+", label_ar: "عملية شراء ناجحة",              label_en: "Successful orders" },
-  { key: "customers", icon: <Users className="size-6" />,          value: 2100,  suffix: "+", label_ar: "شخص وشركة يثق بينا",             label_en: "Customers & companies trust us" },
+  { key: "years",     icon: <Award className="size-8" />,          value: 3,     suffix: "+", label_ar: "سنين خبرة في المجال",           label_en: "Years of experience" },
+  { key: "staff",     icon: <MessagesSquare className="size-8" />, value: 5,     suffix: "+", label_ar: "موظفين دعم في خدمتك",           label_en: "Support staff at your service" },
+  { key: "services",  icon: <Monitor className="size-8" />,        value: 30,    suffix: "+", label_ar: "اشتراك وخدمة رقمية مختلفة",     label_en: "Different digital services" },
+  { key: "orders",    icon: <ShoppingBag className="size-8" />,    value: 12000, suffix: "+", label_ar: "عملية شراء ناجحة",              label_en: "Successful orders" },
+  { key: "customers", icon: <Users className="size-8" />,          value: 2100,  suffix: "+", label_ar: "شخص وشركة يثق بينا",             label_en: "Customers & companies trust us" },
 ];
 
 const FEATURES = [
-  { icon: <Phone className="size-6" />,        title_ar: "خدمة عملاء",       title_en: "Customer Care",       desc_ar: "متواجدون دائماً للرد على استفساراتك وحل مشاكلك",  desc_en: "Always available to answer & solve your issues" },
-  { icon: <Settings2 className="size-6" />,    title_ar: "دعم كامل للخدمة", title_en: "Full Support",        desc_ar: "نضمن استمرارية الخدمة طوال فترة الاشتراك",         desc_en: "We ensure continuity through your subscription" },
-  { icon: <ShieldCheck className="size-6" />,  title_ar: "ضمان 100%",         title_en: "100% Guarantee",      desc_ar: "جميع خدماتنا مضمونة وتعمل بكفاءة",                  desc_en: "All services guaranteed and working" },
-  { icon: <Zap className="size-6" />,          title_ar: "استلام سريع",       title_en: "Instant Delivery",    desc_ar: "احصل على اشتراكاتك وخدماتك فوراً",                  desc_en: "Get your subscriptions instantly" },
+  { icon: <Phone className="size-8" />,        title_ar: "خدمة عملاء",       title_en: "Customer Care",       desc_ar: "متواجدون دائماً للرد على استفساراتك وحل مشاكلك",  desc_en: "Always available to answer & solve your issues" },
+  { icon: <Settings2 className="size-8" />,    title_ar: "دعم كامل للخدمة", title_en: "Full Support",        desc_ar: "نضمن استمرارية الخدمة طوال فترة الاشتراك",         desc_en: "We ensure continuity through your subscription" },
+  { icon: <ShieldCheck className="size-8" />,  title_ar: "ضمان 100%",         title_en: "100% Guarantee",      desc_ar: "جميع خدماتنا مضمونة وتعمل بكفاءة",                  desc_en: "All services guaranteed and working" },
+  { icon: <Zap className="size-8" />,          title_ar: "استلام سريع",       title_en: "Instant Delivery",    desc_ar: "احصل على اشتراكاتك وخدماتك فوراً",                  desc_en: "Get your subscriptions instantly" },
 ];
 
 function AnimatedNumber({ value, suffix }: { value: number; suffix?: string }) {
