@@ -105,14 +105,15 @@ function CheckoutPage() {
         .from("orders")
         .insert({
           user_id: user?.id ?? null,
-          status: "pending",
-          payment_gateway: gateway,
+          status: gateway === "simulate" ? "paid" : "pending",
+          payment_gateway: (gateway === "simulate" ? "manual" : gateway) as any,
           subtotal: cartTotal,
           total: cartTotal,
           customer_email: email,
           customer_phone: phone,
           payment_proof_url: proofUrl,
           payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.trim() : null,
+          payment_reference: gateway === "simulate" ? "SIMULATION" : null,
         })
         .select()
         .single();
