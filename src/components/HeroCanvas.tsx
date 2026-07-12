@@ -29,6 +29,7 @@ export function HeroCanvas() {
     mount.appendChild(renderer.domElement);
 
     const brand = new THREE.Color("#22c3e6");
+    const brandDeep = new THREE.Color("#1e40af");
 
     // Particle field
     const particleCount = 900;
@@ -55,10 +56,10 @@ export function HeroCanvas() {
     const torusGroup = new THREE.Group();
     const torusGeo = new THREE.TorusGeometry(0.7, 0.22, 24, 80);
     const torusMat = new THREE.MeshBasicMaterial({
-      color: brand,
+      color: brandDeep,
       wireframe: true,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.45,
     });
     const toruses: THREE.Mesh[] = [];
     for (let i = 0; i < 5; i++) {
