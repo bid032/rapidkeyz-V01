@@ -66,7 +66,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-          <div className="hidden xs:flex bg-muted rounded-full p-1">
+          <div className="hidden sm:flex bg-muted rounded-full p-1">
             <button
               onClick={() => setLang("en")}
               className={`px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-bold rounded-full transition-all ${
