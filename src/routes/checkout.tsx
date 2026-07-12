@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { notifyNewOrder } from "@/lib/notify-order.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
