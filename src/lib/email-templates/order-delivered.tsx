@@ -32,12 +32,12 @@ export const OrderDeliveredEmail = ({
 }: OrderDeliveredEmailProps) => (
   <Html lang="ar" dir="rtl">
     <Head />
-    <Preview>{`طلبك #${orderNumber} جاهز — بيانات الحساب في الإيميل`}</Preview>
+    <Preview>{`طلبك #${orderNumber} جاهز ، بيانات الحساب في الإيميل`}</Preview>
     <BrandLayout preview={`طلبك #${orderNumber} جاهز`} lang="ar">
       <Heading style={styles.h1}>✓ تم تسليم طلبك</Heading>
       <Text style={styles.text}>
         شكراً لشرائك من <b style={{ color: '#fff' }}>RapidKeyz</b> <br />
-        رقم الطلب: <span style={styles.mono}>#{orderNumber}</span> — المبلغ: <span style={styles.mono}>{total} {currency}</span>
+        رقم الطلب: <span style={styles.mono}>#{orderNumber}</span> ، المبلغ: <span style={styles.mono}>{total} {currency}</span>
       </Text>
 
       <Heading as="h2" style={styles.h2}>بيانات الحسابات</Heading>
@@ -60,7 +60,7 @@ export const OrderDeliveredEmail = ({
         return (
           <Section key={i} style={styles.card}>
             <Text style={styles.cardTitle}>
-              {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>— {a.plan_label}</span>
+              {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>, {a.plan_label}</span>
             </Text>
             {rows.map((r, ri) => (
               <Text key={ri} style={styles.line}>
@@ -86,7 +86,7 @@ export default OrderDeliveredEmail
 
 export const template = {
   component: OrderDeliveredEmail,
-  subject: (d: Record<string, any>) => `طلبك #${d.orderNumber} جاهز — بيانات الحساب`,
+  subject: (d: Record<string, any>) => `طلبك #${d.orderNumber} جاهز ، بيانات الحساب`,
   previewData: {
     orderNumber: 'ABC12345',
     total: 1500,

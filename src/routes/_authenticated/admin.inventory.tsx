@@ -252,7 +252,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
       const text = await res.text();
       if (/^\s*<(!doctype|html)/i.test(text)) {
-        throw new Error("اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link — Viewer، أو File → Share → Publish to web → CSV.");
+        throw new Error("اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link ، Viewer، أو File → Share → Publish to web → CSV.");
       }
       const { records, statusColIdx } = mapRows(parseCsv(text));
 
@@ -363,7 +363,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         <div className="p-3 bg-card border border-border rounded-lg">
           <div className="text-xs font-bold mb-2">رفع ملف CSV</div>
           <p className="text-[11px] text-muted-foreground mb-2">
-            الصفوف: <code>email, username, password, notes</code> — أول صف Header.
+            الصفوف: <code>email, username, password, notes</code> ، أول صف Header.
           </p>
           <input
             type="file"

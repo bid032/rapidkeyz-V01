@@ -38,7 +38,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             });
           }
         } catch {
-          // ignore — still serve static entries
+          // ignore , still serve static entries
         }
 
         const urls = entries.map((e) =>

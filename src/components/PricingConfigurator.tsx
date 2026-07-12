@@ -70,7 +70,7 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -bottom-32 -left-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
       <div className="relative p-5 sm:p-7 space-y-6">
-        {/* Account type — segmented pill with sliding indicator */}
+        {/* Account type , segmented pill with sliding indicator */}
         {accountTypes.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -208,7 +208,7 @@ export function PricingConfigurator({
           </div>
         </div>
 
-        {/* Total price display — animated */}
+        {/* Total price display , animated */}
         {selected && (
           <div className="relative rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-4 sm:p-5 overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]" />

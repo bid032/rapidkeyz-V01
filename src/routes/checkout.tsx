@@ -13,7 +13,7 @@ import { friendlyErrorMessage } from "@/lib/error-handler";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "إتمام الطلب — RapidKeyz" },
+      { title: "إتمام الطلب ، RapidKeyz" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -228,7 +228,7 @@ function CheckoutPage() {
                 <h2 className="font-bold mb-4">{t.checkout.contact}</h2>
                 {!user && requireLogin && (
                   <p className="text-sm text-warning mb-4">
-                    {t.checkout.loginRequired} —{" "}
+                    {t.checkout.loginRequired} ,{" "}
                     <Link to="/auth" search={{ redirect: "/checkout" }} className="text-brand underline">
                       {t.auth.signIn}
                     </Link>
@@ -237,8 +237,8 @@ function CheckoutPage() {
                 {!user && !requireLogin && (
                   <p className="text-xs text-muted-foreground mb-4">
                     {lang === "ar"
-                      ? "تقدر تكمل الشراء كضيف — بس بيانات التواصل ضرورية لتسليم الطلب."
-                      : "You can check out as a guest — contact details are required for delivery."}
+                      ? "تقدر تكمل الشراء كضيف ، بس بيانات التواصل ضرورية لتسليم الطلب."
+                      : "You can check out as a guest , contact details are required for delivery."}
                   </p>
                 )}
                 <div className="grid gap-3">
@@ -277,7 +277,7 @@ function CheckoutPage() {
                       return (
                         <div key={key} className="grid gap-1">
                           <label className="text-xs font-bold text-muted-foreground">
-                            {it.productName} — {it.planLabel}
+                            {it.productName} , {it.planLabel}
                           </label>
                           <input
                             required
@@ -305,10 +305,10 @@ function CheckoutPage() {
                     [
                       {
                         id: "simulate",
-                        label: lang === "ar" ? "ادفع الآن — محاكاة (تجريبي)" : "Pay Now — Simulation (test)",
+                        label: lang === "ar" ? "ادفع الآن ، محاكاة (تجريبي)" : "Pay Now ، Simulation (test)",
                         hint: lang === "ar"
-                          ? "دفع فوري وهمي لعرض الشكل — بيتبعت الإيميل تلقائي لو المنتج instant."
-                          : "Instant fake payment for demo — auto-emails credentials when the product is instant.",
+                          ? "دفع فوري وهمي لعرض الشكل ، بيتبعت الإيميل تلقائي لو المنتج instant."
+                          : "Instant fake payment for demo , auto-emails credentials when the product is instant.",
                       },
                       { id: "paymob", label: t.checkout.paymob },
                       { id: "kashier", label: t.checkout.kashier },
@@ -453,7 +453,7 @@ function CheckoutPage() {
                       <>
                         <p className="font-bold mb-2">Simulation mode</p>
                         <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
-                          <li>Order is created as <b>paid</b> instantly — no real gateway involved.</li>
+                          <li>Order is created as <b>paid</b> instantly , no real gateway involved.</li>
                           <li>Instant products auto-claim an account from inventory.</li>
                           <li>The row is marked <b>sold</b> in its linked Google Sheet.</li>
                           <li>Credentials are emailed to the customer automatically.</li>

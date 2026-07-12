@@ -42,7 +42,7 @@ export const Route = createFileRoute("/product/$slug")({
     if (!p) {
       return {
         meta: [
-          { title: "المنتج غير موجود — RapidKeyz" },
+          { title: "المنتج غير موجود ، RapidKeyz" },
           { name: "robots", content: "noindex" },
         ],
       };
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/product/$slug")({
       (p.description_ar || p.description_en || `اشتراك ${name} أصلي بأفضل سعر وتسليم فوري من RapidKeyz.`)
         .toString()
         .slice(0, 160);
-    const title = `${name} — اشتراك أصلي بأفضل سعر | RapidKeyz`;
+    const title = `${name} ، اشتراك أصلي بأفضل سعر | RapidKeyz`;
     const url = `/product/${params.slug}`;
     return {
       meta: [
@@ -135,7 +135,7 @@ function ProductPage() {
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
 
-  // Live viewers counter — seeded per-slug for stability, drifts every few seconds.
+  // Live viewers counter , seeded per-slug for stability, drifts every few seconds.
   const seed = useMemo(() => {
     let h = 0;
     for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;

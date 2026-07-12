@@ -30,7 +30,7 @@ export const NewOrderEmail = ({
 }: NewOrderEmailProps) => (
   <Html lang="ar" dir="rtl">
     <Head />
-    <Preview>{`طلب جديد #${orderNumber} — ${total} ${currency}`}</Preview>
+    <Preview>{`طلب جديد #${orderNumber} ، ${total} ${currency}`}</Preview>
     <BrandLayout preview={`طلب جديد #${orderNumber}`} lang="ar">
       <Heading style={styles.h1}>طلب جديد #{orderNumber}</Heading>
       <Text style={styles.text}>
@@ -40,7 +40,7 @@ export const NewOrderEmail = ({
       <Section style={styles.card}>
         <Text style={styles.line}><b style={{ color: '#fff' }}>المبلغ:</b> <span style={styles.mono}>{total} {currency}</span></Text>
         <Text style={styles.line}><b style={{ color: '#fff' }}>طريقة الدفع:</b> {paymentGateway}</Text>
-        <Text style={styles.line}><b style={{ color: '#fff' }}>العميل:</b> {customerEmail}{customerPhone ? ` — ${customerPhone}` : ''}</Text>
+        <Text style={styles.line}><b style={{ color: '#fff' }}>العميل:</b> {customerEmail}{customerPhone ? ` , ${customerPhone}` : ''}</Text>
         {paymentSenderPhone && (
           <Text style={styles.line}><b style={{ color: '#fff' }}>رقم المحفظة:</b> <span style={styles.mono}>{paymentSenderPhone}</span></Text>
         )}
@@ -53,7 +53,7 @@ export const NewOrderEmail = ({
       {items.map((it, i) => (
         <Section key={i} style={styles.card}>
           <Text style={styles.cardTitle}>{it.product_name}</Text>
-          <Text style={styles.line}>{it.plan_label} × {it.quantity} — {it.unit_price} {currency}</Text>
+          <Text style={styles.line}>{it.plan_label} × {it.quantity} , {it.unit_price} {currency}</Text>
           <Text style={styles.line}><span style={{ color: styles.h2.color }}>{it.delivery_type}</span></Text>
           {it.subscription_email && (
             <Text style={styles.line}>تفعيل على: <span style={styles.mono}>{it.subscription_email}</span></Text>
@@ -76,7 +76,7 @@ export default NewOrderEmail
 
 export const template = {
   component: NewOrderEmail,
-  subject: (d: Record<string, any>) => `طلب جديد #${d.orderNumber} — ${d.total} ${d.currency}`,
+  subject: (d: Record<string, any>) => `طلب جديد #${d.orderNumber} ، ${d.total} ${d.currency}`,
   to: 'bidotito1@gmail.com',
   previewData: {
     orderNumber: 'ABC12345',

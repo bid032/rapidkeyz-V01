@@ -6,7 +6,7 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "سلة التسوق — RapidKeyz" },
+      { title: "سلة التسوق ، RapidKeyz" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

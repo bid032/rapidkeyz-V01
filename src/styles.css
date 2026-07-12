@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* RapidKeyz — Modern Tech Noir design system */
+/* RapidKeyz , Modern Tech Noir design system */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);

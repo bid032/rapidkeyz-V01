@@ -104,7 +104,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
               )}
             </div>
           ) : (
-            <span className="text-2xl font-extrabold text-foreground">—</span>
+            <span className="text-2xl font-extrabold text-foreground">,</span>
           )}
         </div>
         <span className="px-5 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold text-sm group-hover:brand-glow transition-all">

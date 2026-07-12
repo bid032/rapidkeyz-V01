@@ -132,7 +132,7 @@ function Dashboard() {
                       <div className="flex justify-between items-center gap-2 flex-wrap">
                         <div className="text-sm min-w-0">
                           <span className="font-bold">{it.product_name}</span>{" "}
-                          <span className="text-muted-foreground">— {it.plan_label} × {it.quantity}</span>
+                          <span className="text-muted-foreground">, {it.plan_label} × {it.quantity}</span>
                         </div>
                         <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                       </div>

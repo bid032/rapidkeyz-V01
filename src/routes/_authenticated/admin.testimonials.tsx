@@ -69,7 +69,7 @@ function AdminTestimonials() {
       <div className="bg-card border border-border rounded-2xl p-5 mb-6">
         <ImageUpload
           bucket="testimonial-images"
-          label="+ إضافة صورة رأي عميل (نسبة 4:5 — أي مقاس)"
+          label="+ إضافة صورة رأي عميل (نسبة 4:5 ، أي مقاس)"
           requireAspectRatio={{ w: 4, h: 5 }}
           onChange={(url) => add.mutate(url)}
         />

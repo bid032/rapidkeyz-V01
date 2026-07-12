@@ -79,8 +79,8 @@ function AdminUsers() {
               const isModerator = u.user_roles?.some((r: any) => r.role === "moderator");
               return (
                 <tr key={u.id} className="border-t border-border">
-                  <td className="p-3">{u.display_name ?? "—"}</td>
-                  <td className="p-3" dir="ltr">{u.email ?? "—"}</td>
+                  <td className="p-3">{u.display_name ?? ","}</td>
+                  <td className="p-3" dir="ltr">{u.email ?? ","}</td>
                   <td className="p-3">
                     {u.user_roles?.map((r: any) => (
                       <span key={r.role} className="text-xs px-2 py-0.5 bg-muted rounded mr-1">{r.role}</span>
@@ -117,8 +117,8 @@ function AdminUsers() {
           return (
             <div key={u.id} className="bg-card border border-border rounded-2xl p-4">
               <div className="min-w-0 mb-2">
-                <div className="font-bold truncate">{u.display_name ?? "—"}</div>
-                <div className="text-xs text-muted-foreground truncate" dir="ltr">{u.email ?? "—"}</div>
+                <div className="font-bold truncate">{u.display_name ?? ","}</div>
+                <div className="text-xs text-muted-foreground truncate" dir="ltr">{u.email ?? ","}</div>
               </div>
               {u.user_roles?.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">
