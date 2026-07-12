@@ -326,7 +326,7 @@ function AdminProducts() {
       {editing && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
           <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
-            <div className="w-full max-w-2xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8">
+            <div className="w-full max-w-2xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
             <h2 className="text-lg sm:text-xl font-bold mb-3">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
@@ -337,7 +337,7 @@ function AdminProducts() {
             </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+              className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 min-w-0"
             >
               <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
@@ -363,7 +363,7 @@ function AdminProducts() {
                   }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="col-span-2">
+              <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="md:col-span-2">
                 <div className="flex gap-2">
                   <input required placeholder="netflix-premium" value={editing.slug}
                     onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
@@ -386,7 +386,7 @@ function AdminProducts() {
                   onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg min-h-[80px]" />
               </Field>
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <ImageUpload
                   bucket="product-images"
                   label="صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
@@ -421,7 +421,7 @@ function AdminProducts() {
                   <option value="manual">Manual — تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="col-span-2">
+              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="md:col-span-2">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {([
                     { v: "shared", label: "شير (مشترك)" },
@@ -455,7 +455,7 @@ function AdminProducts() {
                   <p className="text-[11px] text-destructive mt-2">اختر نوع واحد على الأقل.</p>
                 )}
               </Field>
-              <Field label="نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="col-span-2">
+              <Field label="نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="md:col-span-2">
                 <input
                   type="number"
                   min={0}
@@ -465,12 +465,12 @@ function AdminProducts() {
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg font-bold"
                 />
               </Field>
-              <label className="col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
+              <label className="md:col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
                 <span><b>Featured</b> — ثبّت المنتج في القسم المميز على الرئيسية</span>
               </label>
-              <div className="col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
+              <div className="md:col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
                   className="px-4 py-2 border border-border rounded-lg">{t.admin.cancel}</button>
                 <button type="submit" disabled={save.isPending}
@@ -478,7 +478,7 @@ function AdminProducts() {
                   {save.isPending ? t.common.loading : t.admin.save}
                 </button>
               </div>
-              {save.error && <p className="col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
+              {save.error && <p className="md:col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
             </form>
 
             </div>
@@ -601,7 +601,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
       <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
-        <div className="w-full max-w-3xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8">
+        <div className="w-full max-w-3xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
         <div className="flex justify-between items-start gap-2 mb-2">
           <div className="min-w-0">
             <h3 className="font-bold text-base sm:text-lg">العروض والأسعار والمخزون</h3>
@@ -648,7 +648,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                   >مسح</button>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border min-w-0">
                   <div>
                     <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">سعر البيع</label>
                     <input
@@ -724,7 +724,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
           <h4 className="font-bold text-sm mb-3">إضافة عرض جديد</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
             <Field label="الاسم بالعربي">
               <input required value={form.label_ar}
                 onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
@@ -755,7 +755,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="سعر الشراء (خاص بيك فقط)" className="col-span-2">
+            <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
