@@ -13,8 +13,26 @@ import { supabase } from "@/integrations/supabase/client";
 
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "RapidKeyz — اشتراكات ChatGPT Plus وMidjourney وNetflix بأسعار منافسة" },
+      {
+        name: "description",
+        content:
+          "اشترِ اشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات الذكاء الاصطناعي بتسليم فوري ودعم عربي 24/7. دفع آمن عبر Paymob وKashier.",
+      },
+      { property: "og:title", content: "RapidKeyz — اشتراكات الذكاء الاصطناعي والترفيه" },
+      {
+        property: "og:description",
+        content: "متجر عربي موثوق لاشتراكات ChatGPT Plus وMidjourney وNetflix — تسليم فوري ودعم مستمر.",
+      },
+      { property: "og:url", content: "/" },
+    ],
+    links: [{ rel: "canonical", href: "/" }],
+  }),
   component: HomePage,
 });
+
 
 async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   const { data, error } = await supabase

@@ -79,6 +79,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "RapidKeyz: متجرك العربي لاشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات الذكاء الاصطناعي بأسعار منافسة وتسليم فوري.",
       },
+      { property: "og:site_name", content: "RapidKeyz" },
       { property: "og:title", content: "RapidKeyz — Premium AI & Streaming Subscriptions" },
       {
         property: "og:description",
@@ -86,7 +87,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Premium access to ChatGPT Plus, Midjourney, Netflix and more. Instant delivery, secure payments via Paymob & Kashier.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:locale", content: "ar_EG" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "theme-color", content: "#000000" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -94,11 +97,39 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap",
       },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "RapidKeyz",
+              url: "/",
+              logo: "/favicon.png",
+              sameAs: ["https://wa.me/201284234815"],
+            },
+            {
+              "@type": "WebSite",
+              name: "RapidKeyz",
+              url: "/",
+              potentialAction: {
+                "@type": "SearchAction",
+                target: "/shop?q={search_term_string}",
+                "query-input": "required name=search_term_string",
+              },
+            },
+          ],
+        }),
+      },
+    ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

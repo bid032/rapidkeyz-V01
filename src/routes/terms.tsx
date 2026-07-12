@@ -7,12 +7,20 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms & Conditions — الشروط والأحكام | RapidKeyz" },
-      { name: "description", content: "الشروط والأحكام الخاصة باستخدام خدمات RapidKeyz ومنتجاتها الرقمية." },
+      { title: "الشروط والأحكام — Terms & Conditions | RapidKeyz" },
+      {
+        name: "description",
+        content: "الشروط والأحكام الخاصة باستخدام خدمات RapidKeyz ومنتجاتها الرقمية.",
+      },
+      { property: "og:title", content: "الشروط والأحكام — RapidKeyz" },
+      { property: "og:description", content: "بنود استخدام خدمات RapidKeyz." },
+      { property: "og:url", content: "/terms" },
     ],
+    links: [{ rel: "canonical", href: "/terms" }],
   }),
   component: TermsPage,
 });
+
 
 function TermsPage() {
   const { t } = useApp();

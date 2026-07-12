@@ -8,12 +8,24 @@ import { Phone, Wrench, ShieldCheck, Zap } from "lucide-react";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About RapidKeyz — من نحن" },
-      { name: "description", content: "تعرف على RapidKeyz، شريكك الموثوق لاشتراكات الخدمات الرقمية الأصلية بأسعار تنافسية." },
+      { title: "من نحن — About RapidKeyz" },
+      {
+        name: "description",
+        content:
+          "تعرّف على RapidKeyz، شريكك الموثوق لاشتراكات الخدمات الرقمية الأصلية بأسعار تنافسية ودعم عربي 24/7.",
+      },
+      { property: "og:title", content: "من نحن — RapidKeyz" },
+      {
+        property: "og:description",
+        content: "قصتنا ورؤيتنا في RapidKeyz لتقديم اشتراكات رقمية موثوقة بأسعار منافسة.",
+      },
+      { property: "og:url", content: "/about" },
     ],
+    links: [{ rel: "canonical", href: "/about" }],
   }),
   component: AboutPage,
 });
+
 
 function FeaturesStrip() {
   const { t } = useApp();

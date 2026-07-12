@@ -20,13 +20,25 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "المتجر — RapidKeyz" },
-      { name: "description", content: "تصفّح جميع اشتراكات الذكاء الاصطناعي والترفيه على RapidKeyz." },
+      { title: "المتجر — اشتراكات الذكاء الاصطناعي والترفيه | RapidKeyz" },
+      {
+        name: "description",
+        content:
+          "تصفّح جميع اشتراكات RapidKeyz: ChatGPT Plus، Midjourney، Netflix، Canva Pro وأكثر — بأسعار تنافسية وتسليم فوري.",
+      },
+      { property: "og:title", content: "المتجر — RapidKeyz" },
+      {
+        property: "og:description",
+        content: "كل اشتراكات الذكاء الاصطناعي والترفيه في مكان واحد بتسليم فوري ودفع آمن.",
+      },
+      { property: "og:url", content: "/shop" },
     ],
+    links: [{ rel: "canonical", href: "/shop" }],
   }),
   validateSearch: (s) => searchSchema.parse(s),
   component: ShopPage,
 });
+
 
 async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<ProductCardData[]> {
   let q = supabase
