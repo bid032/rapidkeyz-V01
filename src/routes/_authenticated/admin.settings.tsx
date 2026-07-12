@@ -19,6 +19,7 @@ function AdminSettings() {
   const [socials, setSocials] = useState<any>({
     facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
   });
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "both">("both");
   const [stats, setStats] = useState<any>({
     years: 3, staff: 5, services: 30, orders: 12000, customers: 2100,
   });
