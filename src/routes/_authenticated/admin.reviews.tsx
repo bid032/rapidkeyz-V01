@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Plus, Trash2, Save, X, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { friendlyErrorMessage } from "@/lib/error-handler";
+import { useApp } from "@/contexts/AppContext";
 
 export const Route = createFileRoute("/_authenticated/admin/reviews")({
   component: AdminReviews,
