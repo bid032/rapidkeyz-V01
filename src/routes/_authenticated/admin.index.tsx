@@ -273,7 +273,7 @@ function AdminOverview() {
                 );
               })}
               {!sales.data?.length && (
-                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
+                <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
               )}
             </tbody>
           </table>
