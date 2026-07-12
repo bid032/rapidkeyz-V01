@@ -494,6 +494,51 @@ function CheckoutPage() {
         )}
       </div>
       <Footer />
+
+      {successOrder && (
+        <div className="fixed inset-0 z-[120] bg-background/85 backdrop-blur-md grid place-items-center p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-card border border-success/40 rounded-2xl p-6 sm:p-8 shadow-2xl text-center">
+            <div className="mx-auto mb-5 size-16 rounded-full bg-success/15 grid place-items-center">
+              <svg viewBox="0 0 24 24" className="size-9 text-success" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-extrabold mb-2">
+              {lang === "ar" ? "تم الدفع بنجاح 🎉" : "Payment successful 🎉"}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-1">
+              {lang === "ar" ? "رقم الطلب:" : "Order number:"}{" "}
+              <span className="font-mono font-bold text-foreground">#{successOrder.number}</span>
+            </p>
+            <p className="text-sm leading-relaxed mb-6 mt-4">
+              {successOrder.delivered
+                ? (lang === "ar"
+                    ? <>تم إرسال بيانات الحساب على بريدك الإلكتروني <span className="font-bold text-brand">{email}</span>. تقدر تلاقيها كمان في لوحة حسابك.</>
+                    : <>Your account details were emailed to <span className="font-bold text-brand">{email}</span>. You can also find them in your dashboard.</>)
+                : (lang === "ar"
+                    ? <>تم استلام طلبك وسيتم تجهيزه وإرسال البيانات على <span className="font-bold text-brand">{email}</span> قريباً.</>
+                    : <>Your order was received. Details will be sent to <span className="font-bold text-brand">{email}</span> shortly.</>)}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                onClick={() => {
+                  setSuccessOrder(null);
+                  navigate({ to: user ? "/dashboard" : "/" });
+                }}
+                className="flex-1 px-5 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow transition"
+              >
+                {lang === "ar" ? "الذهاب إلى حسابي" : "Go to my dashboard"}
+              </button>
+              <button
+                onClick={() => setSuccessOrder(null)}
+                className="px-4 py-3 border border-border rounded-xl font-bold hover:bg-muted transition"
+              >
+                {lang === "ar" ? "إغلاق" : "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
