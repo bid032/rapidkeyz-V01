@@ -558,9 +558,9 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0 });
-      notify("تم إضافة العرض", "success");
+      notify(lang === "ar" ? "تم إضافة العرض" : "Plan added", "success");
     },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const savePlan = useMutation({
