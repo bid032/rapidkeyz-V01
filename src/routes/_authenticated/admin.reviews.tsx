@@ -25,6 +25,7 @@ type Review = {
 
 function AdminReviews() {
   const qc = useQueryClient();
+  const { lang } = useApp();
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<Review>>({
