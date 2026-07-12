@@ -52,23 +52,16 @@ export function SplashLoader() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
       </div>
 
-      <div className="relative flex flex-col items-center gap-8">
-        <div className="relative size-24 sm:size-28 flex items-center justify-center">
+      <div className="relative flex flex-col items-center">
+        <div className="relative size-48 sm:size-56 flex items-center justify-center">
           {/* Rotating ring */}
-          <div className="absolute -inset-8 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
+          <div className="absolute -inset-6 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
           {/* Reverse ring */}
-          <div className="absolute -inset-5 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "1.8s", animationDirection: "reverse" }} />
+          <div className="absolute -inset-3 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "1.8s", animationDirection: "reverse" }} />
           {/* Logo */}
-          <div className="relative flex items-center justify-center animate-pulse w-full h-full">
+          <div className="relative flex items-center justify-center animate-pulse w-[70%] h-[70%]">
             <img src={logo} alt="RapidKeyz" className="max-w-full max-h-full object-contain drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]" />
           </div>
-        </div>
-
-        {/* Loading dots */}
-        <div className="flex items-center gap-2">
-          <span className="size-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: "0ms" }} />
-          <span className="size-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: "150ms" }} />
-          <span className="size-2 rounded-full bg-brand animate-bounce" style={{ animationDelay: "300ms" }} />
         </div>
       </div>
     </div>
