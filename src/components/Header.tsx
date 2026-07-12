@@ -57,6 +57,12 @@ export function Header() {
             <Link to="/about" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.about}
             </Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
+              {t.nav.terms}
+            </Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
+              {t.nav.privacy}
+            </Link>
             {user && (
               <Link to="/dashboard" className="hover:text-foreground transition-colors">
                 {t.nav.dashboard}
