@@ -164,15 +164,15 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     if (records.length === 0) { notify("مفيش صفوف صالحة في الملف", "error"); return; }
     setBusy(true);
     try {
-      const payload = records.map((r) => ({ ...r, plan_id: planId, source }));
+      const batchId = (crypto as any).randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+      const payload = records.map((r) => ({ ...r, plan_id: planId, source, import_batch_id: batchId }));
       const { error } = await supabase.from("account_inventory").insert(payload);
       if (error) throw error;
-      // sync stock on product_plans
-      await supabase.rpc; // no-op placeholder; we'll update stock manually below
       const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
       await supabase.from("product_plans").update({ stock: available }).eq("id", planId);
       notify(`تمت إضافة ${records.length} حساب`, "success");
       qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
+      qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
       onChange();
     } catch (e: any) {
       notify(e.message || "خطأ في الرفع", "error");
@@ -195,7 +195,6 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
       const text = await res.text();
       const parsed = mapRows(parseCsv(text));
-      // Save the URL to the plan for reference
       await supabase.from("product_plans").update({ sheet_csv_url: sheetUrl.trim() }).eq("id", planId);
       await insertRows(parsed, "sheet");
     } catch (e: any) {
@@ -205,15 +204,65 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     }
   };
 
+  const syncStock = async () => {
+    const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
+    await supabase.from("product_plans").update({ stock: available }).eq("id", planId);
+  };
+
   const delRow = async (id: string) => {
     const ok = await confirm({ title: "حذف حساب", message: "متأكد؟", tone: "danger", confirmLabel: "احذف" });
     if (!ok) return;
     await supabase.from("account_inventory").delete().eq("id", id);
-    const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
-    await supabase.from("product_plans").update({ stock: available }).eq("id", planId);
+    await syncStock();
     qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
+    qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
     onChange();
   };
+
+  const batches = useQuery({
+    queryKey: ["inventory-batches", planId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("account_inventory")
+        .select("import_batch_id, source, created_at, status")
+        .eq("plan_id", planId)
+        .not("import_batch_id", "is", null);
+      const map = new Map<string, { id: string; source: string; created_at: string; total: number; available: number; delivered: number }>();
+      (data ?? []).forEach((r: any) => {
+        const k = r.import_batch_id as string;
+        const cur = map.get(k) ?? { id: k, source: r.source, created_at: r.created_at, total: 0, available: 0, delivered: 0 };
+        cur.total++;
+        if (r.status === "available") cur.available++;
+        else if (r.status === "delivered") cur.delivered++;
+        if (new Date(r.created_at) < new Date(cur.created_at)) cur.created_at = r.created_at;
+        map.set(k, cur);
+      });
+      return Array.from(map.values()).sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    },
+  });
+
+  const delBatch = async (batchId: string, opts: { onlyAvailable: boolean }) => {
+    const ok = await confirm({
+      title: "حذف عملية استرداد",
+      message: opts.onlyAvailable
+        ? "هيتم حذف الحسابات المتاحة فقط من هذه العملية. الحسابات اللي اتسلمت للعملاء هتفضل. متأكد؟"
+        : "هيتم حذف كل الحسابات اللي جت من عملية الاسترداد دي (المتاحة والمسلَّمة). متأكد؟",
+      tone: "danger",
+      confirmLabel: "احذف",
+    });
+    if (!ok) return;
+    let q = supabase.from("account_inventory").delete().eq("plan_id", planId).eq("import_batch_id", batchId);
+    if (opts.onlyAvailable) q = q.eq("status", "available");
+    const { error } = await q;
+    if (error) { notify(error.message, "error"); return; }
+    await syncStock();
+    notify("تم حذف عملية الاسترداد", "success");
+    qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
+    qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
+    onChange();
+  };
+
+
 
   return (
     <div className="mt-3 pt-3 border-t border-border space-y-4">
