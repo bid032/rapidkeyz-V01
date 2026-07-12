@@ -94,32 +94,65 @@ function ShopPage() {
         )}
 
 
-        <div className="flex flex-wrap gap-2 mb-8">
-          {(["instant", "manual"] as const).map((d) => (
-            <Link
-              key={d}
-              to="/shop"
-              search={{ ...search, delivery: search.delivery === d ? undefined : d }}
-              className={`px-3 py-1.5 rounded text-xs font-bold border ${
-                search.delivery === d ? "bg-success/20 text-success border-success/40" : "border-border text-muted-foreground"
-              }`}
-            >
-              {d === "instant" ? t.badges.instant : t.badges.manual}
-            </Link>
-          ))}
-          {(["private", "shared"] as const).map((a) => (
-            <Link
-              key={a}
-              to="/shop"
-              search={{ ...search, account: search.account === a ? undefined : a }}
-              className={`px-3 py-1.5 rounded text-xs font-bold border ${
-                search.account === a ? "bg-brand/20 text-brand border-brand/40" : "border-border text-muted-foreground"
-              }`}
-            >
-              {a === "private" ? t.badges.private : t.badges.shared}
-            </Link>
-          ))}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+          className="relative mx-auto mb-12 max-w-4xl"
+        >
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[160px] bg-brand/15 blur-[100px] rounded-full" />
+          </div>
+          <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/60 backdrop-blur px-4 sm:px-8 py-6 sm:py-8 shadow-lg">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
+              <SlidersHorizontal className="size-3.5" />
+              {lang === "ar" ? "فلترة سريعة" : "Quick filters"}
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+              {([
+                { key: "instant", type: "delivery", label: t.badges.instant, Icon: Zap, tone: "success" },
+                { key: "manual", type: "delivery", label: t.badges.manual, Icon: Clock, tone: "success" },
+                { key: "private", type: "account", label: t.badges.private, Icon: Lock, tone: "brand" },
+                { key: "shared", type: "account", label: t.badges.shared, Icon: Users, tone: "brand" },
+              ] as const).map(({ key, type, label, Icon, tone }, i) => {
+                const active =
+                  (type === "delivery" && search.delivery === key) ||
+                  (type === "account" && search.account === key);
+                const next =
+                  type === "delivery"
+                    ? { ...search, delivery: search.delivery === key ? undefined : (key as "instant" | "manual") }
+                    : { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
+                const activeCls =
+                  tone === "success"
+                    ? "bg-success/15 text-success border-success/50 shadow-[0_0_20px_-6px_hsl(var(--success)/0.6)]"
+                    : "bg-brand/15 text-brand border-brand/50 brand-glow";
+                return (
+                  <motion.div
+                    key={key}
+                    initial={{ opacity: 0, y: 8 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.05 * i, duration: 0.35 }}
+                  >
+                    <Link
+                      to="/shop"
+                      search={next}
+                      className={`group inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all duration-300 hover:-translate-y-0.5 ${
+                        active
+                          ? activeCls
+                          : "border-border bg-background/60 text-muted-foreground hover:border-brand/60 hover:text-foreground"
+                      }`}
+                    >
+                      <Icon className="size-4" />
+                      {label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </motion.div>
 
         {products.isLoading && <p className="text-muted-foreground">{t.common.loading}</p>}
         {products.data && products.data.length === 0 && (
