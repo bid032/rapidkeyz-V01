@@ -12,7 +12,7 @@ export const FAQ_ITEMS_AR: QA[] = [
   },
   {
     q: "هل الاشتراكات أصلية 100%؟",
-    a: "نعم، كل اشتراكاتنا في ChatGPT Plus وMidjourney وNetflix وCanva Pro وباقي الأدوات رسمية ومفعّلة من الشركة الأم. لا نبيع حسابات مقرصنة أو معدّلة نهائياً.",
+    a: "نعم، كل اشتراكاتنا في ChatGPT Plus وMidjourney وCanva Pro وباقي الأدوات رسمية ومفعّلة من الشركة الأم. لا نبيع حسابات مقرصنة أو معدّلة نهائياً.",
   },
   {
     q: "كام مدة التسليم؟",
@@ -47,7 +47,7 @@ export const FAQ_ITEMS_EN: QA[] = [
   },
   {
     q: "Are the subscriptions 100% genuine?",
-    a: "Yes. Every ChatGPT Plus, Midjourney, Netflix, Canva Pro and AI-tool plan is official and activated from source. We never sell cracked or modified accounts.",
+    a: "Yes. Every ChatGPT Plus, Midjourney, Canva Pro and AI-tool plan is official and activated from source. We never sell cracked or modified accounts.",
   },
   {
     q: "How fast is delivery?",
@@ -103,7 +103,7 @@ export function FAQ() {
             </>
           ) : (
             <>
-              FAQ about <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT, Netflix & Midjourney in Egypt</span>
+              FAQ about <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT & Midjourney in Egypt</span>
             </>
           )}
         </h2>

@@ -288,10 +288,10 @@ export const translations = {
     },
     home: {
       badge: "Trusted MENA store • 12,000+ successful orders",
-      title1: "ChatGPT Plus, Midjourney & Netflix",
+      title1: "ChatGPT Plus & Midjourney",
       title2: "at MENA prices , delivered instantly",
       subtitle:
-        "RapidKeyz is the leading Arab store for buying ChatGPT Plus, Midjourney, Netflix, Canva Pro and AI tool subscriptions in EGP with minutes-long delivery and 24/7 WhatsApp support.",
+        "RapidKeyz is the leading Arab store for buying ChatGPT Plus, Midjourney, Canva Pro and AI tool subscriptions in EGP with minutes-long delivery and 24/7 WhatsApp support.",
       cta: "Browse all subscriptions",
       ctaSecondary: "Chat on WhatsApp",
       trending: "Best sellers across MENA",
@@ -517,7 +517,7 @@ export const translations = {
       ],
     },
     footer: {
-      tagline: "The MENA hub for premium ChatGPT Plus, Midjourney, Netflix and AI tool subscriptions in EGP.",
+      tagline: "The MENA hub for premium ChatGPT Plus, Midjourney and AI tool subscriptions in EGP.",
       quickLinks: "Quick Links",
       categories: "Shop Categories",
       contact: "Contact us",

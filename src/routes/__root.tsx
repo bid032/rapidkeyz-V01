@@ -77,14 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "RapidKeyz: متجرك العربي لاشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات الذكاء الاصطناعي بأسعار منافسة وتسليم فوري.",
+          "RapidKeyz: متجرك العربي لاشتراكات ChatGPT Plus وMidjourney وأدوات الذكاء الاصطناعي بأسعار منافسة وتسليم فوري.",
       },
       { property: "og:site_name", content: "RapidKeyz" },
       { property: "og:title", content: "RapidKeyz , Premium AI & Streaming Subscriptions" },
       {
         property: "og:description",
         content:
-          "Premium access to ChatGPT Plus, Midjourney, Netflix and more. Instant delivery, secure payments via Paymob & Kashier.",
+          "Premium access to ChatGPT Plus, Midjourney and more. Instant delivery, secure payments via Paymob & Kashier.",
       },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "ar_EG" },
