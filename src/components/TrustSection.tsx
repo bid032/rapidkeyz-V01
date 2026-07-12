@@ -131,7 +131,7 @@ export function TrustSection() {
             >
               <div className="absolute -top-8 -right-8 size-24 rounded-full bg-brand/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex items-center gap-3 sm:gap-4">
-                <div className="size-11 shrink-0 grid place-items-center rounded-xl bg-brand/10 text-brand border border-brand/20">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20">
                   {s.icon}
                 </div>
                 <div className="min-w-0 flex-1 flex flex-col items-start text-start">
@@ -158,15 +158,19 @@ export function TrustSection() {
               transition={{ delay: 0.15 + i * 0.08, duration: 0.5 }}
               className="group relative p-5 sm:p-6 rounded-2xl bg-card/60 border border-border hover:border-brand/40 hover:-translate-y-1 transition-all"
             >
-              <div className="size-12 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 mb-4 group-hover:brand-glow transition-all">
-                {f.icon}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow transition-all">
+                  {f.icon}
+                </div>
+                <div className="min-w-0 flex-1 flex flex-col items-start text-start">
+                  <h3 className="font-bold text-sm sm:text-base mb-1">
+                    {lang === "ar" ? f.title_ar : f.title_en}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                    {lang === "ar" ? f.desc_ar : f.desc_en}
+                  </p>
+                </div>
               </div>
-              <h3 className="font-bold text-sm sm:text-base mb-1.5">
-                {lang === "ar" ? f.title_ar : f.title_en}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                {lang === "ar" ? f.desc_ar : f.desc_en}
-              </p>
             </motion.div>
           ))}
         </div>
