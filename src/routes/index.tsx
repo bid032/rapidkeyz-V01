@@ -9,6 +9,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
+import { HeroCanvas } from "@/components/HeroCanvas";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -125,6 +126,7 @@ function HomePage() {
             }}
           />
         </div>
+        <HeroCanvas />
 
         <section className="relative z-10 max-w-5xl mx-auto text-center">
           {/* Trust badge */}
