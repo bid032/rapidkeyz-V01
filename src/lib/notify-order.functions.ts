@@ -52,3 +52,44 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
 
     return { ok: true }
   })
+
+export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server')
+    const { sendTemplateEmail } = await import('./email-templates/send-email')
+
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select('id, order_number, total, currency, customer_email, order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
+      .eq('id', data.orderId)
+      .single()
+    if (error || !order) throw new Error(error?.message || 'Order not found')
+    if (!order.customer_email) return { ok: false, reason: 'no_email' }
+
+    const accounts: any[] = []
+    for (const it of (order.order_items ?? []) as any[]) {
+      for (const acc of (it.delivered_accounts ?? [])) {
+        accounts.push({
+          product_name: it.product_name,
+          plan_label: it.plan_label,
+          account_email: acc.account_email,
+          account_username: acc.account_username,
+          account_password: acc.account_password,
+          extra_notes: acc.extra_notes,
+        })
+      }
+    }
+    if (accounts.length === 0) return { ok: false, reason: 'no_delivered_accounts' }
+
+    await sendTemplateEmail('order-delivered', order.customer_email, {
+      idempotencyKey: `order-delivered-${order.id}`,
+      templateData: {
+        orderNumber: order.order_number,
+        total: order.total,
+        currency: order.currency || 'EGP',
+        accounts,
+      },
+    })
+    return { ok: true, count: accounts.length }
+  })
