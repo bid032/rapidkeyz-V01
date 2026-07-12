@@ -96,13 +96,15 @@ export function Header() {
             </button>
           </div>
 
-          <button
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
-          >
-            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          {themeMode === "both" && (
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
+            >
+              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+          )}
 
           <Link
             to="/cart"
