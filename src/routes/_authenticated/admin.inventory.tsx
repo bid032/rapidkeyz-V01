@@ -106,7 +106,7 @@ function AdminInventory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name_ar, delivery_type, product_plans(id, label_ar, duration_days, sheet_csv_url)")
+        .select("id, name_ar, delivery_type, google_spreadsheet_id, product_plans(id, label_ar, duration_days, sheet_csv_url)")
         .eq("delivery_type", "instant");
       if (error) throw error;
       return data ?? [];
