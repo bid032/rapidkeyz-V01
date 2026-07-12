@@ -87,7 +87,6 @@ export function TrustSection() {
     value: Number(overrides[s.key] ?? s.value) || s.value,
   }));
 
-  const title = lang === "ar" ? "آلاف العملاء في مصر يثقون بـ RapidKeyz\nلشراء اشتراكاتهم الرقمية" : "Thousands of customers in Egypt trust RapidKeyz for their digital subscriptions";
   const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع، مش مجرد كلام" : "Real numbers from the field , not just words";
 
   return (
@@ -95,44 +94,42 @@ export function TrustSection() {
       {/* soft ambient bg */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[520px] h-[260px] bg-brand/15 blur-[130px] rounded-full" />
-        <div className="absolute bottom-0 right-1/4 w-[380px] h-[220px] bg-cyan-400/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 right-1/4 w-[380px] h-[220px] bg-[--brand-deep]/20 blur-[120px] rounded-full" />
       </div>
 
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10 sm:mb-14"
-        >
+        <div data-gsap="reveal" className="text-center mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
-            <span className="size-1.5 rounded-full bg-brand" />
+            <span className="size-1.5 rounded-full bg-brand animate-pulse" />
             {lang === "ar" ? "الثقة" : "Trust in numbers"}
           </div>
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-            {title.split(" ").slice(0, -2).join(" ")}{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">
-              {title.split(" ").slice(-2).join(" ")}
-            </span>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.25] pb-1">
+            {lang === "ar" ? (
+              <>
+                آلاف العملاء في مصر يثقون بـ <BrandName className="text-2xl sm:text-4xl md:text-5xl" />
+                <br />لشراء اشتراكاتهم الرقمية
+              </>
+            ) : (
+              <>
+                Thousands trust <BrandName className="text-2xl sm:text-4xl md:text-5xl" /> for their digital subscriptions
+              </>
+            )}
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-3">{subtitle}</p>
-        </motion.div>
+        </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-12">
-          {stats.map((s, i) => (
-            <motion.div
+        <div data-gsap="card-pop" className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-12">
+          {stats.map((s) => (
+            <div
               key={s.key}
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative p-4 sm:p-5 rounded-2xl bg-card border border-border overflow-hidden hover:border-brand/40 transition-colors"
+              data-gsap="tilt"
+              className="group relative p-4 sm:p-5 rounded-2xl bg-card border border-border overflow-hidden hover:border-brand/50 transition-colors"
             >
-              <div className="absolute -top-8 -right-8 size-24 rounded-full bg-brand/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute -top-10 -right-10 size-28 rounded-full bg-brand/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-brand/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
-                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 mb-3 sm:mb-0">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 mb-3 sm:mb-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
                   {s.icon}
                 </div>
                 <div className="min-w-0 flex-1 flex flex-col items-center sm:items-start">
@@ -144,30 +141,24 @@ export function TrustSection() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Features intro */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5 }}
-          className="text-center mt-14 sm:mt-20 mb-8 sm:mb-10"
-        >
+        <div data-gsap="reveal" className="text-center mt-14 sm:mt-20 mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
-            <span className="size-1.5 rounded-full bg-brand" />
+            <span className="size-1.5 rounded-full bg-brand animate-pulse" />
             {lang === "ar" ? "مميزاتنا" : "What sets us apart"}
           </div>
-          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.25] pb-1">
             {lang === "ar" ? (
               <>
-                ليه <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">RapidKeyz</span>&nbsp;أفضل متجر اشتراكات في مصر؟
+                ليه <BrandName className="text-2xl sm:text-4xl md:text-5xl" /> أفضل متجر اشتراكات في مصر؟
               </>
             ) : (
               <>
-                Why RapidKeyz is <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">Egypt's best subscription store</span>
+                Why <BrandName className="text-2xl sm:text-4xl md:text-5xl" /> is Egypt&apos;s best subscription store
               </>
             )}
           </h2>
@@ -176,25 +167,24 @@ export function TrustSection() {
               ? "دي الأسباب اللي بتخلي عملاءنا يرجعوا لنا كل مرة"
               : "The reasons our customers keep coming back"}
           </p>
-        </motion.div>
+        </div>
 
         {/* Features row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {FEATURES.map((f, i) => (
-            <motion.div
+        <div data-gsap="card-pop" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {FEATURES.map((f) => (
+            <div
               key={f.title_en}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: 0.15 + i * 0.08, duration: 0.5 }}
-              className="group relative p-5 sm:p-6 rounded-2xl bg-card/60 border border-border hover:border-brand/40 hover:-translate-y-1 transition-all"
+              data-gsap="tilt"
+              className="group relative p-5 sm:p-6 rounded-2xl bg-card/60 border border-border hover:border-brand/50 transition-all overflow-hidden"
             >
-              <div className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
-                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow transition-all mb-3 sm:mb-0">
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-brand/8 via-transparent to-[--brand-deep]/10" />
+              <div className="absolute -bottom-16 -left-16 size-32 rounded-full bg-brand/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
+                <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow group-hover:scale-110 transition-all duration-500 mb-3 sm:mb-0">
                   {f.icon}
                 </div>
                 <div className="min-w-0 flex-1 flex flex-col items-center sm:items-start">
-                  <h3 className="font-bold text-sm sm:text-base mb-1">
+                  <h3 className="font-bold text-sm sm:text-base mb-1 group-hover:text-brand transition-colors">
                     {lang === "ar" ? f.title_ar : f.title_en}
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -202,7 +192,7 @@ export function TrustSection() {
                   </p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
