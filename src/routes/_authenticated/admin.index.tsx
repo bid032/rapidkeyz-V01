@@ -113,7 +113,7 @@ function AdminOverview() {
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sales");
-    const rawTitle = (document.title || "site").split(/[—–|:-]/)[0];
+    const rawTitle = (document.title || "site").split(/[,–|:-]/)[0];
     const siteName = rawTitle.replace(/[\\/:*?"<>|]+/g, "").trim() || "site";
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -179,7 +179,7 @@ function AdminOverview() {
           <div>
             <h2 className="font-bold text-lg">تفاصيل المبيعات</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              {month === "all" ? "كل المبيعات" : `مبيعات شهر ${month}`} — {sales.data?.length ?? 0} عملية
+              {month === "all" ? "كل المبيعات" : `مبيعات شهر ${month}`} ، {sales.data?.length ?? 0} عملية
             </p>
           </div>
           <button

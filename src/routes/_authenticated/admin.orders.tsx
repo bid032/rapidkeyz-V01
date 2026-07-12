@@ -178,7 +178,7 @@ function AdminOrders() {
                   <div><span className="text-muted-foreground">البريد:</span> <span className="font-mono">{o.customer_email}</span></div>
                   <div>
                     <span className="text-muted-foreground">الهاتف:</span>{" "}
-                    <span className="font-mono">{o.customer_phone || "—"}</span>
+                    <span className="font-mono">{o.customer_phone || ","}</span>
                     {o.customer_phone && (
                       <a
                         href={`https://wa.me/${String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "20")}`}
@@ -188,7 +188,7 @@ function AdminOrders() {
                     )}
                   </div>
                   <div><span className="text-muted-foreground">طريقة الدفع:</span> <span className="font-bold">{o.payment_gateway}</span></div>
-                  <div><span className="text-muted-foreground">رقم المُحوَّل منه:</span> <span className="font-mono">{o.payment_sender_phone || "—"}</span></div>
+                  <div><span className="text-muted-foreground">رقم المُحوَّل منه:</span> <span className="font-mono">{o.payment_sender_phone || ","}</span></div>
                   {o.payment_reference && (
                     <div className="md:col-span-2"><span className="text-muted-foreground">مرجع الدفع:</span> <span className="font-mono">{o.payment_reference}</span></div>
                   )}
@@ -263,7 +263,7 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
       <div className="flex justify-between mb-2 gap-2 flex-wrap">
         <div className="text-sm min-w-0">
           <span className="font-bold">{item.product_name}</span>{" "}
-          <span className="text-muted-foreground">— {item.plan_label} × {item.quantity}</span>
+          <span className="text-muted-foreground">, {item.plan_label} × {item.quantity}</span>
           <span className={`ml-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
           </span>

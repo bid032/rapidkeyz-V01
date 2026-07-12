@@ -12,7 +12,7 @@ const searchSchema = z.object({ redirect: z.string().optional() });
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول — RapidKeyz" },
+      { title: "تسجيل الدخول ، RapidKeyz" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

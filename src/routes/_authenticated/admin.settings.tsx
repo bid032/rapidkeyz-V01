@@ -84,7 +84,7 @@ function AdminSettings() {
           {([
             ["badge_ar", "شارة علوية (AR)", "badge_en", "Top Badge (EN)", "badge"],
             ["title1_ar", "العنوان الأول (AR)", "title1_en", "Title Line 1 (EN)", "title1"],
-            ["title2_ar", "العنوان الثاني — ملوّن (AR)", "title2_en", "Title Line 2 — accent (EN)", "title2"],
+            ["title2_ar", "العنوان الثاني ، ملوّن (AR)", "title2_en", "Title Line 2 ، accent (EN)", "title2"],
             ["subtitle_ar", "الوصف (AR)", "subtitle_en", "Subtitle (EN)", "subtitle"],
             ["cta_ar", "زر أساسي (AR)", "cta_en", "Primary CTA (EN)", "cta"],
             ["cta_secondary_ar", "زر ثانوي (AR)", "cta_secondary_en", "Secondary CTA (EN)", "ctaSecondary"],

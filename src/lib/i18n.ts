@@ -22,7 +22,7 @@ export const translations = {
       title1: "اشتراكات ChatGPT Plus وMidjourney",
       title2: "وNetflix بأسعار مصرية وتسليم فوري",
       subtitle:
-        "RapidKeyz هو متجرك العربي الأول لشراء اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي — بالجنيه المصري، تفعيل خلال دقائق، ودعم عربي 24/7 على واتساب.",
+        "RapidKeyz هو متجرك العربي الأول لشراء اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي ، بالجنيه المصري، تفعيل خلال دقائق، ودعم عربي 24/7 على واتساب.",
       cta: "تصفّح كل الاشتراكات",
       ctaSecondary: "تواصل معنا واتساب",
       trending: "الأكثر مبيعاً في مصر والوطن العربي",
@@ -53,7 +53,7 @@ export const translations = {
       available: "متاح",
       viewersNow: "شخص يتصفح هذه الخدمة الآن",
       stockLeft: (n: number) => `متبقّي ${n} فقط من هذا الخيار`,
-      soldOutHint: "هذا الخيار غير متوفر حالياً — يرجى اختيار مدة أو نوع حساب مختلف.",
+      soldOutHint: "هذا الخيار غير متوفر حالياً ، يرجى اختيار مدة أو نوع حساب مختلف.",
       description: "الوصف",
       related: "منتجات مشابهة",
     },
@@ -74,8 +74,8 @@ export const translations = {
       email: "البريد الإلكتروني",
       phone: "رقم الهاتف",
       payment: "طريقة الدفع",
-      paymob: "Paymob — فيزا / محفظة / انستاباي",
-      kashier: "Kashier — بطاقة بنكية",
+      paymob: "Paymob ، فيزا / محفظة / انستاباي",
+      kashier: "Kashier ، بطاقة بنكية",
       manual: "دفع يدوي (سنتواصل معك)",
       placeOrder: "تأكيد الطلب",
       success: "تم إنشاء الطلب بنجاح!",
@@ -131,8 +131,8 @@ export const translations = {
     },
     features: {
       support: { title: "دعم عربي 24/7", desc: "فريق دعم مصري متاح على واتساب والدردشة للرد على استفساراتك في أي وقت." },
-      fullSupport: { title: "ضمان طوال الاشتراك", desc: "نستبدل أي حساب يتوقف مجاناً طوال مدة اشتراكك — بدون أسئلة." },
-      guarantee: { title: "اشتراكات أصلية 100%", desc: "كل الاشتراكات رسمية ومفعّلة من الشركة الأم — لا حسابات مقرصنة." },
+      fullSupport: { title: "ضمان طوال الاشتراك", desc: "نستبدل أي حساب يتوقف مجاناً طوال مدة اشتراكك ، بدون أسئلة." },
+      guarantee: { title: "اشتراكات أصلية 100%", desc: "كل الاشتراكات رسمية ومفعّلة من الشركة الأم ، لا حسابات مقرصنة." },
       instant: { title: "تسليم فوري بالبريد", desc: "بيانات الاشتراك توصلك خلال دقائق من الدفع عبر البريد الإلكتروني." },
     },
 
@@ -289,7 +289,7 @@ export const translations = {
     home: {
       badge: "Trusted MENA store • 12,000+ successful orders",
       title1: "ChatGPT Plus, Midjourney & Netflix",
-      title2: "at MENA prices — delivered instantly",
+      title2: "at MENA prices , delivered instantly",
       subtitle:
         "RapidKeyz is the leading Arab store for buying ChatGPT Plus, Midjourney, Netflix, Canva Pro and AI tool subscriptions in EGP with minutes-long delivery and 24/7 WhatsApp support.",
       cta: "Browse all subscriptions",
@@ -322,7 +322,7 @@ export const translations = {
       available: "available",
       viewersNow: "people are viewing this service right now",
       stockLeft: (n: number) => `Only ${n} left of this option`,
-      soldOutHint: "This option is currently unavailable — please pick a different duration or account type.",
+      soldOutHint: "This option is currently unavailable , please pick a different duration or account type.",
       description: "Description",
       related: "Related",
     },
@@ -343,8 +343,8 @@ export const translations = {
       email: "Email",
       phone: "Phone",
       payment: "Payment method",
-      paymob: "Paymob — Card / Wallet / InstaPay",
-      kashier: "Kashier — Bank card",
+      paymob: "Paymob , Card / Wallet / InstaPay",
+      kashier: "Kashier , Bank card",
       manual: "Manual payment (we'll contact you)",
       placeOrder: "Place order",
       success: "Order created successfully!",
@@ -400,8 +400,8 @@ export const translations = {
     },
     features: {
       support: { title: "24/7 Arabic Support", desc: "Egyptian team on WhatsApp & live chat, ready to help any time." },
-      fullSupport: { title: "Full Plan Warranty", desc: "We replace any account that stops working — free, no questions." },
-      guarantee: { title: "100% Genuine", desc: "Official subscriptions activated from source — never cracked accounts." },
+      fullSupport: { title: "Full Plan Warranty", desc: "We replace any account that stops working , free, no questions." },
+      guarantee: { title: "100% Genuine", desc: "Official subscriptions activated from source , never cracked accounts." },
       instant: { title: "Instant Email Delivery", desc: "Credentials land in your inbox minutes after payment." },
     },
 
@@ -409,10 +409,10 @@ export const translations = {
       title: "About RapidKeyz",
       moreTitle: "More than just a digital store",
       moreBody:
-        "At RapidKeyz we are more than a digital store — we are your trusted partner for accessing official digital products and services. Since day one we've focused on supporting individuals, companies, and creators by providing paid subscriptions and plans for various tools and websites at competitive prices that maximize your time and budget.",
+        "At RapidKeyz we are more than a digital store , we are your trusted partner for accessing official digital products and services. Since day one we've focused on supporting individuals, companies, and creators by providing paid subscriptions and plans for various tools and websites at competitive prices that maximize your time and budget.",
       missionTitle: "Our Mission",
       missionBody:
-        "We strive to make the world of digital services simpler and more flexible for everyone by providing genuine, guaranteed subscriptions and secure, fast payment solutions — giving our customers an integrated experience that lets them focus on creativity and work without worry.",
+        "We strive to make the world of digital services simpler and more flexible for everyone by providing genuine, guaranteed subscriptions and secure, fast payment solutions , giving our customers an integrated experience that lets them focus on creativity and work without worry.",
       valuesTitle: "Our Values",
       values: [
         "Transparency: We believe in clarity across everything we offer.",
@@ -437,7 +437,7 @@ export const translations = {
       title: "Terms & Conditions",
       welcome: "Welcome to RapidKeyz",
       welcomeBody:
-        "By accessing our site, using our services, or purchasing any of our digital products, you agree to the following terms and conditions. Please read them carefully — they are designed to protect your rights and clarify our commitments.",
+        "By accessing our site, using our services, or purchasing any of our digital products, you agree to the following terms and conditions. Please read them carefully , they are designed to protect your rights and clarify our commitments.",
       sections: [
         {
           h: "1. Genuine Subscriptions",

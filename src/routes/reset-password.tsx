@@ -8,7 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "إعادة تعيين كلمة المرور — RapidKeyz" },
+      { title: "إعادة تعيين كلمة المرور ، RapidKeyz" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

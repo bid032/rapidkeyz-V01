@@ -20,13 +20,13 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "المتجر — اشتراكات الذكاء الاصطناعي والترفيه | RapidKeyz" },
+      { title: "المتجر ، اشتراكات الذكاء الاصطناعي والترفيه | RapidKeyz" },
       {
         name: "description",
         content:
-          "تصفّح جميع اشتراكات RapidKeyz: ChatGPT Plus، Midjourney، Netflix، Canva Pro وأكثر — بأسعار تنافسية وتسليم فوري.",
+          "تصفّح جميع اشتراكات RapidKeyz: ChatGPT Plus، Midjourney، Netflix، Canva Pro وأكثر ، بأسعار تنافسية وتسليم فوري.",
       },
-      { property: "og:title", content: "المتجر — RapidKeyz" },
+      { property: "og:title", content: "المتجر ، RapidKeyz" },
       {
         property: "og:description",
         content: "كل اشتراكات الذكاء الاصطناعي والترفيه في مكان واحد بتسليم فوري ودفع آمن.",

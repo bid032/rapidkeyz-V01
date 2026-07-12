@@ -28,7 +28,7 @@ export const FAQ_ITEMS_AR: QA[] = [
   },
   {
     q: "لو الحساب توقف قبل انتهاء المدة؟",
-    a: "نستبدله لك مجاناً وفوراً طوال فترة اشتراكك — دون أسئلة. تواصل معنا على واتساب وسنعالج الأمر في دقائق.",
+    a: "نستبدله لك مجاناً وفوراً طوال فترة اشتراكك ، دون أسئلة. تواصل معنا على واتساب وسنعالج الأمر في دقائق.",
   },
   {
     q: "هل يمكنني استرداد المبلغ؟",
@@ -63,7 +63,7 @@ export const FAQ_ITEMS_EN: QA[] = [
   },
   {
     q: "What if the account stops working before the plan ends?",
-    a: "We replace it free and instantly for the full duration of your plan — no questions asked. Message us on WhatsApp and we'll resolve it in minutes.",
+    a: "We replace it free and instantly for the full duration of your plan , no questions asked. Message us on WhatsApp and we'll resolve it in minutes.",
   },
   {
     q: "Can I get a refund?",

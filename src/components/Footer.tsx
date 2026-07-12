@@ -15,7 +15,7 @@ function WhatsAppIcon({ className = "" }: { className?: string }) {
   );
 }
 
-// Brand icons not in lucide — inline SVGs
+// Brand icons not in lucide , inline SVGs
 function TikTokIcon({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden>
@@ -235,7 +235,7 @@ function CategoriesList({
   lang: "ar" | "en";
 }) {
   if (categories.length === 0) {
-    return <p className="text-xs text-muted-foreground/60">—</p>;
+    return <p className="text-xs text-muted-foreground/60">,</p>;
   }
   return (
     <ul className="space-y-3">

@@ -62,7 +62,7 @@ function AdminReviews() {
     },
   });
 
-  const productLabel = (p: any) => p.name_ar || p.name_en || "—";
+  const productLabel = (p: any) => p.name_ar || p.name_en || ",";
 
   const resetDraft = () => {
     setEditingId(null);
@@ -160,7 +160,7 @@ function AdminReviews() {
           }}
           className="w-full px-3 py-2 bg-background border border-border rounded"
         >
-          <option value="">— اختر خدمة —</option>
+          <option value="">، اختر خدمة ،</option>
           {products.data?.map((p: any) => (
             <option key={p.id} value={p.id}>
               {productLabel(p)}

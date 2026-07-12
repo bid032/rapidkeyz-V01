@@ -8,13 +8,13 @@ import { Phone, Wrench, ShieldCheck, Zap } from "lucide-react";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "من نحن — About RapidKeyz" },
+      { title: "من نحن ، About RapidKeyz" },
       {
         name: "description",
         content:
           "تعرّف على RapidKeyz، شريكك الموثوق لاشتراكات الخدمات الرقمية الأصلية بأسعار تنافسية ودعم عربي 24/7.",
       },
-      { property: "og:title", content: "من نحن — RapidKeyz" },
+      { property: "og:title", content: "من نحن ، RapidKeyz" },
       {
         property: "og:description",
         content: "قصتنا ورؤيتنا في RapidKeyz لتقديم اشتراكات رقمية موثوقة بأسعار منافسة.",

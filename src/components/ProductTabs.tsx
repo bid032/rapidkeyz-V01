@@ -259,7 +259,7 @@ function DeliveryTab({
     ? [
         { t: "Secure Checkout", d: "Pay with any supported method." },
         { t: "Instant Delivery", d: "Account details are emailed immediately." },
-        { t: "Start Using", d: "Sign in and enjoy — no waiting." },
+        { t: "Start Using", d: "Sign in and enjoy , no waiting." },
       ]
     : [
         { t: "Place Order", d: "Complete checkout and pick your plan." },

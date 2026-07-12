@@ -87,7 +87,7 @@ export function TrustSection() {
   }));
 
   const title = lang === "ar" ? "ليه آلاف العملاء بيثقوا فينا" : "Why thousands of customers trust us";
-  const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع — مش مجرد كلام" : "Real numbers from the field — not just words";
+  const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع ، مش مجرد كلام" : "Real numbers from the field ، not just words";
 
   return (
     <section className="relative py-16 sm:py-24 px-3 sm:px-6 overflow-hidden">

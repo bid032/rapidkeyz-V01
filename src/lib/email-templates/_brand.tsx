@@ -184,7 +184,7 @@ export const BrandLayout = ({ lang = 'ar', children }: LayoutProps) => {
         <Section style={{ ...styles.body, ...dirStyle }} dir={dir}>{children}</Section>
         <Section style={{ ...styles.footer, textAlign: 'center' }} dir={dir}>
           <Text style={styles.footerText}>
-            © {new Date().getFullYear()} RapidKeyz —{' '}
+            © {new Date().getFullYear()} RapidKeyz ,{' '}
             {isAr ? 'جميع الحقوق محفوظة' : 'All rights reserved'}
           </Text>
         </Section>

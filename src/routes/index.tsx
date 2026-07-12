@@ -16,17 +16,17 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RapidKeyz — اشتراكات ChatGPT Plus وMidjourney وNetflix بأسعار مصرية وتسليم فوري" },
+      { title: "RapidKeyz ، اشتراكات ChatGPT Plus وMidjourney وNetflix بأسعار مصرية وتسليم فوري" },
       {
         name: "description",
         content:
-          "اشترِ اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي بالجنيه المصري — تسليم فوري خلال دقائق ودعم عربي 24/7 عبر واتساب.",
+          "اشترِ اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي بالجنيه المصري ، تسليم فوري خلال دقائق ودعم عربي 24/7 عبر واتساب.",
       },
       { name: "keywords", content: "شراء ChatGPT Plus مصر, اشتراك Midjourney بالجنيه, Netflix مشترك, Canva Pro اشتراك, أدوات ذكاء اصطناعي, RapidKeyz" },
-      { property: "og:title", content: "RapidKeyz — اشتراكات ChatGPT وMidjourney وNetflix بأسعار مصرية" },
+      { property: "og:title", content: "RapidKeyz ، اشتراكات ChatGPT وMidjourney وNetflix بأسعار مصرية" },
       {
         property: "og:description",
-        content: "متجر عربي موثوق لاشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات AI — تسليم فوري ودفع آمن بالجنيه المصري.",
+        content: "متجر عربي موثوق لاشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات AI ، تسليم فوري ودفع آمن بالجنيه المصري.",
       },
       { property: "og:url", content: "/" },
     ],
@@ -196,7 +196,7 @@ function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-0 opacity-50"></div>
       </header>
 
-      {/* Categories — centered creative pill grid */}
+      {/* Categories , centered creative pill grid */}
       <CategoriesShowcase />
 
 
@@ -226,7 +226,7 @@ function HomePage() {
         {products.data && products.data.length === 0 && (
           <div className="text-center py-16 border border-dashed border-border rounded-2xl">
             <p className="text-muted-foreground">
-              {lang === "ar" ? "لا توجد منتجات بعد — أضفها من لوحة الأدمن." : "No products yet — add them from the admin panel."}
+              {lang === "ar" ? "لا توجد منتجات بعد ، أضفها من لوحة الأدمن." : "No products yet ، add them from the admin panel."}
             </p>
           </div>
         )}

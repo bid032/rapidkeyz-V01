@@ -396,7 +396,7 @@ function AdminProducts() {
               <div className="md:col-span-2">
                 <ImageUpload
                   bucket="product-images"
-                  label="صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
+                  label="صورة/أيقونة المنتج (اختياري ، لو مفيش هيظهر أول حرفين من الاسم)"
                   value={editing.icon_url}
                   onChange={(url) => setEditing({ ...editing, icon_url: url })}
                   size={0}
@@ -407,7 +407,7 @@ function AdminProducts() {
                 <select value={editing.category_id ?? ""}
                   onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
-                  <option value="">— اختر قسم —</option>
+                  <option value="">، اختر قسم ،</option>
                   {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
                 </select>
               </Field>
@@ -415,20 +415,20 @@ function AdminProducts() {
                 <select value={editing.status}
                   onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
-                  <option value="active">active — ظاهر</option>
-                  <option value="draft">draft — مسودة</option>
-                  <option value="archived">archived — مؤرشف</option>
+                  <option value="active">active ، ظاهر</option>
+                  <option value="draft">draft ، مسودة</option>
+                  <option value="archived">archived ، مؤرشف</option>
                 </select>
               </Field>
               <Field label="نوع التسليم" hint="instant: تلقائي فوري من المخزون · manual: الأدمن هيسلمه يدوي">
                 <select value={editing.delivery_type}
                   onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg">
-                  <option value="instant">Instant — تسليم فوري</option>
-                  <option value="manual">Manual — تسليم يدوي</option>
+                  <option value="instant">Instant ، تسليم فوري</option>
+                  <option value="manual">Manual ، تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر — العميل هيقدر يختار من بينهم على صفحة المنتج." className="md:col-span-2">
+              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر ، العميل هيقدر يختار من بينهم على صفحة المنتج." className="md:col-span-2">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {([
                     { v: "shared", label: "شير (مشترك)" },
@@ -475,7 +475,7 @@ function AdminProducts() {
               <label className="md:col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
-                <span><b>Featured</b> — ثبّت المنتج في القسم المميز على الرئيسية</span>
+                <span><b>Featured</b> ، ثبّت المنتج في القسم المميز على الرئيسية</span>
               </label>
               <div className="md:col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
@@ -536,7 +536,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     stock: 0,
   });
 
-  // Local edits map keyed by plan id — apply on save
+  // Local edits map keyed by plan id , apply on save
   const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number }>>({});
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
@@ -617,7 +617,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
           <div className="min-w-0">
             <h3 className="font-bold text-base sm:text-lg">العروض والأسعار والمخزون</h3>
             <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
-              كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح — ومش بيظهر للعميل نهائيًا.
+              كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح ، ومش بيظهر للعميل نهائيًا.
             </p>
           </div>
           <button onClick={onClose} className="shrink-0 text-muted-foreground hover:text-foreground text-xl leading-none">✕</button>
