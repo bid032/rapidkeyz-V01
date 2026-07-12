@@ -58,7 +58,8 @@ export function Testimonials() {
         </div>
       </div>
 
-      <TestimonialsSlider images={images} />
+        <TestimonialsSlider images={images} />
+      </div>
     </section>
   );
 }
