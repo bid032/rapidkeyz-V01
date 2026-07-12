@@ -182,6 +182,29 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Neon Mint utilities for the redesign */
+@utility text-glow {
+  text-shadow: 0 0 24px color-mix(in oklab, var(--brand) 60%, transparent);
+}
+
+@utility grid-noise {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--brand) 10%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--brand) 10%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 90%);
+}
+
+@utility neon-border {
+  border: 1px solid color-mix(in oklab, var(--brand) 35%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--brand) 10%, transparent),
+    0 0 30px -10px color-mix(in oklab, var(--brand) 40%, transparent);
+}
+
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+
 /* Hide Lovable badge on published site */
 #lovable-badge,
 a[href*="lovable.dev"][href*="badge"],
