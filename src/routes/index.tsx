@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Testimonials } from "@/components/Testimonials";
+import { TrustSection } from "@/components/TrustSection";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -168,30 +169,51 @@ function HomePage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-0 opacity-50"></div>
       </header>
 
-      {/* Categories */}
+      {/* Categories — centered creative pill grid */}
       {cats.data && cats.data.length > 0 && (
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-8 sm:pb-12">
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:no-scrollbar pb-2">
-            {cats.data.map((c, i) => (
-              <motion.div
-                key={c.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * i, duration: 0.4 }}
-              >
-                <Link
-                  to="/shop"
-                  search={{ category: c.slug }}
-                  className="block text-center whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-card border border-border text-xs sm:text-sm font-medium hover:border-brand/50 hover:scale-105 transition-all"
+        <section className="max-w-6xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-6 sm:mb-8"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+              <span className="size-1.5 rounded-full bg-brand" />
+              {lang === "ar" ? "تصفح حسب القسم" : "Browse by category"}
+            </div>
+          </motion.div>
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-x-0 -top-6 h-40 bg-gradient-to-b from-brand/5 to-transparent blur-2xl -z-10 rounded-full" />
+            <div className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
+              {cats.data.map((c, i) => (
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 14, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ delay: 0.04 * i, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  {lang === "ar" ? c.name_ar : c.name_en}
-                </Link>
-              </motion.div>
-            ))}
+                  <Link
+                    to="/shop"
+                    search={{ category: c.slug }}
+                    className="group inline-flex items-center gap-2 whitespace-nowrap px-4 sm:px-5 py-2.5 rounded-full bg-card border border-border text-xs sm:text-sm font-semibold hover:border-brand hover:bg-brand/5 hover:text-brand hover:scale-[1.04] hover:brand-glow transition-all"
+                  >
+                    {c.icon && (
+                      <span className="text-sm sm:text-base leading-none group-hover:scale-110 transition-transform">
+                        {c.icon}
+                      </span>
+                    )}
+                    {lang === "ar" ? c.name_ar : c.name_en}
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           </div>
-
         </section>
       )}
+
 
       {/* Products */}
       <main id="trending" className="max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
@@ -238,6 +260,8 @@ function HomePage() {
           </div>
         )}
       </main>
+
+      <TrustSection />
 
       <Testimonials />
 

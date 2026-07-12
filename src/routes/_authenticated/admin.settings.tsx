@@ -16,6 +16,12 @@ function AdminSettings() {
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
   const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [socials, setSocials] = useState<any>({
+    facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
+  });
+  const [stats, setStats] = useState<any>({
+    years: 3, staff: 5, services: 30, orders: 12000, customers: 2100,
+  });
   const [hero, setHero] = useState<any>({
     badge_ar: "", badge_en: "",
     title1_ar: "", title1_en: "",
@@ -38,6 +44,8 @@ function AdminSettings() {
       if (s.key === "contact") setContact(s.value);
       if (s.key === "payments") setPayments(s.value);
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
+      if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
+      if (s.key === "stats") setStats((v: any) => ({ ...v, ...(s.value as any) }));
     }
   }, [settings.data]);
 
@@ -48,6 +56,8 @@ function AdminSettings() {
         { key: "contact", value: contact },
         { key: "payments", value: payments },
         { key: "hero", value: hero },
+        { key: "socials", value: socials },
+        { key: "stats", value: stats },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
@@ -167,6 +177,63 @@ function AdminSettings() {
           To fully enable Paymob or Kashier live payments, provide their API keys via the app settings. This admin toggles their visibility on checkout.
         </p>
       </section>
+
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+        <h2 className="font-bold mb-1">Social Media / حسابات السوشيال</h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          حط اللينك كامل (https://...). الخانات الفاضية مش هتظهر في الفوتر.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {([
+            ["facebook",  "Facebook URL"],
+            ["instagram", "Instagram URL"],
+            ["tiktok",    "TikTok URL"],
+            ["youtube",   "YouTube URL"],
+            ["x",         "X (Twitter) URL"],
+            ["linkedin",  "LinkedIn URL"],
+            ["discord",   "Discord Invite URL"],
+          ] as const).map(([k, ph]) => (
+            <input
+              key={k}
+              placeholder={ph}
+              value={socials[k] ?? ""}
+              onChange={(e) => setSocials({ ...socials, [k]: e.target.value })}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+        <h2 className="font-bold mb-1">Trust Stats / أرقام الثقة</h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          الأرقام اللي بتظهر في سيكشن "ليه العملاء بيثقوا فينا" على الصفحة الرئيسية.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {([
+            ["years",     "سنين خبرة"],
+            ["staff",     "موظفين دعم"],
+            ["services",  "خدمات"],
+            ["orders",    "عمليات شراء"],
+            ["customers", "عملاء"],
+          ] as const).map(([k, ph]) => (
+            <div key={k} className="flex flex-col gap-1">
+              <label className="text-[11px] font-bold text-muted-foreground">{ph}</label>
+              <input
+                type="number"
+                min={0}
+                value={stats[k] ?? 0}
+                onChange={(e) => setStats({ ...stats, [k]: Number(e.target.value) || 0 })}
+                className="px-3 py-2 bg-background border border-border rounded"
+                dir="ltr"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
         className="px-6 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow">
