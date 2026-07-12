@@ -24,7 +24,7 @@ export const Route = createFileRoute("/shop")({
       {
         name: "description",
         content:
-          "تصفّح جميع اشتراكات RapidKeyz: ChatGPT Plus، Midjourney، Netflix، Canva Pro وأكثر ، بأسعار تنافسية وتسليم فوري.",
+          "تصفّح جميع اشتراكات RapidKeyz: ChatGPT Plus، Midjourney، Canva Pro وأكثر ، بأسعار تنافسية وتسليم فوري.",
       },
       { property: "og:title", content: "المتجر ، RapidKeyz" },
       {
