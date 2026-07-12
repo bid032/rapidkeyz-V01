@@ -82,6 +82,14 @@ function AdminOrders() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
   });
 
+  const deleteOrder = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("orders").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -188,6 +196,10 @@ function AdminOrders() {
                     disabled={o.status === "cancelled"}
                     className="px-4 py-2 bg-destructive text-white rounded font-bold text-sm disabled:opacity-50"
                   >✗ إلغاء</button>
+                  <button
+                    onClick={() => { if (confirm("حذف الطلب نهائياً؟ لا يمكن التراجع.")) deleteOrder.mutate(o.id); }}
+                    className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
+                  >🗑 حذف نهائي</button>
                 </div>
 
                 {/* Items */}
