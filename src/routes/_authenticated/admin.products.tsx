@@ -130,24 +130,24 @@ function AdminProducts() {
         <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.products}</h1>
         <button
           onClick={() => setEditing({ ...emptyForm })}
-          className="px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow"
+          className="px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow text-sm sm:text-base"
         >
           + {t.admin.addProduct}
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-4 items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap gap-2 sm:gap-3 mb-4 items-stretch md:items-center">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="بحث بالاسم أو الـ slug / Search…"
-          className="flex-1 min-w-[220px] px-4 py-2 bg-card border border-border rounded-lg text-sm"
+          className="w-full sm:col-span-2 md:flex-1 md:min-w-[220px] min-w-0 px-4 py-2 bg-card border border-border rounded-lg text-sm"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="px-3 py-2 bg-card border border-border rounded-lg text-sm"
+          className="w-full min-w-0 px-3 py-2 bg-card border border-border rounded-lg text-sm"
         >
           <option value="all">كل الحالات / All statuses</option>
           <option value="active">active</option>
@@ -157,7 +157,7 @@ function AdminProducts() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-3 py-2 bg-card border border-border rounded-lg text-sm"
+          className="w-full min-w-0 px-3 py-2 bg-card border border-border rounded-lg text-sm"
         >
           <option value="all">كل الأقسام / All categories</option>
           {cats.data?.map((c) => (
@@ -167,109 +167,159 @@ function AdminProducts() {
         {(search || statusFilter !== "all" || categoryFilter !== "all") && (
           <button
             onClick={() => { setSearch(""); setStatusFilter("all"); setCategoryFilter("all"); }}
-            className="px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground"
+            className="w-full sm:col-span-2 md:w-auto px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground border border-border rounded-lg md:border-0"
           >
             ✕ مسح
           </button>
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-x-auto">
-        <table className="w-full min-w-[640px]">
-          <thead className="bg-muted">
-            <tr className="text-start text-xs uppercase tracking-widest text-muted-foreground">
-              <th className="p-4 text-start">{t.admin.name}</th>
-              <th className="p-4 text-start">{t.admin.status}</th>
-              <th className="p-4 text-start">العروض والمخزون</th>
-              <th className="p-4 text-end">{t.admin.actions}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.data
-              ?.filter((p: any) => {
-                if (statusFilter !== "all" && p.status !== statusFilter) return false;
-                if (categoryFilter !== "all" && p.category_id !== categoryFilter) return false;
-                if (search.trim()) {
-                  const q = search.trim().toLowerCase();
-                  const hay = `${p.name_ar} ${p.name_en} ${p.slug}`.toLowerCase();
-                  if (!hay.includes(q)) return false;
-                }
-                return true;
-              })
-              .map((p: any) => {
+      {(() => {
+        const filtered = products.data
+          ?.filter((p: any) => {
+            if (statusFilter !== "all" && p.status !== statusFilter) return false;
+            if (categoryFilter !== "all" && p.category_id !== categoryFilter) return false;
+            if (search.trim()) {
+              const q = search.trim().toLowerCase();
+              const hay = `${p.name_ar} ${p.name_en} ${p.slug}`.toLowerCase();
+              if (!hay.includes(q)) return false;
+            }
+            return true;
+          }) ?? [];
+
+        const openEdit = (p: any) => {
+          const existing = ((p as any).account_types as AccountType[] | null) ?? [];
+          const initTypes: AccountType[] = existing.length > 0
+            ? existing
+            : p.account_type === "both"
+              ? ["shared", "private"]
+              : [p.account_type as AccountType];
+          setEditing({
+            id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
+            description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
+            icon_url: p.icon_url ?? "", category_id: p.category_id,
+            delivery_type: p.delivery_type, account_type: p.account_type,
+            account_types: initTypes,
+            status: p.status, is_featured: p.is_featured,
+            discount_percent: p.discount_percent ?? 0,
+          });
+        };
+
+        const askDelete = async (p: any) => {
+          const ok = await confirm({
+            title: "حذف الخدمة",
+            message: `متأكد إنك عاوز تمسح "${p.name_ar}"؟ الإجراء ده مش هيرجع.`,
+            tone: "danger",
+            confirmLabel: "احذف",
+          });
+          if (ok) remove.mutate(p.id);
+        };
+
+        return (
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block bg-card border border-border rounded-2xl overflow-x-auto">
+              <table className="w-full min-w-[640px]">
+                <thead className="bg-muted">
+                  <tr className="text-start text-xs uppercase tracking-widest text-muted-foreground">
+                    <th className="p-4 text-start">{t.admin.name}</th>
+                    <th className="p-4 text-start">{t.admin.status}</th>
+                    <th className="p-4 text-start">العروض والمخزون</th>
+                    <th className="p-4 text-end">{t.admin.actions}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p: any) => {
+                    const totalStock = (p.product_plans ?? []).reduce((s: number, pl: any) => s + (pl.stock ?? 0), 0);
+                    const plansCount = p.product_plans?.length ?? 0;
+                    return (
+                      <tr key={p.id} className="border-t border-border">
+                        <td className="p-4">
+                          <div className="font-bold">{p.name_ar}</div>
+                          <div className="text-xs text-muted-foreground">{p.name_en} · {p.slug}</div>
+                        </td>
+                        <td className="p-4">
+                          <span className={`text-xs px-2 py-1 rounded ${p.status === "active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-sm">
+                          <button
+                            onClick={() => setPlanEditor(planEditor === p.id ? null : p.id)}
+                            className="px-3 py-1.5 bg-brand/10 text-brand hover:bg-brand/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-2"
+                            title="اضغط لتعديل الأسعار والمخزون"
+                          >
+                            <span>{plansCount} عرض</span>
+                            <span className="text-muted-foreground">·</span>
+                            <span className={totalStock === 0 ? "text-destructive" : totalStock <= 10 ? "text-warning" : "text-success"}>
+                              {totalStock}
+                            </span>
+                          </button>
+                        </td>
+                        <td className="p-4 text-end">
+                          <button onClick={() => openEdit(p)} className="text-brand text-sm hover:underline ml-3">
+                            {t.admin.edit}
+                          </button>
+                          <button onClick={() => askDelete(p)} className="text-destructive text-sm hover:underline ml-3">
+                            {t.admin.delete}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">No products yet</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {filtered.map((p: any) => {
                 const totalStock = (p.product_plans ?? []).reduce((s: number, pl: any) => s + (pl.stock ?? 0), 0);
                 const plansCount = p.product_plans?.length ?? 0;
                 return (
-              <tr key={p.id} className="border-t border-border">
-                <td className="p-4">
-                  <div className="font-bold">{p.name_ar}</div>
-                  <div className="text-xs text-muted-foreground">{p.name_en} · {p.slug}</div>
-                </td>
-                <td className="p-4">
-                  <span className={`text-xs px-2 py-1 rounded ${p.status === "active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                    {p.status}
-                  </span>
-                </td>
-                <td className="p-4 text-sm">
-                  <button
-                    onClick={() => setPlanEditor(planEditor === p.id ? null : p.id)}
-                    className="px-3 py-1.5 bg-brand/10 text-brand hover:bg-brand/20 rounded-lg text-xs font-bold transition-colors flex items-center gap-2"
-                    title="اضغط لتعديل الأسعار والمخزون"
-                  >
-                    <span>{plansCount} عرض</span>
-                    <span className="text-muted-foreground">·</span>
-                    <span className={totalStock === 0 ? "text-destructive" : totalStock <= 10 ? "text-warning" : "text-success"}>
-                      {totalStock}
-                    </span>
-                  </button>
-                </td>
+                  <div key={p.id} className="bg-card border border-border rounded-2xl p-4">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold truncate">{p.name_ar}</div>
+                        <div className="text-xs text-muted-foreground truncate">{p.name_en}</div>
+                        <div className="text-[11px] font-mono text-muted-foreground truncate mt-0.5">{p.slug}</div>
+                      </div>
+                      <span className={`shrink-0 text-[11px] px-2 py-1 rounded font-bold ${p.status === "active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                        {p.status}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setPlanEditor(planEditor === p.id ? null : p.id)}
+                      className="w-full mb-3 px-3 py-2 bg-brand/10 text-brand hover:bg-brand/20 rounded-lg text-xs font-bold flex items-center justify-center gap-2"
+                    >
+                      <span>{plansCount} عرض</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className={totalStock === 0 ? "text-destructive" : totalStock <= 10 ? "text-warning" : "text-success"}>
+                        مخزون {totalStock}
+                      </span>
+                    </button>
+                    <div className="flex gap-2 pt-2 border-t border-border">
+                      <button onClick={() => openEdit(p)} className="flex-1 px-3 py-2 bg-brand/10 text-brand rounded-lg text-xs font-bold">
+                        {t.admin.edit}
+                      </button>
+                      <button onClick={() => askDelete(p)} className="flex-1 px-3 py-2 bg-destructive/10 text-destructive rounded-lg text-xs font-bold">
+                        {t.admin.delete}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {filtered.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">No products yet</p>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
-                <td className="p-4 text-end">
-                  <button
-                    onClick={() => {
-                      const existing = ((p as any).account_types as AccountType[] | null) ?? [];
-                      const initTypes: AccountType[] = existing.length > 0
-                        ? existing
-                        : p.account_type === "both"
-                          ? ["shared", "private"]
-                          : [p.account_type as AccountType];
-                      setEditing({
-                        id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
-                        description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
-                        icon_url: p.icon_url ?? "", category_id: p.category_id,
-                        delivery_type: p.delivery_type, account_type: p.account_type,
-                        account_types: initTypes,
-                        status: p.status, is_featured: p.is_featured,
-                        discount_percent: p.discount_percent ?? 0,
-                      });
-                    }}
-                    className="text-brand text-sm hover:underline ml-3"
-                  >
-                    {t.admin.edit}
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const ok = await confirm({
-                        title: "حذف الخدمة",
-                        message: `متأكد إنك عاوز تمسح "${p.name_ar}"؟ الإجراء ده مش هيرجع.`,
-                        tone: "danger",
-                        confirmLabel: "احذف",
-                      });
-                      if (ok) remove.mutate(p.id);
-                    }}
-                    className="text-destructive text-sm hover:underline ml-3"
-                  >
-                    {t.admin.delete}
-                  </button>
-                </td>
-              </tr>
-            );})}
-            {products.data?.length === 0 && (
-              <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">No products yet</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
 
       {planEditor && <PlanEditor productId={planEditor} onClose={() => setPlanEditor(null)} />}
 

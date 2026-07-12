@@ -61,30 +61,31 @@ function AdminCategories() {
 
       <form
         onSubmit={(e) => { e.preventDefault(); add.mutate(); }}
-        className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 p-4 bg-card border border-border rounded-2xl"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 mb-6 p-4 bg-card border border-border rounded-2xl"
       >
         <input required placeholder="الاسم بالعربي" value={form.name_ar}
           onChange={(e) => {
             const name_ar = e.target.value;
             setForm((prev) => ({ ...prev, name_ar, slug: prev.slug || slugify(prev.name_en || name_ar) }));
           }}
-          className="px-3 py-2 bg-background border border-border rounded" />
+          className="w-full min-w-0 px-3 py-2 bg-background border border-border rounded" />
         <input required placeholder="Name (English)" value={form.name_en}
           onChange={(e) => {
             const name_en = e.target.value;
             setForm((prev) => ({ ...prev, name_en, slug: slugify(name_en || prev.name_ar) }));
           }}
-          className="px-3 py-2 bg-background border border-border rounded" />
+          className="w-full min-w-0 px-3 py-2 bg-background border border-border rounded" />
         <input placeholder="slug (تلقائي)" value={form.slug}
           onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
-          className="px-3 py-2 bg-background border border-border rounded font-mono text-sm" />
-        <button type="submit" className="px-3 py-2 bg-brand text-brand-foreground rounded font-bold">
+          className="w-full min-w-0 px-3 py-2 bg-background border border-border rounded font-mono text-sm" />
+        <button type="submit" className="w-full px-3 py-2 bg-brand text-brand-foreground rounded font-bold">
           + {t.admin.addCategory}
         </button>
       </form>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      {/* Desktop table */}
+      <div className="hidden md:block bg-card border border-border rounded-2xl overflow-x-auto">
+        <table className="w-full text-sm min-w-[560px]">
           <thead className="bg-muted">
             <tr><th className="p-3 text-start">Slug</th><th className="p-3 text-start">AR</th><th className="p-3 text-start">EN</th><th className="p-3 text-start">Active</th><th></th></tr>
           </thead>
@@ -117,6 +118,41 @@ function AdminCategories() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {cats.data?.map((c) => (
+          <div key={c.id} className="bg-card border border-border rounded-2xl p-4">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0 flex-1">
+                <div className="font-bold truncate">{c.name_ar}</div>
+                <div className="text-xs text-muted-foreground truncate">{c.name_en}</div>
+                <div className="text-[11px] font-mono text-muted-foreground truncate mt-1">{c.slug}</div>
+              </div>
+              <button onClick={() => toggle.mutate(c)}
+                className={`shrink-0 text-xs px-2 py-1 rounded font-bold ${c.is_active ? "bg-success/10 text-success" : "bg-muted"}`}>
+                {c.is_active ? "ON" : "OFF"}
+              </button>
+            </div>
+            <div className="flex justify-end pt-2 border-t border-border">
+              <button
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: "حذف التصنيف",
+                    message: `متأكد إنك عاوز تمسح "${c.name_ar}"؟`,
+                    tone: "danger",
+                    confirmLabel: "احذف",
+                  });
+                  if (ok) del.mutate(c.id);
+                }}
+                className="text-destructive text-xs font-bold">حذف</button>
+            </div>
+          </div>
+        ))}
+        {cats.data?.length === 0 && (
+          <p className="text-center text-muted-foreground py-8">مفيش تصنيفات</p>
+        )}
       </div>
     </div>
   );
