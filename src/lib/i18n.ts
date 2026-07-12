@@ -517,7 +517,7 @@ export const translations = {
       ],
     },
     footer: {
-      tagline: "The MENA hub for premium ChatGPT Plus, Midjourney, Netflix and AI tool subscriptions in EGP.",
+      tagline: "The MENA hub for premium ChatGPT Plus, Midjourney and AI tool subscriptions in EGP.",
       quickLinks: "Quick Links",
       categories: "Shop Categories",
       contact: "Contact us",
