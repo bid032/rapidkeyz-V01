@@ -538,3 +538,165 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     </div>
   );
 }
+
+function extractSpreadsheetId(raw: string): string {
+  const s = raw.trim();
+  const m = s.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : s;
+}
+
+function ProductSheetPanel({
+  productId,
+  initialSpreadsheetId,
+  onChange,
+}: {
+  productId: string;
+  initialSpreadsheetId: string;
+  onChange: () => void;
+}) {
+  const { notify, lang } = useApp();
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState(initialSpreadsheetId);
+  const [preview, setPreview] = useState<{
+    tabs: Array<{ gid: number; title: string }>;
+    matches: Array<{ plan_id: string; plan_label: string; tab_title: string | null; tab_gid: number | null }>;
+  } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const runPreview = async () => {
+    const id = extractSpreadsheetId(input);
+    if (!id) {
+      notify(lang === "ar" ? "أدخل لينك أو ID الشيت" : "Enter a sheet link or ID", "error");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await previewProductSheetTabs({ data: { productId, spreadsheetId: id } });
+      setPreview(res);
+    } catch (e: any) {
+      showError(e, notify, lang);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runImport = async () => {
+    const id = extractSpreadsheetId(input);
+    if (!id) return;
+    setBusy(true);
+    try {
+      const overrides = (preview?.matches ?? [])
+        .filter((m) => m.tab_title)
+        .map((m) => ({ plan_id: m.plan_id, tab_title: m.tab_title! }));
+      const res = await importAllTabsForProduct({
+        data: { productId, spreadsheetId: id, overrides },
+      });
+      const totalInserted = res.results.reduce((s, r) => s + r.inserted, 0);
+      notify(
+        lang === "ar"
+          ? `تم استيراد ${totalInserted} حساب من ${res.results.filter((r) => r.tab_title).length} tab`
+          : `Imported ${totalInserted} accounts from ${res.results.filter((r) => r.tab_title).length} tabs`,
+        "success",
+      );
+      onChange();
+    } catch (e: any) {
+      showError(e, notify, lang);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="border-b border-border bg-brand/5">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-2 text-xs font-bold text-brand hover:bg-brand/10"
+      >
+        <span>ملف واحد للمنتج (Google Sheet مع tab لكل خطة)</span>
+        <span>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="p-4 space-y-3 text-sm">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            الصق لينك الملف. النظام هيدور على tab اسمه مطابق لاسم كل خطة (زي "1 شهر", "3 شهور") ويستورد الحسابات من كل tab للخطة اللي بتخصها. كل tab لازم يكون فيه عمود اسمه <b>status</b> علشان المزامنة التلقائية تشتغل.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="https://docs.google.com/spreadsheets/d/..."
+              className="flex-1 min-w-[200px] px-3 py-2 rounded-lg border border-border bg-background text-sm"
+              dir="ltr"
+            />
+            <button
+              onClick={runPreview}
+              disabled={busy}
+              className="px-3 py-2 bg-brand/10 text-brand rounded-lg text-xs font-bold disabled:opacity-50"
+            >
+              معاينة الـ Tabs
+            </button>
+          </div>
+          {preview && (
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                الـ Tabs الموجودة في الملف: {preview.tabs.map((t) => t.title).join(" · ") || "لا يوجد"}
+              </div>
+              <div className="rounded-lg border border-border overflow-hidden bg-background">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/50">
+                    <tr>
+                      <th className="p-2 text-start">الخطة</th>
+                      <th className="p-2 text-start">Tab المطابق</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.matches.map((m) => (
+                      <tr key={m.plan_id} className="border-t border-border">
+                        <td className="p-2 font-bold">{m.plan_label}</td>
+                        <td className="p-2">
+                          {m.tab_title ? (
+                            <span className="text-success">✓ {m.tab_title}</span>
+                          ) : (
+                            <select
+                              value=""
+                              onChange={(e) => {
+                                setPreview({
+                                  ...preview,
+                                  matches: preview.matches.map((x) =>
+                                    x.plan_id === m.plan_id
+                                      ? { ...x, tab_title: e.target.value || null }
+                                      : x,
+                                  ),
+                                });
+                              }}
+                              className="px-2 py-1 rounded border border-border bg-background text-xs"
+                            >
+                              <option value="">— اختر tab —</option>
+                              {preview.tabs.map((t) => (
+                                <option key={t.gid} value={t.title}>
+                                  {t.title}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <button
+                onClick={runImport}
+                disabled={busy}
+                className="w-full px-3 py-2 bg-brand text-brand-foreground rounded-lg text-sm font-bold disabled:opacity-50"
+              >
+                {busy ? "جاري الاستيراد..." : "استيراد كل الـ Tabs المطابقة"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
