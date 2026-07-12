@@ -11,6 +11,8 @@ type Props = {
   size?: number;
   /** If set, reject uploads whose exact pixel dimensions don't match (no resize). */
   requireExactDimensions?: { width: number; height: number };
+  /** If set, only accept images whose aspect ratio matches (e.g. {w:4,h:5}). No resize. */
+  requireAspectRatio?: { w: number; h: number; tolerance?: number };
 };
 
 async function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
@@ -61,7 +63,7 @@ async function resizeToSquare(file: File, size: number): Promise<Blob> {
   );
 }
 
-export function ImageUpload({ bucket, value, onChange, label, className, size = 1080, requireExactDimensions }: Props) {
+export function ImageUpload({ bucket, value, onChange, label, className, size = 1080, requireExactDimensions, requireAspectRatio }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,11 +75,21 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
         const { width, height } = await getImageDimensions(file);
         if (width !== requireExactDimensions.width || height !== requireExactDimensions.height) {
           throw new Error(
-            `مقاس الصورة لازم يكون ${requireExactDimensions.width}×${requireExactDimensions.height} بكسل بالظبط (نسبة 4:5). الصورة اللي رفعتها ${width}×${height}.`
+            `مقاس الصورة لازم يكون ${requireExactDimensions.width}×${requireExactDimensions.height} بكسل بالظبط. الصورة اللي رفعتها ${width}×${height}.`
+          );
+        }
+      } else if (requireAspectRatio) {
+        const { width, height } = await getImageDimensions(file);
+        const target = requireAspectRatio.w / requireAspectRatio.h;
+        const actual = width / height;
+        const tol = requireAspectRatio.tolerance ?? 0.01;
+        if (Math.abs(actual - target) / target > tol) {
+          throw new Error(
+            `نسبة الصورة لازم تكون ${requireAspectRatio.w}:${requireAspectRatio.h}. الصورة اللي رفعتها ${width}×${height} (نسبة ${actual.toFixed(3)}).`
           );
         }
       }
-      const useResize = size > 0 && !requireExactDimensions;
+      const useResize = size > 0 && !requireExactDimensions && !requireAspectRatio;
       const blob = useResize ? await resizeToSquare(file, size) : file;
       const ext = useResize ? "png" : (file.name.split(".").pop() ?? "png");
       const path = `${crypto.randomUUID()}.${ext}`;
@@ -130,7 +142,11 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
       </div>
       {requireExactDimensions ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط (نسبة 4:5). أي مقاس مختلف مش هيتقبل.
+          مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط. أي مقاس مختلف مش هيتقبل.
+        </p>
+      ) : requireAspectRatio ? (
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          نسبة الصورة لازم تكون {requireAspectRatio.w}:{requireAspectRatio.h} (أي مقاس بالنسبة دي مقبول، مثال: 1080×1350، 800×1000، 1600×2000).
         </p>
       ) : size > 0 ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
