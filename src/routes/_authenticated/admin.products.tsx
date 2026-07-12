@@ -114,7 +114,9 @@ function AdminProducts() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setEditing(null);
+      notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
     },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const remove = useMutation({
@@ -122,7 +124,11 @@ function AdminProducts() {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-products"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      notify(lang === "ar" ? "تم حذف المنتج" : "Product deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
