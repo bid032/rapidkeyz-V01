@@ -104,7 +104,9 @@ function AdminOverview() {
     XLSX.utils.book_append_sheet(wb, ws, "Sales");
     const rawTitle = (document.title || "site").split(/[—–|:-]/)[0];
     const siteName = rawTitle.replace(/[\\/:*?"<>|]+/g, "").trim() || "site";
-    const suffix = month === "all" ? "all" : month;
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const suffix = month === "all" ? `all-${today}` : month;
     XLSX.writeFile(wb, `${siteName} - ${suffix}.xlsx`);
   };
 
