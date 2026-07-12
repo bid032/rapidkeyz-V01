@@ -25,7 +25,7 @@ export const translations = {
         "احصل على اشتراكات ChatGPT Plus و Midjourney و Netflix وغيرها. تسليم فوري • 100% آمن • ضمان استمرارية.",
       cta: "تصفح الاشتراكات",
       ctaSecondary: "كيف يعمل؟",
-      trending: "الأكثر رواجاً",
+      trending: "الأكثر مبيعاً",
       trusted: "موثوق من ٥٠٠٠+ محترف",
       viewAll: "عرض الكل",
     },
