@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { translations, type Lang, type Dict } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 // ---- Cart ----
 export type CartItem = {
