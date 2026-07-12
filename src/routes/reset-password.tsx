@@ -53,16 +53,19 @@ function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
     setInfo(null);
-    if (password.length < 6) return setError("كلمة السر لازم تكون 6 أحرف على الأقل");
-    if (password !== confirm) return setError("كلمتا السر غير متطابقتين");
+    if (password.length < 6)
+      return setError(lang === "ar" ? "كلمة السر لازم تكون 6 أحرف على الأقل" : "Password must be at least 6 characters");
+    if (password !== confirm)
+      return setError(lang === "ar" ? "كلمتا السر غير متطابقتين" : "Passwords do not match");
     setLoading(true);
     try {
       const { error: err } = await supabase.auth.updateUser({ password });
       if (err) throw err;
-      setInfo("تم تحديث كلمة السر بنجاح. جاري تحويلك...");
+      setInfo(lang === "ar" ? "تم تحديث كلمة السر بنجاح. جاري تحويلك..." : "Password updated successfully. Redirecting...");
       setTimeout(() => navigate({ to: "/dashboard" }), 1200);
     } catch (err: any) {
-      setError(err.message ?? "Error");
+      console.error("reset password failed", err);
+      setError(friendlyErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
