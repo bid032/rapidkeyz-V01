@@ -9,7 +9,7 @@ import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Header() {
-  const { lang, setLang, t, theme, toggleTheme, cartCount } = useApp();
+  const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount } = useApp();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -96,13 +96,15 @@ export function Header() {
             </button>
           </div>
 
-          <button
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
-          >
-            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          {themeMode === "both" && (
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
+            >
+              {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+          )}
 
           <Link
             to="/cart"

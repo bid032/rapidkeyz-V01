@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { translations, type Lang, type Dict } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 // ---- Cart ----
 export type CartItem = {
@@ -23,6 +24,7 @@ export type CartItem = {
 };
 
 type Theme = "dark" | "light";
+type ThemeMode = "light" | "dark" | "both";
 
 type ConfirmOptions = {
   title?: string;
@@ -40,6 +42,7 @@ type AppState = {
   t: Dict;
   theme: Theme;
   toggleTheme: () => void;
+  themeMode: ThemeMode;
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string, planId: string) => void;
@@ -60,6 +63,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("both");
+
+  // Load admin-forced theme mode
+  useEffect(() => {
+    if (!isBrowser) return;
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "theme_mode")
+      .maybeSingle()
+      .then(({ data }) => {
+        const v = (data?.value as any)?.mode;
+        if (v === "light" || v === "dark" || v === "both") setThemeMode(v);
+      });
+  }, []);
+
+  // Enforce forced theme when mode is not "both"
+  useEffect(() => {
+    if (themeMode === "light" || themeMode === "dark") {
+      setTheme(themeMode);
+    }
+  }, [themeMode]);
 
   // ---- Confirm modal ----
   const [confirmState, setConfirmState] = useState<
@@ -156,6 +181,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     t: translations[lang] as Dict,
     theme,
     toggleTheme,
+    themeMode,
     cart,
     addToCart,
     removeFromCart,

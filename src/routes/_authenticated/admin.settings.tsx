@@ -19,6 +19,7 @@ function AdminSettings() {
   const [socials, setSocials] = useState<any>({
     facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
   });
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "both">("both");
   const [stats, setStats] = useState<any>({
     years: 3, staff: 5, services: 30, orders: 12000, customers: 2100,
   });
@@ -46,6 +47,10 @@ function AdminSettings() {
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
       if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "stats") setStats((v: any) => ({ ...v, ...(s.value as any) }));
+      if (s.key === "theme_mode") {
+        const m = (s.value as any)?.mode;
+        if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
+      }
     }
   }, [settings.data]);
 
@@ -58,6 +63,7 @@ function AdminSettings() {
         { key: "hero", value: hero },
         { key: "socials", value: socials },
         { key: "stats", value: stats },
+        { key: "theme_mode", value: { mode: themeMode } },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
@@ -233,6 +239,33 @@ function AdminSettings() {
         </div>
       </section>
 
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+        <h2 className="font-bold mb-1">Theme Mode / وضع الألوان</h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          تحكم في وضع الألوان للموقع بالكامل: فاتح فقط، داكن فقط، أو خليه اليوزر يختار.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {([
+            ["light", "Light Only / فاتح فقط", "إجبار الوضع الفاتح على كل الزوار"],
+            ["dark",  "Dark Only / داكن فقط",  "إجبار الوضع الداكن على كل الزوار"],
+            ["both",  "User Choice / حسب اليوزر", "إظهار زر التبديل وترك اليوزر يختار"],
+          ] as const).map(([val, label, desc]) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => setThemeMode(val)}
+              className={`text-right p-4 rounded-xl border-2 transition ${
+                themeMode === val
+                  ? "border-brand bg-brand/10"
+                  : "border-border hover:border-brand/50"
+              }`}
+            >
+              <div className="font-bold mb-1">{label}</div>
+              <div className="text-xs text-muted-foreground">{desc}</div>
+            </button>
+          ))}
+        </div>
+      </section>
 
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
