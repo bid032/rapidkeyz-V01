@@ -284,6 +284,13 @@ function CheckoutPage() {
                 <div className="space-y-2">
                   {(
                     [
+                      {
+                        id: "simulate",
+                        label: lang === "ar" ? "⚡ ادفع الآن — محاكاة (تجريبي)" : "⚡ Pay Now — Simulation (test)",
+                        hint: lang === "ar"
+                          ? "دفع فوري وهمي لعرض الشكل — بيتبعت الإيميل تلقائي لو المنتج instant."
+                          : "Instant fake payment for demo — auto-emails credentials when the product is instant.",
+                      },
                       { id: "paymob", label: t.checkout.paymob },
                       { id: "kashier", label: t.checkout.kashier },
                       {
@@ -291,12 +298,16 @@ function CheckoutPage() {
                         label: lang === "ar" ? "محفظة / انستاباي (تحويل يدوي)" : "Wallet / Instapay (manual transfer)",
                       },
                       { id: "manual", label: t.checkout.manual },
-                    ] as { id: Gateway; label: string }[]
+                    ] as { id: Gateway; label: string; hint?: string }[]
                   ).map((g) => (
                     <label
                       key={g.id}
-                      className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${
-                        gateway === g.id ? "border-brand bg-brand/5" : "border-border bg-background"
+                      className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${
+                        gateway === g.id
+                          ? g.id === "simulate"
+                            ? "border-warning bg-warning/10"
+                            : "border-brand bg-brand/5"
+                          : "border-border bg-background"
                       }`}
                     >
                       <input
@@ -304,9 +315,19 @@ function CheckoutPage() {
                         name="gateway"
                         checked={gateway === g.id}
                         onChange={() => setGateway(g.id)}
-                        className="accent-brand"
+                        className="accent-brand mt-1"
                       />
-                      <span className="font-medium">{g.label}</span>
+                      <div className="min-w-0">
+                        <div className="font-medium">
+                          {g.label}
+                          {g.id === "simulate" && (
+                            <span className="ms-2 text-[10px] px-2 py-0.5 bg-warning/20 text-warning rounded font-bold uppercase tracking-wider">
+                              TEST
+                            </span>
+                          )}
+                        </div>
+                        {g.hint && <div className="text-xs text-muted-foreground mt-1">{g.hint}</div>}
+                      </div>
                     </label>
                   ))}
                 </div>
