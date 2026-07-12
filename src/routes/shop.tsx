@@ -77,33 +77,56 @@ function ShopPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-8 sm:py-12">
-        <h1 className="text-2xl sm:text-4xl font-extrabold mb-6 sm:mb-8">{t.nav.shop}</h1>
 
-
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:no-scrollbar pb-4 mb-8">
-          <Link
-            to="/shop"
-            search={{}}
-            className={`text-center whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition ${
-              !search.category ? "bg-brand text-brand-foreground border-brand" : "bg-card border-border"
-            }`}
-          >
-            {t.filters.all}
-          </Link>
-          {cats.data?.map((c) => (
-            <Link
-              key={c.id}
-              to="/shop"
-              search={{ ...search, category: c.slug }}
-              className={`text-center whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition ${
-                search.category === c.slug ? "bg-brand text-brand-foreground border-brand" : "bg-card border-border"
-              }`}
-            >
-              {lang === "ar" ? c.name_ar : c.name_en}
-            </Link>
-          ))}
+      {/* Hero title — centered animated */}
+      <section className="relative overflow-hidden py-16 sm:py-24">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[260px] bg-brand/20 blur-[120px] rounded-full opacity-60" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
         </div>
+        <div className="max-w-4xl mx-auto px-3 sm:px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em] mb-5"
+          >
+            <span className="size-1.5 rounded-full bg-brand animate-pulse" />
+            {lang === "ar" ? "كل الاشتراكات في مكان واحد" : "All subscriptions in one place"}
+          </motion.div>
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight leading-[0.95]">
+            <motion.span
+              initial={{ opacity: 0, y: 28, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-brand via-cyan-400 to-brand bg-[length:200%_auto] animate-[gradient-x_6s_linear_infinite]"
+            >
+              {t.nav.shop}
+            </motion.span>
+          </h1>
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.55, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-6 h-1 w-24 sm:w-32 rounded-full bg-gradient-to-r from-transparent via-brand to-transparent origin-center"
+          />
+        </div>
+      </section>
+
+      <CategoriesShowcase activeSlug={search.category} />
+
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-12">
+        {search.category && (
+          <div className="mb-6 flex justify-center">
+            <Link
+              to="/shop"
+              search={{}}
+              className="px-5 py-2 rounded-full text-xs sm:text-sm font-bold border border-border bg-card hover:border-brand hover:text-brand transition"
+            >
+              {t.filters.all}
+            </Link>
+          </div>
+        )}
 
 
         <div className="flex flex-wrap gap-2 mb-8">
