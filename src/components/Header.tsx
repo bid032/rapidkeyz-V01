@@ -36,8 +36,8 @@ export function Header() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2">
             <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
