@@ -7,6 +7,7 @@ import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { notifyNewOrder } from "@/lib/notify-order.functions";
+import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
