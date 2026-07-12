@@ -121,7 +121,37 @@
     overflow-x: clip;
   }
   html[dir="rtl"] body { font-family: "IBM Plex Sans Arabic", sans-serif; }
+
+  /* Comfortable Arabic typography — prevent letter/line collisions */
+  html[dir="rtl"] {
+    line-height: 1.85;
+  }
+  html[dir="rtl"] h1,
+  html[dir="rtl"] h2,
+  html[dir="rtl"] h3,
+  html[dir="rtl"] h4,
+  html[dir="rtl"] h5,
+  html[dir="rtl"] h6 {
+    line-height: 1.55;
+    letter-spacing: 0;
+    word-spacing: 0.05em;
+    padding-block: 0.15em;
+  }
+  html[dir="rtl"] h1 { line-height: 1.5; }
+  html[dir="rtl"] p,
+  html[dir="rtl"] li,
+  html[dir="rtl"] span,
+  html[dir="rtl"] a,
+  html[dir="rtl"] label,
+  html[dir="rtl"] button {
+    line-height: 1.8;
+  }
+  /* Override any Tailwind leading-none / leading-tight on Arabic headings */
+  html[dir="rtl"] .leading-none { line-height: 1.45 !important; }
+  html[dir="rtl"] .leading-tight { line-height: 1.55 !important; }
+  html[dir="rtl"] .leading-snug { line-height: 1.65 !important; }
 }
+
 
 @utility brand-glow {
   box-shadow: 0 0 40px -10px color-mix(in oklab, var(--brand) 55%, transparent);
