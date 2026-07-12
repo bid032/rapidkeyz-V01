@@ -48,21 +48,10 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   });
 }
 
-async function fetchCategories() {
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, slug, name_ar, name_en, icon")
-    .eq("is_active", true)
-    .order("sort_order");
-  if (error) throw error;
-  return data ?? [];
-}
-
 function HomePage() {
   const { t, lang } = useApp();
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
-  const cats = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
   const heroSetting = useQuery({
     queryKey: ["site-settings", "hero"],
     queryFn: async () => {
