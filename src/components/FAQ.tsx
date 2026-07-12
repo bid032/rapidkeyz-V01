@@ -96,7 +96,7 @@ export function FAQ() {
         <h2 id="faq-heading" className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
           {lang === "ar" ? (
             <>
-              الأسئلة الشائعة عن اشتراكات <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT وNetflix وMidjourney في مصر</span>
+              الأسئلة الشائعة عن اشتراكات\u00a0\n<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT وMidjourney في مصر</span>
             </>
           ) : (
             <>
