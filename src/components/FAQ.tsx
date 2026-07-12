@@ -47,7 +47,7 @@ export const FAQ_ITEMS_EN: QA[] = [
   },
   {
     q: "Are the subscriptions 100% genuine?",
-    a: "Yes. Every ChatGPT Plus, Midjourney, Netflix, Canva Pro and AI-tool plan is official and activated from source. We never sell cracked or modified accounts.",
+    a: "Yes. Every ChatGPT Plus, Midjourney, Canva Pro and AI-tool plan is official and activated from source. We never sell cracked or modified accounts.",
   },
   {
     q: "How fast is delivery?",
