@@ -69,7 +69,7 @@ function slugify(input: string): string {
 }
 
 function AdminProducts() {
-  const { t, confirm, notify } = useApp();
+  const { t, lang, confirm, notify } = useApp();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ProductForm | null>(null);
   const [planEditor, setPlanEditor] = useState<string | null>(null);
