@@ -204,7 +204,10 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     setBusy(true);
     try {
       const batchId = (crypto as any).randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-      const payload = records.map((r) => ({ ...r, plan_id: planId, source, import_batch_id: batchId }));
+      const payload = records.map((r) => {
+        const { _srcRowIndex, ...rest } = r;
+        return { ...rest, plan_id: planId, source, import_batch_id: batchId };
+      });
       const { error } = await supabase.from("account_inventory").insert(payload);
       if (error) throw error;
       const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
@@ -222,8 +225,8 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
 
   const handleFile = async (file: File) => {
     const text = await file.text();
-    const parsed = mapRows(parseCsv(text));
-    await insertRows(parsed, "csv");
+    const { records } = mapRows(parseCsv(text));
+    await insertRows(records, "csv");
   };
 
   const normalizeSheetUrl = (raw: string): string => {
