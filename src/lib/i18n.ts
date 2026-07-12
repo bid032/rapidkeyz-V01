@@ -106,7 +106,7 @@ export const translations = {
       title: "لوحة تحكم الأدمن",
       overview: "نظرة عامة",
       products: "الخدمات",
-      categories: "التصنيفات",
+      categories: "الأقسام",
       orders: "الطلبات",
       users: "المستخدمون",
       testimonials: "آراء العملاء",
