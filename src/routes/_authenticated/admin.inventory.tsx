@@ -202,7 +202,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
   });
 
   const insertRows = async (records: any[], source: string) => {
-    if (records.length === 0) { notify("مفيش صفوف صالحة في الملف", "error"); return; }
+    if (records.length === 0) { notify(lang === "ar" ? "مفيش صفوف صالحة في الملف" : "No valid rows in the file", "error"); return; }
     setBusy(true);
     try {
       const batchId = (crypto as any).randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
