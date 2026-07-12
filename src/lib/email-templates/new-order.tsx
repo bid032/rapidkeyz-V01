@@ -31,7 +31,7 @@ export const NewOrderEmail = ({
 }: NewOrderEmailProps) => (
   <Html lang="ar" dir="rtl">
     <Head />
-    <Preview>طلب جديد #{orderNumber} — {total} {currency}</Preview>
+    <Preview>{`طلب جديد #${orderNumber} — ${total} ${currency}`}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>طلب جديد #{orderNumber}</Heading>
