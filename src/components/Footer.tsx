@@ -37,6 +37,14 @@ export function Footer() {
             <li><Link to="/about" className="hover:text-foreground transition-colors">{t.footer.about}</Link></li>
             <li><Link to="/privacy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
             <li><Link to="/terms" className="hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
+            {canModerate && (
+              <li>
+                <Link to="/admin" className="inline-flex items-center gap-1.5 text-brand font-bold hover:underline">
+                  <Shield className="size-3.5" />
+                  {lang === "ar" ? "لوحة الأدمن" : "Admin Panel"}
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 
