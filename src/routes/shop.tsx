@@ -62,13 +62,6 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
 function ShopPage() {
   const search = Route.useSearch();
   const { t, lang } = useApp();
-  const cats = useQuery({
-    queryKey: ["cats-all"],
-    queryFn: async () => {
-      const { data } = await supabase.from("categories").select("*").eq("is_active", true).order("sort_order");
-      return data ?? [];
-    },
-  });
   const products = useQuery({
     queryKey: ["products", search],
     queryFn: () => fetchProducts(search),
