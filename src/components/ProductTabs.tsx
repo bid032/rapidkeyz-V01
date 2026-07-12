@@ -256,8 +256,8 @@ function DeliveryTab({
         </span>
       </div>
       <div className="relative">
-        <div className="absolute top-6 left-6 right-6 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent hidden sm:block" />
         <div className="grid sm:grid-cols-3 gap-4 relative">
+
           {steps.map((s, i) => (
             <motion.div
               key={s.t}
