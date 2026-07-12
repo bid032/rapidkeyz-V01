@@ -171,7 +171,7 @@ function HomePage() {
       {/* Categories */}
       {cats.data && cats.data.length > 0 && (
         <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-8 sm:pb-12">
-          <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:no-scrollbar pb-2">
             {cats.data.map((c, i) => (
               <motion.div
                 key={c.id}
@@ -182,13 +182,14 @@ function HomePage() {
                 <Link
                   to="/shop"
                   search={{ category: c.slug }}
-                  className="whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-card border border-border text-xs sm:text-sm font-medium hover:border-brand/50 hover:scale-105 transition-all inline-block"
+                  className="block text-center whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-card border border-border text-xs sm:text-sm font-medium hover:border-brand/50 hover:scale-105 transition-all"
                 >
                   {lang === "ar" ? c.name_ar : c.name_en}
                 </Link>
               </motion.div>
             ))}
           </div>
+
         </section>
       )}
 
