@@ -585,18 +585,22 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       setEdits((prev) => { const c = { ...prev }; delete c[id]; return c; });
-      notify("تم حفظ التعديلات", "success");
+      notify(lang === "ar" ? "تم حفظ التعديلات" : "Changes saved", "success");
     },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await supabase.from("product_plans").delete().eq("id", id); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("product_plans").delete().eq("id", id);
+      if (error) throw error;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      notify("تم مسح العرض", "success");
+      notify(lang === "ar" ? "تم مسح العرض" : "Plan deleted", "success");
     },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
