@@ -8,6 +8,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Testimonials } from "@/components/Testimonials";
 import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
+import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,23 +16,39 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RapidKeyz — اشتراكات ChatGPT Plus وMidjourney وNetflix بأسعار منافسة" },
+      { title: "RapidKeyz — اشتراكات ChatGPT Plus وMidjourney وNetflix بأسعار مصرية وتسليم فوري" },
       {
         name: "description",
         content:
-          "اشترِ اشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات الذكاء الاصطناعي بتسليم فوري ودعم عربي 24/7. دفع آمن عبر Paymob وKashier.",
+          "اشترِ اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي بالجنيه المصري — تسليم فوري خلال دقائق ودعم عربي 24/7 عبر واتساب.",
       },
-      { property: "og:title", content: "RapidKeyz — اشتراكات الذكاء الاصطناعي والترفيه" },
+      { name: "keywords", content: "شراء ChatGPT Plus مصر, اشتراك Midjourney بالجنيه, Netflix مشترك, Canva Pro اشتراك, أدوات ذكاء اصطناعي, RapidKeyz" },
+      { property: "og:title", content: "RapidKeyz — اشتراكات ChatGPT وMidjourney وNetflix بأسعار مصرية" },
       {
         property: "og:description",
-        content: "متجر عربي موثوق لاشتراكات ChatGPT Plus وMidjourney وNetflix — تسليم فوري ودعم مستمر.",
+        content: "متجر عربي موثوق لاشتراكات ChatGPT Plus وMidjourney وNetflix وأدوات AI — تسليم فوري ودفع آمن بالجنيه المصري.",
       },
       { property: "og:url", content: "/" },
     ],
     links: [{ rel: "canonical", href: "/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQ_ITEMS_AR.map((it) => ({
+            "@type": "Question",
+            name: it.q,
+            acceptedAnswer: { "@type": "Answer", text: it.a },
+          })),
+        }),
+      },
+    ],
   }),
   component: HomePage,
 });
+
 
 
 async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
