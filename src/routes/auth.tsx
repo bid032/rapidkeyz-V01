@@ -9,9 +9,16 @@ import { lovable } from "@/integrations/lovable";
 const searchSchema = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "تسجيل الدخول — RapidKeyz" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   validateSearch: (s) => searchSchema.parse(s),
   component: AuthPage,
 });
+
 
 function AuthPage() {
   const { t } = useApp();

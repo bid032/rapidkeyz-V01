@@ -9,7 +9,16 @@ import type { User } from "@supabase/supabase-js";
 import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 
-export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
+export const Route = createFileRoute("/checkout")({
+  head: () => ({
+    meta: [
+      { title: "إتمام الطلب — RapidKeyz" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
+  component: CheckoutPage,
+});
+
 
 type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual" | "simulate";
 
