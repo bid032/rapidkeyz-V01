@@ -11,7 +11,7 @@ export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
 type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual";
 
-const WHATSAPP_NUMBER = "201284234815";
+const WHATSAPP_NUMBER = "01284234815";
 
 function CheckoutPage() {
   const { t, cart, cartTotal, clearCart, lang } = useApp();
