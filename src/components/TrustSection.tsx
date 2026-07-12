@@ -130,15 +130,17 @@ export function TrustSection() {
               className="group relative p-4 sm:p-5 rounded-2xl bg-card border border-border overflow-hidden hover:border-brand/40 transition-colors"
             >
               <div className="absolute -top-8 -right-8 size-24 rounded-full bg-brand/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex flex-col items-center text-center gap-2">
-                <div className="size-11 grid place-items-center rounded-xl bg-brand/10 text-brand border border-brand/20">
+              <div className="relative flex items-center gap-3 sm:gap-4">
+                <div className="size-11 shrink-0 grid place-items-center rounded-xl bg-brand/10 text-brand border border-brand/20">
                   {s.icon}
                 </div>
-                <div className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-b from-foreground to-brand">
-                  <AnimatedNumber value={s.value} suffix={s.suffix} />
-                </div>
-                <div className="text-[11px] sm:text-xs text-muted-foreground leading-snug">
-                  {lang === "ar" ? s.label_ar : s.label_en}
+                <div className="min-w-0 flex-1 flex flex-col items-start text-start">
+                  <div className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-b from-foreground to-brand leading-none">
+                    <AnimatedNumber value={s.value} suffix={s.suffix} />
+                  </div>
+                  <div className="text-[11px] sm:text-xs text-muted-foreground leading-snug mt-1.5">
+                    {lang === "ar" ? s.label_ar : s.label_en}
+                  </div>
                 </div>
               </div>
             </motion.div>
