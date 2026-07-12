@@ -525,8 +525,8 @@ function CheckoutPage() {
                     ? <>تم إرسال بيانات الحساب على بريدك الإلكتروني <span className="font-bold text-brand">{email}</span>. تقدر تلاقيها كمان في لوحة حسابك.</>
                     : <>Your account details were emailed to <span className="font-bold text-brand">{email}</span>. You can also find them in your dashboard.</>)
                 : (lang === "ar"
-                    ? <>تم استلام الدفع بنجاح ✅ فريقنا هيتواصل معاك قريبًا على رقم الهاتف أو واتساب لتسليم الخدمة. تقدر كمان تكلمنا مباشرة على واتساب من الأيقونة في أسفل الصفحة.</>
-                    : <>Payment received successfully ✅ Our team will contact you shortly via phone or WhatsApp to deliver your service. You can also reach us directly on WhatsApp using the icon at the bottom of the page.</>)}
+                    ? <>تم استلام الدفع بنجاح. فريقنا هيتواصل معاك قريبًا على رقم الهاتف أو واتساب لتسليم الخدمة. تقدر كمان تكلمنا مباشرة على واتساب من الأيقونة في أسفل الصفحة.</>
+                    : <>Payment received successfully. Our team will contact you shortly via phone or WhatsApp to deliver your service. You can also reach us directly on WhatsApp using the icon at the bottom of the page.</>)}
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <button
