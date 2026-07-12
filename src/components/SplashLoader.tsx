@@ -53,13 +53,13 @@ export function SplashLoader() {
       </div>
 
       <div className="relative flex flex-col items-center gap-8">
-        <div className="relative">
+        <div className="relative size-24 sm:size-28 flex items-center justify-center">
           {/* Rotating ring */}
-          <div className="absolute inset-0 -m-6 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
+          <div className="absolute -inset-8 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
           {/* Reverse ring */}
-          <div className="absolute inset-0 -m-3 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "1.8s", animationDirection: "reverse" }} />
+          <div className="absolute -inset-5 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "1.8s", animationDirection: "reverse" }} />
           {/* Logo */}
-          <div className="relative size-24 sm:size-28 flex items-center justify-center animate-pulse">
+          <div className="relative flex items-center justify-center animate-pulse w-full h-full">
             <img src={logo} alt="RapidKeyz" className="max-w-full max-h-full object-contain drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]" />
           </div>
         </div>
