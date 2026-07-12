@@ -101,24 +101,21 @@ function Dashboard() {
                         </div>
                         <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                       </div>
-                      {it.delivered_accounts?.map((acc: any) => (
-                        <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
-                          {acc.account_email && (
-                            <CopyRow label={lang === "ar" ? "البريد" : "Email"} value={acc.account_email} lang={lang} />
-                          )}
-                          {acc.account_username && (
-                            <CopyRow label={lang === "ar" ? "اسم المستخدم" : "Username"} value={acc.account_username} lang={lang} />
-                          )}
-                          {acc.account_password && (
-                            <CopyRow label={lang === "ar" ? "كلمة السر" : "Password"} value={acc.account_password} lang={lang} />
-                          )}
-                          {acc.extra_notes && (
-                            <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
-                              {acc.extra_notes}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                      {it.delivered_accounts?.map((acc: any) => {
+                        const rows = buildCredentialRows(acc, lang);
+                        return (
+                          <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
+                            {rows.map((r, i) => (
+                              <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
+                            ))}
+                            {acc.extra_notes && (
+                              <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
+                                {acc.extra_notes}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
                 </div>
