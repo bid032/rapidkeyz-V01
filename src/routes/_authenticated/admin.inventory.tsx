@@ -252,9 +252,41 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       if (/^\s*<(!doctype|html)/i.test(text)) {
         throw new Error("اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link — Viewer، أو File → Share → Publish to web → CSV.");
       }
-      const parsed = mapRows(parseCsv(text));
+      const { records, statusColIdx } = mapRows(parseCsv(text));
+
+      // Try to attach sheet metadata for auto-sync-on-sold.
+      const idMatch = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      const gidMatch = sheetUrl.match(/[#&?]gid=([0-9]+)/);
+      const spreadsheetId = idMatch?.[1] ?? null;
+      const gid = gidMatch ? Number(gidMatch[1]) : 0;
+
+      let sheetTitle: string | null = null;
+      if (spreadsheetId) {
+        try {
+          const info = await getSheetInfo({ data: { spreadsheetId } });
+          sheetTitle = info.sheets.find((s: any) => s.gid === gid)?.title ?? info.sheets[0]?.title ?? null;
+        } catch (e) {
+          console.warn("getSheetInfo failed", e);
+        }
+      }
+
+      const statusColLetter = statusColIdx >= 0 ? colIdxToLetter(statusColIdx) : null;
+      const canSync = !!(spreadsheetId && sheetTitle && statusColLetter);
+
+      const enriched = records.map((r: any) => ({
+        ...r,
+        spreadsheet_id: canSync ? spreadsheetId : null,
+        sheet_title: canSync ? sheetTitle : null,
+        sheet_row_index: canSync ? r._srcRowIndex : null,
+        status_column_letter: canSync ? statusColLetter : null,
+      }));
+
       await supabase.from("product_plans").update({ sheet_csv_url: sheetUrl.trim() }).eq("id", planId);
-      await insertRows(parsed, "sheet");
+      await insertRows(enriched, "sheet");
+
+      if (!canSync) {
+        notify("تم الاستيراد بدون مزامنة تلقائية. أضف عمود اسمه 'status' في الشيت عشان يتحدّث تلقائيًا لما يتباع.", "info");
+      }
     } catch (e: any) {
       notify(`تعذر قراءة الشيت: ${e.message}`, "error");
     } finally {
