@@ -114,10 +114,11 @@ function AdminReviews() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("اتحذف");
+      toast.success(lang === "ar" ? "تم الحذف" : "Deleted");
       qc.invalidateQueries({ queryKey: ["admin-product-reviews", selectedProduct] });
       qc.invalidateQueries({ queryKey: ["product-reviews", selectedProduct] });
     },
+    onError: (e) => { console.error(e); toast.error(friendlyErrorMessage(e, lang)); },
   });
 
   const toggleActive = useMutation({
