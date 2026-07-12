@@ -162,6 +162,12 @@ function CheckoutPage() {
       // Auto-flip status when everything was auto-delivered (admins may still adjust).
       if (hasInstant && allInstantDelivered) {
         await supabase.from("orders").update({ status: "delivered" }).eq("id", order.id);
+        // Send credentials to the customer (best-effort)
+        try {
+          await notifyCustomerDelivery({ data: { orderId: order.id } });
+        } catch (e) {
+          console.error("notifyCustomerDelivery failed", e);
+        }
       }
 
       // Notify admin by email (non-blocking, best-effort)
