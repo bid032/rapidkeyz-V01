@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyErrorMessage } from "@/lib/error-handler";
+import { useApp } from "@/contexts/AppContext";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
