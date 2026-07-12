@@ -100,12 +100,12 @@ function AdminReviews() {
       }
     },
     onSuccess: () => {
-      toast.success("تم الحفظ");
+      toast.success(lang === "ar" ? "تم الحفظ" : "Saved");
       resetDraft();
       qc.invalidateQueries({ queryKey: ["admin-product-reviews", selectedProduct] });
       qc.invalidateQueries({ queryKey: ["product-reviews", selectedProduct] });
     },
-    onError: (e: any) => toast.error(e.message ?? "فشل الحفظ"),
+    onError: (e) => { console.error(e); toast.error(friendlyErrorMessage(e, lang)); },
   });
 
   const del = useMutation({
