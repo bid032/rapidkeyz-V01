@@ -50,7 +50,11 @@ function AdminUsers() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-users"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      notify(lang === "ar" ? "تم تحديث الصلاحيات" : "Roles updated", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
