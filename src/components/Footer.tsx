@@ -6,8 +6,12 @@ import { Phone, Mail } from "lucide-react";
 export function Footer() {
   const { t } = useApp();
   return (
-    <footer className="border-t border-border pt-16 pb-8 px-6 bg-card/30 mt-24">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
+    <footer className="relative border-t border-border pt-16 pb-8 px-6 bg-card/30 mt-24 overflow-hidden">
+      {/* Blue glow rising from the top of the footer, fading up */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[70%] bg-gradient-to-b from-brand/30 via-cyan-300/15 to-transparent" />
+      <div className="pointer-events-none absolute left-1/2 -top-32 -translate-x-1/2 w-[1200px] h-[400px] bg-brand/25 rounded-full blur-3xl" />
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+
         {/* Brand */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
@@ -65,7 +69,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 text-center">
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 text-center relative">
         <p className="text-[11px] text-muted-foreground">
           © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
         </p>
