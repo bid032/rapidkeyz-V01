@@ -254,20 +254,27 @@ function HomePage() {
 
 
 
-      {/* Products */}
-      <main id="trending" className="max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center justify-between mb-8 sm:mb-12"
-        >
-          <h2 data-gsap="scramble" className="text-xl sm:text-2xl font-bold">{t.home.trending}</h2>
-          <Link to="/shop" className="text-xs sm:text-sm font-bold text-brand hover:underline">
-            {t.home.viewAll} →
+      {/* Products , Broken grid */}
+      <main id="trending" className="relative max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
+        <div className="relative mb-10 sm:mb-16 flex items-end justify-between gap-6">
+          <div>
+            <div className="font-mono text-xs uppercase tracking-[0.3em] text-brand mb-3">// 02 · catalogue</div>
+            <h2
+              data-gsap="split-words"
+              className="font-display font-bold text-4xl sm:text-6xl leading-[1.05] tracking-tight"
+            >
+              {t.home.trending}
+            </h2>
+          </div>
+          <Link
+            to="/shop"
+            data-gsap="magnetic"
+            data-strength="0.3"
+            className="hidden sm:inline-flex items-center gap-2 px-5 py-3 rounded-full neon-border text-brand font-mono text-sm uppercase tracking-widest"
+          >
+            {t.home.viewAll} <span>→</span>
           </Link>
-        </motion.div>
+        </div>
 
         {products.isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -285,8 +292,12 @@ function HomePage() {
         )}
         {products.data && products.data.length > 0 && (
           <div data-gsap="reveal-stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {products.data.map((p) => (
-              <div key={p.id} data-gsap="tilt">
+            {products.data.map((p, i) => (
+              <div
+                key={p.id}
+                data-gsap="tilt"
+                className={i % 5 === 2 ? "sm:translate-y-6" : i % 5 === 4 ? "sm:-translate-y-4" : ""}
+              >
                 <ProductCard p={p} />
               </div>
             ))}
