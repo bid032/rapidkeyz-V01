@@ -148,7 +148,16 @@ function AdminInventory() {
               <div className="font-bold">{p.name_ar}</div>
               <div className="text-xs text-muted-foreground">{p.product_plans?.length ?? 0} عرض</div>
             </div>
+            <ProductSheetPanel
+              productId={p.id}
+              initialSpreadsheetId={p.google_spreadsheet_id ?? ""}
+              onChange={() => {
+                qc.invalidateQueries({ queryKey: ["inventory-counts"] });
+                qc.invalidateQueries({ queryKey: ["instant-plans"] });
+              }}
+            />
             <div className="p-4 space-y-3">
+
               {(p.product_plans ?? []).map((pl: any) => {
                 const c = invStats.data?.[pl.id] ?? { available: 0, delivered: 0 };
                 return (
