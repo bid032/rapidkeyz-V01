@@ -156,6 +156,13 @@ function CheckoutPage() {
         await supabase.from("orders").update({ status: "delivered" }).eq("id", order.id);
       }
 
+      // Notify admin by email (non-blocking, best-effort)
+      try {
+        await notifyNewOrder({ data: { orderId: order.id } });
+      } catch (e) {
+        console.error("notifyNewOrder failed", e);
+      }
+
       clearCart();
       if (user) navigate({ to: "/dashboard" });
       else navigate({ to: "/" });
