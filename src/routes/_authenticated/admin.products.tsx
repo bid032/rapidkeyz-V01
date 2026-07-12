@@ -502,7 +502,7 @@ function Field({ label, hint, className, children }: { label: string; hint?: str
 
 function PlanEditor({ productId, onClose }: { productId: string; onClose: () => void }) {
   const qc = useQueryClient();
-  const { confirm, notify } = useApp();
+  const { lang, confirm, notify } = useApp();
   const plans = useQuery({
     queryKey: ["plans", productId],
     queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url").eq("product_id", productId).order("duration_days")).data ?? [],
