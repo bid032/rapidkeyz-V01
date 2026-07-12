@@ -136,61 +136,93 @@ function DescriptionTab({
   );
 }
 
-function ReviewsTab({ isAr }: { isAr: boolean }) {
-  const reviews = isAr
+function ReviewsTab({ isAr, productId }: { isAr: boolean; productId: string }) {
+  const { data: dbReviews } = useQuery({
+    queryKey: ["product-reviews", productId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("product_reviews")
+        .select("id, reviewer_name, rating, body, lang, sort_order, created_at")
+        .eq("product_id", productId)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const fallback = isAr
     ? [
-        { name: "أحمد م.", rating: 5, body: "تفعيل سريع جداً، الحساب اشتغل في نص ساعة والدعم رد فوراً." },
-        { name: "منى ع.", rating: 5, body: "أرخص من أي متجر تاني وأصلي 100%، بجدد اشتراكي هنا دايماً." },
-        { name: "Kareem H.", rating: 4, body: "Great value, needed a small clarification and support handled it quickly." },
-        { name: "Sara T.", rating: 5, body: "Instant delivery and everything worked exactly as described." },
+        { id: "f1", reviewer_name: "أحمد م.", rating: 5, body: "تفعيل سريع جداً، الحساب اشتغل في نص ساعة والدعم رد فوراً." },
+        { id: "f2", reviewer_name: "منى ع.", rating: 5, body: "أرخص من أي متجر تاني وأصلي 100%، بجدد اشتراكي هنا دايماً." },
+        { id: "f3", reviewer_name: "Kareem H.", rating: 4, body: "Great value, needed a small clarification and support handled it quickly." },
+        { id: "f4", reviewer_name: "Sara T.", rating: 5, body: "Instant delivery and everything worked exactly as described." },
       ]
     : [
-        { name: "Ahmed M.", rating: 5, body: "Super fast activation. Account was ready in 30 min and support replied instantly." },
-        { name: "Mona A.", rating: 5, body: "Cheaper than anywhere else and 100% original. I renew here every time." },
-        { name: "Kareem H.", rating: 4, body: "Great value, needed a small clarification and support handled it quickly." },
-        { name: "Sara T.", rating: 5, body: "Instant delivery and everything worked exactly as described." },
+        { id: "f1", reviewer_name: "Ahmed M.", rating: 5, body: "Super fast activation. Account was ready in 30 min and support replied instantly." },
+        { id: "f2", reviewer_name: "Mona A.", rating: 5, body: "Cheaper than anywhere else and 100% original. I renew here every time." },
+        { id: "f3", reviewer_name: "Kareem H.", rating: 4, body: "Great value, needed a small clarification and support handled it quickly." },
+        { id: "f4", reviewer_name: "Sara T.", rating: 5, body: "Instant delivery and everything worked exactly as described." },
       ];
-  const avg = 4.9;
+
+  const reviews = (dbReviews && dbReviews.length > 0 ? dbReviews : fallback) as {
+    id: string;
+    reviewer_name: string;
+    rating: number;
+    body: string;
+  }[];
+
+  const avg =
+    reviews.length > 0
+      ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
+      : 0;
+
+  const dist = [5, 4, 3, 2, 1].map((s) => {
+    const count = reviews.filter((r) => r.rating === s).length;
+    const pct = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
+    return { s, pct };
+  });
+
   return (
     <div className="space-y-6">
       <div className="grid sm:grid-cols-[auto,1fr] gap-6 items-center">
         <div className="relative rounded-2xl bg-gradient-to-br from-brand/20 via-card to-card border border-brand/30 p-5 min-w-[180px] text-center">
-          <div className="text-5xl font-black text-brand tabular-nums leading-none">{avg}</div>
-          <div className="mt-2 text-warning text-lg tracking-wider">★★★★★</div>
+          <div className="text-5xl font-black text-brand tabular-nums leading-none">{avg.toFixed(1)}</div>
+          <div className="mt-2 text-warning text-lg tracking-wider">
+            {"★".repeat(Math.round(avg))}
+            <span className="text-muted-foreground/40">{"★".repeat(5 - Math.round(avg))}</span>
+          </div>
           <div className="mt-1 text-[11px] text-muted-foreground">
-            {isAr ? "من ٥ نجوم" : "out of 5"}
+            {isAr ? `من ${reviews.length} تقييم` : `from ${reviews.length} reviews`}
           </div>
         </div>
         <div className="space-y-2">
-          {[5, 4, 3, 2, 1].map((s) => {
-            const pct = s === 5 ? 88 : s === 4 ? 9 : s === 3 ? 2 : s === 2 ? 1 : 0;
-            return (
-              <div key={s} className="flex items-center gap-3">
-                <span className="text-xs font-bold w-4 text-muted-foreground">{s}★</span>
-                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="h-full bg-gradient-to-r from-brand to-brand/60"
-                  />
-                </div>
-                <span className="text-xs font-bold w-8 text-muted-foreground tabular-nums text-end">
-                  {pct}%
-                </span>
+          {dist.map(({ s, pct }) => (
+            <div key={s} className="flex items-center gap-3">
+              <span className="text-xs font-bold w-4 text-muted-foreground">{s}★</span>
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="h-full bg-gradient-to-r from-brand to-brand/60"
+                />
               </div>
-            );
-          })}
+              <span className="text-xs font-bold w-8 text-muted-foreground tabular-nums text-end">
+                {pct}%
+              </span>
+            </div>
+          ))}
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
         {reviews.map((r) => (
           <div
-            key={r.name + r.body}
+            key={r.id}
             className="p-4 rounded-xl border border-border bg-background/40 hover:border-brand/40 transition-colors"
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="font-extrabold text-sm">{r.name}</span>
+              <span className="font-extrabold text-sm">{r.reviewer_name}</span>
               <span className="text-warning text-xs tracking-widest">
                 {"★".repeat(r.rating)}
                 <span className="text-muted-foreground/40">{"★".repeat(5 - r.rating)}</span>
