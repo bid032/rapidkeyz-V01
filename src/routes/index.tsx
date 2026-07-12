@@ -247,6 +247,10 @@ function HomePage() {
       {/* Categories , centered creative pill grid */}
       <CategoriesShowcase />
 
+      {/* GSAP infinite brand marquee */}
+      <BrandMarquee />
+
+
 
 
       {/* Products */}
