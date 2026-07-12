@@ -62,6 +62,7 @@ function AdminSettings() {
         { key: "brand", value: brand },
         { key: "contact", value: contact },
         { key: "payments", value: payments },
+        { key: "checkout", value: checkout },
         { key: "hero", value: hero },
         { key: "socials", value: socials },
         { key: "stats", value: stats },
