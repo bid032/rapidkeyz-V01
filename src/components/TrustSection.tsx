@@ -147,6 +147,36 @@ export function TrustSection() {
           ))}
         </div>
 
+        {/* Features intro */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5 }}
+          className="text-center mt-14 sm:mt-20 mb-8 sm:mb-10"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
+            <span className="size-1.5 rounded-full bg-brand" />
+            {lang === "ar" ? "لأن اللي بيميزنا" : "What sets us apart"}
+          </div>
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+            {lang === "ar" ? (
+              <>
+                مميزات <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">تخلينا الأفضل</span>
+              </>
+            ) : (
+              <>
+                Features that <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">make us the best</span>
+              </>
+            )}
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-3">
+            {lang === "ar"
+              ? "دي الأسباب اللي بتخلي عملاءنا يرجعوا لنا كل مرة"
+              : "The reasons our customers keep coming back"}
+          </p>
+        </motion.div>
+
         {/* Features row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {FEATURES.map((f, i) => (
