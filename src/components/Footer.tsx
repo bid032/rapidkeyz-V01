@@ -69,7 +69,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 text-center">
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 text-center relative">
         <p className="text-[11px] text-muted-foreground">
           © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
         </p>
