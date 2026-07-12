@@ -79,11 +79,11 @@ function ShopPage() {
         <h1 className="text-2xl sm:text-4xl font-extrabold mb-6 sm:mb-8">{t.nav.shop}</h1>
 
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 mb-8">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:no-scrollbar pb-4 mb-8">
           <Link
             to="/shop"
             search={{}}
-            className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition ${
+            className={`text-center whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition ${
               !search.category ? "bg-brand text-brand-foreground border-brand" : "bg-card border-border"
             }`}
           >
@@ -94,7 +94,7 @@ function ShopPage() {
               key={c.id}
               to="/shop"
               search={{ ...search, category: c.slug }}
-              className={`whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition ${
+              className={`text-center whitespace-nowrap px-5 py-2 rounded-full text-sm font-bold border transition ${
                 search.category === c.slug ? "bg-brand text-brand-foreground border-brand" : "bg-card border-border"
               }`}
             >
@@ -102,6 +102,7 @@ function ShopPage() {
             </Link>
           ))}
         </div>
+
 
         <div className="flex flex-wrap gap-2 mb-8">
           {(["instant", "manual"] as const).map((d) => (
