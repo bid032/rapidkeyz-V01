@@ -49,20 +49,25 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
           {lang === "ar" ? "الأقسام" : "Browse by category"}
         </div>
         <h2
-          data-gsap="split-words"
-          className="mt-5 font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.05]"
+          className="mt-5 font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15] pb-2"
         >
           {lang === "ar" ? (
             <>
               تسوّق حسب{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep]">
+              <span
+                className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep] inline-block"
+                style={{ paddingBlock: "0.15em" }}
+              >
                 القسم
               </span>
             </>
           ) : (
             <>
               Shop by{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep]">
+              <span
+                className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep] inline-block"
+                style={{ paddingBlock: "0.15em" }}
+              >
                 category
               </span>
             </>
@@ -72,7 +77,7 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
       </div>
 
       <div
-        data-gsap="reveal-stagger"
+        data-gsap="card-pop"
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
       >
         {cats.data.map((c, i) => {
