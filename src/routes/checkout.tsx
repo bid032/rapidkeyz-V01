@@ -6,12 +6,12 @@ import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { notifyNewOrder } from "@/lib/notify-order.functions";
+import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
-type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual";
+type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual" | "simulate";
 
 const WHATSAPP_NUMBER = "01284234815";
 
@@ -105,14 +105,15 @@ function CheckoutPage() {
         .from("orders")
         .insert({
           user_id: user?.id ?? null,
-          status: "pending",
-          payment_gateway: gateway,
+          status: gateway === "simulate" ? "paid" : "pending",
+          payment_gateway: (gateway === "simulate" ? "manual" : gateway) as any,
           subtotal: cartTotal,
           total: cartTotal,
           customer_email: email,
           customer_phone: phone,
           payment_proof_url: proofUrl,
           payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.trim() : null,
+          payment_reference: gateway === "simulate" ? "SIMULATION" : null,
         })
         .select()
         .single();
@@ -161,6 +162,12 @@ function CheckoutPage() {
       // Auto-flip status when everything was auto-delivered (admins may still adjust).
       if (hasInstant && allInstantDelivered) {
         await supabase.from("orders").update({ status: "delivered" }).eq("id", order.id);
+        // Send credentials to the customer (best-effort)
+        try {
+          await notifyCustomerDelivery({ data: { orderId: order.id } });
+        } catch (e) {
+          console.error("notifyCustomerDelivery failed", e);
+        }
       }
 
       // Notify admin by email (non-blocking, best-effort)
@@ -277,6 +284,13 @@ function CheckoutPage() {
                 <div className="space-y-2">
                   {(
                     [
+                      {
+                        id: "simulate",
+                        label: lang === "ar" ? "⚡ ادفع الآن — محاكاة (تجريبي)" : "⚡ Pay Now — Simulation (test)",
+                        hint: lang === "ar"
+                          ? "دفع فوري وهمي لعرض الشكل — بيتبعت الإيميل تلقائي لو المنتج instant."
+                          : "Instant fake payment for demo — auto-emails credentials when the product is instant.",
+                      },
                       { id: "paymob", label: t.checkout.paymob },
                       { id: "kashier", label: t.checkout.kashier },
                       {
@@ -284,12 +298,16 @@ function CheckoutPage() {
                         label: lang === "ar" ? "محفظة / انستاباي (تحويل يدوي)" : "Wallet / Instapay (manual transfer)",
                       },
                       { id: "manual", label: t.checkout.manual },
-                    ] as { id: Gateway; label: string }[]
+                    ] as { id: Gateway; label: string; hint?: string }[]
                   ).map((g) => (
                     <label
                       key={g.id}
-                      className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition ${
-                        gateway === g.id ? "border-brand bg-brand/5" : "border-border bg-background"
+                      className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${
+                        gateway === g.id
+                          ? g.id === "simulate"
+                            ? "border-warning bg-warning/10"
+                            : "border-brand bg-brand/5"
+                          : "border-border bg-background"
                       }`}
                     >
                       <input
@@ -297,9 +315,19 @@ function CheckoutPage() {
                         name="gateway"
                         checked={gateway === g.id}
                         onChange={() => setGateway(g.id)}
-                        className="accent-brand"
+                        className="accent-brand mt-1"
                       />
-                      <span className="font-medium">{g.label}</span>
+                      <div className="min-w-0">
+                        <div className="font-medium">
+                          {g.label}
+                          {g.id === "simulate" && (
+                            <span className="ms-2 text-[10px] px-2 py-0.5 bg-warning/20 text-warning rounded font-bold uppercase tracking-wider">
+                              TEST
+                            </span>
+                          )}
+                        </div>
+                        {g.hint && <div className="text-xs text-muted-foreground mt-1">{g.hint}</div>}
+                      </div>
                     </label>
                   ))}
                 </div>
@@ -389,6 +417,30 @@ function CheckoutPage() {
                         <p className="text-xs text-muted-foreground truncate">{proofFile.name}</p>
                       )}
                     </div>
+                  </div>
+                ) : gateway === "simulate" ? (
+                  <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30 text-sm leading-relaxed">
+                    {lang === "ar" ? (
+                      <>
+                        <p className="font-bold mb-2">🧪 وضع المحاكاة</p>
+                        <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
+                          <li>هيتم إنشاء الطلب بحالة <b>paid</b> فورًا بدون بوابة دفع حقيقية.</li>
+                          <li>لو المنتج تسليمه <b>instant</b>: هيتم سحب حساب متاح من المخزون تلقائيًا.</li>
+                          <li>الحساب هيتعلّم <b>sold</b> في شيت جوجل المربوط بيه.</li>
+                          <li>بيانات الحساب هتتبعت للعميل على الإيميل تلقائيًا.</li>
+                        </ol>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-bold mb-2">🧪 Simulation mode</p>
+                        <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
+                          <li>Order is created as <b>paid</b> instantly — no real gateway involved.</li>
+                          <li>Instant products auto-claim an account from inventory.</li>
+                          <li>The row is marked <b>sold</b> in its linked Google Sheet.</li>
+                          <li>Credentials are emailed to the customer automatically.</li>
+                        </ol>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-4">
