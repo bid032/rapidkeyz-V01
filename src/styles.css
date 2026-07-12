@@ -112,12 +112,13 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html { background-color: var(--color-background); }
+  html { background-color: var(--color-background); overflow-x: clip; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-feature-settings: "ss01", "cv11";
+    overflow-x: clip;
   }
   html[dir="rtl"] body { font-family: "IBM Plex Sans Arabic", sans-serif; }
 }

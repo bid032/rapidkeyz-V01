@@ -64,7 +64,7 @@ export function Footer() {
         .select("id, slug, name_ar, name_en")
         .eq("is_active", true)
         .order("sort_order")
-        .limit(8);
+        .limit(6);
       return data ?? [];
     },
   });
@@ -81,131 +81,107 @@ export function Footer() {
   });
 
   return (
-    <footer className="relative pt-10 sm:pt-16 pb-8 px-4 sm:px-6 bg-card/30 mt-16 sm:mt-24">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 relative">
-        {/* Brand */}
-        <div className="flex flex-col gap-3 sm:col-span-2 md:col-span-1 text-center sm:text-start items-center sm:items-start">
-          <div className="flex items-center gap-2">
-            <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
-            <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
-              RapidKeyz
-            </span>
-          </div>
-          <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
-            {t.footer.tagline}
-          </p>
+    <footer className="relative bg-card/40 border-t border-border/50 mt-16 sm:mt-24">
+      <div className="max-w-7xl mx-auto">
+        {/* Brand Section */}
+        <div className="px-5 sm:px-8 pt-10 pb-8">
+          <div className="grid gap-8 md:grid-cols-[1.2fr_1fr_1fr] md:items-start">
+            <div className="flex flex-col items-start gap-3">
+              <div className="flex items-center gap-2">
+                <img
+                  src={theme === "dark" ? logoDark.url : logoLight.url}
+                  alt="RapidKeyz"
+                  className="h-9 w-9 object-contain"
+                />
+                <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
+                  RapidKeyz
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">
+                {t.footer.tagline}
+              </p>
 
-          {activeSocials.length > 0 && (
-            <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
-              {activeSocials.map(({ key, label, Icon }) => (
-                <a
-                  key={key}
-                  href={socials.data![key]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className="size-9 grid place-items-center rounded-full bg-brand/10 text-brand border border-brand/20 hover:bg-brand hover:text-brand-foreground hover:brand-glow transition-all"
-                >
-                  <Icon className="size-4" />
-                </a>
-              ))}
+              {activeSocials.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {activeSocials.map(({ key, label, Icon }) => (
+                    <a
+                      key={key}
+                      href={socials.data![key]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      title={label}
+                      className="size-8 grid place-items-center rounded-full bg-muted/60 text-muted-foreground border border-border/50 hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
+                    >
+                      <Icon className="size-4" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Quick Links (desktop shows here) */}
+            <div className="hidden md:block">
+              <SectionHeader>{t.footer.quickLinks}</SectionHeader>
+              <QuickLinks t={t} />
+            </div>
+
+            {/* Categories (desktop shows here) */}
+            <div className="hidden md:block">
+              <SectionHeader>{t.footer.categories}</SectionHeader>
+              <CategoriesList categories={categories.data ?? []} lang={lang} />
+            </div>
+          </div>
         </div>
 
-        {/* Quick links */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
-            • {t.footer.quickLinks}
-          </h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/about" className="hover:text-foreground transition-colors">{t.footer.about}</Link></li>
-            <li><Link to="/shop" className="hover:text-foreground transition-colors">{t.nav.shop}</Link></li>
-            <li><Link to="/privacy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
-            <li><Link to="/terms" className="hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
-          </ul>
+        {/* Mobile: Links Grid */}
+        <div className="md:hidden px-5 sm:px-8 py-8 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-border/40">
+          <div>
+            <SectionHeader>{t.footer.quickLinks}</SectionHeader>
+            <QuickLinks t={t} />
+          </div>
+          <div>
+            <SectionHeader>{t.footer.categories}</SectionHeader>
+            <CategoriesList categories={categories.data ?? []} lang={lang} />
+          </div>
         </div>
 
-        {/* Categories */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
-            • {t.footer.categories}
-          </h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            {(categories.data ?? []).length === 0 && (
-              <li className="text-xs opacity-60">—</li>
-            )}
-            {(categories.data ?? []).map((c) => (
-              <li key={c.id}>
-                <Link
-                  to="/shop"
-                  search={{ category: c.slug }}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {lang === "ar" ? c.name_ar : c.name_en}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        {/* Contact Section */}
+        <div className="px-5 sm:px-8 py-8 bg-muted/30 border-t border-border/40">
+          <SectionHeader>{t.footer.contact}</SectionHeader>
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+            <ContactRow
+              href={`https://wa.me/${phoneWa}`}
+              external
+              label="WhatsApp"
+              value={phoneDisplay}
+              tone="whatsapp"
+              icon={<MessageCircle className="size-5" />}
+            />
+            <ContactRow
+              href={`tel:${phoneDigits}`}
+              label={lang === "ar" ? "اتصال مباشر" : "Call"}
+              value={phoneDisplay}
+              tone="brand"
+              icon={<Phone className="size-5" />}
+            />
+            <ContactRow
+              href={`mailto:${email}`}
+              label={t.footer.emailLabel}
+              value={email}
+              tone="brand"
+              icon={<Mail className="size-5" />}
+            />
+          </div>
         </div>
 
-        {/* Contact */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest text-brand mb-4">
-            • {t.footer.contact}
-          </h4>
-          <ul className="space-y-3 text-sm text-muted-foreground">
-            <li className="flex items-center gap-3">
-              <span className="size-9 grid place-items-center rounded-full bg-brand/10 text-brand shrink-0">
-                <MessageCircle className="size-4" />
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] uppercase tracking-wide">WhatsApp</span>
-                <a
-                  href={`https://wa.me/${phoneWa}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-foreground font-medium truncate"
-                  dir="ltr"
-                >
-                  {phoneDisplay}
-                </a>
-              </div>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="size-9 grid place-items-center rounded-full bg-brand/10 text-brand shrink-0">
-                <Phone className="size-4" />
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] uppercase tracking-wide">{lang === "ar" ? "اتصال مباشر" : "Call"}</span>
-                <a href={`tel:${phoneDigits}`} className="hover:text-foreground font-medium truncate" dir="ltr">
-                  {phoneDisplay}
-                </a>
-              </div>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="size-9 grid place-items-center rounded-full bg-brand/10 text-brand shrink-0">
-                <Mail className="size-4" />
-              </span>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] uppercase tracking-wide">{t.footer.emailLabel}</span>
-                <a href={`mailto:${email}`} className="hover:text-foreground font-medium truncate" dir="ltr">
-                  {email}
-                </a>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-border/50 relative">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-[11px] text-muted-foreground text-center">
-          <p>
-            © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}.
+        {/* Bottom Bar */}
+        <div className="px-5 sm:px-8 py-5 border-t border-border/40 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-center">
+          <p className="text-[11px] text-muted-foreground">
+            © {new Date().getFullYear()} <span className="text-foreground/80 font-medium">RapidKeyz</span>. {t.footer.rights}.
           </p>
-          <span className="hidden sm:inline opacity-50">•</span>
-          <p>
+          <span className="hidden sm:inline text-muted-foreground/40">•</span>
+          <p className="text-[11px] text-muted-foreground">
             {lang === "ar" ? "تصميم وبرمجة" : "Designed & Developed by"}{" "}
             <a
               href="https://www.facebook.com/bid032"
@@ -219,5 +195,93 @@ export function Footer() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="text-brand text-sm font-bold mb-5 flex items-center gap-2">
+      <span className="w-1 h-4 bg-brand rounded-full" />
+      {children}
+    </h3>
+  );
+}
+
+function QuickLinks({ t }: { t: ReturnType<typeof useApp>["t"] }) {
+  return (
+    <ul className="space-y-3">
+      <li><Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t.footer.about}</Link></li>
+      <li><Link to="/shop" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t.nav.shop}</Link></li>
+      <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
+      <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
+    </ul>
+  );
+}
+
+function CategoriesList({
+  categories,
+  lang,
+}: {
+  categories: { id: string; slug: string; name_ar: string; name_en: string }[];
+  lang: "ar" | "en";
+}) {
+  if (categories.length === 0) {
+    return <p className="text-xs text-muted-foreground/60">—</p>;
+  }
+  return (
+    <ul className="space-y-3">
+      {categories.map((c) => (
+        <li key={c.id}>
+          <Link
+            to="/shop"
+            search={{ category: c.slug }}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {lang === "ar" ? c.name_ar : c.name_en}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ContactRow({
+  href,
+  external,
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  href: string;
+  external?: boolean;
+  label: string;
+  value: string;
+  icon: React.ReactNode;
+  tone: "brand" | "whatsapp";
+}) {
+  const toneClasses =
+    tone === "whatsapp"
+      ? "bg-green-500/10 text-green-500 group-hover:bg-green-500 group-hover:text-white"
+      : "bg-brand/10 text-brand group-hover:bg-brand group-hover:text-brand-foreground";
+  return (
+    <a
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      className="flex items-center gap-3 group min-w-0"
+    >
+      <span className={`size-10 shrink-0 grid place-items-center rounded-xl transition-all ${toneClasses}`}>
+        {icon}
+      </span>
+      <span className="flex flex-col min-w-0">
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+          {label}
+        </span>
+        <span className="text-sm font-semibold text-foreground truncate" dir="ltr">
+          {value}
+        </span>
+      </span>
+    </a>
   );
 }
