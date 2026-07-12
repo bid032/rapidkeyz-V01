@@ -196,6 +196,10 @@ function AdminOrders() {
                     disabled={o.status === "cancelled"}
                     className="px-4 py-2 bg-destructive text-white rounded font-bold text-sm disabled:opacity-50"
                   >✗ إلغاء</button>
+                  <button
+                    onClick={() => { if (confirm("حذف الطلب نهائياً؟ لا يمكن التراجع.")) deleteOrder.mutate(o.id); }}
+                    className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
+                  >🗑 حذف نهائي</button>
                 </div>
 
                 {/* Items */}
