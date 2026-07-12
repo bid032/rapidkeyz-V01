@@ -44,6 +44,8 @@ function AdminSettings() {
       if (s.key === "contact") setContact(s.value);
       if (s.key === "payments") setPayments(s.value);
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
+      if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
+      if (s.key === "stats") setStats((v: any) => ({ ...v, ...(s.value as any) }));
     }
   }, [settings.data]);
 
@@ -54,6 +56,8 @@ function AdminSettings() {
         { key: "contact", value: contact },
         { key: "payments", value: payments },
         { key: "hero", value: hero },
+        { key: "socials", value: socials },
+        { key: "stats", value: stats },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
