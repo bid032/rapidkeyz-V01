@@ -105,8 +105,8 @@ function AdminOrders() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h1 className="text-3xl font-extrabold">{t.admin.orders}</h1>
-        <div className="flex bg-muted rounded-lg p-1">
+        <h1 className="text-xl sm:text-3xl font-extrabold">{t.admin.orders}</h1>
+        <div className="flex bg-muted rounded-lg p-1 w-full sm:w-auto overflow-x-auto">
           {([
             { k: "all", label: "كل الطلبات" },
             { k: "expiring", label: "خدمات شارفت على الانتهاء" },
@@ -114,7 +114,7 @@ function AdminOrders() {
             <button
               key={x.k}
               onClick={() => setTab(x.k)}
-              className={`px-4 py-2 text-sm font-bold rounded-md transition ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-md transition whitespace-nowrap ${
                 tab === x.k ? "bg-brand text-brand-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -123,6 +123,7 @@ function AdminOrders() {
           ))}
         </div>
       </div>
+
       {tab === "expiring" && (
         <p className="text-xs text-muted-foreground mb-4">
           كل خدمة فاضل عليها شهر أو أقل قبل الانتهاء. الحساب بيبدأ من تاريخ التسليم الفعلي، أو من تاريخ الطلب لو لسه ما اتسلمش.

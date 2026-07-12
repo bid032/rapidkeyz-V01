@@ -162,14 +162,14 @@ function AdminOverview() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.overview}</h1>
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-muted-foreground">فلتر الشهر:</label>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 mb-4 sm:mb-6 sm:flex sm:flex-wrap sm:justify-between">
+        <h1 className="min-w-0 truncate text-xl sm:text-3xl font-extrabold">{t.admin.overview}</h1>
+        <div className="flex items-center gap-2 shrink-0">
+          <label className="text-[10px] sm:text-xs font-bold text-muted-foreground hidden sm:inline">فلتر الشهر:</label>
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="px-3 py-2 bg-card border border-border rounded-lg text-sm font-bold"
+            className="px-2 sm:px-3 py-1.5 sm:py-2 bg-card border border-border rounded-lg text-xs sm:text-sm font-bold"
           >
             <option value="all">كل الفترات</option>
             {monthOptions.map((m) => (
@@ -178,6 +178,7 @@ function AdminOverview() {
           </select>
         </div>
       </div>
+
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {cards.map((c) => (
