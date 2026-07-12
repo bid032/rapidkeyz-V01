@@ -73,7 +73,7 @@ export function ProductTabs({ productId, productName, description, deliveryType 
             {tab === "description" && (
               <DescriptionTab productName={productName} description={description} isAr={isAr} />
             )}
-            {tab === "reviews" && <ReviewsTab isAr={isAr} />}
+            {tab === "reviews" && <ReviewsTab isAr={isAr} productId={productId} />}
             {tab === "delivery" && <DeliveryTab deliveryType={deliveryType} isAr={isAr} />}
             {tab === "policy" && <PolicyTab isAr={isAr} />}
           </motion.div>
