@@ -19,13 +19,13 @@ export const translations = {
     },
     home: {
       badge: "متجر عربي موثوق • +12,000 طلب ناجح",
-      title1: "اشتراكات ChatGPT Plus وMidjourney",
-      title2: "وNetflix بأسعار مصرية وتسليم فوري",
+      title1: "اشتراكات ChatGPT Plus وMidjourney وNetflix الأصلية في مصر",
+      title2: "أسعار بالجنيه وتسليم فوري",
       subtitle:
-        "RapidKeyz هو متجرك العربي الأول لشراء اشتراكات ChatGPT Plus وMidjourney وNetflix وCanva Pro وأدوات الذكاء الاصطناعي ، بالجنيه المصري، تفعيل خلال دقائق، ودعم عربي 24/7 على واتساب.",
+        "RapidKeyz أول متجر مصري لبيع اشتراكات ChatGPT Plus وNetflix وMidjourney وCanva Pro وأدوات الذكاء الاصطناعي، بالجنيه المصري، تسليم خلال دقائق، ودعم فني 24/7 عبر واتساب.",
       cta: "تصفّح كل الاشتراكات",
       ctaSecondary: "تواصل معنا واتساب",
-      trending: "الأكثر مبيعاً في مصر والوطن العربي",
+      trending: "الأكثر مبيعاً في مصر والوطن العربي ، اشتراك ChatGPT وNetflix وOffice 365",
       trusted: "يثق فينا أكثر من 5000 محترف ووكالة",
       viewAll: "عرض الكل",
     },

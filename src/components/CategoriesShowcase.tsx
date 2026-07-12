@@ -44,11 +44,11 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
           {lang === "ar" ? (
             <>
-              اختر <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">قسمك</span> المفضل
+              تسوّق حسب <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">القسم</span> ، أدوات الذكاء الاصطناعي وبرامج التصميم في مصر
             </>
           ) : (
             <>
-              Pick your <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">category</span>
+              Shop by <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">category</span> , AI tools & design software in Egypt
             </>
           )}
         </h2>

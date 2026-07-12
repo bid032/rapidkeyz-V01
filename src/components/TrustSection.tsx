@@ -86,8 +86,8 @@ export function TrustSection() {
     value: Number(overrides[s.key] ?? s.value) || s.value,
   }));
 
-  const title = lang === "ar" ? "ليه آلاف العملاء بيثقوا فينا" : "Why thousands of customers trust us";
-  const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع ، مش مجرد كلام" : "Real numbers from the field ، not just words";
+  const title = lang === "ar" ? "آلاف العملاء في مصر يثقون بـ RapidKeyz لشراء اشتراكاتهم الرقمية" : "Thousands of customers in Egypt trust RapidKeyz for their digital subscriptions";
+  const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع ، مش مجرد كلام" : "Real numbers from the field , not just words";
 
   return (
     <section className="relative py-16 sm:py-24 px-3 sm:px-6 overflow-hidden">
@@ -162,11 +162,11 @@ export function TrustSection() {
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
             {lang === "ar" ? (
               <>
-                مميزات <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">تخلينا الأفضل</span>
+                ليه RapidKeyz <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">أفضل متجر اشتراكات في مصر؟</span>
               </>
             ) : (
               <>
-                Features that <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">make us the best</span>
+                Why RapidKeyz is <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">Egypt's best subscription store</span>
               </>
             )}
           </h2>
