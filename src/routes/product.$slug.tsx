@@ -174,10 +174,27 @@ function ProductPage() {
   }
   if (!product) return null;
 
+  const parseDays = (p: any): number => {
+    const d = Number(p.duration_days);
+    if (Number.isFinite(d) && d > 0) return d;
+    const s = `${p.label_en ?? ""} ${p.label_ar ?? ""}`;
+    const m = s.match(/(\d+)\s*(year|month|week|day|سنة|سنه|شهر|شهور|أسبوع|اسبوع|يوم|أيام|ايام)/i);
+    if (!m) {
+      const n = parseInt(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+    const n = parseInt(m[1]);
+    const unit = m[2].toLowerCase();
+    if (/year|سنة|سنه/.test(unit)) return n * 365;
+    if (/month|شهر|شهور/.test(unit)) return n * 30;
+    if (/week|أسبوع|اسبوع/.test(unit)) return n * 7;
+    return n;
+  };
   const plans = (product.product_plans ?? [])
     .filter((p: any) => p.is_active)
-    .sort((a: any, b: any) => Number(a.duration_days ?? 0) - Number(b.duration_days ?? 0));
+    .sort((a: any, b: any) => parseDays(a) - parseDays(b));
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
+
   const productAcctTypes = (Array.isArray((product as any).account_types)
     ? ((product as any).account_types as string[]).filter((a) => a === "private" || a === "shared" || a === "own")
     : []) as ("private" | "shared" | "own")[];
