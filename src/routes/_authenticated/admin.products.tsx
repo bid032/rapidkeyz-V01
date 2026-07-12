@@ -274,8 +274,8 @@ function AdminProducts() {
       {planEditor && <PlanEditor productId={planEditor} onClose={() => setPlanEditor(null)} />}
 
       {editing && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-6 my-8">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
             <h2 className="text-xl font-bold mb-4">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
@@ -545,8 +545,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-6 my-8">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
+      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-bold text-lg">العروض والأسعار والمخزون</h3>
