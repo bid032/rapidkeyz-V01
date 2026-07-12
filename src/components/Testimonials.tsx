@@ -24,11 +24,13 @@ export function Testimonials() {
   if (!images || images.length === 0) return null;
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-24 relative overflow-hidden">
-      {/* Ambient glow */}
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand/10 rounded-full blur-3xl pointer-events-none" />
+    <section className="relative">
+      {/* Soft gradient transition from previous section — no hard seam */}
+      <div className="pointer-events-none absolute inset-x-0 -top-24 h-48 bg-gradient-to-b from-transparent via-brand/[0.04] to-brand/[0.06]" />
+      <div className="pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 w-[900px] h-[500px] bg-brand/10 rounded-full blur-3xl" />
 
-      <div className="relative flex items-end justify-between mb-12 flex-wrap gap-4">
+      <div className="max-w-7xl mx-auto px-6 py-24 relative">
+        <div className="relative flex items-end justify-between mb-12 flex-wrap gap-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.25em] text-brand mb-3">
             {isAr ? "آراء العملاء" : "Testimonials"}
