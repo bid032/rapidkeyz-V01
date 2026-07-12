@@ -103,7 +103,7 @@ export function FAQ() {
             </>
           ) : (
             <>
-              FAQ about <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT, Netflix & Midjourney in Egypt</span>
+              FAQ about <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">ChatGPT & Midjourney in Egypt</span>
             </>
           )}
         </h2>
