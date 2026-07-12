@@ -78,7 +78,8 @@ function AuthPage() {
       }
       navigate({ to: redirect ?? "/dashboard" });
     } catch (err: any) {
-      setError(err.message ?? "Error");
+      console.error("auth failed", err);
+      setError(friendlyErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
