@@ -16,6 +16,7 @@ function AdminSettings() {
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
   const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [checkout, setCheckout] = useState<any>({ require_login: true });
   const [socials, setSocials] = useState<any>({
     facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
   });
