@@ -418,6 +418,30 @@ function CheckoutPage() {
                       )}
                     </div>
                   </div>
+                ) : gateway === "simulate" ? (
+                  <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30 text-sm leading-relaxed">
+                    {lang === "ar" ? (
+                      <>
+                        <p className="font-bold mb-2">🧪 وضع المحاكاة</p>
+                        <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
+                          <li>هيتم إنشاء الطلب بحالة <b>paid</b> فورًا بدون بوابة دفع حقيقية.</li>
+                          <li>لو المنتج تسليمه <b>instant</b>: هيتم سحب حساب متاح من المخزون تلقائيًا.</li>
+                          <li>الحساب هيتعلّم <b>sold</b> في شيت جوجل المربوط بيه.</li>
+                          <li>بيانات الحساب هتتبعت للعميل على الإيميل تلقائيًا.</li>
+                        </ol>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-bold mb-2">🧪 Simulation mode</p>
+                        <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
+                          <li>Order is created as <b>paid</b> instantly — no real gateway involved.</li>
+                          <li>Instant products auto-claim an account from inventory.</li>
+                          <li>The row is marked <b>sold</b> in its linked Google Sheet.</li>
+                          <li>Credentials are emailed to the customer automatically.</li>
+                        </ol>
+                      </>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-4">
                     {lang === "ar"
