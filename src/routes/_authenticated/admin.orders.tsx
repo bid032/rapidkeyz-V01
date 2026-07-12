@@ -30,6 +30,11 @@ function AdminOrders() {
     },
   });
 
+  const proofUrl = async (path: string) => {
+    const { data } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+
   // Compute per-order min days-remaining (over delivered items with duration)
   const expiring = useMemo(() => {
     const now = Date.now();
@@ -134,10 +139,63 @@ function AdminOrders() {
               </div>
             </div>
             {expanded === o.id && (
-              <div className="p-4 border-t border-border space-y-3">
-                {o.order_items?.map((it: any) => (
-                  <ItemRow key={it.id} item={it} onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })} />
-                ))}
+              <div className="p-4 border-t border-border space-y-4 bg-muted/30">
+                {/* Order details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">البريد:</span> <span className="font-mono">{o.customer_email}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">الهاتف:</span>{" "}
+                    <span className="font-mono">{o.customer_phone || "—"}</span>
+                    {o.customer_phone && (
+                      <a
+                        href={`https://wa.me/${String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "20")}`}
+                        target="_blank" rel="noreferrer"
+                        className="ml-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
+                      >واتساب</a>
+                    )}
+                  </div>
+                  <div><span className="text-muted-foreground">طريقة الدفع:</span> <span className="font-bold">{o.payment_gateway}</span></div>
+                  <div><span className="text-muted-foreground">رقم المُحوَّل منه:</span> <span className="font-mono">{o.payment_sender_phone || "—"}</span></div>
+                  {o.payment_reference && (
+                    <div className="md:col-span-2"><span className="text-muted-foreground">مرجع الدفع:</span> <span className="font-mono">{o.payment_reference}</span></div>
+                  )}
+                  {o.notes && (
+                    <div className="md:col-span-2"><span className="text-muted-foreground">ملاحظات:</span> {o.notes}</div>
+                  )}
+                  {o.payment_proof_url && (
+                    <div className="md:col-span-2">
+                      <button onClick={() => proofUrl(o.payment_proof_url)} className="text-sm px-3 py-1.5 bg-brand text-brand-foreground rounded font-bold">
+                        عرض إثبات الدفع
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Approve / Cancel */}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                  <button
+                    onClick={() => updateStatus.mutate({ id: o.id, status: "paid" })}
+                    disabled={o.status === "paid" || o.status === "delivered"}
+                    className="px-4 py-2 bg-success text-white rounded font-bold text-sm disabled:opacity-50"
+                  >✓ تأكيد الدفع (Paid)</button>
+                  <button
+                    onClick={() => updateStatus.mutate({ id: o.id, status: "delivered" })}
+                    disabled={o.status === "delivered"}
+                    className="px-4 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50"
+                  >تم التسليم</button>
+                  <button
+                    onClick={() => { if (confirm("تأكيد إلغاء الطلب؟")) updateStatus.mutate({ id: o.id, status: "cancelled" }); }}
+                    disabled={o.status === "cancelled"}
+                    className="px-4 py-2 bg-destructive text-white rounded font-bold text-sm disabled:opacity-50"
+                  >✗ إلغاء</button>
+                </div>
+
+                {/* Items */}
+                <div className="space-y-3 pt-2 border-t border-border">
+                  {o.order_items?.map((it: any) => (
+                    <ItemRow key={it.id} item={it} onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })} />
+                  ))}
+                </div>
               </div>
             )}
           </div>

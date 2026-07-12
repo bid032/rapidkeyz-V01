@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { notifyNewOrder } from "@/lib/notify-order.functions";
 
 export const Route = createFileRoute("/checkout")({ component: CheckoutPage });
 
@@ -153,6 +154,13 @@ function CheckoutPage() {
       // Auto-flip status when everything was auto-delivered (admins may still adjust).
       if (hasInstant && allInstantDelivered) {
         await supabase.from("orders").update({ status: "delivered" }).eq("id", order.id);
+      }
+
+      // Notify admin by email (non-blocking, best-effort)
+      try {
+        await notifyNewOrder({ data: { orderId: order.id } });
+      } catch (e) {
+        console.error("notifyNewOrder failed", e);
       }
 
       clearCart();
