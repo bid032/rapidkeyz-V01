@@ -2,6 +2,15 @@ import * as React from 'react'
 import { Html, Preview, Section } from '@react-email/components'
 import { BrandLayout, styles, Head, Heading, Text, Hr } from './_brand'
 
+function looksLikeActivationKey(v?: string | null): boolean {
+  if (!v) return false
+  const s = v.trim()
+  if (!s || s.includes('@') || /\s/.test(s)) return false
+  if (/^[A-Z0-9]{4,}(-[A-Z0-9]{4,}){1,}$/i.test(s)) return true
+  if (/^[A-Z0-9]{16,}$/.test(s)) return true
+  return false
+}
+
 interface DeliveredAccount {
   product_name: string
   plan_label: string
@@ -32,25 +41,38 @@ export const OrderDeliveredEmail = ({
       </Text>
 
       <Heading as="h2" style={styles.h2}>بيانات الحسابات</Heading>
-      {accounts.map((a, i) => (
-        <Section key={i} style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>— {a.plan_label}</span>
-          </Text>
-          {a.account_email && (
-            <Text style={styles.line}><b style={{ color: '#fff' }}>البريد:</b> <span style={styles.mono}>{a.account_email}</span></Text>
-          )}
-          {a.account_username && (
-            <Text style={styles.line}><b style={{ color: '#fff' }}>اسم المستخدم:</b> <span style={styles.mono}>{a.account_username}</span></Text>
-          )}
-          {a.account_password && (
-            <Text style={styles.line}><b style={{ color: '#fff' }}>كلمة السر:</b> <span style={styles.mono}>{a.account_password}</span></Text>
-          )}
-          {a.extra_notes && (
-            <Text style={styles.line}><b style={{ color: '#fff' }}>ملاحظات:</b> {a.extra_notes}</Text>
-          )}
-        </Section>
-      ))}
+      {accounts.map((a, i) => {
+        const email = a.account_email?.trim()
+        const username = a.account_username?.trim()
+        const password = a.account_password?.trim()
+        const rows: { label: string; value: string }[] = []
+
+        if (!email && username && !password && looksLikeActivationKey(username)) {
+          rows.push({ label: 'مفتاح التفعيل', value: username })
+        } else if (!email && !username && password && looksLikeActivationKey(password)) {
+          rows.push({ label: 'مفتاح التفعيل', value: password })
+        } else {
+          if (email) rows.push({ label: 'البريد', value: email })
+          if (username) rows.push({ label: 'اسم المستخدم', value: username })
+          if (password) rows.push({ label: 'كلمة السر', value: password })
+        }
+
+        return (
+          <Section key={i} style={styles.card}>
+            <Text style={styles.cardTitle}>
+              {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>— {a.plan_label}</span>
+            </Text>
+            {rows.map((r, ri) => (
+              <Text key={ri} style={styles.line}>
+                <b style={{ color: '#fff' }}>{r.label}:</b> <span style={styles.mono}>{r.value}</span>
+              </Text>
+            ))}
+            {a.extra_notes && (
+              <Text style={styles.line}><b style={{ color: '#fff' }}>ملاحظات:</b> {a.extra_notes}</Text>
+            )}
+          </Section>
+        )
+      })}
 
       <Hr style={styles.hr} />
       <Text style={styles.muted}>
