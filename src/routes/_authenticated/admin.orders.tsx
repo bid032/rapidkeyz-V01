@@ -1,12 +1,24 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
+  beforeLoad: async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw redirect({ to: "/auth" });
+    const { data: adminRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!adminRow) throw redirect({ to: "/admin/products" });
+  },
   component: AdminOrders,
 });
+
 
 const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "refunded"] as const;
 
