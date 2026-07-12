@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
 type Props = {
+  productId: string;
   productName: string;
   description: string | null;
   deliveryType: "instant" | "manual";
@@ -10,7 +13,7 @@ type Props = {
 
 type TabKey = "description" | "reviews" | "delivery" | "policy";
 
-export function ProductTabs({ productName, description, deliveryType }: Props) {
+export function ProductTabs({ productId, productName, description, deliveryType }: Props) {
   const { lang, t } = useApp();
   const isAr = lang === "ar";
   const [tab, setTab] = useState<TabKey>("description");
