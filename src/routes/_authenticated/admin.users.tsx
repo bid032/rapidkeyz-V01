@@ -26,12 +26,19 @@ function AdminUsers() {
   const users = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
-        .select("*, user_roles(role)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      const { data: roles, error: rolesErr } = await supabase
+        .from("user_roles")
+        .select("user_id, role");
+      if (rolesErr) throw rolesErr;
+      return (profiles ?? []).map((p: any) => ({
+        ...p,
+        user_roles: (roles ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => ({ role: r.role })),
+      }));
     },
   });
 
