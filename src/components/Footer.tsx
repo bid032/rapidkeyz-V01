@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { Phone, Mail, Facebook, Instagram, Youtube, Linkedin } from "lucide-react";
+import { BrandName } from "@/components/BrandName";
 
 // WhatsApp brand icon
 function WhatsAppIcon({ className = "" }: { className?: string }) {
@@ -102,9 +103,7 @@ export function Footer() {
                   alt="RapidKeyz"
                   className="h-9 w-9 object-contain"
                 />
-                <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
-                  RapidKeyz
-                </span>
+                <BrandName className="text-xl" />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">
                 {t.footer.tagline}
@@ -186,8 +185,8 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="px-5 sm:px-8 py-5 border-t border-border/40 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-3 text-center">
-          <p className="text-[11px] text-muted-foreground">
-            © {new Date().getFullYear()} <span className="text-foreground/80 font-medium">RapidKeyz</span>. {t.footer.rights}.
+          <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
+            © {new Date().getFullYear()} <BrandName className="text-[11px]" />. {t.footer.rights}.
           </p>
           <span className="hidden sm:inline text-muted-foreground/40">•</span>
           <p className="text-[11px] text-muted-foreground">

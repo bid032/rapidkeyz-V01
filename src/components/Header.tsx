@@ -7,6 +7,7 @@ import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { BrandName } from "@/components/BrandName";
 
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount } = useApp();
@@ -43,9 +44,7 @@ export function Header() {
         <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
             <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-8 w-8 sm:h-10 sm:w-10 object-contain shrink-0" />
-            <span className="text-base sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent truncate">
-              RapidKeyz
-            </span>
+            <BrandName className="text-base sm:text-xl truncate" />
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link to="/" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
@@ -149,7 +148,7 @@ export function Header() {
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center gap-2">
                   <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-8 w-8 object-contain" />
-                  <span className="font-extrabold">RapidKeyz</span>
+                  <BrandName className="text-lg" />
                 </div>
                 <button onClick={closeMobile} className="p-1 rounded hover:bg-muted" aria-label="Close">
                   <X className="size-4" />
