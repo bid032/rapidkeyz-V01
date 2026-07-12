@@ -39,21 +39,30 @@ function AdminCategories() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-cats-list"] });
       setForm({ slug: "", name_ar: "", name_en: "", sort_order: 0 });
-      notify("تم إضافة التصنيف", "success");
+      notify(lang === "ar" ? "تم إضافة التصنيف" : "Category added", "success");
     },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const toggle = useMutation({
     mutationFn: async (c: any) => {
-      await supabase.from("categories").update({ is_active: !c.is_active }).eq("id", c.id);
+      const { error } = await supabase.from("categories").update({ is_active: !c.is_active }).eq("id", c.id);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-cats-list"] }),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const del = useMutation({
-    mutationFn: async (id: string) => { await supabase.from("categories").delete().eq("id", id); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-cats-list"] }); notify("تم الحذف", "success"); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-cats-list"] });
+      notify(lang === "ar" ? "تم الحذف" : "Deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
