@@ -251,7 +251,10 @@ function HomePage() {
 
       <Testimonials />
 
+      <FAQ />
+
       <Footer />
+
     </div>
   );
 }
