@@ -42,17 +42,17 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-extrabold">{t.dashboard.title}</h1>
-            <p className="text-muted-foreground mt-1">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="flex items-center justify-between mb-6 sm:mb-8 gap-3 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-4xl font-extrabold">{t.dashboard.title}</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base break-all">
               {t.dashboard.welcome}, {user?.email}
             </p>
           </div>
           <button
             onClick={handleSignOut}
-            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
+            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40 shrink-0"
           >
             {t.nav.logout}
           </button>
@@ -71,15 +71,15 @@ function Dashboard() {
           )}
           <div className="space-y-4">
             {orders.data?.map((o: any) => (
-              <div key={o.id} className="p-6 bg-card border border-border rounded-2xl">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
+              <div key={o.id} className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+                <div className="flex justify-between items-start mb-4 gap-3 flex-wrap">
+                  <div className="min-w-0">
                     <div className="font-bold">{t.dashboard.order} #{o.order_number}</div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")}
                     </div>
                   </div>
-                  <div className="text-end">
+                  <div className="text-end shrink-0">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                       o.status === "delivered" || o.status === "paid" ? "bg-success/10 text-success" :
                       o.status === "pending" ? "bg-warning/10 text-warning" :
@@ -93,12 +93,12 @@ function Dashboard() {
                 <div className="space-y-2">
                   {o.order_items?.map((it: any) => (
                     <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm">
+                      <div className="flex justify-between items-center gap-2 flex-wrap">
+                        <div className="text-sm min-w-0">
                           <span className="font-bold">{it.product_name}</span>{" "}
                           <span className="text-muted-foreground">— {it.plan_label} × {it.quantity}</span>
                         </div>
-                        <div className="text-sm font-bold">{it.unit_price * it.quantity} {t.common.currency}</div>
+                        <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                       </div>
                       {it.delivered_accounts?.map((acc: any) => (
                         <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded font-mono text-xs">

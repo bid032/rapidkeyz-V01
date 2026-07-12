@@ -126,8 +126,8 @@ function AdminProducts() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-extrabold">{t.admin.products}</h1>
+      <div className="flex justify-between items-center mb-6 gap-3 flex-wrap">
+        <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.products}</h1>
         <button
           onClick={() => setEditing({ ...emptyForm })}
           className="px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow"
@@ -174,8 +174,8 @@ function AdminProducts() {
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <table className="w-full">
+      <div className="bg-card border border-border rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-muted">
             <tr className="text-start text-xs uppercase tracking-widest text-muted-foreground">
               <th className="p-4 text-start">{t.admin.name}</th>
@@ -274,8 +274,8 @@ function AdminProducts() {
       {planEditor && <PlanEditor productId={planEditor} onClose={() => setPlanEditor(null)} />}
 
       {editing && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-6 my-8">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
             <h2 className="text-xl font-bold mb-4">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
@@ -286,7 +286,7 @@ function AdminProducts() {
             </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
             >
               <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
@@ -545,8 +545,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-6 overflow-auto">
-      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-6 my-8">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur grid place-items-center p-3 sm:p-6 overflow-auto">
+      <div className="w-full max-w-3xl bg-card border border-border rounded-2xl p-4 sm:p-6 my-4 sm:my-8">
         <div className="flex justify-between items-start mb-2">
           <div>
             <h3 className="font-bold text-lg">العروض والأسعار والمخزون</h3>
@@ -669,7 +669,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
 
         <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
           <h4 className="font-bold text-sm mb-3">إضافة عرض جديد</h4>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="الاسم بالعربي">
               <input required value={form.label_ar}
                 onChange={(e) => setForm({ ...form, label_ar: e.target.value })}

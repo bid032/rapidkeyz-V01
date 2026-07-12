@@ -150,8 +150,8 @@ function AdminOverview() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-3xl font-extrabold">{t.admin.overview}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.overview}</h1>
         <div className="flex items-center gap-2">
           <label className="text-xs font-bold text-muted-foreground">فلتر الشهر:</label>
           <select
@@ -167,11 +167,11 @@ function AdminOverview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {cards.map((c) => (
-          <div key={c.label} className="p-6 bg-card border border-border rounded-2xl">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-2">{c.label}</div>
-            <div className={`text-3xl font-extrabold ${
+          <div key={c.label} className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
+            <div className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground mb-2">{c.label}</div>
+            <div className={`text-xl sm:text-3xl font-extrabold break-words ${
               c.tone === "brand" ? "text-brand" :
               c.tone === "success" ? "text-success" :
               c.tone === "warning" ? "text-warning" : ""
@@ -180,7 +180,7 @@ function AdminOverview() {
         ))}
       </div>
 
-      <section className="p-6 bg-card border border-border rounded-2xl mb-6">
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mb-6">
         <h2 className="font-bold text-lg mb-1">إعدادات الشراء</h2>
         <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
         <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer">
@@ -200,7 +200,7 @@ function AdminOverview() {
         </label>
       </section>
 
-      <section className="p-6 bg-card border border-border rounded-2xl mt-6">
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mt-6">
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
             <h2 className="font-bold text-lg">تفاصيل المبيعات</h2>

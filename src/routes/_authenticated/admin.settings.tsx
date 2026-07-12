@@ -53,9 +53,9 @@ function AdminSettings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">{t.admin.settings}</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.settings}</h1>
 
-      <section className="p-6 bg-card border border-border rounded-2xl">
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
         <h2 className="font-bold mb-1">Hero Section / سيكشن الصفحة الرئيسية</h2>
         <p className="text-xs text-muted-foreground mb-4">
           عدّل نصوص سيكشن الهيرو اللي في أعلى الصفحة الرئيسية. اتركها فارغة لاستخدام النص الافتراضي.
@@ -95,9 +95,9 @@ function AdminSettings() {
         </div>
       </section>
 
-      <section className="p-6 bg-card border border-border rounded-2xl">
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
         <h2 className="font-bold mb-4">Brand</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input placeholder="Name AR" value={brand.name_ar ?? ""}
             onChange={(e) => setBrand({ ...brand, name_ar: e.target.value })}
             className="px-3 py-2 bg-background border border-border rounded" />
@@ -113,9 +113,9 @@ function AdminSettings() {
         </div>
       </section>
 
-      <section className="p-6 bg-card border border-border rounded-2xl">
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
         <h2 className="font-bold mb-4">Contact</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <input placeholder="WhatsApp" value={contact.whatsapp ?? ""}
             onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
             className="px-3 py-2 bg-background border border-border rounded" />
@@ -128,7 +128,7 @@ function AdminSettings() {
         </div>
       </section>
 
-      <section className="p-6 bg-card border border-border rounded-2xl">
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
         <h2 className="font-bold mb-4">Payment Gateways</h2>
         <div className="space-y-2">
           {(["paymob_enabled", "kashier_enabled", "manual_enabled"] as const).map((k) => (

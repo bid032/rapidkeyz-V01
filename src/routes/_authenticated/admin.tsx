@@ -55,19 +55,19 @@ function AdminLayout() {
       <Header />
 
       {/* Creative animated title */}
-      <div className="relative max-w-7xl mx-auto px-6 pt-12 pb-6 text-center overflow-hidden">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-4 sm:pb-6 text-center overflow-hidden">
         <motion.div
           aria-hidden
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: "easeOut" }}
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[220px] bg-brand/25 blur-[110px] rounded-full"
+          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[520px] h-[160px] sm:h-[220px] bg-brand/25 blur-[110px] rounded-full"
         />
         <motion.div
           initial={{ opacity: 0, y: -14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[11px] font-bold tracking-[0.25em] uppercase mb-4"
+          className="relative inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[11px] font-bold tracking-[0.25em] uppercase mb-3 sm:mb-4"
         >
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
@@ -78,7 +78,7 @@ function AdminLayout() {
 
         <h1
           dir="rtl"
-          className="relative text-4xl md:text-6xl font-black tracking-tight leading-[1.15] flex flex-wrap justify-center gap-x-4 gap-y-2"
+          className="relative text-2xl sm:text-4xl md:text-6xl font-black tracking-tight leading-[1.15] flex flex-wrap justify-center gap-x-3 sm:gap-x-4 gap-y-2"
         >
           {words.map((word, wi) => (
             <motion.span
@@ -101,19 +101,19 @@ function AdminLayout() {
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ delay: 0.9, duration: 0.7, ease: "easeOut" }}
-          className="mx-auto mt-5 h-[3px] w-28 origin-center rounded-full bg-gradient-to-r from-transparent via-brand to-transparent"
+          className="mx-auto mt-4 sm:mt-5 h-[3px] w-20 sm:w-28 origin-center rounded-full bg-gradient-to-r from-transparent via-brand to-transparent"
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6 grid md:grid-cols-[220px_1fr] gap-8">
-        <aside className="h-fit md:sticky md:top-24 bg-card border border-border rounded-2xl p-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 grid md:grid-cols-[220px_1fr] gap-4 md:gap-8">
+        <aside className="h-fit md:sticky md:top-24 bg-card border border-border rounded-2xl p-2 sm:p-3">
           <nav className="flex md:flex-col gap-1 overflow-x-auto">
             {links.map((l) => (
               <Link
                 key={l.to}
                 to={l.to as string}
                 activeOptions={{ exact: !!l.exact }}
-                className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted whitespace-nowrap transition flex items-center justify-between gap-2"
+                className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-muted whitespace-nowrap transition flex items-center justify-between gap-2 shrink-0"
                 activeProps={{ className: "bg-brand/10 text-brand" }}
               >
                 <span>{l.label}</span>

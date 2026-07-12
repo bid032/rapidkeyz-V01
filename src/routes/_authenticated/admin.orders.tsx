@@ -119,10 +119,10 @@ function AdminOrders() {
       <div className="space-y-3">
         {visible.map(({ order: o, minDays }) => (
           <div key={o.id} className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-4 flex flex-wrap justify-between items-center gap-3">
-              <div>
+            <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
+              <div className="min-w-0">
                 <div className="font-bold">#{o.order_number}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground break-all">
                   {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")} · {o.customer_email}
                 </div>
                 {minDays !== null && (
@@ -133,7 +133,7 @@ function AdminOrders() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <select value={o.status}
                   onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
                   className="px-3 py-1.5 bg-background border border-border rounded text-sm">
@@ -235,15 +235,15 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
 
   return (
     <div className="p-4 bg-background border border-border rounded-xl">
-      <div className="flex justify-between mb-2">
-        <div className="text-sm">
+      <div className="flex justify-between mb-2 gap-2 flex-wrap">
+        <div className="text-sm min-w-0">
           <span className="font-bold">{item.product_name}</span>{" "}
           <span className="text-muted-foreground">— {item.plan_label} × {item.quantity}</span>
           <span className={`ml-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
           </span>
         </div>
-        <div className="text-sm font-bold">{item.unit_price} EGP</div>
+        <div className="text-sm font-bold shrink-0">{item.unit_price} EGP</div>
       </div>
       {item.subscription_email && (
         <div className="text-xs mb-2">
@@ -264,7 +264,7 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
           ))}
         </div>
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-2 gap-2 mt-2">
+        <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           <input placeholder="Account email" value={creds.account_email}
             onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
             className="px-3 py-2 bg-card border border-border rounded text-sm" />
@@ -277,7 +277,7 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
           <input placeholder="Notes" value={creds.extra_notes}
             onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
             className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <button type="submit" className="col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
+          <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
             Deliver credentials
           </button>
         </form>
