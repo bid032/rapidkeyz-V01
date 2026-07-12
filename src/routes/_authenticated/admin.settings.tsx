@@ -16,6 +16,12 @@ function AdminSettings() {
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
   const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [socials, setSocials] = useState<any>({
+    facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
+  });
+  const [stats, setStats] = useState<any>({
+    years: 3, staff: 5, services: 30, orders: 12000, customers: 2100,
+  });
   const [hero, setHero] = useState<any>({
     badge_ar: "", badge_en: "",
     title1_ar: "", title1_en: "",
