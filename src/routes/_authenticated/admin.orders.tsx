@@ -13,7 +13,7 @@ const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "re
 type Tab = "all" | "expiring";
 
 function AdminOrders() {
-  const { t, lang } = useApp();
+  const { t, lang, confirm } = useApp();
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("all");
