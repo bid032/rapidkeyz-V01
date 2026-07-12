@@ -165,7 +165,7 @@ export function Footer() {
               label="WhatsApp"
               value={phoneDisplay}
               tone="whatsapp"
-              icon={<MessageCircle className="size-5" />}
+              icon={<WhatsAppIcon className="size-5" />}
             />
             <ContactRow
               href={`tel:${phoneDigits}`}
