@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { getSheetInfo } from "@/lib/sheet-sync.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   component: AdminInventory,
@@ -36,8 +37,8 @@ function parseCsv(text: string): string[][] {
  * email, username/user, password/pass, key/code/license/product, notes/note (case-insensitive).
  * "status" column is ignored (managed by the system).
  * If a column doesn't match any known header, it's kept as a fallback. */
-function mapRows(rows: string[][]) {
-  if (rows.length === 0) return [];
+function mapRows(rows: string[][]): { records: any[]; statusColIdx: number } {
+  if (rows.length === 0) return { records: [], statusColIdx: -1 };
   const header = rows[0].map((h) => h.trim().toLowerCase());
   const findIdx = (matchers: string[]) =>
     header.findIndex((h) => matchers.some((m) => h === m || h.includes(m)));
@@ -49,7 +50,6 @@ function mapRows(rows: string[][]) {
   const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
   const iStatus = findIdx(["status", "state", "حالة"]);
 
-  // Fallback: if none of email/user/pass/key matched, treat first non-status column as key.
   const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
   const iFallback = iE < 0 && iU < 0 && iP < 0 && iK < 0
     ? header.findIndex((_, i) => !used.has(i))
@@ -57,24 +57,36 @@ function mapRows(rows: string[][]) {
 
   const clean = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() || null : null);
 
-  return rows
+  const records = rows
     .slice(1)
-    .map((r) => {
+    .map((r, idx) => {
       const email = clean(r, iE);
       const pass = clean(r, iP);
       const notes = clean(r, iN);
-      // Prefer explicit username, then key/code, then fallback column.
       const usernameOrKey = clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback);
       return {
         account_email: email,
         account_username: usernameOrKey,
         account_password: pass,
         extra_notes: notes,
+        _srcRowIndex: idx + 2, // header is row 1
       };
     })
     .filter((rec) =>
       rec.account_email || rec.account_username || rec.account_password || rec.extra_notes
     );
+  return { records, statusColIdx: iStatus };
+}
+
+/** Convert 0-based column index to A1 letter (0=A, 25=Z, 26=AA...). */
+function colIdxToLetter(idx: number): string {
+  let n = idx;
+  let s = "";
+  while (n >= 0) {
+    s = String.fromCharCode((n % 26) + 65) + s;
+    n = Math.floor(n / 26) - 1;
+  }
+  return s;
 }
 
 
@@ -193,7 +205,10 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     setBusy(true);
     try {
       const batchId = (crypto as any).randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
-      const payload = records.map((r) => ({ ...r, plan_id: planId, source, import_batch_id: batchId }));
+      const payload = records.map((r) => {
+        const { _srcRowIndex, ...rest } = r;
+        return { ...rest, plan_id: planId, source, import_batch_id: batchId };
+      });
       const { error } = await supabase.from("account_inventory").insert(payload);
       if (error) throw error;
       const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
@@ -211,8 +226,8 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
 
   const handleFile = async (file: File) => {
     const text = await file.text();
-    const parsed = mapRows(parseCsv(text));
-    await insertRows(parsed, "csv");
+    const { records } = mapRows(parseCsv(text));
+    await insertRows(records, "csv");
   };
 
   const normalizeSheetUrl = (raw: string): string => {
@@ -238,9 +253,41 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       if (/^\s*<(!doctype|html)/i.test(text)) {
         throw new Error("اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link — Viewer، أو File → Share → Publish to web → CSV.");
       }
-      const parsed = mapRows(parseCsv(text));
+      const { records, statusColIdx } = mapRows(parseCsv(text));
+
+      // Try to attach sheet metadata for auto-sync-on-sold.
+      const idMatch = sheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      const gidMatch = sheetUrl.match(/[#&?]gid=([0-9]+)/);
+      const spreadsheetId = idMatch?.[1] ?? null;
+      const gid = gidMatch ? Number(gidMatch[1]) : 0;
+
+      let sheetTitle: string | null = null;
+      if (spreadsheetId) {
+        try {
+          const info = await getSheetInfo({ data: { spreadsheetId } });
+          sheetTitle = info.sheets.find((s: any) => s.gid === gid)?.title ?? info.sheets[0]?.title ?? null;
+        } catch (e) {
+          console.warn("getSheetInfo failed", e);
+        }
+      }
+
+      const statusColLetter = statusColIdx >= 0 ? colIdxToLetter(statusColIdx) : null;
+      const canSync = !!(spreadsheetId && sheetTitle && statusColLetter);
+
+      const enriched = records.map((r: any) => ({
+        ...r,
+        spreadsheet_id: canSync ? spreadsheetId : null,
+        sheet_title: canSync ? sheetTitle : null,
+        sheet_row_index: canSync ? r._srcRowIndex : null,
+        status_column_letter: canSync ? statusColLetter : null,
+      }));
+
       await supabase.from("product_plans").update({ sheet_csv_url: sheetUrl.trim() }).eq("id", planId);
-      await insertRows(parsed, "sheet");
+      await insertRows(enriched, "sheet");
+
+      if (!canSync) {
+        notify("تم الاستيراد بدون مزامنة تلقائية. أضف عمود اسمه 'status' في الشيت عشان يتحدّث تلقائيًا لما يتباع.", "info");
+      }
     } catch (e: any) {
       notify(`تعذر قراءة الشيت: ${e.message}`, "error");
     } finally {
