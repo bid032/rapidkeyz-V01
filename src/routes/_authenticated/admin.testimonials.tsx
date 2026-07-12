@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUpload } from "@/components/ImageUpload";
 import { useApp } from "@/contexts/AppContext";
+import { showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/testimonials")({
   component: AdminTestimonials,
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/testimonials")({
 
 function AdminTestimonials() {
   const qc = useQueryClient();
-  const { confirm } = useApp();
+  const { confirm, notify, lang } = useApp();
 
   const list = useQuery({
     queryKey: ["admin-testimonials"],
