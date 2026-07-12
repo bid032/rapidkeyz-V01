@@ -409,7 +409,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       {(() => {
         const COLS: { key: string; label: string; mask?: boolean }[] = [
           { key: "account_email", label: "Email" },
-          { key: "account_username", label: "User" },
+          { key: "account_username", label: "Key / User" },
           { key: "account_password", label: "Pass", mask: true },
           { key: "extra_notes", label: "Notes" },
         ];
