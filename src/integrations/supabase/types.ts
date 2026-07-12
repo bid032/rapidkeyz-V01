@@ -437,6 +437,7 @@ export type Database = {
           description_ar: string | null
           description_en: string | null
           discount_percent: number
+          google_spreadsheet_id: string | null
           icon_url: string | null
           id: string
           is_featured: boolean
@@ -457,6 +458,7 @@ export type Database = {
           description_ar?: string | null
           description_en?: string | null
           discount_percent?: number
+          google_spreadsheet_id?: string | null
           icon_url?: string | null
           id?: string
           is_featured?: boolean
@@ -477,6 +479,7 @@ export type Database = {
           description_ar?: string | null
           description_en?: string | null
           discount_percent?: number
+          google_spreadsheet_id?: string | null
           icon_url?: string | null
           id?: string
           is_featured?: boolean
