@@ -100,22 +100,21 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
                     : "border-border bg-card hover:border-brand/60"
                 }`}
               >
-                {/* animated conic gradient border on hover */}
+                {/* gradient border glow on hover */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{
                     background:
-                      "conic-gradient(from var(--angle,0deg), transparent 0deg, var(--brand) 60deg, transparent 120deg, transparent 240deg, var(--brand-deep) 300deg, transparent 360deg)",
-                    maskImage:
+                      "linear-gradient(135deg, var(--brand) 0%, transparent 40%, transparent 60%, var(--brand-deep) 100%)",
+                    WebkitMask:
                       "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
                     WebkitMaskComposite: "xor",
                     maskComposite: "exclude",
                     padding: 1,
-                    borderRadius: "1rem",
-                    animation: "spin 6s linear infinite",
                   }}
                 />
+
 
                 {/* glow blobs */}
                 <div className="pointer-events-none absolute -top-16 -end-16 size-40 rounded-full bg-brand/25 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
