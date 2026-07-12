@@ -30,6 +30,11 @@ function AdminOrders() {
     },
   });
 
+  const proofUrl = async (path: string) => {
+    const { data } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+
   // Compute per-order min days-remaining (over delivered items with duration)
   const expiring = useMemo(() => {
     const now = Date.now();
