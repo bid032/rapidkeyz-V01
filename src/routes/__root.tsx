@@ -169,6 +169,7 @@ function RootComponent() {
       <AppProvider>
         <SplashLoader />
         <Outlet />
+        <GsapEffects />
         <WhatsAppFloat />
       </AppProvider>
     </QueryClientProvider>
