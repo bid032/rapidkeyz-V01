@@ -26,8 +26,12 @@ export type Database = {
           id: string
           import_batch_id: string | null
           plan_id: string
+          sheet_row_index: number | null
+          sheet_title: string | null
           source: string
+          spreadsheet_id: string | null
           status: string
+          status_column_letter: string | null
         }
         Insert: {
           account_email?: string | null
@@ -40,8 +44,12 @@ export type Database = {
           id?: string
           import_batch_id?: string | null
           plan_id: string
+          sheet_row_index?: number | null
+          sheet_title?: string | null
           source?: string
+          spreadsheet_id?: string | null
           status?: string
+          status_column_letter?: string | null
         }
         Update: {
           account_email?: string | null
@@ -54,8 +62,12 @@ export type Database = {
           id?: string
           import_batch_id?: string | null
           plan_id?: string
+          sheet_row_index?: number | null
+          sheet_title?: string | null
           source?: string
+          spreadsheet_id?: string | null
           status?: string
+          status_column_letter?: string | null
         }
         Relationships: [
           {
