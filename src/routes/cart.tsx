@@ -3,7 +3,16 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 
-export const Route = createFileRoute("/cart")({ component: CartPage });
+export const Route = createFileRoute("/cart")({
+  head: () => ({
+    meta: [
+      { title: "سلة التسوق — RapidKeyz" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
+  component: CartPage,
+});
+
 
 function CartPage() {
   const { t, cart, removeFromCart, updateQty, cartTotal } = useApp();

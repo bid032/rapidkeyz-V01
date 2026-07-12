@@ -1,70 +1,72 @@
-# خطة التنفيذ
+# خطة تحسين SEO لموقع RapidKeyz
 
-## 1) ريسبونسيف الفون في كل الموقع
+هدف الخطة: رفع ظهور الموقع في نتائج جوجل للكلمات المفتاحية العربية المتعلقة باشتراكات ChatGPT وMidjourney وNetflix وأدوات الذكاء الاصطناعي، وتحسين تجربة الزحف والفهرسة والمشاركة على السوشيال.
 
-### الهيدر (مشكلة كبيرة)
-- الهيدر حالياً مفيهوش قائمة موبايل خالص — لينكات (الرئيسية / المتجر / من نحن) مخفية على الفون.
-- هضيف زرار Hamburger + Drawer/Sheet فيه كل اللينكات + زرار تسجيل الدخول.
+## 1) البنية التحتية للفهرسة (Crawling & Indexing)
+- إنشاء `src/routes/sitemap[.]xml.ts` يولّد Sitemap ديناميكي يشمل: الصفحة الرئيسية، `/shop`، `/about`، `/terms`، `/privacy`، وكل صفحات المنتجات `/product/$slug` مأخوذة من قاعدة البيانات (فقط المنتجات `status = active`).
+- إنشاء/تحديث `public/robots.txt` للسماح بالزحف مع منع مسارات الأدمن والمصادقة، وإضافة رابط الـSitemap بعد نشر الدومين.
+- إضافة Canonical URL لكل صفحة (نسبي حالياً حتى يُثبَّت الدومين).
+- ربط Google Search Console والتحقق عبر meta tag بعد النشر.
 
-### الصفحات العامة
-- `index.tsx` (Home) — تظبيط `px-6/py-24` → `px-3 sm:px-6 py-12 sm:py-24`، تدرج أحجام العناوين `text-3xl sm:text-5xl md:text-7xl`.
-- `about.tsx`, `privacy.tsx`, `terms.tsx`, `auth.tsx`, `cart.tsx`, `checkout.tsx`, `product.$slug.tsx`, `shop.tsx` — نفس المعالجة (padding + typography scale).
-- `Footer.tsx` — `px-3 sm:px-6`.
+## 2) ميتاداتا لكل صفحة (Head Metadata)
+- كل route يحصل على `title` و`description` و`og:title` و`og:description` و`og:type` و`og:url` فريدة.
+- الصفحات المستهدفة:
+  - `/` — الصفحة الرئيسية (Keyword: اشتراكات ذكاء اصطناعي، شحن ChatGPT Plus مصر).
+  - `/shop` — المتجر (Keyword: متجر اشتراكات رقمية).
+  - `/product/$slug` — ديناميكي من بيانات المنتج (اسم + وصف + سعر + صورة).
+  - `/about`, `/terms`, `/privacy`, `/auth`, `/cart`, `/checkout` (الأخيرة `noindex`).
+- استخدام `og:image` من `icon_url` للمنتج على leaf routes فقط.
 
-### الداشبورد (Admin)
-- `admin.index.tsx` — الهيدر `flex flex-wrap` → `grid-cols-[minmax(0,1fr)_auto]` + `min-w-0` + `truncate`.
-- `admin.orders.tsx` — تغليف الجدول في `overflow-x-auto` مع `min-w-[720px]`، تظبيط الفلاتر تتكدس عمودياً.
-- `admin.products.tsx`, `admin.inventory.tsx`, `admin.categories.tsx`, `admin.testimonials.tsx` — نفس المعالجة (جداول قابلة للسحب أفقياً، فورمز تتكدس على الموبايل، Dialog padding مضغوط).
-- `dashboard.tsx` (يوزر) — نفس المعالجة.
-- سايدبار الأدمن — بدل الصف الأفقي القابل للسكرول، هعمله Sheet جانبي على الموبايل مع زرار قائمة، ويرجع سايدبار عادي من `md:` فوق.
+## 3) البيانات المنظمة (JSON-LD Structured Data)
+- `__root.tsx`: Organization + WebSite (مع SearchAction).
+- `/product/$slug`: Product schema (name, description, image, offers.price, priceCurrency=EGP, availability, aggregateRating من التقييمات إن وجدت).
+- `/shop`: BreadcrumbList + ItemList.
+- الصفحة الرئيسية: FAQPage للأسئلة الشائعة إن أُضيفت.
 
-## 2) أنيميشن الهوم بيدج
+## 4) المحتوى والكلمات المفتاحية
+- كتابة أوصاف عربية غنية (150-160 حرفاً) لكل منتج ولكل صفحة.
+- إضافة H1 واحد واضح لكل صفحة (حالياً الرئيسية بها H1 لكن باقي الصفحات تحتاج مراجعة).
+- استخدام هيكل عناوين هرمي H1 → H2 → H3.
+- إضافة قسم FAQ في الصفحة الرئيسية أو صفحة المنتج.
 
-استخدام `framer-motion` (متركب بالفعل) لعمل reveals متتالية:
-- **الهيرو**: البادج، السطر الأول من العنوان، السطر التاني، الوصف، أزرار CTA، صف "موثوق من..." — كلهم fade + slide-up بترتيب متتالي (stagger 0.1s).
-- **صف الأقسام (Pills)** — stagger fade-in.
-- **عنوان "الأكثر رواجاً"** — fade-in-up مع scroll (`whileInView`).
-- **كروت المنتجات** — stagger fade + zoom خفيف عند الظهور في الشاشة.
-- **سكشن التقييمات** — fade-in عند الـ scroll.
-- Hover على الكروت — scale خفيف (1.02) + shadow.
+## 5) الأداء (Core Web Vitals)
+- إضافة `loading="lazy"` و`width/height` لكل الصور.
+- تحويل الصور إلى WebP/AVIF عند الإمكان.
+- تقليل حجم الـfonts (تحميل أوزان `IBM Plex Sans Arabic` المستخدمة فعلاً فقط: 400/500/700 مثلاً بدلاً من 5 أوزان).
+- استخدام `font-display: swap` (موجود بالفعل عبر Google Fonts).
 
-## 3) الهيرو في الإعدادات — إظهار القيم الحالية
+## 6) إمكانية الوصول والـSemantic HTML
+- استخدام عناصر `<main>`, `<nav>`, `<article>`, `<section>` بشكل صحيح.
+- `alt` نصي وصفي لكل الصور (خاصة أيقونات المنتجات).
+- `aria-label` للأزرار الأيقونية (WhatsApp Float, إلخ).
+- `lang="ar"` و`dir="rtl"` موجودان على `<html>` — جيد.
 
-المشكلة: خانات الهيرو في `admin.settings.tsx` بتظهر فاضية والـ placeholder بس بيقول اسم الحقل، فالأدمن مش عارف الظاهر حالياً على الموقع إيه.
+## 7) SEO المحلي والدولي
+- إضافة `hreflang` لو أُضيفت نسخة إنجليزية منفصلة (حالياً i18n داخل نفس الصفحة، لذا يكفي `lang="ar"`).
+- إضافة `geo.region` meta tag لمصر إن كان الاستهداف مصرياً.
 
-الحل:
-- تعديل الـ state initial values في `admin.settings.tsx` بحيث لو الـ DB مفيهوش قيمة، يتم استخدام النص الافتراضي من `i18n.ts` (نفس النص الظاهر للزائر).
-- إظهار قيمة السطر الحالي في `site_settings.hero` لو موجودة، وإلا الفولباك من `t.home.*`.
-- تحت كل input هيبقى فيه سطر صغير رمادي بيقول: "الظاهر حالياً على الموقع: {النص}" علشان الأدمن يبقى فاهم بيعدل إيه.
+## 8) Social & Sharing
+- توليد صورة `og:image` احترافية للصفحة الرئيسية (1200×630) وحفظها في `public/`.
+- التأكد من `twitter:card` = `summary_large_image` مع `twitter:image`.
 
-## 4) دور مودريتور (Moderator) جديد
+## 9) الروابط الداخلية
+- ربط المنتجات المرتبطة في `/product/$slug`.
+- إضافة breadcrumbs مرئية في صفحات المنتج والمتجر.
+- روابط داخلية من الـFooter لأهم الفئات.
 
-### تغييرات قاعدة البيانات (Migration)
-- إضافة قيمة `moderator` لـ enum `app_role`.
-- سياسات RLS الحالية بتفحص `has_role(admin)` فقط، فالمودريتور تلقائياً مش هيقدر يعدل جداول محمية بالأدمن (orders, user_roles, ..) — ده تأمين على مستوى الداتابيز.
+## 10) تشغيل فحص SEO
+- بعد التطبيق: تشغيل SEO scan داخلي وإصلاح ما يظهر من findings.
 
-### تغييرات الكود
-- `admin.tsx` (الـ layout gate): بدل ما يفحص `admin` بس، يسمح للـ `admin` والـ `moderator` بالدخول، ويحفظ الدور في `Route context`.
-- فلترة السايدبار حسب الدور:
-  - **مودريتور مش هيشوف**: نظرة عامة (Overview / `/admin`)، الأوردرات، اليوزرز.
-  - **مودريتور هيشوف**: Products, Categories, Inventory, Testimonials, Settings.
-- إعادة توجيه صفحة `/admin` (Overview) الافتراضية للمودريتور تروح `/admin/products`.
-- إضافة `beforeLoad` guard على `admin.index.tsx`, `admin.orders.tsx`, `admin.users.tsx` يطرد المودريتور لو حاول يفتحهم مباشرة من الـ URL.
-- في `admin.users.tsx` (مع إن المودريتور أصلاً مش هيوصلها) — حماية إضافية من الـ RLS بتمنع أي تعديل غير الأدمن.
+---
 
-## تفاصيل تقنية
-- الأنيميشن: `motion.div` + `initial={{ opacity: 0, y: 20 }}` + `whileInView={{ opacity: 1, y: 0 }}` + `viewport={{ once: true }}` + `transition={{ delay, duration }}`.
-- الـ Sheet الجانبي في الأدمن: استخدام `@/components/ui/sheet` (shadcn) الموجود.
-- Migration الـ enum:
-  ```sql
-  ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'moderator';
-  ```
-- الـ role check في الـ layout: query واحد يجيب كل الأدوار للـ user ويرجعهم في context.
+## Technical Implementation Order
+1. Sitemap ديناميكي + robots.txt.
+2. Head metadata لكل route + canonical + og:url.
+3. JSON-LD (Organization, WebSite, Product, BreadcrumbList).
+4. Alt texts + aria-labels + lazy loading.
+5. Breadcrumbs مرئية.
+6. FAQ section + Related products.
+7. og:image افتراضي.
+8. تشغيل SEO scan نهائي.
 
-## الترتيب
-1. Migration الـ role الجديد (أول حاجة علشان الباقي يبني عليها).
-2. تعديل `admin.tsx` gate وإضافة role context + فلترة السايدبار + Sheet للموبايل.
-3. Guards على صفحات الأدمن المحظورة.
-4. تعديل `admin.settings.tsx` (الهيرو prefill).
-5. الأنيميشن في `index.tsx`.
-6. باس الريسبونسيف على كل الصفحات العامة والأدمن.
+هل توافق على تنفيذ الخطة كاملة أم تفضل البدء بمرحلة معينة أولاً؟

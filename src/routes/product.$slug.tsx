@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate, notFound } from "@tanstack/react-router";
+
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/Header";
@@ -10,6 +11,86 @@ import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/product/$slug")({
+  loader: async ({ params }) => {
+    try {
+      const { data } = await supabase
+        .from("products")
+        .select(
+          "slug, name_ar, name_en, description_ar, description_en, icon_url, product_plans(price, is_active)",
+        )
+        .eq("slug", params.slug)
+        .eq("status", "active")
+        .maybeSingle();
+      if (!data) return null;
+      const active = ((data as any).product_plans ?? []).filter((p: any) => p.is_active);
+      const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+      return {
+        slug: data.slug as string,
+        name_ar: data.name_ar as string,
+        name_en: data.name_en as string,
+        description_ar: (data as any).description_ar as string | null,
+        description_en: (data as any).description_en as string | null,
+        icon_url: (data as any).icon_url as string | null,
+        minPrice: cheapest ? Number(cheapest.price) : null,
+      };
+    } catch {
+      return null;
+    }
+  },
+  head: ({ params, loaderData }) => {
+    const p = loaderData;
+    if (!p) {
+      return {
+        meta: [
+          { title: "المنتج غير موجود — RapidKeyz" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
+    }
+    const name = p.name_ar || p.name_en;
+    const nameEn = p.name_en || p.name_ar;
+    const desc =
+      (p.description_ar || p.description_en || `اشتراك ${name} أصلي بأفضل سعر وتسليم فوري من RapidKeyz.`)
+        .toString()
+        .slice(0, 160);
+    const title = `${name} — اشتراك أصلي بأفضل سعر | RapidKeyz`;
+    const url = `/product/${params.slug}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: `${name} | RapidKeyz` },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        ...(p.icon_url ? [{ property: "og:image", content: p.icon_url }] : []),
+        ...(p.icon_url ? [{ name: "twitter:image", content: p.icon_url }] : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: nameEn,
+            description: p.description_en || p.description_ar || undefined,
+            image: p.icon_url || undefined,
+            brand: { "@type": "Brand", name: "RapidKeyz" },
+            offers: p.minPrice
+              ? {
+                  "@type": "Offer",
+                  price: p.minPrice,
+                  priceCurrency: "EGP",
+                  availability: "https://schema.org/InStock",
+                  url,
+                }
+              : undefined,
+          }),
+        },
+      ],
+    };
+  },
   component: ProductPage,
   notFoundComponent: () => (
     <div className="min-h-screen grid place-items-center bg-background text-foreground">
@@ -18,17 +99,6 @@ export const Route = createFileRoute("/product/$slug")({
   ),
 });
 
-async function fetchProduct(slug: string) {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*, product_plans(*)")
-    .eq("slug", slug)
-    .eq("status", "active")
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) throw notFound();
-  return data;
-}
 
 function ProductPage() {
   const { slug } = Route.useParams();
@@ -36,8 +106,19 @@ function ProductPage() {
   const navigate = useNavigate();
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
-    queryFn: () => fetchProduct(slug),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, product_plans(*)")
+        .eq("slug", slug)
+        .eq("status", "active")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw notFound();
+      return data;
+    },
   });
+
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
 

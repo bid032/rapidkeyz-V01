@@ -4,8 +4,15 @@ import { Header } from "@/components/Header";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
+  head: () => ({
+    meta: [
+      { title: "إعادة تعيين كلمة المرور — RapidKeyz" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ResetPasswordPage,
 });
+
 
 function ResetPasswordPage() {
   const navigate = useNavigate();

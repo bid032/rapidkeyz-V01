@@ -7,12 +7,20 @@ import { useApp } from "@/contexts/AppContext";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Refund & Privacy — الاسترداد والخصوصية | RapidKeyz" },
-      { name: "description", content: "سياسة الإلغاء والاسترداد وسياسة الخصوصية في RapidKeyz." },
+      { title: "الاسترداد والخصوصية — Refund & Privacy | RapidKeyz" },
+      {
+        name: "description",
+        content: "سياسة الإلغاء والاسترداد وسياسة الخصوصية في RapidKeyz.",
+      },
+      { property: "og:title", content: "الاسترداد والخصوصية — RapidKeyz" },
+      { property: "og:description", content: "كيفية تعاملنا مع بياناتك وسياسة الاسترداد." },
+      { property: "og:url", content: "/privacy" },
     ],
+    links: [{ rel: "canonical", href: "/privacy" }],
   }),
   component: PrivacyPage,
 });
+
 
 function PrivacyPage() {
   const { t } = useApp();
