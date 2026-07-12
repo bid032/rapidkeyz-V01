@@ -36,8 +36,8 @@ function parseCsv(text: string): string[][] {
  * email, username/user, password/pass, key/code/license/product, notes/note (case-insensitive).
  * "status" column is ignored (managed by the system).
  * If a column doesn't match any known header, it's kept as a fallback. */
-function mapRows(rows: string[][]) {
-  if (rows.length === 0) return [];
+function mapRows(rows: string[][]): { records: any[]; statusColIdx: number } {
+  if (rows.length === 0) return { records: [], statusColIdx: -1 };
   const header = rows[0].map((h) => h.trim().toLowerCase());
   const findIdx = (matchers: string[]) =>
     header.findIndex((h) => matchers.some((m) => h === m || h.includes(m)));
@@ -49,7 +49,6 @@ function mapRows(rows: string[][]) {
   const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
   const iStatus = findIdx(["status", "state", "حالة"]);
 
-  // Fallback: if none of email/user/pass/key matched, treat first non-status column as key.
   const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
   const iFallback = iE < 0 && iU < 0 && iP < 0 && iK < 0
     ? header.findIndex((_, i) => !used.has(i))
@@ -57,24 +56,36 @@ function mapRows(rows: string[][]) {
 
   const clean = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() || null : null);
 
-  return rows
+  const records = rows
     .slice(1)
-    .map((r) => {
+    .map((r, idx) => {
       const email = clean(r, iE);
       const pass = clean(r, iP);
       const notes = clean(r, iN);
-      // Prefer explicit username, then key/code, then fallback column.
       const usernameOrKey = clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback);
       return {
         account_email: email,
         account_username: usernameOrKey,
         account_password: pass,
         extra_notes: notes,
+        _srcRowIndex: idx + 2, // header is row 1
       };
     })
     .filter((rec) =>
       rec.account_email || rec.account_username || rec.account_password || rec.extra_notes
     );
+  return { records, statusColIdx: iStatus };
+}
+
+/** Convert 0-based column index to A1 letter (0=A, 25=Z, 26=AA...). */
+function colIdxToLetter(idx: number): string {
+  let n = idx;
+  let s = "";
+  while (n >= 0) {
+    s = String.fromCharCode((n % 26) + 65) + s;
+    n = Math.floor(n / 26) - 1;
+  }
+  return s;
 }
 
 
