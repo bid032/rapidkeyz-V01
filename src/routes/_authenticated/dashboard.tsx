@@ -13,6 +13,41 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+type CredRow = { label: string; value: string };
+
+function looksLikeActivationKey(v?: string | null): boolean {
+  if (!v) return false;
+  const s = v.trim();
+  if (!s || s.includes("@") || /\s/.test(s)) return false;
+  if (/^[A-Z0-9]{4,}(-[A-Z0-9]{4,}){1,}$/i.test(s)) return true;
+  if (/^[A-Z0-9]{16,}$/.test(s)) return true;
+  return false;
+}
+
+function buildCredentialRows(acc: any, lang: "ar" | "en"): CredRow[] {
+  const L = (ar: string, en: string) => (lang === "ar" ? ar : en);
+  const rows: CredRow[] = [];
+  const email = acc.account_email?.trim();
+  const username = acc.account_username?.trim();
+  const password = acc.account_password?.trim();
+
+  // Activation-key detection: a lone key value stored in username or password.
+  if (!email && username && !password && looksLikeActivationKey(username)) {
+    rows.push({ label: L("مفتاح التفعيل", "Activation Key"), value: username });
+    return rows;
+  }
+  if (!email && !username && password && looksLikeActivationKey(password)) {
+    rows.push({ label: L("مفتاح التفعيل", "Activation Key"), value: password });
+    return rows;
+  }
+
+  if (email) rows.push({ label: L("البريد", "Email"), value: email });
+  if (username) rows.push({ label: L("اسم المستخدم", "Username"), value: username });
+  if (password) rows.push({ label: L("كلمة السر", "Password"), value: password });
+  return rows;
+}
+
+
 function Dashboard() {
   const { t, lang } = useApp();
   const [user, setUser] = useState<User | null>(null);
