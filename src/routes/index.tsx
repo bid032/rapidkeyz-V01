@@ -185,7 +185,9 @@ function HomePage() {
           >
             <Link
               to="/shop"
-              className="group relative w-full sm:w-auto px-8 py-4 bg-brand text-brand-foreground font-bold rounded-xl transition-all duration-300 hover:scale-[1.03] active:scale-95 shadow-[0_0_20px_-4px_color-mix(in_oklab,var(--brand)_50%,transparent)] hover:shadow-[0_0_30px_-4px_color-mix(in_oklab,var(--brand)_70%,transparent)] text-center"
+              data-gsap="magnetic"
+              data-strength="0.35"
+              className="group relative w-full sm:w-auto px-8 py-4 bg-brand text-brand-foreground font-bold rounded-xl transition-shadow duration-300 shadow-[0_0_20px_-4px_color-mix(in_oklab,var(--brand)_50%,transparent)] hover:shadow-[0_0_40px_-4px_color-mix(in_oklab,var(--brand)_80%,transparent)] text-center"
             >
               {hero.cta}
             </Link>
@@ -193,6 +195,8 @@ function HomePage() {
               href="https://wa.me/201284234815"
               target="_blank"
               rel="noopener noreferrer"
+              data-gsap="magnetic"
+              data-strength="0.25"
               className="w-full sm:w-auto px-8 py-4 bg-card/50 hover:bg-card border border-border text-foreground font-medium rounded-xl transition-all flex items-center justify-center gap-2"
             >
               <span>{hero.ctaSecondary}</span>
