@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
