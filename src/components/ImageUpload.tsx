@@ -142,7 +142,11 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
       </div>
       {requireExactDimensions ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط (نسبة 4:5). أي مقاس مختلف مش هيتقبل.
+          مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط. أي مقاس مختلف مش هيتقبل.
+        </p>
+      ) : requireAspectRatio ? (
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          نسبة الصورة لازم تكون {requireAspectRatio.w}:{requireAspectRatio.h} (أي مقاس بالنسبة دي مقبول، مثال: 1080×1350، 800×1000، 1600×2000).
         </p>
       ) : size > 0 ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
