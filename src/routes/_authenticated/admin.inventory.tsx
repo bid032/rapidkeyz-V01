@@ -122,7 +122,7 @@ function AdminInventory() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-2">مخزون التسليم الفوري</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">مخزون التسليم الفوري</h1>
       <p className="text-sm text-muted-foreground mb-6">
         كل خدمة "تسليم فوري" لازم يكون لها مخزون حسابات جاهزة. لما العميل يشتري، النظام هيسحب أول حساب متاح تلقائيًا ويثبّت الطلب "تم التسليم".
         <br />

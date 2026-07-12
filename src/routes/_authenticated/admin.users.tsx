@@ -36,7 +36,7 @@ function AdminUsers() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-6">{t.admin.users}</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold mb-6">{t.admin.users}</h1>
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-muted">

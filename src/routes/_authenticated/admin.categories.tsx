@@ -57,7 +57,7 @@ function AdminCategories() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-6">{t.admin.categories}</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold mb-6">{t.admin.categories}</h1>
 
       <form
         onSubmit={(e) => { e.preventDefault(); add.mutate(); }}

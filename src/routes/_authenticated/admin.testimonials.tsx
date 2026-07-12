@@ -51,7 +51,7 @@ function AdminTestimonials() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-2">آراء العملاء / Testimonials</h1>
+      <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">آراء العملاء / Testimonials</h1>
       <p className="text-sm text-muted-foreground mb-6">
         ارفع صور آراء العملاء وهتظهر في السلايدر في الصفحة الرئيسية.
       </p>
