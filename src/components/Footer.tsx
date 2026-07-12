@@ -1,10 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
-import logoAsset from "@/assets/logo_rapid.png.asset.json";
+import logoDark from "@/assets/white_logo_rapid.png.asset.json";
+import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { Phone, Mail } from "lucide-react";
 
 export function Footer() {
-  const { t } = useApp();
+  const { t, theme } = useApp();
+
   return (
     <footer className="relative pt-16 pb-8 px-6 bg-card/30 mt-24">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 relative">
@@ -13,7 +15,7 @@ export function Footer() {
         {/* Brand */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <img src={logoAsset.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
+            <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-10 w-10 object-contain" />
             <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-foreground to-brand bg-clip-text text-transparent">
               RapidKeyz
             </span>
