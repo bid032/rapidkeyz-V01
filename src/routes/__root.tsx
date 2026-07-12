@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "@/contexts/AppContext";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { SplashLoader } from "@/components/SplashLoader";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -134,6 +135,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
+        <SplashLoader />
         <Outlet />
         <WhatsAppFloat />
       </AppProvider>
