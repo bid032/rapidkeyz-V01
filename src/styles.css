@@ -137,7 +137,7 @@
     word-spacing: 0.05em;
     padding-block: 0.15em;
   }
-  html[dir="rtl"] h1 { line-height: 1.5; }
+  html[dir="rtl"] h1 { line-height: 1.25; }
   html[dir="rtl"] p,
   html[dir="rtl"] li,
   html[dir="rtl"] span,
