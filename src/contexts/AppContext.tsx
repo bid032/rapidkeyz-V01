@@ -60,7 +60,7 @@ const isBrowser = typeof window !== "undefined";
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ar");
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("both");
