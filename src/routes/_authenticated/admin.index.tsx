@@ -122,25 +122,6 @@ function AdminOverview() {
     XLSX.writeFile(wb, `${siteName} - ${suffix}.xlsx`);
   };
 
-  const settings = useQuery({
-    queryKey: ["site-settings"],
-    queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
-  });
-  const checkoutSettings = (settings.data?.find((s: any) => s.key === "checkout")?.value ?? {}) as any;
-  const requireLogin = checkoutSettings.require_login ?? true;
-
-  const setRequireLogin = useMutation({
-    mutationFn: async (val: boolean) => {
-      const next = { ...checkoutSettings, require_login: val };
-      const { error } = await supabase.from("site_settings").upsert({ key: "checkout", value: next });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["site-settings"] });
-      notify("تم التحديث", "success");
-    },
-    onError: (e: any) => notify(e.message || "خطأ", "error"),
-  });
 
   const monthOptions = useMemo(() => {
     const arr = (monthly.data ?? []).map((r) => r.month.slice(0, 7));
