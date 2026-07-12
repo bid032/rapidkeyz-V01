@@ -150,6 +150,12 @@ function CheckoutPage() {
             _plan_id: it.plan_id,
           });
           if (!claimedId) allInstantDelivered = false;
+          else {
+            // Best-effort: mark the row as 'sold' in the source Google Sheet.
+            markInventorySoldOnSheet({ data: { inventoryId: claimedId as string } }).catch((e) =>
+              console.error("sheet sync failed", e),
+            );
+          }
         }
       }
       // Auto-flip status when everything was auto-delivered (admins may still adjust).
