@@ -249,6 +249,7 @@ function AdminOverview() {
                 <th className="p-2 text-start">الخطة</th>
                 <th className="p-2 text-start">الكمية</th>
                 <th className="p-2 text-start">السعر</th>
+                <th className="p-2 text-start">الربح</th>
                 <th className="p-2 text-start">التاريخ</th>
                 <th className="p-2 text-start">الوقت</th>
                 <th className="p-2 text-start">الطلب</th>
@@ -257,12 +258,14 @@ function AdminOverview() {
             <tbody>
               {sales.data?.map((r: any) => {
                 const d = new Date(r.orders?.created_at ?? r.created_at);
+                const profit = Number(r._profit ?? 0);
                 return (
                   <tr key={r.id} className="border-b border-border/60">
                     <td className="p-2 font-bold">{r.product_name}</td>
                     <td className="p-2 text-muted-foreground">{r.plan_label}</td>
                     <td className="p-2">{r.quantity}</td>
                     <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                    <td className={`p-2 font-bold ${profit >= 0 ? "text-success" : "text-destructive"}`}>{Math.round(profit)} {t.common.currency}</td>
                     <td className="p-2 font-mono text-xs">{d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
                     <td className="p-2 font-mono text-xs">{d.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
                     <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
