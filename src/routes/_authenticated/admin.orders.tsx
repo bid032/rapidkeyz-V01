@@ -8,13 +8,12 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
   beforeLoad: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw redirect({ to: "/auth" });
-    const { data: adminRow } = await supabase
+    const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userData.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!adminRow) throw redirect({ to: "/admin/products" });
+      .in("role", ["admin", "moderator"]);
+    if (!roles || roles.length === 0) throw redirect({ to: "/admin/products" });
   },
   component: AdminOrders,
 });
