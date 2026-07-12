@@ -290,7 +290,8 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         notify("تم الاستيراد بدون مزامنة تلقائية. أضف عمود اسمه 'status' في الشيت عشان يتحدّث تلقائيًا لما يتباع.", "info");
       }
     } catch (e: any) {
-      notify(`تعذر قراءة الشيت: ${e.message}`, "error");
+      console.error("sheet import failed", e);
+      notify((lang === "ar" ? "تعذر قراءة الشيت: " : "Failed to read the sheet: ") + friendlyErrorMessage(e, lang), "error");
     } finally {
       setBusy(false);
     }
