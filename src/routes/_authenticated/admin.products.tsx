@@ -481,6 +481,7 @@ function AdminProducts() {
               {save.error && <p className="col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
             </form>
 
+            </div>
           </div>
         </div>
       )}
