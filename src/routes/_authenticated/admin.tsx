@@ -39,14 +39,14 @@ function AdminLayout() {
       return count ?? 0;
     },
     refetchInterval: 30_000,
-    enabled: isAdmin,
+    enabled: canModerate,
   });
 
   const allLinks: { to: string; label: string; exact?: boolean; badge?: number; adminOnly?: boolean }[] = [
     { to: "/admin", label: t.admin.overview, exact: true, adminOnly: true },
     { to: "/admin/products", label: t.admin.products },
     { to: "/admin/categories", label: t.admin.categories },
-    { to: "/admin/orders", label: t.admin.orders, badge: pending.data ?? 0, adminOnly: true },
+    { to: "/admin/orders", label: t.admin.orders, badge: pending.data ?? 0 },
     { to: "/admin/inventory", label: "مخزون التسليم" },
     { to: "/admin/users", label: t.admin.users, adminOnly: true },
     { to: "/admin/testimonials", label: t.admin.testimonials },
