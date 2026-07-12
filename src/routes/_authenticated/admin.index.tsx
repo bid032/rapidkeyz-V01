@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
@@ -6,8 +6,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
+  beforeLoad: async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw redirect({ to: "/auth" });
+    const { data: adminRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!adminRow) throw redirect({ to: "/admin/products" });
+  },
   component: AdminOverview,
 });
+
 
 type MonthKey = string; // YYYY-MM or "all"
 
@@ -150,14 +162,14 @@ function AdminOverview() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold">{t.admin.overview}</h1>
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-bold text-muted-foreground">فلتر الشهر:</label>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 mb-4 sm:mb-6 sm:flex sm:flex-wrap sm:justify-between">
+        <h1 className="min-w-0 truncate text-xl sm:text-3xl font-extrabold">{t.admin.overview}</h1>
+        <div className="flex items-center gap-2 shrink-0">
+          <label className="text-[10px] sm:text-xs font-bold text-muted-foreground hidden sm:inline">فلتر الشهر:</label>
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="px-3 py-2 bg-card border border-border rounded-lg text-sm font-bold"
+            className="px-2 sm:px-3 py-1.5 sm:py-2 bg-card border border-border rounded-lg text-xs sm:text-sm font-bold"
           >
             <option value="all">كل الفترات</option>
             {monthOptions.map((m) => (
@@ -166,6 +178,7 @@ function AdminOverview() {
           </select>
         </div>
       </div>
+
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {cards.map((c) => (

@@ -140,7 +140,7 @@ function ProductPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-6xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-12">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-8 sm:py-12 grid md:grid-cols-2 gap-6 sm:gap-12">
         <div>
           <div className="relative aspect-square bg-card border border-border rounded-2xl overflow-hidden grid place-items-center">
             {product.icon_url ? (
@@ -189,7 +189,7 @@ function ProductPage() {
                 : t.badges.shared}
             </span>
           </div>
-          <h1 className="text-4xl font-extrabold mb-3">{name}</h1>
+          <h1 className="text-2xl sm:text-4xl font-extrabold mb-3">{name}</h1>
 
           <div className="flex items-center gap-2 mb-5 text-sm">
             <span className="relative flex h-2.5 w-2.5">

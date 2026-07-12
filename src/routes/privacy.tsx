@@ -18,8 +18,9 @@ function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="max-w-4xl mx-auto px-6 py-16">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-brand text-center mb-12">{t.privacy.title}</h1>
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-10 sm:py-16">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-brand text-center mb-8 sm:mb-12">{t.privacy.title}</h1>
+
 
         <section className="mb-12">
           <h2 className="text-xl font-bold text-brand mb-3">{t.privacy.refundTitle}</h2>

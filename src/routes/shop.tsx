@@ -75,8 +75,9 @@ function ShopPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-extrabold mb-8">{t.nav.shop}</h1>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-4xl font-extrabold mb-6 sm:mb-8">{t.nav.shop}</h1>
+
 
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 mb-8">
           <Link

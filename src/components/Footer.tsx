@@ -8,8 +8,9 @@ export function Footer() {
   const { t, theme, lang } = useApp();
 
   return (
-    <footer className="relative pt-16 pb-8 px-6 bg-card/30 mt-24">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+    <footer className="relative pt-12 sm:pt-16 pb-8 px-3 sm:px-6 bg-card/30 mt-16 sm:mt-24">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10 relative">
+
 
 
         {/* Brand */}

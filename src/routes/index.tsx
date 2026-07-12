@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Testimonials } from "@/components/Testimonials";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -84,84 +86,129 @@ function HomePage() {
       <Header />
 
       {/* Hero */}
-      <header className="relative py-24 px-6 overflow-hidden">
+      <header className="relative py-12 sm:py-20 md:py-24 px-3 sm:px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-bold mb-6 tracking-wide uppercase">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold mb-4 sm:mb-6 tracking-wide uppercase"
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
             </span>
             {hero.badge}
-          </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1] max-w-4xl">
-            {hero.title1} <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">
+          </motion.div>
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-4 sm:mb-6 leading-[1.1] max-w-4xl">
+            <motion.span
+              initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-block"
+            >
+              {hero.title1}
+            </motion.span>{" "}
+            <br />
+            <motion.span
+              initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.28, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400"
+            >
               {hero.title2}
-            </span>
+            </motion.span>
           </h1>
-          <p className="max-w-2xl text-muted-foreground text-lg mb-10 leading-relaxed">
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.6 }}
+            className="max-w-2xl text-muted-foreground text-sm sm:text-base md:text-lg mb-6 sm:mb-10 leading-relaxed px-2"
+          >
             {hero.subtitle}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="flex flex-wrap justify-center gap-3 sm:gap-4"
+          >
             <Link
               to="/shop"
-              className="px-8 py-4 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow transition-all"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-brand text-brand-foreground rounded-xl text-sm sm:text-base font-bold hover:brand-glow transition-all hover:scale-[1.03]"
             >
               {hero.cta}
             </Link>
             <a
               href="#trending"
-              className="px-8 py-4 rounded-xl font-bold border border-border hover:bg-muted transition-all"
+              className="px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-base font-bold border border-border hover:bg-muted transition-all"
             >
               {hero.ctaSecondary}
             </a>
-          </div>
-          <div className="mt-10 flex items-center gap-3">
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.85, duration: 0.6 }}
+            className="mt-8 sm:mt-10 flex items-center gap-3"
+          >
             <div className="flex -space-x-3 rtl:space-x-reverse">
               {["AI", "DS", "EN"].map((i) => (
                 <div
                   key={i}
-                  className="size-10 rounded-full border-2 border-background bg-card grid place-items-center text-[10px] font-bold"
+                  className="size-9 sm:size-10 rounded-full border-2 border-background bg-card grid place-items-center text-[10px] font-bold"
                 >
                   {i}
                 </div>
               ))}
             </div>
-            <span className="text-sm text-muted-foreground">{hero.trusted}</span>
-          </div>
+            <span className="text-xs sm:text-sm text-muted-foreground">{hero.trusted}</span>
+          </motion.div>
         </div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-brand/20 blur-[120px] rounded-full -z-0 opacity-50"></div>
       </header>
 
       {/* Categories */}
       {cats.data && cats.data.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 pb-12">
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-            {cats.data.map((c) => (
-              <Link
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-8 sm:pb-12">
+          <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
+            {cats.data.map((c, i) => (
+              <motion.div
                 key={c.id}
-                to="/shop"
-                search={{ category: c.slug }}
-                className="whitespace-nowrap px-5 py-2.5 rounded-full bg-card border border-border text-sm font-medium hover:border-brand/50 transition-colors"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 * i, duration: 0.4 }}
               >
-                {lang === "ar" ? c.name_ar : c.name_en}
-              </Link>
+                <Link
+                  to="/shop"
+                  search={{ category: c.slug }}
+                  className="whitespace-nowrap px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-card border border-border text-xs sm:text-sm font-medium hover:border-brand/50 hover:scale-105 transition-all inline-block"
+                >
+                  {lang === "ar" ? c.name_ar : c.name_en}
+                </Link>
+              </motion.div>
             ))}
           </div>
         </section>
       )}
 
       {/* Products */}
-      <main id="trending" className="max-w-7xl mx-auto px-6 pb-24">
-        <div className="flex items-center justify-between mb-12">
-          <h2 className="text-2xl font-bold">{t.home.trending}</h2>
-          <Link to="/shop" className="text-sm font-bold text-brand hover:underline">
+      <main id="trending" className="max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center justify-between mb-8 sm:mb-12"
+        >
+          <h2 className="text-xl sm:text-2xl font-bold">{t.home.trending}</h2>
+          <Link to="/shop" className="text-xs sm:text-sm font-bold text-brand hover:underline">
             {t.home.viewAll} →
           </Link>
-        </div>
+        </motion.div>
 
         {products.isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="h-64 bg-card border border-border rounded-2xl animate-pulse" />
             ))}
@@ -175,9 +222,17 @@ function HomePage() {
           </div>
         )}
         {products.data && products.data.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.data.map((p) => (
-              <ProductCard key={p.id} p={p} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {products.data.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: (i % 3) * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <ProductCard p={p} />
+              </motion.div>
             ))}
           </div>
         )}
@@ -189,3 +244,4 @@ function HomePage() {
     </div>
   );
 }
+
