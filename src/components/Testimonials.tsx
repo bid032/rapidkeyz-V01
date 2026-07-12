@@ -25,9 +25,10 @@ export function Testimonials() {
 
   return (
     <section className="relative">
-      {/* Soft gradient transition from previous section — no hard seam */}
-      <div className="pointer-events-none absolute inset-x-0 -top-24 h-48 bg-gradient-to-b from-transparent via-brand/[0.04] to-brand/[0.06]" />
-      <div className="pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 w-[900px] h-[500px] bg-brand/10 rounded-full blur-3xl" />
+      {/* Blue/cyan glow rising from the bottom, fading up into white */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-brand/25 via-cyan-300/15 to-transparent" />
+      <div className="pointer-events-none absolute left-1/2 -bottom-40 -translate-x-1/2 w-[1100px] h-[600px] bg-brand/25 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute left-1/4 -bottom-24 w-[500px] h-[400px] bg-cyan-300/25 rounded-full blur-3xl" />
 
       <div className="max-w-7xl mx-auto px-6 py-24 relative">
         <div className="relative flex items-end justify-between mb-12 flex-wrap gap-4">
