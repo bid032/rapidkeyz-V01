@@ -162,7 +162,7 @@ export function TrustSection() {
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
             {lang === "ar" ? (
               <>
-                ليه RapidKeyz&nbsp;أفضل متجر اشتراكات في مصر؟
+                ليه <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-cyan-400">RapidKeyz</span>&nbsp;أفضل متجر اشتراكات في مصر؟
               </>
             ) : (
               <>
