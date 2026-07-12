@@ -133,6 +133,7 @@ function AdminReviews() {
       qc.invalidateQueries({ queryKey: ["admin-product-reviews", selectedProduct] });
       qc.invalidateQueries({ queryKey: ["product-reviews", selectedProduct] });
     },
+    onError: (e) => { console.error(e); toast.error(friendlyErrorMessage(e, lang)); },
   });
 
   const selectedName = useMemo(() => {
