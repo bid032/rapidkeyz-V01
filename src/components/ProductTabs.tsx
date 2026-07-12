@@ -217,7 +217,7 @@ function DeliveryTab({
         ]
       : [
           { t: "اطلب الخدمة", d: "أكمل الطلب واختر باقتك." },
-          { t: "تفعيل يدوي", d: "فريقنا يفعّل الاشتراك خلال ١-٦ ساعات." },
+          { t: "تفعيل يدوي", d: "فريقنا يفعّل الاشتراك خلال ١-٣ ساعات." },
           { t: "استلام عبر البريد او الواتس اب", d: "تصلك بيانات الدخول جاهزة للاستخدام." },
         ]
     : deliveryType === "instant"
@@ -228,13 +228,13 @@ function DeliveryTab({
       ]
     : [
         { t: "Place Order", d: "Complete checkout and pick your plan." },
-        { t: "Manual Activation", d: "Our team activates within 1–6 hours." },
+        { t: "Manual Activation", d: "Our team activates within 1–3 hours." },
         { t: "Delivery by Email", d: "Login details land in your inbox ready to use." },
       ];
   const eta =
     deliveryType === "instant"
       ? isAr ? "دقائق" : "Minutes"
-      : isAr ? "١ – ٦ ساعات" : "1 – 6 hours";
+      : isAr ? "١ – ٣ ساعات" : "1 – 3 hours";
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3 flex-wrap">
