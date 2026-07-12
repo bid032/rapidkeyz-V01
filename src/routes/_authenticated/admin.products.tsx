@@ -341,6 +341,8 @@ function AdminProducts() {
                   label="صورة/أيقونة المنتج (اختياري — لو مفيش هيظهر أول حرفين من الاسم)"
                   value={editing.icon_url}
                   onChange={(url) => setEditing({ ...editing, icon_url: url })}
+                  size={0}
+                  requireAspectRatio={{ w: 1, h: 1 }}
                 />
               </div>
               <Field label="القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
