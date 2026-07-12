@@ -45,6 +45,7 @@ function AdminSettings() {
       if (s.key === "brand") setBrand(s.value);
       if (s.key === "contact") setContact(s.value);
       if (s.key === "payments") setPayments(s.value);
+      if (s.key === "checkout") setCheckout((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
       if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "stats") setStats((v: any) => ({ ...v, ...(s.value as any) }));
