@@ -31,7 +31,11 @@ function AdminTestimonials() {
       const { error } = await supabase.from("testimonial_images").insert({ image_url: url });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-testimonials"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
+      notify(lang === "ar" ? "تمت الإضافة" : "Added", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   const toggleActive = useMutation({
@@ -40,6 +44,7 @@ function AdminTestimonials() {
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-testimonials"] }),
+    onError: (e) => showError(e, notify, lang),
   });
 
   const remove = useMutation({
@@ -47,7 +52,11 @@ function AdminTestimonials() {
       const { error } = await supabase.from("testimonial_images").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-testimonials"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
+      notify(lang === "ar" ? "تم الحذف" : "Deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
   });
 
   return (
