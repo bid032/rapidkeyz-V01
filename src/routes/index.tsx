@@ -278,17 +278,11 @@ function HomePage() {
           </div>
         )}
         {products.data && products.data.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {products.data.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, y: 24, scale: 0.97 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: (i % 3) * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              >
+          <div data-gsap="reveal-stagger" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {products.data.map((p) => (
+              <div key={p.id} data-gsap="tilt">
                 <ProductCard p={p} />
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
