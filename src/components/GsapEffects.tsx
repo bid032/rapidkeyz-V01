@@ -70,11 +70,13 @@ export function GsapEffects() {
             duration: 1.1,
             ease: "expo.out",
             stagger: { each: 0.09, from: "start" },
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
+            immediateRender: false,
+            scrollTrigger: { trigger: el, start: "top 95%", once: true },
             onComplete: () => {
               kids.forEach((k) => (k.style.filter = ""));
             },
           });
+          requestAnimationFrame(() => ScrollTrigger.refresh());
           break;
         }
 
