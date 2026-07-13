@@ -145,10 +145,11 @@ function HomePage() {
 
             <p
               data-gsap="split-words"
-              className="font-display text-[clamp(1.25rem,5vw,1.75rem)] font-semibold leading-tight bg-gradient-to-r from-brand via-accent to-brand bg-clip-text text-transparent"
+              className="brand-text font-display text-[clamp(1.25rem,5vw,1.75rem)] leading-tight"
             >
               {hero.title2}
             </p>
+
 
             <div data-gsap="card-pop" className="flex gap-3 -mx-4 px-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
               <div className="snap-start shrink-0 w-[62%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-3deg]">
