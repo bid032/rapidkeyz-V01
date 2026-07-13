@@ -255,10 +255,11 @@ function HomePage() {
 
               <p
                 data-gsap="split-words"
-                className="mt-6 font-display text-[clamp(1.5rem,3vw,2.5rem)] font-semibold leading-tight bg-gradient-to-r from-brand via-accent to-brand bg-clip-text text-transparent"
+                className="brand-text mt-6 font-display text-[clamp(1.5rem,3vw,2.5rem)] leading-tight"
               >
                 {hero.title2}
               </p>
+
 
               <p
                 data-gsap="reveal"
