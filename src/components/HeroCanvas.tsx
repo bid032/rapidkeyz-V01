@@ -52,52 +52,14 @@ export function HeroCanvas() {
     const points = new THREE.Points(pGeo, pMat);
     scene.add(points);
 
-    // Floating torus "keys"
-    const torusGroup = new THREE.Group();
-    const torusGeo = new THREE.TorusGeometry(0.7, 0.22, 24, 80);
-    const torusMat = new THREE.MeshBasicMaterial({
-      color: brandDeep,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.45,
-    });
+    // (3D torus + icosahedron shapes removed per design request — keep only particles)
     const toruses: THREE.Mesh[] = [];
-    for (let i = 0; i < 5; i++) {
-      const t = new THREE.Mesh(torusGeo, torusMat);
-      t.position.set(
-        (Math.random() - 0.5) * 10,
-        (Math.random() - 0.5) * 5,
-        (Math.random() - 0.5) * 4 - 1,
-      );
-      t.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-      t.scale.setScalar(0);
-      toruses.push(t);
-      torusGroup.add(t);
-    }
-    scene.add(torusGroup);
-
-    // Central glowing icosahedron
-    const coreGeo = new THREE.IcosahedronGeometry(1.1, 1);
-    const coreMat = new THREE.MeshBasicMaterial({
-      color: brand,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.55,
-    });
-    const core = new THREE.Mesh(coreGeo, coreMat);
-    core.scale.setScalar(0);
-    scene.add(core);
 
     // GSAP intro
     const tl = gsap.timeline();
     tl.to(camera.position, { z: 6, duration: 1.6, ease: "power3.out" }, 0)
-      .to(core.scale, { x: 1, y: 1, z: 1, duration: 1.2, ease: "elastic.out(1,0.6)" }, 0.2)
-      .to(
-        toruses.map((t) => t.scale),
-        { x: 1, y: 1, z: 1, duration: 1, ease: "back.out(1.7)", stagger: 0.1 },
-        0.4,
-      )
       .to(pMat, { opacity: 0.9, duration: 1.5 }, 0);
+
 
     // Pointer parallax
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -118,14 +80,12 @@ export function HeroCanvas() {
       points.rotation.y = t * 0.04 + pointer.x * 0.2;
       points.rotation.x = pointer.y * 0.15;
 
-      core.rotation.x = t * 0.3;
-      core.rotation.y = t * 0.4 + pointer.x * 0.5;
-
       toruses.forEach((m, i) => {
         m.rotation.x += 0.004 + i * 0.001;
         m.rotation.y += 0.006;
         m.position.y += Math.sin(t + i) * 0.002;
       });
+
 
       camera.position.x += (pointer.x * 0.6 - camera.position.x) * 0.04;
       camera.position.y += (-pointer.y * 0.4 - camera.position.y) * 0.04;
@@ -152,10 +112,7 @@ export function HeroCanvas() {
       tl.kill();
       pGeo.dispose();
       pMat.dispose();
-      torusGeo.dispose();
-      torusMat.dispose();
-      coreGeo.dispose();
-      coreMat.dispose();
+
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
     };
