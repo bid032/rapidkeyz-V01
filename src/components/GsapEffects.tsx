@@ -48,8 +48,10 @@ export function GsapEffects() {
             duration: 0.9,
             ease: "power3.out",
             stagger: 0.08,
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
+            immediateRender: false,
+            scrollTrigger: { trigger: el, start: "top 95%", once: true },
           });
+          requestAnimationFrame(() => ScrollTrigger.refresh());
           break;
         }
         case "card-pop": {
@@ -70,11 +72,13 @@ export function GsapEffects() {
             duration: 1.1,
             ease: "expo.out",
             stagger: { each: 0.09, from: "start" },
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
+            immediateRender: false,
+            scrollTrigger: { trigger: el, start: "top 95%", once: true },
             onComplete: () => {
               kids.forEach((k) => (k.style.filter = ""));
             },
           });
+          requestAnimationFrame(() => ScrollTrigger.refresh());
           break;
         }
 
