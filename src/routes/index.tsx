@@ -127,7 +127,7 @@ function HomePage() {
         {/* Desktop: broken grid. Mobile: clean stacked flow */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
           {/* MOBILE (single column, ordered flow) */}
-          <div className="md:hidden flex flex-col gap-6 pt-4 pb-8">
+          <div className="md:hidden flex flex-col gap-3 pt-4 pb-8">
             <div data-gsap="reveal" className="flex items-center gap-3">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full neon-border bg-background/60 backdrop-blur text-brand text-[11px] font-mono uppercase tracking-widest">
                 <span className="size-1.5 rounded-full bg-brand animate-pulse" />
@@ -151,7 +151,7 @@ function HomePage() {
             </p>
 
 
-            <div data-gsap="card-pop" className="-mt-2 flex gap-3 -mx-4 px-4 py-5 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
+            <div data-gsap="card-pop" className="mt-1 flex gap-3 -mx-4 px-4 py-3 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
               <div className="snap-start shrink-0 w-[62%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-3deg]">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1.5">TRENDING</div>
                 <div className="font-display font-bold text-base leading-tight mb-1.5">ChatGPT Plus</div>
