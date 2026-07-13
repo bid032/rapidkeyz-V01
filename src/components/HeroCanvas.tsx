@@ -112,10 +112,9 @@ export function HeroCanvas() {
       tl.kill();
       pGeo.dispose();
       pMat.dispose();
-      torusGeo.dispose();
-      torusMat.dispose();
-      coreGeo.dispose();
-      coreMat.dispose();
+      pGeo.dispose();
+      pMat.dispose();
+
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
     };
