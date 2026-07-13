@@ -151,7 +151,7 @@ function HomePage() {
             </p>
 
 
-            <div data-gsap="card-pop" className="flex gap-3 -mx-4 px-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+            <div data-gsap="card-pop" className="-mt-2 flex gap-3 -mx-4 px-4 py-5 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
               <div className="snap-start shrink-0 w-[62%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-3deg]">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1.5">TRENDING</div>
                 <div className="font-display font-bold text-base leading-tight mb-1.5">ChatGPT Plus</div>
@@ -176,6 +176,8 @@ function HomePage() {
                   <span className="text-[10px] text-muted-foreground">EGP</span>
                 </div>
               </div>
+            </div>
+
             </div>
 
             <p
