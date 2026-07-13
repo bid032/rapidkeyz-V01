@@ -178,7 +178,7 @@ function HomePage() {
               </div>
             </div>
 
-            </div>
+
 
             <p
               data-gsap="reveal"
