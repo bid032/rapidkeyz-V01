@@ -145,12 +145,12 @@ body {
   html[dir="rtl"] h4,
   html[dir="rtl"] h5,
   html[dir="rtl"] h6 {
-    line-height: 1.55;
+    line-height: 1.6;
     letter-spacing: 0;
     word-spacing: 0.05em;
-    padding-block: 0.15em;
+    padding-block: 0.25em;
   }
-  html[dir="rtl"] h1 { line-height: 1.1; }
+  html[dir="rtl"] h1 { line-height: 1.25; padding-block: 0.3em; }
   html[dir="rtl"] p,
   html[dir="rtl"] li,
   html[dir="rtl"] span,
@@ -159,11 +159,15 @@ body {
   html[dir="rtl"] button {
     line-height: 1.8;
   }
-  /* Override any Tailwind leading-none / leading-tight on Arabic headings */
-  html[dir="rtl"] .leading-none { line-height: 1.45 !important; }
-  html[dir="rtl"] .leading-tight { line-height: 1.55 !important; }
-  html[dir="rtl"] .leading-snug { line-height: 1.65 !important; }
+  /* Override tight Tailwind leading utilities on Arabic headings */
+  html[dir="rtl"] .leading-none { line-height: 1.5 !important; }
+  html[dir="rtl"] .leading-tight { line-height: 1.6 !important; }
+  html[dir="rtl"] .leading-snug { line-height: 1.7 !important; }
+  html[dir="rtl"] [class*="leading-\["] { line-height: 1.55 !important; }
+  /* Prevent gradient descenders being clipped by tight line boxes */
+  [class*="bg-clip-text"] { padding-block: 0.1em; }
 }
+
 
 
 @utility brand-glow {
