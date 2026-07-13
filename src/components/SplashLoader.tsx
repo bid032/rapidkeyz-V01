@@ -5,8 +5,17 @@ import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 export function SplashLoader() {
   const [visible, setVisible] = useState(true);
   const [fading, setFading] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    const root = document.documentElement;
+    const update = () => setIsDark(root.classList.contains("dark"));
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(root, { attributes: true, attributeFilter: ["class"] });
+
     const hide = () => {
       setFading(true);
       setTimeout(() => setVisible(false), 500);
@@ -26,18 +35,16 @@ export function SplashLoader() {
       window.addEventListener("load", onReady, { once: true });
     }
 
-    // Safety fallback
     const fallback = setTimeout(hide, 4000);
     return () => {
       clearTimeout(fallback);
       window.removeEventListener("load", onReady);
+      obs.disconnect();
     };
   }, []);
 
-  if (!visible) return null;
+  if (!visible || !mounted) return null;
 
-  const isDark =
-    typeof document !== "undefined" && document.documentElement.classList.contains("dark");
   const logo = isDark ? logoDark.url : logoLight.url;
 
   return (

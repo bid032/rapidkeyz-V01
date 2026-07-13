@@ -55,14 +55,13 @@ export function GsapEffects() {
           break;
         }
         case "card-pop": {
-          // Randomized creative reveal — each card enters from a different direction with unique rotation
+          // Each card reveals individually as it enters the viewport (scroll-driven)
           const kids = Array.from(el.children) as HTMLElement[];
           if (!kids.length) { el.dataset.gsapInit = ""; return; }
           kids.forEach((k) => {
             k.style.transformStyle = "preserve-3d";
             (k.style as any).transformPerspective = "1200px";
           });
-          // Deterministic pseudo-random per card so animation feels intentional
           const seeded = (n: number) => {
             const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
             return x - Math.floor(x);
@@ -71,11 +70,11 @@ export function GsapEffects() {
             const r1 = seeded(i + 1);
             const r2 = seeded(i + 2);
             const r3 = seeded(i + 3);
-            const dirX = (r1 - 0.5) * 220;         // -110..110px
-            const dirY = 60 + r2 * 100;             // 60..160px
-            const rot  = (r3 - 0.5) * 24;           // -12..12deg
-            const rotY = (r1 - 0.5) * 40;           // -20..20deg
-            const rotX = -20 - r2 * 25;             // -20..-45deg
+            const dirX = (r1 - 0.5) * 260;
+            const dirY = 80 + r2 * 120;
+            const rot  = (r3 - 0.5) * 28;
+            const rotY = (r1 - 0.5) * 45;
+            const rotX = -20 - r2 * 30;
             gsap.from(k, {
               opacity: 0,
               x: dirX,
@@ -83,13 +82,16 @@ export function GsapEffects() {
               rotation: rot,
               rotationX: rotX,
               rotationY: rotY,
-              scale: 0.82,
-              filter: "blur(10px)",
-              duration: 1.05,
+              scale: 0.8,
+              filter: "blur(12px)",
+              duration: 1.1,
               ease: "expo.out",
-              delay: i * 0.08,
               immediateRender: false,
-              scrollTrigger: { trigger: el, start: "top 92%", once: true },
+              scrollTrigger: {
+                trigger: k,
+                start: "top 88%",
+                once: true,
+              },
               onComplete: () => { k.style.filter = ""; },
             });
           });
