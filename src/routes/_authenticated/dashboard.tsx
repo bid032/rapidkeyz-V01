@@ -57,6 +57,25 @@ function Dashboard() {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
   }, []);
 
+  const profile = useQuery({
+    queryKey: ["my-profile", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+  });
+  const displayName =
+    profile.data?.display_name?.trim() ||
+    (user?.user_metadata as any)?.full_name ||
+    (user?.user_metadata as any)?.name ||
+    user?.email?.split("@")[0] ||
+    "";
+
   const orders = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
@@ -81,8 +100,9 @@ function Dashboard() {
       <Header />
       <PageHero
         title={t.dashboard.title}
-        eyebrow={user?.email ? `${t.dashboard.welcome} · ${user.email}` : t.dashboard.welcome}
+        eyebrow={displayName ? `${t.dashboard.welcome} · ${displayName}` : t.dashboard.welcome}
       />
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
         <div className="flex justify-end mb-6">
           <button
