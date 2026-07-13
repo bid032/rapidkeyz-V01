@@ -93,24 +93,15 @@ export function FAQ() {
             <>
               الأسئلة الشائعة عن اشتراكات
               <br />
-              <span
-                className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep] inline-block"
-                style={{ paddingBlock: "0.15em" }}
-              >
-                ChatGPT و Midjourney في مصر
-              </span>
+              <span className="brand-text">ChatGPT و Midjourney في مصر</span>
             </>
           ) : (
             <>
               FAQ about{" "}
-              <span
-                className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep] inline-block"
-                style={{ paddingBlock: "0.15em" }}
-              >
-                ChatGPT & Midjourney in Egypt
-              </span>
+              <span className="brand-text">ChatGPT & Midjourney in Egypt</span>
             </>
           )}
+
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground mt-3">
           {lang === "ar" ? (
