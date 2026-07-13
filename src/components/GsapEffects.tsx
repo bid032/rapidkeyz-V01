@@ -131,7 +131,6 @@ export function GsapEffects() {
           );
           break;
         }
-        }
 
         case "split-words": {
           const s = new SplitText(el, { type: "words", wordsClass: "inline-block will-change-transform" });
