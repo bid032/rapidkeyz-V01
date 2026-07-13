@@ -182,12 +182,16 @@ function ShopPage() {
           </p>
         )}
         {products.data && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            data-gsap="card-pop"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {products.data.map((p) => (
               <ProductCard key={p.id} p={p} />
             ))}
           </div>
         )}
+
       </div>
       <Footer />
     </div>

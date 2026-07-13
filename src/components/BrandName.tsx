@@ -13,7 +13,8 @@ export function BrandName({
 }) {
   return (
     <Tag className={cn("brand-text", className)}>
-      Rapid<span style={{ color: "var(--brand)" }}>Keyz</span>
+      RapidKeyz
     </Tag>
   );
+
 }

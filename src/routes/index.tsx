@@ -145,12 +145,13 @@ function HomePage() {
 
             <p
               data-gsap="split-words"
-              className="font-display text-[clamp(1.25rem,5vw,1.75rem)] font-semibold leading-tight bg-gradient-to-r from-brand via-accent to-brand bg-clip-text text-transparent"
+              className="brand-text font-display text-[clamp(1.25rem,5vw,1.75rem)] leading-tight"
             >
               {hero.title2}
             </p>
 
-            <div data-gsap="card-pop" className="flex gap-3 -mx-4 px-4 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+
+            <div data-gsap="card-pop" className="-mt-2 flex gap-3 -mx-4 px-4 py-5 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
               <div className="snap-start shrink-0 w-[62%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-3deg]">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1.5">TRENDING</div>
                 <div className="font-display font-bold text-base leading-tight mb-1.5">ChatGPT Plus</div>
@@ -176,6 +177,8 @@ function HomePage() {
                 </div>
               </div>
             </div>
+
+
 
             <p
               data-gsap="reveal"
@@ -254,10 +257,11 @@ function HomePage() {
 
               <p
                 data-gsap="split-words"
-                className="mt-6 font-display text-[clamp(1.5rem,3vw,2.5rem)] font-semibold leading-tight bg-gradient-to-r from-brand via-accent to-brand bg-clip-text text-transparent"
+                className="brand-text mt-6 font-display text-[clamp(1.5rem,3vw,2.5rem)] leading-tight"
               >
                 {hero.title2}
               </p>
+
 
               <p
                 data-gsap="reveal"
