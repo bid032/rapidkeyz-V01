@@ -54,24 +54,15 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
           {lang === "ar" ? (
             <>
               تسوّق حسب{" "}
-              <span
-                className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep] inline-block"
-                style={{ paddingBlock: "0.15em" }}
-              >
-                القسم
-              </span>
+              <span className="brand-text">القسم</span>
             </>
           ) : (
             <>
               Shop by{" "}
-              <span
-                className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-accent to-[--brand-deep] inline-block"
-                style={{ paddingBlock: "0.15em" }}
-              >
-                category
-              </span>
+              <span className="brand-text">category</span>
             </>
           )}
+
         </h2>
         <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
       </div>
