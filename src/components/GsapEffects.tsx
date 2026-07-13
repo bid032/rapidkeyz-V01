@@ -55,31 +55,82 @@ export function GsapEffects() {
           break;
         }
         case "card-pop": {
-          // Creative card reveal: 3D rotate-in + skew + brand glow burst
+          // Randomized creative reveal — each card enters from a different direction with unique rotation
           const kids = Array.from(el.children) as HTMLElement[];
           if (!kids.length) { el.dataset.gsapInit = ""; return; }
           kids.forEach((k) => {
             k.style.transformStyle = "preserve-3d";
             (k.style as any).transformPerspective = "1200px";
           });
-          gsap.from(kids, {
-            opacity: 0,
-            y: 80,
-            rotationX: -35,
-            rotationY: 12,
-            scale: 0.8,
-            filter: "blur(14px) brightness(0.6)",
-            duration: 1.1,
-            ease: "expo.out",
-            stagger: { each: 0.09, from: "start" },
-            immediateRender: false,
-            scrollTrigger: { trigger: el, start: "top 95%", once: true },
-            onComplete: () => {
-              kids.forEach((k) => (k.style.filter = ""));
-            },
+          // Deterministic pseudo-random per card so animation feels intentional
+          const seeded = (n: number) => {
+            const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
+            return x - Math.floor(x);
+          };
+          kids.forEach((k, i) => {
+            const r1 = seeded(i + 1);
+            const r2 = seeded(i + 2);
+            const r3 = seeded(i + 3);
+            const dirX = (r1 - 0.5) * 220;         // -110..110px
+            const dirY = 60 + r2 * 100;             // 60..160px
+            const rot  = (r3 - 0.5) * 24;           // -12..12deg
+            const rotY = (r1 - 0.5) * 40;           // -20..20deg
+            const rotX = -20 - r2 * 25;             // -20..-45deg
+            gsap.from(k, {
+              opacity: 0,
+              x: dirX,
+              y: dirY,
+              rotation: rot,
+              rotationX: rotX,
+              rotationY: rotY,
+              scale: 0.82,
+              filter: "blur(10px)",
+              duration: 1.05,
+              ease: "expo.out",
+              delay: i * 0.08,
+              immediateRender: false,
+              scrollTrigger: { trigger: el, start: "top 92%", once: true },
+              onComplete: () => { k.style.filter = ""; },
+            });
           });
           requestAnimationFrame(() => ScrollTrigger.refresh());
           break;
+        }
+
+        case "scroll-fade": {
+          // Word-level reveal driven by scroll progress
+          const words = el.textContent?.trim().split(/\s+/) ?? [];
+          if (!words.length) return;
+          el.innerHTML = words
+            .map((w) => `<span class="inline-block will-change-transform">${w}</span>`)
+            .join(" ");
+          const spans = el.querySelectorAll("span");
+          gsap.from(spans, {
+            opacity: 0,
+            y: 22,
+            filter: "blur(6px)",
+            stagger: 0.04,
+            duration: 0.9,
+            ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 90%", once: true },
+          });
+          break;
+        }
+
+        case "scroll-scrub": {
+          // Continuous scroll-linked animation for whole sections
+          gsap.fromTo(
+            el,
+            { yPercent: 6, opacity: 0.65 },
+            {
+              yPercent: -4,
+              opacity: 1,
+              ease: "none",
+              scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: 0.6 },
+            },
+          );
+          break;
+        }
         }
 
         case "split-words": {
