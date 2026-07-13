@@ -48,8 +48,10 @@ export function GsapEffects() {
             duration: 0.9,
             ease: "power3.out",
             stagger: 0.08,
-            scrollTrigger: { trigger: el, start: "top 85%", once: true },
+            immediateRender: false,
+            scrollTrigger: { trigger: el, start: "top 95%", once: true },
           });
+          requestAnimationFrame(() => ScrollTrigger.refresh());
           break;
         }
         case "card-pop": {
