@@ -80,14 +80,12 @@ export function HeroCanvas() {
       points.rotation.y = t * 0.04 + pointer.x * 0.2;
       points.rotation.x = pointer.y * 0.15;
 
-      core.rotation.x = t * 0.3;
-      core.rotation.y = t * 0.4 + pointer.x * 0.5;
-
       toruses.forEach((m, i) => {
         m.rotation.x += 0.004 + i * 0.001;
         m.rotation.y += 0.006;
         m.position.y += Math.sin(t + i) * 0.002;
       });
+
 
       camera.position.x += (pointer.x * 0.6 - camera.position.x) * 0.04;
       camera.position.y += (-pointer.y * 0.4 - camera.position.y) * 0.04;
