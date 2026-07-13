@@ -127,7 +127,7 @@ function HomePage() {
         {/* Desktop: broken grid. Mobile: clean stacked flow */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
           {/* MOBILE (single column, ordered flow) */}
-          <div className="md:hidden flex flex-col gap-3 pt-4 pb-8">
+          <div className="md:hidden flex flex-col gap-2 pt-4 pb-8">
             <div data-gsap="reveal" className="flex items-center gap-3">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full neon-border bg-background/60 backdrop-blur text-brand text-[11px] font-mono uppercase tracking-widest">
                 <span className="size-1.5 rounded-full bg-brand animate-pulse" />
