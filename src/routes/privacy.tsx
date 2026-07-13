@@ -32,16 +32,16 @@ function PrivacyPage() {
 
 
 
-        <section className="mb-12">
-          <h2 className="text-xl font-bold text-brand mb-3">{t.privacy.refundTitle}</h2>
-          <ul className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+        <section data-gsap="scroll-scrub" className="mb-12">
+          <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.privacy.refundTitle}</h2>
+          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
             {t.privacy.refund.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
           </ul>
         </section>
 
-        <section>
-          <h2 className="text-xl font-bold text-brand mb-3">{t.privacy.privacyTitle}</h2>
-          <ul className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+        <section data-gsap="scroll-scrub">
+          <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.privacy.privacyTitle}</h2>
+          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
             {t.privacy.privacy.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
           </ul>
         </section>
