@@ -279,12 +279,36 @@ export function GsapEffects() {
     const onLoad = () => ScrollTrigger.refresh();
     window.addEventListener("load", onLoad);
 
+    // ─── Global scroll progress bar (constant scroll feedback) ───
+    const bar = document.createElement("div");
+    bar.setAttribute("aria-hidden", "true");
+    bar.style.cssText = [
+      "position:fixed",
+      "top:0",
+      "left:0",
+      "height:2px",
+      "width:0%",
+      "background:linear-gradient(90deg, var(--brand), var(--brand-glow), var(--brand-deep))",
+      "box-shadow:0 0 12px color-mix(in oklab, var(--brand) 60%, transparent)",
+      "z-index:9999",
+      "pointer-events:none",
+      "transition:width 0.05s linear",
+    ].join(";");
+    document.body.appendChild(bar);
+    const progressTween = gsap.to(bar, {
+      width: "100%",
+      ease: "none",
+      scrollTrigger: { start: 0, end: () => document.documentElement.scrollHeight - window.innerHeight, scrub: 0.2 },
+    });
+
     return () => {
       clearTimeout(first);
       observer.disconnect();
       window.removeEventListener("load", onLoad);
       cleanups.forEach((fn) => fn());
       splits.forEach((s) => s.revert());
+      progressTween.kill();
+      bar.remove();
       ScrollTrigger.getAll().forEach((s) => s.kill());
     };
   }, []);
