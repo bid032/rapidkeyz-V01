@@ -58,30 +58,28 @@ function AboutPage() {
       <PageHero title={t.about.title} eyebrow="RapidKeyz" />
       <main className="max-w-4xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
 
-
-
         <Section title={t.about.moreTitle}>
-          <p className="leading-loose text-muted-foreground">{t.about.moreBody}</p>
+          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.moreBody}</p>
         </Section>
 
         <Section title={t.about.missionTitle}>
-          <p className="leading-loose text-muted-foreground">{t.about.missionBody}</p>
+          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.missionBody}</p>
         </Section>
 
         <Section title={t.about.valuesTitle}>
-          <ul className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
             {t.about.values.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
           </ul>
         </Section>
 
         <Section title={t.about.whyTitle}>
-          <ul className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
             {t.about.why.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
           </ul>
         </Section>
 
         <Section title={t.about.visionTitle}>
-          <p className="leading-loose text-muted-foreground">{t.about.visionBody}</p>
+          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.visionBody}</p>
         </Section>
 
         <FeaturesStrip />
@@ -93,8 +91,8 @@ function AboutPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-10">
-      <h2 className="text-xl font-bold text-brand mb-3">{title}</h2>
+    <section data-gsap="scroll-scrub" className="mb-10">
+      <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{title}</h2>
       {children}
     </section>
   );
