@@ -352,7 +352,7 @@ function HomePage() {
       <main id="trending" className="relative max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
         <div className="relative mb-10 sm:mb-16 flex items-end justify-between gap-6">
           <div>
-            <div className="font-mono text-xs uppercase tracking-[0.3em] text-brand mb-3">// 02 · catalogue</div>
+            
             <h2
               data-gsap="split-words"
               className="font-display font-bold text-4xl sm:text-6xl leading-[1.05] tracking-tight"
