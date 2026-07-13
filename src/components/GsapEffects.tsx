@@ -52,6 +52,32 @@ export function GsapEffects() {
           });
           break;
         }
+        case "card-pop": {
+          // Creative card reveal: 3D rotate-in + skew + brand glow burst
+          const kids = Array.from(el.children) as HTMLElement[];
+          if (!kids.length) { el.dataset.gsapInit = ""; return; }
+          kids.forEach((k) => {
+            k.style.transformStyle = "preserve-3d";
+            (k.style as any).transformPerspective = "1200px";
+          });
+          gsap.from(kids, {
+            opacity: 0,
+            y: 80,
+            rotationX: -35,
+            rotationY: 12,
+            scale: 0.8,
+            filter: "blur(14px) brightness(0.6)",
+            duration: 1.1,
+            ease: "expo.out",
+            stagger: { each: 0.09, from: "start" },
+            scrollTrigger: { trigger: el, start: "top 85%", once: true },
+            onComplete: () => {
+              kids.forEach((k) => (k.style.filter = ""));
+            },
+          });
+          break;
+        }
+
         case "split-words": {
           const s = new SplitText(el, { type: "words", wordsClass: "inline-block will-change-transform" });
           splits.push(s);

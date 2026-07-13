@@ -145,12 +145,12 @@ body {
   html[dir="rtl"] h4,
   html[dir="rtl"] h5,
   html[dir="rtl"] h6 {
-    line-height: 1.55;
+    line-height: 1.6;
     letter-spacing: 0;
     word-spacing: 0.05em;
-    padding-block: 0.15em;
+    padding-block: 0.25em;
   }
-  html[dir="rtl"] h1 { line-height: 1.1; }
+  html[dir="rtl"] h1 { line-height: 1.25; padding-block: 0.3em; }
   html[dir="rtl"] p,
   html[dir="rtl"] li,
   html[dir="rtl"] span,
@@ -159,11 +159,15 @@ body {
   html[dir="rtl"] button {
     line-height: 1.8;
   }
-  /* Override any Tailwind leading-none / leading-tight on Arabic headings */
-  html[dir="rtl"] .leading-none { line-height: 1.45 !important; }
-  html[dir="rtl"] .leading-tight { line-height: 1.55 !important; }
-  html[dir="rtl"] .leading-snug { line-height: 1.65 !important; }
+  /* Override tight Tailwind leading utilities on Arabic headings */
+  html[dir="rtl"] .leading-none { line-height: 1.5 !important; }
+  html[dir="rtl"] .leading-tight { line-height: 1.6 !important; }
+  html[dir="rtl"] .leading-snug { line-height: 1.7 !important; }
+  html[dir="rtl"] [class*="leading-\["] { line-height: 1.55 !important; }
+  /* Prevent gradient descenders being clipped by tight line boxes */
+  [class*="bg-clip-text"] { padding-block: 0.1em; }
 }
+
 
 
 @utility brand-glow {
@@ -204,8 +208,113 @@ body {
     0 0 30px -10px color-mix(in oklab, var(--brand) 40%, transparent);
 }
 
+/* ─── Unified RapidKeyz wordmark ──────────────────────────────── */
+.brand-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background-image: linear-gradient(
+    100deg,
+    var(--foreground) 0%,
+    var(--foreground) 35%,
+    var(--brand-deep) 55%,
+    var(--brand) 75%,
+    var(--brand-glow) 100%
+  );
+  background-size: 200% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  padding-block: 0.08em;
+  transition: background-position 0.7s ease;
+}
+.brand-text:hover { background-position: 100% 50%; }
+
+/* ─── Global button + interactive-link animations ──────────────── */
+@keyframes brandShine {
+  0%   { transform: translateX(-120%) skewX(-20deg); opacity: 0; }
+  40%  { opacity: 0.5; }
+  100% { transform: translateX(220%) skewX(-20deg); opacity: 0; }
+}
+@keyframes brandPulseRing {
+  0%   { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand) 45%, transparent); }
+  100% { box-shadow: 0 0 0 14px color-mix(in oklab, var(--brand) 0%, transparent); }
+}
+
+/* Base: every button and link that has hover styles gets a smooth transition + press */
+button, a {
+  transition-property: transform, box-shadow, background-color, color, border-color, opacity, filter;
+  transition-duration: 0.28s;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+button:active:not(:disabled),
+a:active {
+  transform: scale(0.96);
+  transition-duration: 0.08s;
+}
+
+/* Rich hover on "solid" buttons/links (things using bg-brand / bg-foreground / rounded pill CTAs) */
+a[class*="bg-brand"],
+a[class*="bg-foreground"],
+button[class*="bg-brand"],
+button[class*="bg-foreground"] {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+a[class*="bg-brand"]::before,
+a[class*="bg-foreground"]::before,
+button[class*="bg-brand"]::before,
+button[class*="bg-foreground"]::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, white 35%, transparent), transparent);
+  transform: translateX(-120%) skewX(-20deg);
+  pointer-events: none;
+  z-index: 1;
+}
+a[class*="bg-brand"]:hover::before,
+a[class*="bg-foreground"]:hover::before,
+button[class*="bg-brand"]:hover::before,
+button[class*="bg-foreground"]:hover::before {
+  animation: brandShine 0.85s ease-out;
+}
+a[class*="bg-brand"]:hover,
+button[class*="bg-brand"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -8px color-mix(in oklab, var(--brand) 55%, transparent);
+}
+a[class*="bg-foreground"]:hover,
+button[class*="bg-foreground"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -10px color-mix(in oklab, var(--foreground) 40%, transparent);
+}
+
+/* Outline / border pill buttons get a subtle brand-ring on hover */
+a[class*="border-border"]:hover:not([class*="bg-brand"]):not([class*="bg-foreground"]),
+button[class*="border-border"]:hover:not([class*="bg-brand"]):not([class*="bg-foreground"]) {
+  border-color: color-mix(in oklab, var(--brand) 55%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Icon-only square buttons: gentle scale + brand tint */
+button[class*="size-8"]:hover,
+button[class*="size-9"]:hover,
+button[class*="size-10"]:hover,
+a[class*="size-8"]:hover,
+a[class*="size-9"]:hover,
+a[class*="size-10"]:hover {
+  transform: translateY(-1px) scale(1.06);
+}
+
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
+
 
 /* Hide Lovable badge on published site */
 #lovable-badge,
