@@ -63,7 +63,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, phone, country")
         .eq("id", user!.id)
         .maybeSingle();
       return data;
@@ -75,6 +75,14 @@ function Dashboard() {
     (user?.user_metadata as any)?.name ||
     user?.email?.split("@")[0] ||
     "";
+
+  // Force profile completion for Google/social sign-ups missing WhatsApp or country.
+  useEffect(() => {
+    if (!user || !profile.data) return;
+    const missing = !profile.data.phone?.trim() || !profile.data.country?.trim();
+    if (missing) navigate({ to: "/account", search: { complete: "1" } });
+  }, [user, profile.data, navigate]);
+
 
   const orders = useQuery({
     queryKey: ["my-orders", user?.id],
@@ -117,7 +125,13 @@ function Dashboard() {
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end gap-2 mb-6">
+          <Link
+            to="/account"
+            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-muted"
+          >
+            {lang === "ar" ? "معلومات الحساب" : "Account info"}
+          </Link>
           <button
             onClick={handleSignOut}
             className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
@@ -125,6 +139,7 @@ function Dashboard() {
             {t.nav.logout}
           </button>
         </div>
+
 
 
         <section className="mb-12">
