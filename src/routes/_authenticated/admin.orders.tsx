@@ -5,6 +5,8 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
+import { notifyItemDelivered } from "@/lib/notify-order.functions";
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
   beforeLoad: async () => {
