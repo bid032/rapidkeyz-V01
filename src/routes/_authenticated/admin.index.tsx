@@ -232,7 +232,41 @@ function AdminOverview() {
       </div>
 
 
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 className="font-bold text-lg">الرسم البياني</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {month === "all" ? "الإيرادات والأرباح والتعويضات لكل الشهور" : `بيانات شهر ${month}`}
+            </p>
+          </div>
+        </div>
+        <div className="w-full h-72 sm:h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 12,
+                  fontSize: 12,
+                }}
+                formatter={(v: any) => `${v} ${t.common.currency}`}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="revenue" name="الإيرادات" fill="hsl(var(--brand))" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="refunds" name="التعويضات" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
+              <Line type="monotone" dataKey="profit" name="الأرباح" stroke="hsl(var(--success))" strokeWidth={3} dot={{ r: 4 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mt-6">
+
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
             <h2 className="font-bold text-lg">تفاصيل المبيعات</h2>
