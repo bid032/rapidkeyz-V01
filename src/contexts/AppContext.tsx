@@ -65,6 +65,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("both");
+  const [cartBumpKey, setCartBumpKey] = useState(0);
 
   // Load admin-forced theme mode
   useEffect(() => {
