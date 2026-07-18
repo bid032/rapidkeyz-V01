@@ -134,6 +134,36 @@ function ProductPage() {
     },
   });
 
+  const related = useQuery({
+    queryKey: ["related", (product as any)?.category_id, (product as any)?.id],
+    enabled: !!product,
+    queryFn: async (): Promise<ProductCardData[]> => {
+      const p: any = product;
+      let q = supabase
+        .from("products")
+        .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)")
+        .eq("status", "active")
+        .neq("id", p.id)
+        .limit(6);
+      if (p.category_id) q = q.eq("category_id", p.category_id);
+      const { data } = await q;
+      return (data ?? []).map((r: any) => {
+        const active = (r.product_plans ?? []).filter((pl: any) => pl.is_active);
+        const cheap = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        return {
+          id: r.id, slug: r.slug, name_ar: r.name_ar, name_en: r.name_en,
+          description_ar: r.description_ar, description_en: r.description_en,
+          icon_url: r.icon_url, delivery_type: r.delivery_type, account_type: r.account_type,
+          discount_percent: r.discount_percent ?? 0,
+          minPrice: cheap ? Number(cheap.price) : null,
+          cheapestPlanId: cheap?.id ?? null,
+          planLabel_ar: cheap?.label_ar ?? null,
+          planLabel_en: cheap?.label_en ?? null,
+        };
+      });
+    },
+  });
+
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
 
