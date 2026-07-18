@@ -90,7 +90,8 @@ function AdminUsers() {
     if (roleFilter !== "all") {
       data = data.filter((u: any) => {
         const roles = (u.user_roles ?? []).map((r: any) => r.role);
-        if (roleFilter === "user") return !roles.includes("admin") && !roles.includes("moderator");
+        if (roleFilter === "user")
+          return roles.includes("user") && !roles.includes("admin") && !roles.includes("moderator");
         return roles.includes(roleFilter);
       });
     }
