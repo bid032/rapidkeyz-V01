@@ -359,8 +359,8 @@ function HomePage() {
               </div>
             </div>
 
-            <div className="col-span-3 relative flex flex-col items-stretch gap-6">
-              <div className="flex justify-center">
+            <div className="col-span-3 relative flex flex-col items-stretch gap-10">
+              <div className="flex justify-center -mt-8 lg:-mt-14 mb-4">
                 <Logo3D className="w-40 lg:w-52" />
               </div>
               <div className="relative min-h-[220px]">
