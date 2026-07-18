@@ -29,6 +29,15 @@ function AdminOrders() {
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("all");
+  const [search, setSearch] = useState("");
+
+  const revenue = useQuery({
+    queryKey: ["admin-revenue-monthly"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("admin_revenue_by_month");
+      return (data ?? []) as Array<{ month: string; revenue: number; profit: number; orders_count: number }>;
+    },
+  });
 
   const orders = useQuery({
     queryKey: ["admin-orders"],
@@ -67,13 +76,23 @@ function AdminOrders() {
   }, [orders.data]);
 
   const visible = useMemo(() => {
+    let list = expiring;
     if (tab === "expiring") {
-      return expiring
+      list = list
         .filter((e) => e.minDays !== null && e.minDays <= 30 && e.minDays > -365)
         .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
     }
-    return expiring;
-  }, [expiring, tab]);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter(({ order: o }: any) =>
+        String(o.order_number ?? "").toLowerCase().includes(q) ||
+        String(o.customer_email ?? "").toLowerCase().includes(q) ||
+        String(o.customer_phone ?? "").toLowerCase().includes(q) ||
+        String(o.customer_name ?? "").toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [expiring, tab, search]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -134,6 +153,48 @@ function AdminOrders() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Monthly revenue/profit chart */}
+      {revenue.data && revenue.data.length > 0 && (() => {
+        const rows = [...revenue.data].reverse().slice(-6);
+        const maxV = Math.max(1, ...rows.map((r) => Number(r.revenue)));
+        return (
+          <div className="mb-6 p-4 bg-card border border-border rounded-2xl">
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="font-bold text-sm sm:text-base">أرباح آخر 6 شهور</h2>
+              <span className="text-xs text-muted-foreground">إيراد / ربح</span>
+            </div>
+            <div className="flex items-end gap-3 h-40">
+              {rows.map((r) => {
+                const rev = Number(r.revenue);
+                const pro = Number(r.profit);
+                const revH = Math.max(4, (rev / maxV) * 140);
+                const proH = Math.max(2, (Math.max(0, pro) / maxV) * 140);
+                const label = new Date(r.month).toLocaleDateString("ar-EG", { month: "short" });
+                return (
+                  <div key={r.month} className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                    <div className="w-full flex items-end justify-center gap-1 h-36">
+                      <div className="w-3 rounded-t bg-brand/60" style={{ height: `${revH}px` }} title={`إيراد ${rev.toLocaleString()}`} />
+                      <div className="w-3 rounded-t bg-accent" style={{ height: `${proH}px` }} title={`ربح ${pro.toLocaleString()}`} />
+                    </div>
+                    <div className="text-[10px] text-muted-foreground truncate">{label}</div>
+                    <div className="text-[10px] font-bold">{Math.round(rev).toLocaleString()}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      <div className="mb-4">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={lang === "ar" ? "بحث برقم الطلب أو الاسم أو الإيميل أو الواتساب…" : "Search by order #, name, email or phone…"}
+          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
+        />
       </div>
 
       {tab === "expiring" && (

@@ -89,6 +89,49 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   });
 }
 
+async function fetchBestSellers(): Promise<ProductCardData[]> {
+  // Sum quantities per product across paid/delivered orders
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("product_id, quantity, orders!inner(status)")
+    .in("orders.status", ["paid", "delivered"]);
+  const counts = new Map<string, number>();
+  for (const it of (items ?? []) as any[]) {
+    if (!it.product_id) continue;
+    counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
+  }
+  const topIds = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id]) => id);
+  if (topIds.length === 0) return [];
+  const { data } = await supabase
+    .from("products")
+    .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)")
+    .in("id", topIds)
+    .eq("status", "active");
+  const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
+  return topIds.flatMap((id) => {
+    const p: any = byId.get(id);
+    if (!p) return [];
+    const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+    const cheapest = activePlans.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    return [{
+      id: p.id,
+      slug: p.slug,
+      name_ar: p.name_ar,
+      name_en: p.name_en,
+      description_ar: p.description_ar,
+      description_en: p.description_en,
+      icon_url: p.icon_url,
+      delivery_type: p.delivery_type,
+      account_type: p.account_type,
+      discount_percent: p.discount_percent ?? 0,
+      minPrice: cheapest ? Number(cheapest.price) : null,
+      cheapestPlanId: cheapest?.id ?? null,
+      planLabel_ar: cheapest?.label_ar ?? null,
+      planLabel_en: cheapest?.label_en ?? null,
+    }];
+  });
+}
+
 
 function HomePage() {
   const { t, lang } = useApp();
@@ -96,6 +139,7 @@ function HomePage() {
   useEffect(() => { setHydrated(true); }, []);
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
+  const bestSellers = useQuery({ queryKey: ["best-sellers"], queryFn: fetchBestSellers });
   const trending = (products.data ?? []).slice(0, 3);
   const trendingLabels = ["TRENDING", "NEW", "HOT"];
   const heroSetting = useQuery({
@@ -174,7 +218,12 @@ function HomePage() {
                       params={{ slug: p.slug }}
                       className={`snap-start shrink-0 ${width} p-4 rounded-2xl neon-border bg-card/70 backdrop-blur ${rot} hover:brand-glow transition`}
                     >
-                      <div className={`text-[10px] font-mono uppercase tracking-widest mb-1.5 ${i === 1 ? "text-accent" : "text-brand"}`}>{trendingLabels[i]}</div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {p.icon_url && (
+                          <img src={p.icon_url} alt="" loading="lazy" className="size-6 rounded-md object-cover shrink-0 ring-1 ring-border/60" />
+                        )}
+                        <div className={`text-[10px] font-mono uppercase tracking-widest ${i === 1 ? "text-accent" : "text-brand"}`}>{trendingLabels[i]}</div>
+                      </div>
                       <div className="font-display font-bold text-base leading-tight mb-1.5 line-clamp-1">{name}</div>
                       {p.minPrice !== null && (
                         <div className="flex items-baseline gap-1">
@@ -316,7 +365,12 @@ function HomePage() {
                     data-gsap="tilt"
                     className="relative block rotate-[-4deg] p-5 rounded-2xl neon-border bg-card/70 backdrop-blur hover:brand-glow transition"
                   >
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-2">TRENDING</div>
+                    <div className="flex items-center gap-2 mb-2">
+                      {trending[0].icon_url && (
+                        <img src={trending[0].icon_url} alt="" loading="lazy" className="size-8 rounded-lg object-cover ring-1 ring-border/60" />
+                      )}
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-brand">TRENDING</div>
+                    </div>
                     <div className="font-display font-bold text-lg leading-tight mb-2 line-clamp-1">
                       {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                     </div>
@@ -338,7 +392,12 @@ function HomePage() {
                     data-gsap="tilt"
                     className="absolute -bottom-6 -right-4 block p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[4deg] hover:brand-glow transition"
                   >
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      {trending[1].icon_url && (
+                        <img src={trending[1].icon_url} alt="" loading="lazy" className="size-6 rounded-md object-cover ring-1 ring-border/60" />
+                      )}
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-accent">NEW</div>
+                    </div>
                     <div className="font-display font-bold text-sm line-clamp-1">
                       {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                     </div>
@@ -357,12 +416,43 @@ function HomePage() {
         </div>
       </header>
 
-
-
-
+      {/* Best Sellers */}
+      {bestSellers.data && bestSellers.data.length > 0 && (
+        <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-4">
+          <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
+            <div>
+              <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
+                {lang === "ar" ? "الأكثر طلباً" : "Top ordered"}
+              </div>
+              <h2
+                data-gsap="split-words"
+                className="font-display font-bold text-3xl sm:text-5xl leading-[1.05] tracking-tight"
+              >
+                {lang === "ar" ? "الأكثر مبيعاً" : "Best Sellers"}
+              </h2>
+            </div>
+            <Link
+              to="/shop"
+              data-gsap="magnetic"
+              data-strength="0.3"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full neon-border text-brand font-mono text-[11px] sm:text-sm uppercase tracking-widest shrink-0"
+            >
+              {lang === "ar" ? "عرض الكل" : "View all"} <span>→</span>
+            </Link>
+          </div>
+          <div data-gsap="card-pop" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {bestSellers.data.slice(0, 6).map((p) => (
+              <div key={p.id} data-gsap="tilt">
+                <ProductCard p={p} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Categories , centered creative pill grid */}
       <CategoriesShowcase compact slugs={["ai-tools", "design"]} />
+
 
 
 
