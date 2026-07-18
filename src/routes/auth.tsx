@@ -157,13 +157,30 @@ function AuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             {mode === "signup" && (
-              <input
-                required
-                placeholder={t.auth.displayName}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg"
-              />
+              <>
+                <input
+                  required
+                  placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                />
+                <input
+                  required
+                  type="tel"
+                  placeholder={lang === "ar" ? "رقم الواتساب (مع كود الدولة)" : "WhatsApp number (with country code)"}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                />
+                <input
+                  required
+                  placeholder={lang === "ar" ? "الدولة" : "Country"}
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                />
+              </>
             )}
             <input
               required
