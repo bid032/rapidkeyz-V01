@@ -46,9 +46,10 @@ async function fetchCategoryRows(): Promise<CategoryRow[]> {
           delivery_type: p.delivery_type,
           account_type: p.account_type,
           discount_percent: p.discount_percent,
+          minPrice: cheapest ? Number(cheapest.price) : null,
           starting_price: cheapest ? Number(cheapest.price) : null,
           plans: active,
-        };
+        } as ProductCardData;
       });
       return { id: c.id, slug: c.slug, name_ar: c.name_ar, name_en: c.name_en, products: mapped };
     }),
