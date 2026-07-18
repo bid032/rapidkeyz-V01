@@ -82,91 +82,51 @@ function ShopPage() {
     queryFn: () => fetchProducts(search),
   });
 
+  const category = useQuery({
+    queryKey: ["category-by-slug", search.category],
+    enabled: !!search.category,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("categories")
+        .select("slug, name_ar, name_en")
+        .eq("slug", search.category!)
+        .maybeSingle();
+      return data as { slug: string; name_ar: string; name_en: string } | null;
+    },
+  });
+
+  const inCategory = !!search.category;
+  const catName = category.data ? (lang === "ar" ? category.data.name_ar : category.data.name_en) : search.category;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      <PageHero
-        title={t.nav.shop}
-        eyebrow={lang === "ar" ? "كل الاشتراكات في مكان واحد" : "All subscriptions in one place"}
-      />
+      {inCategory ? (
+        <PageHero
+          title={catName ?? ""}
+          eyebrow={lang === "ar" ? "قسم" : "Category"}
+        />
+      ) : (
+        <>
+          <PageHero
+            title={t.nav.shop}
+            eyebrow={lang === "ar" ? "كل الاشتراكات في مكان واحد" : "All subscriptions in one place"}
+          />
 
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-4 mb-2 text-center">
-        <p className="text-sm sm:text-base text-muted-foreground leading-loose">
-          {lang === "ar"
-            ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الذكاء الاصطناعي والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
-            : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration."}
-        </p>
-      </div>
-
-      <CategoriesShowcase activeSlug={search.category} />
-
-
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-12">
-        {search.category && (
-          <div className="mb-6 flex justify-center">
-            <Link
-              to="/shop"
-              search={{}}
-              className="px-5 py-2 rounded-full text-xs sm:text-sm font-bold border border-border bg-card hover:border-brand hover:text-brand transition"
-            >
-              {t.filters.all}
-            </Link>
+          <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-4 mb-2 text-center">
+            <p className="text-sm sm:text-base text-muted-foreground leading-loose">
+              {lang === "ar"
+                ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الذكاء الاصطناعي والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
+                : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration."}
+            </p>
           </div>
-        )}
 
+          <CategoriesShowcase activeSlug={search.category} />
+        </>
+      )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.5 }}
-          className="relative mx-auto mb-12 max-w-4xl"
-        >
-          <div className="pointer-events-none absolute inset-0 -z-10">
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[160px] bg-brand/15 blur-[100px] rounded-full" />
-          </div>
-          <div className="flex flex-col items-center gap-4 rounded-3xl border border-border/70 bg-card/60 backdrop-blur px-4 sm:px-8 py-6 sm:py-8 shadow-lg">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em]">
-              <SlidersHorizontal className="size-3.5" />
-              {lang === "ar" ? "فلترة سريعة" : "Quick filters"}
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-              {([
-                { key: "private", type: "account", label: t.badges.private, Icon: Lock, tone: "brand" },
-                { key: "shared", type: "account", label: t.badges.shared, Icon: Users, tone: "brand" },
-              ] as const).map(({ key, type, label, Icon, tone }, i) => {
-                const active =
-                  (type === "account" && search.account === key);
-                const next = { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
-                const activeCls = "bg-brand/15 text-brand border-brand/50 brand-glow";
-                return (
-                  <motion.div
-                    key={key}
-                    initial={{ opacity: 0, y: 8 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.05 * i, duration: 0.35 }}
-                  >
-                    <Link
-                      to="/shop"
-                      search={next}
-                      className={`group inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all duration-300 hover:-translate-y-0.5 ${
-                        active
-                          ? activeCls
-                          : "border-border bg-background/60 text-muted-foreground hover:border-brand/60 hover:text-foreground"
-                      }`}
-                    >
-                      <Icon className="size-4" />
-                      {label}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-12 pt-6">
         {products.isLoading && <p className="text-muted-foreground">{t.common.loading}</p>}
         {products.data && products.data.length === 0 && (
           <p className="text-center text-muted-foreground py-16">
@@ -184,6 +144,17 @@ function ShopPage() {
           </div>
         )}
 
+        {inCategory && (
+          <div className="mt-10 flex justify-center">
+            <Link
+              to="/shop"
+              search={{}}
+              className="px-5 py-2 rounded-full text-xs sm:text-sm font-bold border border-border bg-card hover:border-brand hover:text-brand transition"
+            >
+              {t.filters.all}
+            </Link>
+          </div>
+        )}
       </div>
       <Footer />
     </div>
