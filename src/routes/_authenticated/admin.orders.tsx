@@ -187,13 +187,22 @@ function AdminOrders() {
         ...creds,
       });
       if (error) throw error;
+      // Fire-and-await customer email with the delivered credentials.
+      try {
+        await notifyItemDelivered({ data: { orderItemId } });
+      } catch (e) {
+        // Non-fatal for delivery, but surface to admin.
+        console.error("notifyItemDelivered failed", e);
+        notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
-      notify(lang === "ar" ? "تم التسليم" : "Delivered", "success");
+      notify(lang === "ar" ? "تم التسليم وإرسال الإيميل" : "Delivered & emailed", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
+
 
   const deleteOrder = useMutation({
     mutationFn: async (id: string) => {
