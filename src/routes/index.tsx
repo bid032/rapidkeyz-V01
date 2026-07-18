@@ -364,7 +364,7 @@ function HomePage() {
 
 
       {/* Categories , centered creative pill grid */}
-      <CategoriesShowcase />
+      <CategoriesShowcase compact slugs={["ai-tools", "design"]} />
 
 
 
