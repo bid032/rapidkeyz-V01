@@ -172,102 +172,19 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div
-          id="rk-pre-splash"
-          aria-hidden="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 99998,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            background: "#0b1220",
-            transition: "opacity 400ms ease",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: 520,
-              height: 260,
-              transform: "translate(-50%, -50%)",
-              borderRadius: "9999px",
-              background: "rgba(34,195,230,0.2)",
-              filter: "blur(120px)",
-              opacity: 0.7,
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "radial-gradient(circle at center, transparent 0%, #0b1220 72%)",
-            }}
-          />
-          <div
-            style={{
-              position: "relative",
-              width: 208,
-              height: 208,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: -24,
-                borderRadius: "9999px",
-                border: "2px solid transparent",
-                borderTopColor: "#22c3e6",
-                borderRightColor: "rgba(34,195,230,0.4)",
-                animation: "rk-pre-spin 1.2s linear infinite",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: -12,
-                borderRadius: "9999px",
-                border: "2px solid transparent",
-                borderBottomColor: "rgba(34,195,230,0.6)",
-                animation: "rk-pre-spin 1.8s linear infinite reverse",
-              }}
-            />
-            <img
-              id="rk-pre-splash-logo"
-              src={logoDark.url}
-              alt="RapidKeyz"
-              style={{
-                position: "relative",
-                width: "70%",
-                height: "70%",
-                objectFit: "contain",
-                filter: "drop-shadow(0 0 20px rgba(34,195,230,0.55))",
-                animation: "rk-pre-pulse 1.8s ease-in-out infinite",
-              }}
-            />
-          </div>
-        </div>
+        <div id="rk-pre-splash" aria-hidden="true" suppressHydrationWarning />
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('rk-theme');var el=document.getElementById('rk-pre-splash');var logo=document.getElementById('rk-pre-splash-logo');if(el&&t==='light'){el.style.background='#f5f7fb';var layers=el.children;if(layers&&layers[1])layers[1].style.background='radial-gradient(circle at center, transparent 0%, #f5f7fb 72%)';if(logo)logo.setAttribute('src','${logoLight.url}');}}catch(e){}var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);var hide=function(){var el=document.getElementById('rk-pre-splash');if(!el)return;el.style.opacity='0';setTimeout(function(){el&&el.parentNode&&el.parentNode.removeChild(el);},450);};if(document.readyState==='complete'){setTimeout(hide,600);}else{window.addEventListener('load',function(){setTimeout(hide,500);},{once:true});}setTimeout(hide,4500);})();`,
+            __html: `(function(){try{var el=document.getElementById('rk-pre-splash');if(!el)return;var t=localStorage.getItem('rk-theme');var isLight=t==='light';var bg=isLight?'#f5f7fb':'#0b1220';var logoSrc=isLight?${JSON.stringify(logoLight.url)}:${JSON.stringify(logoDark.url)};var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);el.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden;background:'+bg+';transition:opacity 400ms ease';el.innerHTML='<div style="position:absolute;top:50%;left:50%;width:520px;height:260px;transform:translate(-50%,-50%);border-radius:9999px;background:rgba(34,195,230,0.2);filter:blur(120px);opacity:.7"></div><div style="position:absolute;inset:0;background:radial-gradient(circle at center, transparent 0%, '+bg+' 72%)"></div><div style="position:relative;width:208px;height:208px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;inset:-24px;border-radius:9999px;border:2px solid transparent;border-top-color:#22c3e6;border-right-color:rgba(34,195,230,0.4);animation:rk-pre-spin 1.2s linear infinite"></div><div style="position:absolute;inset:-12px;border-radius:9999px;border:2px solid transparent;border-bottom-color:rgba(34,195,230,0.6);animation:rk-pre-spin 1.8s linear infinite reverse"></div><img src="'+logoSrc+'" alt="RapidKeyz" style="position:relative;width:70%;height:70%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(34,195,230,0.55));animation:rk-pre-pulse 1.8s ease-in-out infinite"/></div>';var hide=function(){var e=document.getElementById('rk-pre-splash');if(!e)return;e.style.opacity='0';setTimeout(function(){e.style.display='none';e.innerHTML='';},450);};if(document.readyState==='complete'){setTimeout(hide,600);}else{window.addEventListener('load',function(){setTimeout(hide,500);},{once:true});}setTimeout(hide,4500);}catch(e){}})();`,
           }}
         />
-        <div style={{ display: "none" }}>
-          {/* preload the alternate theme logo for instant theme-correct splash */}
-          <img src={logoLight.url} alt="" />
-        </div>
 
 
         {children}
         <Scripts />
       </body>
+
     </html>
   );
 }
