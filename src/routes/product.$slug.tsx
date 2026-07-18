@@ -167,6 +167,8 @@ function ProductPage() {
 
   const [accountType, setAccountType] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
+  const [confirmBuy, setConfirmBuy] = useState(false);
+
 
   // Live viewers counter , seeded per-slug for stability, drifts every few seconds.
   const seed = useMemo(() => {
