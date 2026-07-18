@@ -90,6 +90,19 @@ function Dashboard() {
     },
   });
 
+  const refunds = useQuery({
+    queryKey: ["my-refunds", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("refunds")
+        .select("id, amount, type, notes, created_at")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/" });
