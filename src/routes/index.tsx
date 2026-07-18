@@ -444,17 +444,9 @@ function HomePage() {
                 {lang === "ar" ? "الأكثر مبيعاً" : "Best Sellers"}
               </h2>
             </div>
-            <Link
-              to="/shop"
-              data-gsap="magnetic"
-              data-strength="0.3"
-              className="group inline-flex items-center gap-2 px-5 sm:px-6 py-3 rounded-full bg-brand text-brand-foreground font-bold text-xs sm:text-sm shadow-lg hover:brand-glow transition-all shrink-0"
-            >
-              <span>{lang === "ar" ? "عرض الكل" : "View all"}</span>
-              <span className="grid place-items-center size-6 rounded-full bg-brand-foreground/20 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">→</span>
-            </Link>
+            <ViewAllButton to="/shop" />
           </div>
-          <div data-gsap="card-pop" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div data-gsap="card-pop" className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {bestSellers.data.slice(0, 6).map((p) => (
               <div key={p.id} data-gsap="tilt">
                 <ProductCard p={p} />
