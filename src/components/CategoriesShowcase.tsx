@@ -60,7 +60,7 @@ export function CategoriesShowcase({
           <>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
               <Sparkles className="size-3.5" />
-              {lang === "ar" ? "الأقسام" : "Categories"}
+              {lang === "ar" ? "كل الخدمات" : "Categories"}
             </div>
             <h2
               className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
