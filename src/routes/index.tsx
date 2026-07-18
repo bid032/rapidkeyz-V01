@@ -89,6 +89,49 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   });
 }
 
+async function fetchBestSellers(): Promise<ProductCardData[]> {
+  // Sum quantities per product across paid/delivered orders
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("product_id, quantity, orders!inner(status)")
+    .in("orders.status", ["paid", "delivered"]);
+  const counts = new Map<string, number>();
+  for (const it of (items ?? []) as any[]) {
+    if (!it.product_id) continue;
+    counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
+  }
+  const topIds = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id]) => id);
+  if (topIds.length === 0) return [];
+  const { data } = await supabase
+    .from("products")
+    .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)")
+    .in("id", topIds)
+    .eq("status", "active");
+  const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
+  return topIds.flatMap((id) => {
+    const p: any = byId.get(id);
+    if (!p) return [];
+    const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+    const cheapest = activePlans.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    return [{
+      id: p.id,
+      slug: p.slug,
+      name_ar: p.name_ar,
+      name_en: p.name_en,
+      description_ar: p.description_ar,
+      description_en: p.description_en,
+      icon_url: p.icon_url,
+      delivery_type: p.delivery_type,
+      account_type: p.account_type,
+      discount_percent: p.discount_percent ?? 0,
+      minPrice: cheapest ? Number(cheapest.price) : null,
+      cheapestPlanId: cheapest?.id ?? null,
+      planLabel_ar: cheapest?.label_ar ?? null,
+      planLabel_en: cheapest?.label_en ?? null,
+    }];
+  });
+}
+
 
 function HomePage() {
   const { t, lang } = useApp();
