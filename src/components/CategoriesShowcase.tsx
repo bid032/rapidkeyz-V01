@@ -60,14 +60,14 @@ export function CategoriesShowcase({
           <>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
               <Sparkles className="size-3.5" />
-              {lang === "ar" ? "الأقسام" : "Categories"}
+              {lang === "ar" ? "كل الخدمات" : "Categories"}
             </div>
             <h2
               className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
                 compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
               }`}
             >
-              <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
+              <span className="brand-text">{lang === "ar" ? "كل الخدمات" : "Categories"}</span>
             </h2>
             {!compact && (
               <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
