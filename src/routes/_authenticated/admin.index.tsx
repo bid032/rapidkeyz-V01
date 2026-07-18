@@ -176,8 +176,10 @@ function AdminOverview() {
             <div className={`text-xl sm:text-3xl font-extrabold break-words ${
               c.tone === "brand" ? "text-brand" :
               c.tone === "success" ? "text-success" :
-              c.tone === "warning" ? "text-warning" : ""
+              c.tone === "warning" ? "text-warning" :
+              c.tone === "danger" ? "text-destructive" : ""
             }`}>{c.value}</div>
+
           </div>
         ))}
       </div>
