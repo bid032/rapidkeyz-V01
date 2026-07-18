@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
-import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X } from "lucide-react";
+import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
@@ -29,13 +29,14 @@ function AdminUsers() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [stockUser, setStockUser] = useState<any | null>(null);
 
   const users = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
       const [{ data: list, error }, profilesRes, rolesRes] = await Promise.all([
         supabase.rpc("admin_list_users"),
-        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at"),
+        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at, stock_access, stock_password_hash"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
       if (error) throw error;
@@ -52,6 +53,8 @@ function AdminUsers() {
           country: p.country ?? "",
           preferred_language: p.preferred_language ?? "",
           created_at: u.created_at ?? p.created_at ?? null,
+          stock_access: !!p.stock_access,
+          has_stock_password: !!p.stock_password_hash,
           user_roles: (rolesRes.data ?? [])
             .filter((r: any) => r.user_id === u.id)
             .map((r: any) => ({ role: r.role })),
@@ -335,6 +338,18 @@ function AdminUsers() {
                           >
                             {isModerator ? (lang === "ar" ? "إلغاء مشرف" : "Remove mod") : (lang === "ar" ? "مشرف" : "Make mod")}
                           </button>
+                          <button
+                            onClick={() => setStockUser(u)}
+                            className={`text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition inline-flex items-center gap-1 ${
+                              u.stock_access
+                                ? "bg-success/10 text-success hover:bg-success/20"
+                                : "bg-muted text-muted-foreground hover:bg-muted/70"
+                            }`}
+                            title={lang === "ar" ? "الاستوك" : "Stock"}
+                          >
+                            <Boxes className="w-3 h-3" />
+                            {lang === "ar" ? "استوك" : "Stock"}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -407,11 +422,127 @@ function AdminUsers() {
                     {isModerator ? (lang === "ar" ? "إلغاء مشرف" : "Remove mod") : (lang === "ar" ? "جعله مشرف" : "Make mod")}
                   </button>
                 </div>
+                <button
+                  onClick={() => setStockUser(u)}
+                  className={`w-full text-xs px-3 py-2.5 rounded-xl font-bold transition inline-flex items-center justify-center gap-1.5 ${
+                    u.stock_access ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <Boxes className="w-3.5 h-3.5" />
+                  {u.stock_access
+                    ? (lang === "ar" ? "إدارة صلاحية الاستوك" : "Manage Stock Access")
+                    : (lang === "ar" ? "منح صلاحية الاستوك" : "Grant Stock Access")}
+                </button>
               </div>
             );
           })}
         </div>
       )}
+
+      {stockUser && (
+        <StockAccessDialog
+          user={stockUser}
+          onClose={() => setStockUser(null)}
+          onSaved={() => {
+            setStockUser(null);
+            qc.invalidateQueries({ queryKey: ["admin-users"] });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function StockAccessDialog({
+  user,
+  onClose,
+  onSaved,
+}: {
+  user: any;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { lang, notify } = useApp();
+  const [access, setAccess] = useState<boolean>(!!user.stock_access);
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const save = async () => {
+    if (access && !user.has_stock_password && !password) {
+      notify(lang === "ar" ? "أدخل كلمة سر عشان اليوزر يقدر يدخل" : "Set a password first", "error");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.rpc("admin_set_stock_access", {
+      _user_id: user.id,
+      _access: access,
+      _password: password || undefined,
+    });
+    setLoading(false);
+    if (error) return notify(error.message, "error");
+    notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
+    onSaved();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-3 end-3 w-8 h-8 grid place-items-center rounded-full hover:bg-muted">
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-11 h-11 rounded-2xl grid place-items-center bg-brand/10 text-brand">
+            <Boxes className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-extrabold">{lang === "ar" ? "صلاحية الاستوك" : "Stock Access"}</div>
+            <div className="text-xs text-muted-foreground truncate max-w-[200px]">{user.display_name || user.email}</div>
+          </div>
+        </div>
+
+        <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer mb-4">
+          <input type="checkbox" checked={access} onChange={(e) => setAccess(e.target.checked)} className="mt-1" />
+          <div>
+            <div className="font-bold text-sm">{lang === "ar" ? "السماح بالدخول لصفحة الاستوك" : "Allow access to stock page"}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {lang === "ar" ? "لو مقفول، لن يظهر رابط الاستوك في القائمة." : "Hides the stock link if disabled."}
+            </div>
+          </div>
+        </label>
+
+        <div className="space-y-2 mb-4">
+          <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" />
+            {user.has_stock_password
+              ? (lang === "ar" ? "تغيير كلمة السر (اختياري)" : "Change password (optional)")
+              : (lang === "ar" ? "كلمة السر الأولى" : "Set password")}
+          </label>
+          <input
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={user.has_stock_password ? "•••••• (اتركها فاضية لعدم التغيير)" : "كلمة السر"}
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
+            dir="ltr"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={save}
+            disabled={loading}
+            className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-60"
+          >
+            {loading ? "..." : (lang === "ar" ? "حفظ" : "Save")}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 bg-muted rounded-xl font-bold text-sm">
+            {lang === "ar" ? "إلغاء" : "Cancel"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

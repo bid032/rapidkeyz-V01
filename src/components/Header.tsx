@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
+import { ShoppingCart, Sun, Moon, Menu, X, Boxes } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
@@ -25,6 +25,7 @@ export function Header() {
   }, [cartBumpKey]);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasStock, setHasStock] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [shrunk, setShrunk] = useState(false);
@@ -62,6 +63,7 @@ export function Header() {
   useEffect(() => {
     if (!user) {
       setIsAdmin(false);
+      setHasStock(false);
       return;
     }
     supabase
@@ -70,6 +72,7 @@ export function Header() {
       .eq("user_id", user.id)
       .in("role", ["admin", "moderator"])
       .then(({ data }) => setIsAdmin(!!(data && data.length > 0)));
+    supabase.rpc("current_user_stock_access").then(({ data }) => setHasStock(!!data));
   }, [user]);
 
   const closeMobile = () => setMobileOpen(false);
@@ -99,6 +102,11 @@ export function Header() {
             {user && (
               <Link to="/dashboard" className="hover:text-foreground transition-colors">
                 {t.nav.dashboard}
+              </Link>
+            )}
+            {hasStock && (
+              <Link to="/stock" className="hover:text-brand transition-colors inline-flex items-center gap-1 font-bold">
+                <Boxes className="w-4 h-4" /> الاستوك
               </Link>
             )}
             {isAdmin && (
@@ -239,6 +247,11 @@ export function Header() {
                   {user && (
                     <Link to="/dashboard" onClick={closeMobile} className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors" activeProps={{ className: "text-brand" }}>
                       {t.nav.dashboard}
+                    </Link>
+                  )}
+                  {hasStock && (
+                    <Link to="/stock" onClick={closeMobile} className="px-4 py-3 text-sm font-extrabold text-brand hover:bg-muted border-b border-border/40 transition-colors inline-flex items-center gap-2">
+                      <Boxes className="w-4 h-4" /> الاستوك
                     </Link>
                   )}
                   {isAdmin && (
