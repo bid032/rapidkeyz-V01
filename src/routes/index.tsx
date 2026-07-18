@@ -419,9 +419,19 @@ function HomePage() {
         </div>
       </header>
 
+      {/* Categories , small 4-across clickable pills */}
+      <CategoriesShowcase
+        compact
+        mini
+        slugs={["design", "ai-tools", "software", "educational"]}
+      />
+
+      {/* AI Tools + Designers rows */}
+      <CategoryRows slugs={["ai-tools", "design"]} />
+
       {/* Best Sellers */}
       {bestSellers.data && bestSellers.data.length > 0 && (
-        <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-4">
+        <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24">
           <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
             <div>
               <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
@@ -452,68 +462,6 @@ function HomePage() {
           </div>
         </section>
       )}
-
-      {/* Categories , centered creative pill grid */}
-      <CategoriesShowcase compact slugs={["ai-tools", "design"]} />
-
-      {/* Horizontal category product rows */}
-      <CategoryRows />
-
-
-
-
-
-
-      {/* Products , Broken grid */}
-      <main id="trending" className="relative max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
-        <div className="relative mb-10 sm:mb-16 flex items-end justify-between gap-6">
-          <div>
-            
-            <h2
-              data-gsap="split-words"
-              className="font-display font-bold text-4xl sm:text-6xl leading-[1.05] tracking-tight"
-            >
-              {t.home.trending}
-            </h2>
-          </div>
-          <Link
-            to="/shop"
-            data-gsap="magnetic"
-            data-strength="0.3"
-            className="hidden sm:inline-flex items-center gap-2 px-5 py-3 rounded-full neon-border text-brand font-mono text-sm uppercase tracking-widest"
-          >
-            {t.home.viewAll} <span>→</span>
-          </Link>
-        </div>
-
-        {products.isLoading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-64 bg-card border border-border rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        )}
-        {products.data && products.data.length === 0 && (
-          <div className="text-center py-16 border border-dashed border-border rounded-2xl">
-            <p className="text-muted-foreground">
-              {lang === "ar" ? "لا توجد منتجات بعد ، أضفها من لوحة الأدمن." : "No products yet ، add them from the admin panel."}
-            </p>
-          </div>
-        )}
-        {products.data && products.data.length > 0 && (
-          <div data-gsap="card-pop" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {products.data.map((p, i) => (
-              <div
-                key={p.id}
-                data-gsap="tilt"
-                className={i % 5 === 2 ? "sm:translate-y-6" : i % 5 === 4 ? "sm:-translate-y-4" : ""}
-              >
-                <ProductCard p={p} />
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
 
       <TrustSection />
 
