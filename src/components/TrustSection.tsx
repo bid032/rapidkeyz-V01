@@ -146,7 +146,7 @@ export function TrustSection() {
         </div>
 
         {/* Features intro */}
-        <div data-gsap="reveal" className="text-center mt-14 sm:mt-20 mb-8 sm:mb-10">
+        <div data-gsap="reveal" className="text-center mt-10 sm:mt-14 mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
             <span className="size-1.5 rounded-full bg-brand animate-pulse" />
             {lang === "ar" ? "مميزاتنا" : "What sets us apart"}
