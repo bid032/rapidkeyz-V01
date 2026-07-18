@@ -233,14 +233,19 @@ function CheckoutPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="px-4 py-3 bg-background border border-border rounded-lg"
                   />
-                  <input
-                    required
-                    type="tel"
-                    placeholder={t.checkout.phone}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="px-4 py-3 bg-background border border-border rounded-lg"
-                  />
+                  <div className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
+                    <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none" dir="ltr">+20</span>
+                    <input
+                      required
+                      type="tel"
+                      inputMode="tel"
+                      placeholder={lang === "ar" ? "1XXXXXXXXX" : "1XXXXXXXXX"}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                      className="flex-1 px-4 py-3 bg-transparent outline-none"
+                      dir="ltr"
+                    />
+                  </div>
                 </div>
               </section>
 
