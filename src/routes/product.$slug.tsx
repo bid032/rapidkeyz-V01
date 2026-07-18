@@ -146,7 +146,9 @@ function ProductPage() {
         .eq("status", "active")
         .neq("id", p.id)
         .limit(6);
-      if (p.category_id) q = q.eq("category_id", p.category_id);
+      const cats: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
+      if (cats.length > 0) q = q.overlaps("category_ids", cats);
+      else if (p.category_id) q = q.eq("category_id", p.category_id);
       const { data } = await q;
       return (data ?? []).map((r: any) => {
         const active = (r.product_plans ?? []).filter((pl: any) => pl.is_active);
@@ -310,37 +312,8 @@ function ProductPage() {
         </div>
 
         <div>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span
-              className={`px-2 py-1 rounded text-xs font-bold border uppercase ${
-                product.delivery_type === "instant"
-                  ? "bg-success/10 text-success border-success/20"
-                  : "bg-warning/10 text-warning border-warning/20"
-              }`}
-            >
-              {product.delivery_type === "instant" ? t.badges.instant : t.badges.manual}
-            </span>
-            <span
-              className={`px-2 py-1 rounded text-xs font-bold border uppercase ${
-                product.account_type === "private"
-                  ? "bg-brand/10 text-brand border-brand/20"
-                  : product.account_type === "both"
-                  ? "bg-accent/10 text-accent-foreground border-accent/30"
-                  : product.account_type === "own"
-                  ? "bg-success/10 text-success border-success/20"
-                  : "bg-muted text-muted-foreground border-border"
-              }`}
-            >
-              {product.account_type === "private"
-                ? t.badges.private
-                : product.account_type === "both"
-                ? (t.badges as any).both
-                : product.account_type === "own"
-                ? (t.badges as any).own
-                : t.badges.shared}
-            </span>
-          </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold mb-3">{name}</h1>
+
 
           {desc && <p className="text-muted-foreground text-lg mb-5 leading-relaxed">{desc}</p>}
 

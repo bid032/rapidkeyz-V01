@@ -38,14 +38,24 @@ export const Route = createFileRoute("/shop")({
 
 
 async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<ProductCardData[]> {
+  let categoryId: string | null = null;
+  if (filters.category) {
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", filters.category)
+      .maybeSingle();
+    categoryId = cat?.id ?? null;
+  }
+
   let q = supabase
     .from("products")
     .select(
-      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, categories!inner(slug), product_plans(id, price, label_ar, label_en, is_active)",
+      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, category_id, category_ids, product_plans(id, price, label_ar, label_en, is_active)",
     )
     .eq("status", "active");
-  if (filters.category) q = q.eq("categories.slug", filters.category);
-  
+  if (categoryId) q = q.or(`category_id.eq.${categoryId},category_ids.cs.{${categoryId}}`);
+
   if (filters.account) q = q.eq("account_type", filters.account);
   const { data, error } = await q.order("sort_order");
   if (error) throw error;

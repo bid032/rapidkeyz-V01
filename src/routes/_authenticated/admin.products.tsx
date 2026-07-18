@@ -21,6 +21,7 @@ type ProductForm = {
   description_en: string;
   icon_url: string;
   category_id: string | null;
+  category_ids: string[];
   delivery_type: "instant" | "manual";
   account_type: AccountType;
   account_types: AccountType[];
@@ -37,6 +38,7 @@ const emptyForm: ProductForm = {
   description_en: "",
   icon_url: "",
   category_id: null,
+  category_ids: [],
   delivery_type: "instant",
   account_type: "shared",
   account_types: ["shared"],
@@ -97,8 +99,12 @@ function AdminProducts() {
   const save = useMutation({
     mutationFn: async (f: ProductForm) => {
       const types = f.account_types.length > 0 ? f.account_types : ["shared" as const];
+      const catIds = Array.from(new Set(f.category_ids.filter(Boolean)));
+      const primary = f.category_id && catIds.includes(f.category_id) ? f.category_id : catIds[0] ?? null;
       const payload: any = {
         ...f,
+        category_id: primary,
+        category_ids: catIds,
         account_types: types,
         account_type: deriveLegacyAccountType(types),
       };
@@ -185,7 +191,10 @@ function AdminProducts() {
         const filtered = products.data
           ?.filter((p: any) => {
             if (statusFilter !== "all" && p.status !== statusFilter) return false;
-            if (categoryFilter !== "all" && p.category_id !== categoryFilter) return false;
+            if (categoryFilter !== "all") {
+              const list: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
+              if (!list.includes(categoryFilter)) return false;
+            }
             if (search.trim()) {
               const q = search.trim().toLowerCase();
               const hay = `${p.name_ar} ${p.name_en} ${p.slug}`.toLowerCase();
@@ -201,10 +210,14 @@ function AdminProducts() {
             : p.account_type === "both"
               ? ["shared", "private"]
               : [p.account_type as AccountType];
+          const existingCats: string[] = Array.isArray((p as any).category_ids) && (p as any).category_ids.length > 0
+            ? ((p as any).category_ids as string[])
+            : p.category_id ? [p.category_id] : [];
           setEditing({
             id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
             description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
             icon_url: p.icon_url ?? "", category_id: p.category_id,
+            category_ids: existingCats,
             delivery_type: p.delivery_type, account_type: p.account_type,
             account_types: initTypes,
             status: p.status, is_featured: p.is_featured,
@@ -403,14 +416,40 @@ function AdminProducts() {
                   requireAspectRatio={{ w: 1, h: 1 }}
                 />
               </div>
-              <Field label="القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
-                <select value={editing.category_id ?? ""}
-                  onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
-                  <option value="">، اختر قسم ،</option>
-                  {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
-                </select>
+              <Field label="الأقسام" hint="اختر قسم واحد أو أكثر ، الخدمة هتظهر في كل قسم اخترته." className="md:col-span-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {cats.data?.map((c) => {
+                    const active = editing.category_ids.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          const set = new Set(editing.category_ids);
+                          if (set.has(c.id)) set.delete(c.id);
+                          else set.add(c.id);
+                          const next = Array.from(set);
+                          setEditing({
+                            ...editing,
+                            category_ids: next,
+                            category_id: editing.category_id && next.includes(editing.category_id) ? editing.category_id : next[0] ?? null,
+                          });
+                        }}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-start ${
+                          active ? "border-brand bg-brand/10 text-brand" : "border-border bg-background hover:border-brand/40"
+                        }`}
+                      >
+                        <span className="inline-block me-1">{active ? "☑" : "☐"}</span>
+                        {c.name_ar}
+                      </button>
+                    );
+                  })}
+                </div>
+                {editing.category_ids.length === 0 && (
+                  <p className="text-[11px] text-muted-foreground mt-2">اختر قسم واحد على الأقل علشان الخدمة تبان في المتجر.</p>
+                )}
               </Field>
+
               <Field label="الحالة" hint="active: ظاهر للعملاء · draft: مخفي (شغل جاري) · archived: مؤرشف">
                 <select value={editing.status}
                   onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
