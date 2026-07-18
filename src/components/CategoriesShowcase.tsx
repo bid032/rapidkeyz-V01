@@ -56,12 +56,12 @@ export function CategoriesShowcase({
       </div>
 
       <div className={`text-center ${mini ? "mb-4" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
-          <Sparkles className="size-3.5" />
-          {lang === "ar" ? "الأقسام" : "Categories"}
-        </div>
         {!mini && (
           <>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
+              <Sparkles className="size-3.5" />
+              {lang === "ar" ? "الأقسام" : "Categories"}
+            </div>
             <h2
               className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
                 compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
@@ -75,6 +75,7 @@ export function CategoriesShowcase({
           </>
         )}
       </div>
+
 
 
       <div
