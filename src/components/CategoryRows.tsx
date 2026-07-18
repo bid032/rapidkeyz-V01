@@ -34,7 +34,7 @@ async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
           "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)",
         )
         .eq("status", "active")
-        .eq("category_id", c.id)
+        .or(`category_id.eq.${c.id},category_ids.cs.{${c.id}}`)
         .order("sort_order", { ascending: true })
         .limit(8);
       const mapped: ProductCardData[] = (prods ?? []).map((p: any) => {
