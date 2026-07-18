@@ -38,13 +38,18 @@ function AdminOverview() {
   const stats = useQuery({
     queryKey: ["admin-stats", month],
     queryFn: async () => {
-      const [rev, products, users, pending] = await Promise.all([
+      let refundsQ = supabase.from("refunds").select("amount");
+      if (range.start) refundsQ = refundsQ.gte("created_at", range.start);
+      if (range.end) refundsQ = refundsQ.lt("created_at", range.end);
+      const [rev, products, users, pending, refundsRes] = await Promise.all([
         supabase.rpc("admin_revenue_stats", { _start: range.start ?? undefined, _end: range.end ?? undefined }),
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        refundsQ,
       ]);
       const row = (rev.data as any[])?.[0] ?? { revenue: 0, profit: 0, orders_count: 0, items_count: 0 };
+      const refundsTotal = (refundsRes.data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
       return {
         revenue: Number(row.revenue ?? 0),
         profit: Number(row.profit ?? 0),
@@ -52,9 +57,11 @@ function AdminOverview() {
         products: products.count ?? 0,
         users: users.count ?? 0,
         pending: pending.count ?? 0,
+        refunds: refundsTotal,
       };
     },
   });
+
 
   const monthly = useQuery({
     queryKey: ["admin-revenue-monthly"],
