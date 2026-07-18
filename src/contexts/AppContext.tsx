@@ -60,15 +60,16 @@ const AppContext = createContext<AppState | null>(null);
 const isBrowser = typeof window !== "undefined";
 
 function getInitialTheme(): Theme {
-  if (!isBrowser) return "dark";
-  const storedTheme = localStorage.getItem("rk-theme");
-  if (storedTheme === "dark" || storedTheme === "light") return storedTheme;
-  return document.documentElement.classList.contains("light") ? "light" : "dark";
+  // Always return the same value on server and initial client render to
+  // avoid hydration mismatches. The real theme is applied in a useEffect
+  // after mount (see hydration effect below).
+  return "dark";
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ar");
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("both");
