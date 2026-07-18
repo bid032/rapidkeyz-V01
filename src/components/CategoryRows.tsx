@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
+
 
 type CategoryRow = {
   id: string;
