@@ -207,10 +207,14 @@ function AdminProducts() {
             : p.account_type === "both"
               ? ["shared", "private"]
               : [p.account_type as AccountType];
+          const existingCats: string[] = Array.isArray((p as any).category_ids) && (p as any).category_ids.length > 0
+            ? ((p as any).category_ids as string[])
+            : p.category_id ? [p.category_id] : [];
           setEditing({
             id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
             description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
             icon_url: p.icon_url ?? "", category_id: p.category_id,
+            category_ids: existingCats,
             delivery_type: p.delivery_type, account_type: p.account_type,
             account_types: initTypes,
             status: p.status, is_featured: p.is_featured,
