@@ -140,14 +140,7 @@ function ShopPage() {
                 const active =
                   (type === "account" && search.account === key);
                 const next = { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
-                const next =
-                  type === "delivery"
-                    ? { ...search, delivery: search.delivery === key ? undefined : (key as "instant" | "manual") }
-                    : { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
-                const activeCls =
-                  tone === "success"
-                    ? "bg-success/15 text-success border-success/50 shadow-[0_0_20px_-6px_hsl(var(--success)/0.6)]"
-                    : "bg-brand/15 text-brand border-brand/50 brand-glow";
+                const activeCls = "bg-brand/15 text-brand border-brand/50 brand-glow";
                 return (
                   <motion.div
                     key={key}
