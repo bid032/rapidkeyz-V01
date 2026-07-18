@@ -68,9 +68,6 @@ export function Header() {
             <Link to="/" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.home}
             </Link>
-            <Link to="/shop" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
-              {t.nav.shop}
-            </Link>
             <CategoriesMenu />
             <Link to="/about" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.about}
@@ -181,9 +178,6 @@ export function Header() {
               <nav className="flex flex-col p-3 gap-1">
                 <Link to="/" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }} activeOptions={{ exact: true }}>
                   {t.nav.home}
-                </Link>
-                <Link to="/shop" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                  {t.nav.shop}
                 </Link>
                 <Link to="/about" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
                   {t.nav.about}

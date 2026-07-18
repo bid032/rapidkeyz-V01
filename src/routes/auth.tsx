@@ -165,14 +165,19 @@ function AuthPage() {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg"
                 />
-                <input
-                  required
-                  type="tel"
-                  placeholder={lang === "ar" ? "رقم الواتساب (مع كود الدولة)" : "WhatsApp number (with country code)"}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
-                />
+                <div className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
+                  <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none" dir="ltr">+20</span>
+                  <input
+                    required
+                    type="tel"
+                    inputMode="tel"
+                    placeholder={lang === "ar" ? "رقم الواتساب" : "WhatsApp number"}
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                    className="flex-1 px-4 py-3 bg-transparent outline-none"
+                    dir="ltr"
+                  />
+                </div>
                 <input
                   required
                   placeholder={lang === "ar" ? "الدولة" : "Country"}

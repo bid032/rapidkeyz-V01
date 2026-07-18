@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Zap, Clock, Lock, Users, SlidersHorizontal } from "lucide-react";
+import { Lock, Users, SlidersHorizontal } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { z } from "zod";
 import { Header } from "@/components/Header";
@@ -13,7 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({
   category: z.string().optional(),
-  delivery: z.enum(["instant", "manual"]).optional(),
   account: z.enum(["private", "shared"]).optional(),
 });
 
@@ -48,7 +47,7 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
     )
     .eq("status", "active");
   if (filters.category) q = q.eq("categories.slug", filters.category);
-  if (filters.delivery) q = q.eq("delivery_type", filters.delivery);
+  
   if (filters.account) q = q.eq("account_type", filters.account);
   const { data, error } = await q.order("sort_order");
   if (error) throw error;
@@ -134,22 +133,13 @@ function ShopPage() {
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               {([
-                { key: "instant", type: "delivery", label: t.badges.instant, Icon: Zap, tone: "success" },
-                { key: "manual", type: "delivery", label: t.badges.manual, Icon: Clock, tone: "success" },
                 { key: "private", type: "account", label: t.badges.private, Icon: Lock, tone: "brand" },
                 { key: "shared", type: "account", label: t.badges.shared, Icon: Users, tone: "brand" },
               ] as const).map(({ key, type, label, Icon, tone }, i) => {
                 const active =
-                  (type === "delivery" && search.delivery === key) ||
                   (type === "account" && search.account === key);
-                const next =
-                  type === "delivery"
-                    ? { ...search, delivery: search.delivery === key ? undefined : (key as "instant" | "manual") }
-                    : { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
-                const activeCls =
-                  tone === "success"
-                    ? "bg-success/15 text-success border-success/50 shadow-[0_0_20px_-6px_hsl(var(--success)/0.6)]"
-                    : "bg-brand/15 text-brand border-brand/50 brand-glow";
+                const next = { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
+                const activeCls = "bg-brand/15 text-brand border-brand/50 brand-glow";
                 return (
                   <motion.div
                     key={key}

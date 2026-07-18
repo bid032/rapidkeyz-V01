@@ -229,6 +229,8 @@ function ProductPage() {
       : t.badges.shared;
 
 
+  const [confirmBuy, setConfirmBuy] = useState(false);
+
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
     const acct: "private" | "shared" | "both" | "own" =
@@ -342,7 +344,7 @@ function ProductPage() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => handleAdd(true)}
+              onClick={() => setConfirmBuy(true)}
               disabled={!selected || selectedSoldOut}
               className={`flex-1 px-6 py-4 rounded-xl font-bold transition disabled:cursor-not-allowed ${
                 selectedSoldOut
@@ -360,6 +362,44 @@ function ProductPage() {
               {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
             </button>
           </div>
+
+          {confirmBuy && (
+            <div
+              className="fixed inset-0 z-[100] grid place-items-center bg-background/70 backdrop-blur-sm p-4"
+              onClick={() => setConfirmBuy(false)}
+            >
+              <div
+                className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-extrabold mb-2">
+                  {lang === "ar" ? "تأكيد الشراء" : "Confirm purchase"}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  {lang === "ar"
+                    ? `هتشتري ${name} , ${lang === "ar" ? selected?.label_ar : selected?.label_en} بسعر ${finalPrice} ج.م. تتابع للدفع؟`
+                    : `You are about to buy ${name} , ${selected?.label_en} for ${finalPrice} EGP. Continue to checkout?`}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmBuy(false)}
+                    className="flex-1 px-4 py-3 rounded-xl border border-border font-bold hover:bg-muted transition"
+                  >
+                    {lang === "ar" ? "إلغاء" : "Cancel"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setConfirmBuy(false);
+                      handleAdd(true);
+                    }}
+                    className="flex-1 px-4 py-3 rounded-xl bg-brand text-brand-foreground font-bold hover:brand-glow transition"
+                  >
+                    {lang === "ar" ? "تأكيد" : "Confirm"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <ProductTabs productId={product.id} productName={name} description={desc} deliveryType={product.delivery_type} />

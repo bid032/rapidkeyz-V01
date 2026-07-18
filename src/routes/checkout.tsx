@@ -34,7 +34,7 @@ function CheckoutPage() {
   const [gateway, setGateway] = useState<Gateway>("paymob");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [subEmails, setSubEmails] = useState<Record<string, string>>({});
+  
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [successOrder, setSuccessOrder] = useState<{ number: string; delivered: boolean } | null>(null);
@@ -48,8 +48,6 @@ function CheckoutPage() {
       /* ignore */
     }
   };
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const privateItems = cart.filter((c) => c.accountType === "private");
 
   const settings = useQuery({
     queryKey: ["site-settings"],
@@ -73,18 +71,6 @@ function CheckoutPage() {
       return;
     }
     if (cart.length === 0) return;
-    for (const it of privateItems) {
-      const key = it.productId + it.planId;
-      const v = (subEmails[key] ?? "").trim();
-      if (!emailRegex.test(v)) {
-        setError(
-          lang === "ar"
-            ? `يرجى إدخال بريد إلكتروني صحيح لتفعيل الاشتراك الخاص (${it.productName})`
-            : `Please enter a valid email for the private subscription (${it.productName})`
-        );
-        return;
-      }
-    }
     if (gateway === "wallet_instapay") {
       if (!proofFile) {
         setError(lang === "ar" ? "يرجى رفع صورة إثبات الدفع" : "Please upload the payment screenshot");
@@ -140,10 +126,7 @@ function CheckoutPage() {
         quantity: c.quantity,
         delivery_type: c.deliveryType,
         account_type: c.accountType,
-        subscription_email:
-          c.accountType === "private"
-            ? (subEmails[c.productId + c.planId] ?? "").trim()
-            : null,
+        subscription_email: null,
       }));
       const { data: insertedItems, error: iErr } = await supabase
         .from("order_items")
@@ -250,51 +233,22 @@ function CheckoutPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="px-4 py-3 bg-background border border-border rounded-lg"
                   />
-                  <input
-                    required
-                    type="tel"
-                    placeholder={t.checkout.phone}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="px-4 py-3 bg-background border border-border rounded-lg"
-                  />
+                  <div className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
+                    <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none" dir="ltr">+20</span>
+                    <input
+                      required
+                      type="tel"
+                      inputMode="tel"
+                      placeholder={lang === "ar" ? "1XXXXXXXXX" : "1XXXXXXXXX"}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                      className="flex-1 px-4 py-3 bg-transparent outline-none"
+                      dir="ltr"
+                    />
+                  </div>
                 </div>
               </section>
 
-              {privateItems.length > 0 && (
-                <section className="p-6 bg-card border border-border rounded-2xl">
-                  <h2 className="font-bold mb-1">
-                    {lang === "ar" ? "بريد تفعيل الاشتراك الخاص" : "Private subscription email"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {lang === "ar"
-                      ? "أدخل البريد الإلكتروني الذي تريد تفعيل الاشتراك عليه لكل منتج خاص."
-                      : "Enter the email you want the subscription activated on for each private product."}
-                  </p>
-                  <div className="grid gap-3">
-                    {privateItems.map((it) => {
-                      const key = it.productId + it.planId;
-                      return (
-                        <div key={key} className="grid gap-1">
-                          <label className="text-xs font-bold text-muted-foreground">
-                            {it.productName} , {it.planLabel}
-                          </label>
-                          <input
-                            required
-                            type="email"
-                            placeholder={lang === "ar" ? "example@email.com" : "example@email.com"}
-                            value={subEmails[key] ?? ""}
-                            onChange={(e) =>
-                              setSubEmails((s) => ({ ...s, [key]: e.target.value }))
-                            }
-                            className="px-4 py-3 bg-background border border-border rounded-lg"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
 
 
 
