@@ -304,7 +304,7 @@ function AdminOverview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 6" stroke="var(--border)" opacity={0.35} vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip
                   cursor={{ fill: "color-mix(in oklab, var(--brand) 8%, transparent)" }}
