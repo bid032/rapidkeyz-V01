@@ -116,8 +116,9 @@ export function Header() {
             </button>
           )}
 
-          <Link
-            to="/cart"
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
             aria-label="Cart"
             data-cart-anchor
             className={`relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-transform ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
@@ -130,7 +131,8 @@ export function Header() {
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
+          <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
 
           {user ? (
             <Link
