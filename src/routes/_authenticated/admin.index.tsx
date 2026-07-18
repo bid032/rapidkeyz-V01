@@ -124,7 +124,7 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, created_at)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, orders!inner(order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at)")
         .in("orders.status", ["paid", "delivered"])
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
@@ -138,10 +138,17 @@ function AdminOverview() {
         const { data: costs } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", planIds);
         (costs ?? []).forEach((c: any) => costMap.set(c.plan_id, Number(c.cost_price ?? 0)));
       }
+      const userIds = Array.from(new Set(items.map((r) => r.orders?.user_id).filter(Boolean)));
+      const profileMap = new Map<string, any>();
+      if (userIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, display_name, phone, country").in("id", userIds);
+        (profs ?? []).forEach((p: any) => profileMap.set(p.id, p));
+      }
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
         const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
-        return { ...r, _cost: cost, _profit: profit };
+        const prof = profileMap.get(r.orders?.user_id) ?? {};
+        return { ...r, _cost: cost, _profit: profit, _profile: prof };
       });
     },
   });
@@ -150,8 +157,13 @@ function AdminOverview() {
     const rows = (sales.data ?? []).map((r) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
       const total = Number(r.unit_price) * Number(r.quantity);
+      const p = r._profile ?? {};
       return {
         "رقم الطلب": r.orders?.order_number,
+        "اسم العميل": r.orders?.customer_name ?? p.display_name ?? "",
+        "البريد الإلكتروني": r.orders?.customer_email ?? "",
+        "رقم الواتساب": r.orders?.customer_phone ?? p.phone ?? "",
+        "الدولة": p.country ?? "",
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
@@ -162,7 +174,7 @@ function AdminOverview() {
         "التاريخ": d.toLocaleDateString("en-GB"),
         "الوقت": d.toLocaleTimeString("en-GB"),
         "الحالة": r.orders?.status,
-        "العميل": r.orders?.customer_email,
+        "ملاحظات": r.orders?.notes ?? "",
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -175,6 +187,7 @@ function AdminOverview() {
     const suffix = month === "all" ? `all-${today}` : month;
     XLSX.writeFile(wb, `${siteName} - ${suffix}.xlsx`);
   };
+
 
 
   const monthOptions = useMemo(() => {
