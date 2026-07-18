@@ -29,6 +29,7 @@ function AdminUsers() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [stockUser, setStockUser] = useState<any | null>(null);
 
   const users = useQuery({
     queryKey: ["admin-users"],
@@ -337,6 +338,18 @@ function AdminUsers() {
                           >
                             {isModerator ? (lang === "ar" ? "إلغاء مشرف" : "Remove mod") : (lang === "ar" ? "مشرف" : "Make mod")}
                           </button>
+                          <button
+                            onClick={() => setStockUser(u)}
+                            className={`text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition inline-flex items-center gap-1 ${
+                              u.stock_access
+                                ? "bg-success/10 text-success hover:bg-success/20"
+                                : "bg-muted text-muted-foreground hover:bg-muted/70"
+                            }`}
+                            title={lang === "ar" ? "الاستوك" : "Stock"}
+                          >
+                            <Boxes className="w-3 h-3" />
+                            {lang === "ar" ? "استوك" : "Stock"}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -409,6 +422,17 @@ function AdminUsers() {
                     {isModerator ? (lang === "ar" ? "إلغاء مشرف" : "Remove mod") : (lang === "ar" ? "جعله مشرف" : "Make mod")}
                   </button>
                 </div>
+                <button
+                  onClick={() => setStockUser(u)}
+                  className={`w-full text-xs px-3 py-2.5 rounded-xl font-bold transition inline-flex items-center justify-center gap-1.5 ${
+                    u.stock_access ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  <Boxes className="w-3.5 h-3.5" />
+                  {u.stock_access
+                    ? (lang === "ar" ? "إدارة صلاحية الاستوك" : "Manage Stock Access")
+                    : (lang === "ar" ? "منح صلاحية الاستوك" : "Grant Stock Access")}
+                </button>
               </div>
             );
           })}
