@@ -12,13 +12,15 @@ type CategoryRow = {
   products: ProductCardData[];
 };
 
-async function fetchCategoryRows(): Promise<CategoryRow[]> {
-  const { data: cats, error } = await supabase
+async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
+  let q = supabase
     .from("categories")
     .select("id, slug, name_ar, name_en, sort_order, is_active")
     .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-    .limit(4);
+    .order("sort_order", { ascending: true });
+  if (slugs && slugs.length) q = q.in("slug", slugs);
+  else q = q.limit(4);
+  const { data: cats, error } = await q;
   if (error) throw error;
 
   const rows = await Promise.all(
@@ -54,12 +56,19 @@ async function fetchCategoryRows(): Promise<CategoryRow[]> {
       return { id: c.id, slug: c.slug, name_ar: c.name_ar, name_en: c.name_en, products: mapped };
     }),
   );
-  return rows.filter((r) => r.products.length > 0);
+  // Preserve requested slug order if provided
+  const ordered = slugs && slugs.length
+    ? slugs.map((s) => rows.find((r) => r.slug === s)).filter(Boolean) as CategoryRow[]
+    : rows;
+  return ordered.filter((r) => r.products.length > 0);
 }
 
-export function CategoryRows() {
+export function CategoryRows({ slugs }: { slugs?: string[] } = {}) {
   const { lang } = useApp();
-  const { data } = useQuery({ queryKey: ["category-rows"], queryFn: fetchCategoryRows });
+  const { data } = useQuery({
+    queryKey: ["category-rows", slugs?.join(",") ?? "top4"],
+    queryFn: () => fetchCategoryRows(slugs),
+  });
   if (!data || data.length === 0) return null;
 
   return (
