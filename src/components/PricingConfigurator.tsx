@@ -50,6 +50,12 @@ export function PricingConfigurator({
   const { lang, t } = useApp();
   const isAr = lang === "ar";
   const hasDiscount = discount > 0;
+  // Normalize: treat "own" as "private" so users only see Private / Shared
+  const normalizedTypes = Array.from(
+    new Set(accountTypes.map((a) => (a === "own" ? "private" : a))),
+  ) as ("private" | "shared")[];
+  const normalizedEffective =
+    effectiveAcct === "own" ? "private" : (effectiveAcct as "private" | "shared" | undefined);
   const selected = plans.find((p) => p.id === selectedId) ?? plans[0];
   const rawPrice = selected ? Number(selected.price) : 0;
   const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
