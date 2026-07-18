@@ -167,9 +167,10 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('rk-theme');var d=document.documentElement;d.classList.remove('light','dark');d.classList.add(t==='light'?'light':'dark');}catch(e){}})();`,
+            __html: `(function(){try{if('scrollRestoration' in history){history.scrollRestoration='manual';}window.addEventListener('beforeunload',function(){try{window.scrollTo(0,0);}catch(e){}});window.addEventListener('load',function(){try{window.scrollTo(0,0);}catch(e){}});var t=localStorage.getItem('rk-theme');var d=document.documentElement;d.classList.remove('light','dark');d.classList.add(t==='light'?'light':'dark');}catch(e){}})();`,
           }}
         />
+
         <HeadContent />
       </head>
       <body>
