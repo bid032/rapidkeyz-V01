@@ -190,16 +190,18 @@ function Dashboard() {
                 {(() => {
                   const fullRefund = fullRefundByOrder.get(o.id);
                   const isCancelled = o.status === "cancelled" || o.status === "canceled";
-                  if (fullRefund || isCancelled) {
+                  const isRefunded = o.status === "refunded";
+                  if (fullRefund || isCancelled || isRefunded) {
                     const reason = fullRefund?.notes?.trim();
-                    const title = fullRefund
-                      ? (lang === "ar" ? "تم استرداد قيمة الطلب بالكامل" : "Order fully refunded")
+                    const refundedFlag = !!fullRefund || isRefunded;
+                    const title = refundedFlag
+                      ? (lang === "ar" ? "تم استرداد قيمة الطلب" : "Order refunded")
                       : (lang === "ar" ? "تم إلغاء الطلب" : "Order cancelled");
                     const fallback = lang === "ar"
                       ? "لا يمكن عرض بيانات الحساب لأن الطلب "
-                        + (fullRefund ? "تم استرداده بالكامل." : "تم إلغاؤه.")
+                        + (refundedFlag ? "تم استرداده." : "تم إلغاؤه.")
                       : "Account details are unavailable because the order has been "
-                        + (fullRefund ? "fully refunded." : "cancelled.");
+                        + (refundedFlag ? "refunded." : "cancelled.");
                     return (
                       <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg text-center">
                         <div className="text-sm font-bold text-destructive mb-1">{title}</div>
@@ -209,6 +211,7 @@ function Dashboard() {
                       </div>
                     );
                   }
+
                   if (o.status === "processing") {
 
                     return (
