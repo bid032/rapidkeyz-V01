@@ -291,7 +291,7 @@ function HomePage() {
           </div>
 
           {/* DESKTOP: broken grid */}
-          <div className="hidden md:grid grid-cols-12 gap-6 items-center min-h-[70vh]">
+          <div className="hidden md:grid grid-cols-12 gap-6 items-center min-h-[60vh]">
             <div className="col-span-9 relative">
 
               <div className="flex absolute -top-6 -right-4 items-center gap-2 px-3 py-1.5 rounded-full neon-border bg-background/60 backdrop-blur text-brand text-[11px] font-mono uppercase tracking-widest rotate-3">
