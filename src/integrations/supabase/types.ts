@@ -577,6 +577,7 @@ export type Database = {
           id: string
           notes: string | null
           order_id: string | null
+          order_item_id: string | null
           type: string
           updated_at: string
           user_id: string
@@ -588,6 +589,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_id?: string | null
+          order_item_id?: string | null
           type: string
           updated_at?: string
           user_id: string
@@ -599,6 +601,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_id?: string | null
+          order_item_id?: string | null
           type?: string
           updated_at?: string
           user_id?: string
@@ -609,6 +612,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
             referencedColumns: ["id"]
           },
         ]
