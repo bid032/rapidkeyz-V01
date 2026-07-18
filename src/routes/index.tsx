@@ -139,6 +139,7 @@ function HomePage() {
   useEffect(() => { setHydrated(true); }, []);
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
+  const bestSellers = useQuery({ queryKey: ["best-sellers"], queryFn: fetchBestSellers });
   const trending = (products.data ?? []).slice(0, 3);
   const trendingLabels = ["TRENDING", "NEW", "HOT"];
   const heroSetting = useQuery({
