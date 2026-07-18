@@ -140,4 +140,3 @@ function CategoryRow({ cat, lang }: { cat: CategoryRow; lang: string }) {
     </div>
   );
 }
-}
