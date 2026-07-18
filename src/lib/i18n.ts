@@ -30,7 +30,7 @@ export const translations = {
       viewAll: "عرض الكل",
     },
 
-    filters: { all: "الكل" },
+    filters: { all: "كل الخدمات" },
     badges: {
       instant: "تسليم فوري",
       manual: "تسليم يدوي",
@@ -299,7 +299,7 @@ export const translations = {
       viewAll: "View all",
     },
 
-    filters: { all: "All" },
+    filters: { all: "All Products" },
     badges: {
       instant: "Instant Delivery",
       manual: "Manual Setup",

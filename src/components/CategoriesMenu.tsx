@@ -52,19 +52,13 @@ export function CategoriesMenu() {
                 to="/shop"
                 search={{ category: c.slug } as any}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors group"
+                className="flex items-center px-3 py-2.5 rounded-lg hover:bg-muted transition-colors group"
               >
-                {c.icon ? (
-                  <img src={c.icon} alt="" className="size-8 rounded-lg object-cover shrink-0" />
-                ) : (
-                  <div className="size-8 rounded-lg bg-brand/10 text-brand grid place-items-center text-xs font-bold shrink-0">
-                    {(lang === "ar" ? c.name_ar : c.name_en).slice(0, 2)}
-                  </div>
-                )}
                 <span className="text-sm font-semibold text-foreground group-hover:text-brand transition-colors">
                   {lang === "ar" ? c.name_ar : c.name_en}
                 </span>
               </Link>
+
             ))}
           </div>
         </div>
