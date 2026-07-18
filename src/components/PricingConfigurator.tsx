@@ -32,8 +32,8 @@ const acctMeta = {
     en: { title: "Shared", sub: "Best value • Single device" },
   },
   own: {
-    ar: { title: "من عندنا", sub: "حساب جاهز • فوري" },
-    en: { title: "Our Account", sub: "Ready-made • Instant" },
+    ar: { title: "خاص", sub: "تحكم كامل • أجهزة متعددة" },
+    en: { title: "Private", sub: "Full control • Multi-device" },
   },
 } as const;
 
@@ -50,6 +50,12 @@ export function PricingConfigurator({
   const { lang, t } = useApp();
   const isAr = lang === "ar";
   const hasDiscount = discount > 0;
+  // Normalize: treat "own" as "private" so users only see Private / Shared
+  const normalizedTypes = Array.from(
+    new Set(accountTypes.map((a) => (a === "own" ? "private" : a))),
+  ) as ("private" | "shared")[];
+  const normalizedEffective =
+    effectiveAcct === "own" ? "private" : (effectiveAcct as "private" | "shared" | undefined);
   const selected = plans.find((p) => p.id === selectedId) ?? plans[0];
   const rawPrice = selected ? Number(selected.price) : 0;
   const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
@@ -71,7 +77,7 @@ export function PricingConfigurator({
 
       <div className="relative p-5 sm:p-7 space-y-6">
         {/* Account type , segmented pill with sliding indicator */}
-        {accountTypes.length > 0 && (
+        {normalizedTypes.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
@@ -83,10 +89,10 @@ export function PricingConfigurator({
             </div>
             <div
               className={`grid gap-2 p-1.5 rounded-2xl bg-muted/40 border border-border`}
-              style={{ gridTemplateColumns: `repeat(${accountTypes.length}, minmax(0,1fr))` }}
+              style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
             >
-              {accountTypes.map((a) => {
-                const isSel = effectiveAcct === a;
+              {normalizedTypes.map((a) => {
+                const isSel = normalizedEffective === a;
                 const meta = acctMeta[a][isAr ? "ar" : "en"];
                 return (
                   <button

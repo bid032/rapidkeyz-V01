@@ -24,6 +24,14 @@ export function Header() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [shrunk, setShrunk] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShrunk(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
@@ -49,12 +57,12 @@ export function Header() {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+    <nav className={`sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
+      <div className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`}>
         <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
-            <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-8 w-8 sm:h-10 sm:w-10 object-contain shrink-0" />
-            <BrandName className="text-base sm:text-xl truncate" />
+            <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className={`object-contain shrink-0 transition-all duration-300 ${shrunk ? "h-7 w-7 sm:h-8 sm:w-8" : "h-8 w-8 sm:h-10 sm:w-10"}`} />
+            <BrandName className={`truncate transition-all duration-300 ${shrunk ? "text-sm sm:text-lg" : "text-base sm:text-xl"}`} />
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link to="/" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>

@@ -108,22 +108,12 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             </span>
             <span
               className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
-                p.account_type === "private"
-                  ? "bg-brand/10 text-brand border-brand/20"
-                  : p.account_type === "both"
-                  ? "bg-accent/10 text-accent-foreground border-accent/30"
-                  : p.account_type === "own"
-                  ? "bg-success/10 text-success border-success/20"
-                  : "bg-muted text-muted-foreground border-border"
+                p.account_type === "shared"
+                  ? "bg-muted text-muted-foreground border-border"
+                  : "bg-brand/10 text-brand border-brand/20"
               }`}
             >
-              {p.account_type === "private"
-                ? t.badges.private
-                : p.account_type === "both"
-                ? (t.badges as any).both
-                : p.account_type === "own"
-                ? (t.badges as any).own
-                : t.badges.shared}
+              {p.account_type === "shared" ? t.badges.shared : t.badges.private}
             </span>
           </div>
           <h3 className="text-xl font-bold mb-1 text-foreground line-clamp-1">{name}</h3>
