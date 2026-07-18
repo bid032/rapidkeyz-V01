@@ -207,7 +207,17 @@ function AdminOrders() {
           <div key={o.id} className="bg-card border border-border rounded-2xl overflow-hidden">
             <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
               <div className="min-w-0">
-                <div className="font-bold">#{o.order_number}</div>
+                <div className="font-bold flex items-center gap-2 flex-wrap">
+                  #{o.order_number}
+                  {(o.refunds?.length ?? 0) > 0 && (() => {
+                    const total = o.refunds.reduce((s: number, r: any) => s + Number(r.amount), 0);
+                    return (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-destructive/15 text-destructive font-bold">
+                        تعويض -{total} EGP
+                      </span>
+                    );
+                  })()}
+                </div>
                 <div className="text-xs text-muted-foreground break-all">
                   {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")} · {o.customer_email}
                 </div>
