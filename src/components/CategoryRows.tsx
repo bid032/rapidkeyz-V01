@@ -87,34 +87,38 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const pausedRef = useRef(false);
 
+  // In RTL, browsers report scrollLeft as negative. Normalize to a positive
+  // logical position in [0, max] so pagination works in both directions.
+  const scrollByPage = (dir: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const page = el.clientWidth;
+    const max = el.scrollWidth - el.clientWidth;
+    if (max <= 0) return;
+    const isRtl = lang === "ar";
+    const currentAbs = Math.abs(el.scrollLeft);
+    let nextAbs = currentAbs + (dir > 0 ? page : -page);
+    if (nextAbs > max - 4) nextAbs = 0;
+    if (nextAbs < 0) nextAbs = max;
+    el.scrollTo({ left: isRtl ? -nextAbs : nextAbs, behavior: "smooth" });
+  };
+
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
     if (!isDesktop) return;
-    const dir = lang === "ar" ? -1 : 1;
     const id = window.setInterval(() => {
-      if (pausedRef.current || !el) return;
-      const page = el.clientWidth;
-      const max = el.scrollWidth - el.clientWidth;
-      let next = el.scrollLeft + page * dir;
-      if (dir === 1 && next >= max - 4) next = 0;
-      if (dir === -1 && next <= 4) next = max;
-      el.scrollTo({ left: next, behavior: "smooth" });
+      if (pausedRef.current) return;
+      scrollByPage(1);
     }, 4500);
     return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   const nudge = (dir: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
     pausedRef.current = true;
-    const page = el.clientWidth;
-    const max = el.scrollWidth - el.clientWidth;
-    let next = el.scrollLeft + page * dir;
-    if (next > max) next = 0;
-    if (next < 0) next = max;
-    el.scrollTo({ left: next, behavior: "smooth" });
+    scrollByPage(dir);
     window.setTimeout(() => (pausedRef.current = false), 2500);
   };
 
