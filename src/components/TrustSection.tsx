@@ -90,7 +90,7 @@ export function TrustSection() {
   const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع، مش مجرد كلام" : "Real numbers from the field , not just words";
 
   return (
-    <section className="relative py-12 sm:py-20 px-3 sm:px-6 overflow-hidden">
+    <section className="relative py-10 sm:py-14 px-3 sm:px-6 overflow-hidden">
       {/* soft ambient bg */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[520px] h-[260px] bg-brand/15 blur-[130px] rounded-full" />
@@ -98,7 +98,7 @@ export function TrustSection() {
       </div>
 
       <div className="max-w-7xl mx-auto">
-        <div data-gsap="reveal" className="text-center mb-10 sm:mb-14">
+        <div data-gsap="reveal" className="text-center mb-7 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
             <span className="size-1.5 rounded-full bg-brand animate-pulse" />
             {lang === "ar" ? "الثقة" : "Trust in numbers"}
@@ -119,7 +119,7 @@ export function TrustSection() {
         </div>
 
         {/* Stats row */}
-        <div data-gsap="card-pop" className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-8 sm:mb-12">
+        <div data-gsap="card-pop" className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {stats.map((s) => (
             <div
               key={s.key}
@@ -146,7 +146,7 @@ export function TrustSection() {
         </div>
 
         {/* Features intro */}
-        <div data-gsap="reveal" className="text-center mt-10 sm:mt-14 mb-8 sm:mb-10">
+        <div data-gsap="reveal" className="text-center mt-8 sm:mt-10 mb-6 sm:mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
             <span className="size-1.5 rounded-full bg-brand animate-pulse" />
             {lang === "ar" ? "مميزاتنا" : "What sets us apart"}

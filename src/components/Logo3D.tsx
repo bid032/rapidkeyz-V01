@@ -27,8 +27,8 @@ export function Logo3D({ className = "" }: { className?: string }) {
       const r = el.getBoundingClientRect();
       const cx = r.left + r.width / 2;
       const cy = r.top + r.height / 2;
-      tx = (e.clientY - cy) / -18;
-      ty = (e.clientX - cx) / 18;
+      tx = Math.max(-12, Math.min(12, (e.clientY - cy) / -42));
+      ty = Math.max(-12, Math.min(12, (e.clientX - cx) / 42));
     };
     const loop = () => {
       rx += (tx - rx) * 0.08;
