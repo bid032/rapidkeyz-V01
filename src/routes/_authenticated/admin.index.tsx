@@ -83,40 +83,14 @@ function AdminOverview() {
     },
   });
 
-  const refundsMonthly = useQuery({
-    queryKey: ["admin-refunds-monthly"],
+  const refundsAll = useQuery({
+    queryKey: ["admin-refunds-all"],
     queryFn: async () => {
       const { data } = await supabase.from("refunds").select("amount, created_at");
-      const map = new Map<string, number>();
-      (data ?? []).forEach((r: any) => {
-        const d = new Date(r.created_at);
-        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-        map.set(key, (map.get(key) ?? 0) + Number(r.amount ?? 0));
-      });
-      return map;
+      return (data ?? []) as { amount: number; created_at: string }[];
     },
   });
 
-  const chartData = useMemo(() => {
-    const rows = (monthly.data ?? []).map((r) => {
-      const key = r.month.slice(0, 7);
-      return {
-        month: key,
-        revenue: Math.round(Number(r.revenue ?? 0)),
-        profit: Math.round(Number(r.profit ?? 0)),
-        refunds: Math.round(refundsMonthly.data?.get(key) ?? 0),
-      };
-    });
-    // include refund-only months
-    refundsMonthly.data?.forEach((amount, key) => {
-      if (!rows.find((r) => r.month === key)) {
-        rows.push({ month: key, revenue: 0, profit: 0, refunds: Math.round(amount) });
-      }
-    });
-    rows.sort((a, b) => a.month.localeCompare(b.month));
-    if (month !== "all") return rows.filter((r) => r.month === month);
-    return rows;
-  }, [monthly.data, refundsMonthly.data, month]);
 
 
   const sales = useQuery({
@@ -152,6 +126,53 @@ function AdminOverview() {
       });
     },
   });
+
+  const chartData = useMemo(() => {
+    if (month === "all") {
+      const rows = (monthly.data ?? []).map((r) => ({
+        bucket: r.month.slice(0, 7),
+        revenue: Math.round(Number(r.revenue ?? 0)),
+        profit: Math.round(Number(r.profit ?? 0)),
+        refunds: 0,
+      }));
+      (refundsAll.data ?? []).forEach((r) => {
+        const d = new Date(r.created_at);
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+        const row = rows.find((x) => x.bucket === key);
+        const amt = Math.round(Number(r.amount ?? 0));
+        if (row) row.refunds += amt;
+        else rows.push({ bucket: key, revenue: 0, profit: 0, refunds: amt });
+      });
+      rows.sort((a, b) => a.bucket.localeCompare(b.bucket));
+      return rows;
+    }
+    const [y, m] = month.split("-").map(Number);
+    const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const rows = Array.from({ length: daysInMonth }, (_, i) => ({
+      bucket: String(i + 1).padStart(2, "0"),
+      revenue: 0,
+      profit: 0,
+      refunds: 0,
+    }));
+    (sales.data ?? []).forEach((it: any) => {
+      const d = new Date(it.orders?.created_at ?? it.created_at);
+      if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
+      const idx = d.getUTCDate() - 1;
+      rows[idx].revenue += Math.round(Number(it.unit_price) * Number(it.quantity));
+      rows[idx].profit += Math.round(Number(it._profit ?? 0));
+    });
+    (refundsAll.data ?? []).forEach((r) => {
+      const d = new Date(r.created_at);
+      if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
+      const idx = d.getUTCDate() - 1;
+      const amt = Math.round(Number(r.amount ?? 0));
+      rows[idx].refunds += amt;
+      rows[idx].profit -= amt;
+    });
+    return rows;
+  }, [monthly.data, refundsAll.data, sales.data, month]);
+
+
 
   const exportSalesXlsx = () => {
     const rows = (sales.data ?? []).map((r) => {
@@ -283,7 +304,7 @@ function AdminOverview() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 6" stroke="var(--border)" opacity={0.35} vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="bucket" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={40} />
                 <Tooltip
                   cursor={{ fill: "color-mix(in oklab, var(--brand) 8%, transparent)" }}
