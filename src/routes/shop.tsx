@@ -47,7 +47,7 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
     )
     .eq("status", "active");
   if (filters.category) q = q.eq("categories.slug", filters.category);
-  if (filters.delivery) q = q.eq("delivery_type", filters.delivery);
+  
   if (filters.account) q = q.eq("account_type", filters.account);
   const { data, error } = await q.order("sort_order");
   if (error) throw error;
