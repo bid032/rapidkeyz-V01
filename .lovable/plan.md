@@ -1,81 +1,99 @@
-# خطة التنفيذ
+# خطة إعادة الهيكلة والتحسين — RapidKeyz
 
-قائمة كبيرة (25+ تعديل). هنقسمها لمراحل عشان الجودة والتحكم. لو موافق، هبدأ فورًا بالمرحلة 1 وننزل لبقيتهم بالترتيب.
+هذه الخطة نتيجة تحليل شامل للمشروع (Frontend + Backend + DB + RLS + Storage).
+مرتبة بالأولوية: 🔴 Critical → 🟠 High → 🟡 Medium → 🟢 Low.
 
----
+## ✅ تم إصلاحه في هذه الجلسة
 
-## المرحلة 1 — الهيرو + الهيدر + التسجيل
-
-**1. لوجو 3D في الهيرو (شمال)**
-- إضافة موديل Three.js: لوجو R يتحرك بالماوس (rotation follow) مع lighting وbrand glow.
-- يستبدل الفراغ الحالي على الديسكتوب فقط.
-
-**2. كروت TRENDING/NEW clickable**
-- تعرض الاسم الحقيقي + السعر من DB (query لأول trending/new product).
-- Link لصفحة المنتج + إضافة لوجو المنتج.
-
-**3. "المتجر" → "الأقسام" في الهيدر**
-- تعديل نص الرابط في `Header.tsx` (AR/EN).
-
-**التسجيل — حقول إضافية**
-- إضافة: اسم + رقم واتساب + دولة (dropdown) في `auth.tsx` signup mode.
-- تخزينهم في `profiles` (migration: إضافة أعمدة `phone`, `country` لو مش موجودين).
-- Validation بـ zod.
+- [x] **Hydration Mismatch** في `__root.tsx` — عنصر السبلاش كان يُرسم على السيرفر ويُحذف بواسطة سكريبت قبل React hydration. الحل: رندر عنصر فاضي `<div id="rk-pre-splash" suppressHydrationWarning />` والسكريبت يملأه بعد الـ parse ثم يخفيه بـ `display:none` بدل الحذف.
+- [x] **REVOKE EXECUTE** على دوال الـ triggers الداخلية (`handle_new_user`, `update_updated_at_column`, `decrement_plan_stock_on_order_item`, `grant_default_admin_on_confirm`).
+- [x] **`payment-proofs` bucket**: قيد الرفع على مسار `<uid>/…` أو `guest/…` + حد 5MB + mime محدد. تعديل `checkout.tsx` لاستخدام المسار الجديد.
+- [x] **notify-order functions**: إضافة recency guard (30 دقيقة) لمنع سبام الإيميلات لو UUID اتسرب. إيميل الأدمن اتنقل لـ `site_settings.admin_notify_email` (+ env fallback).
+- [x] **Sonner toasts** بقت في منتصف الشاشة المعروضة (offset 45dvh + top-center).
+- [x] **Dialog close button** انتقل لجهة `end-3` (يسار في RTL) عشان مايتصادمش مع الأيقونة.
 
 ---
 
-## المرحلة 2 — عرض الأقسام + المنتجات
+## 🔴 Critical (أمان + استقرار)
 
-**5. تصغير قسم "تسوق حسب القسم"**
-- حذف كلمة "تسوق حسب" — العنوان يبقى "الأقسام".
-- الأربع أقسام جنب بعض في صف واحد مضغوط (grid-cols-4، أيقونات صغيرة).
+### C1. حماية Endpoints المفتوحة بتوقيع رقمي
+`notifyNewOrder` و `notifyCustomerDelivery` و `markInventorySoldOnSheet` كلها Public Server Functions. حاليًا محمية بـ recency + idempotency، بس الحل الأنظف:
+- إنشاء **HMAC secret** (`NOTIFY_HMAC_SECRET`) في env.
+- عند إنشاء الطلب، ولد `order_notify_token = hmac(secret, orderId)` وابعته للـ client مع الـ order response.
+- الـ server function تتحقق من التوقيع قبل ما تنفذ.
+- **بديل أفضل**: نقل الإشعارات لـ **Database Trigger + pg_net** يستدعي `/api/public/webhooks/order-created` بتوقيع مشترك.
 
-**8. تنظيف الأقسام**
-- إبقاء قسمين فقط: AI + أدوات المصممين. حذف الباقي من العرض على الهوم.
+### C2. تسريب PII في Excel exports
+تصدير `admin.orders.tsx` و`admin.index.tsx` بيحمل ايميلات وأرقام واتساب. تأكد من:
+- الفلاتر الافتراضية بتحد التاريخ (مش بتصدر كل الطلبات).
+- إضافة audit log (من صدّر، إمتى، كام سطر).
 
----
-
-## المرحلة 3 — كارت المنتج + السلة
-
-**11. زرار "أضف للسلة" + صوت + انيميشن**
-- إضافة sound effect (tick قصير — Web Audio API generated بدون ملف خارجي).
-- Fly-to-cart animation: نسخة مصغرة من الكارت تطير للأيقونة في الهيدر (GSAP).
-- Bump animation على cart badge.
-
----
-
-## المرحلة 4 — لوحة التحكم (Admin + User)
-
-**25. تحكم الأدمن في محتوى FAQ**
-- Migration: جدول `faqs` (id, question_ar, question_en, answer_ar, answer_en, order, is_active).
-- صفحة `admin.faqs.tsx` — CRUD.
-- `FAQ.tsx` يقرأ من DB.
-- GRANT: SELECT للجميع (anon+authenticated), ALL للـ service_role + admin write policies.
-
-**تابة "تعويضات" في الداشبورد**
-- Migration: جدول `refunds` (id, user_id, order_id?, amount, type: 'full'|'partial'|'replacement', notes, created_at, created_by).
-- تظهر للعميل في داشبورده (read-only) — تابة جديدة.
-- في الأدمن: صفحة `admin.refunds.tsx` — إضافة/تعديل تعويض لأي عميل.
-- يتخصم من إجمالي الأرباح في `admin_revenue_stats` (تعديل الـ RPC).
-- RLS: العميل يشوف بتاعه فقط, الأدمن يشوف الكل.
+### C3. Google Sheets Sync — auth caller identity
+`markInventorySoldOnSheet` unauthenticated. يفضّل:
+- يتنقل لنفس trigger pattern (pg_net → server route بتوقيع).
+- أو يبقى داخل createServerFn محمي بـ `requireSupabaseAuth` ويتستدعى من الأدمن بس بعد التسليم اليدوي.
 
 ---
 
-## ملاحظات تقنية
+## 🟠 High (Performance + UX)
 
-- كل الـ migrations تشمل GRANT + RLS policies.
-- Three.js logo: هنستخدم geometry بسيط (extruded R shape) لأن تحميل GLTF ثقيل.
-- الصوت: WebAudio oscillator (tick) — بدون assets.
-- كل التغييرات backward-compatible: الأعمدة الجديدة في profiles nullable.
+### H1. Code Splitting للـ 3D / Animation
+- `three` + `gsap` + `HeroCanvas` + `FloatingLogos` + `Logo3D` بيتحملوا في الـ initial bundle. المطلوب:
+  - `React.lazy(() => import(...))` مع `<ClientOnly>` لكل واحد فيهم.
+  - تحميل GSAP plugins (`SplitText`, `ScrollTrigger`) عند الحاجة فقط.
+- تأثير متوقع: ↓ initial JS 200-400 KB.
+
+### H2. تقليل الـ Realtime/subscriptions المكررة
+- `AppContext` + `useAdminRole` + `admin.tsx` كلهم بيستدعوا `supabase.auth.getUser()` أو `getSession()`. توحيدهم في hook واحد `useSession()` مع React Query cache.
+
+### H3. Query Deduplication
+- كتير من الـ pages بيعملوا `useQuery` بنفس queryKey مع `queryFn` مختلف بسيط (مثل `products` فلترة). توحيدهم بـ selector من نفس query أفضل.
+
+### H4. Image Optimization
+- صور الـ product-images بتتحمل بحجمها الأصلي. إضافة Cloudflare Image Resizing أو Supabase image transform:
+  `supabase.storage.from(...).getPublicUrl(path, { transform: { width: 400, quality: 80 } })`
 
 ---
 
-## اللي مش هيتنفذ (حسب طلبك)
-- ❌ #13 من الـ PDF
+## 🟡 Medium (تنظيم الكود + صيانة)
+
+### M1. توحيد أنماط الأخطاء
+- بعض الـ mutations بترمي Error خام، بعضها بترجع `{ok:false, reason}`. توحيد على نمط واحد + toast helper موحّد.
+
+### M2. Refactor `admin.index.tsx`
+- الملف كبير (chart + summary chips + tables). فصله لـ:
+  - `AdminOverviewChart.tsx`
+  - `AdminSummaryCards.tsx`
+  - `AdminRecentOrders.tsx`
+
+### M3. i18n keys
+- كتير من النصوص العربية hardcoded في الـ components. نقلها كلها لـ `src/lib/i18n.ts` عشان لو حبيت تدعم لغة تانية يبقى سهل.
+
+### M4. Types للـ Supabase
+- `as any` مستخدم في كذا مكان (`notify-order.functions.ts`, `admin.products.tsx`). استخدام `Database['public']['Tables'][...]['Row']` بدلها.
+
+### M5. Test coverage
+- إضافة Vitest tests للـ:
+  - `has_role` RPC integration
+  - Cart total calculation
+  - Recency guard في notify functions
 
 ---
 
-## الأولوية المقترحة
-1 → 3 → 5 → 8 → 11 → 25 → التسجيل الموسع → التعويضات.
+## 🟢 Low (تلميع)
 
-لو موافق أبدأ، هبدأ بالمرحلة 1 كاملة. لو عايز ترتيب مختلف أو تركيز على مرحلة واحدة الأول قوللي.
+- L1: إزالة `BrandMarquee.tsx` (اتشال من الـ UI بس الملف موجود).
+- L2: توحيد أسماء الملفات (بعضها kebab-case، بعضها PascalCase).
+- L3: إضافة `robots.txt` + `sitemap.xml` من generator.
+- L4: OG images ديناميك للـ product pages (server function ترجع صورة).
+
+---
+
+## طريقة التنفيذ المقترحة
+
+- **Sprint 1 (يوم واحد)**: C1 + C2 + H1
+- **Sprint 2 (يوم)**: H2 + H3 + H4
+- **Sprint 3 (يوم)**: M1 + M2 + M4
+- **Sprint 4 (نصف يوم)**: M3 + M5 + Low
+
+قوللي أبدأ منين وأنا هنفّذ.
