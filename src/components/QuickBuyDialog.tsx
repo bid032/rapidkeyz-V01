@@ -104,30 +104,19 @@ export function QuickBuyDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden gap-0 border-border/60 bg-card">
-        {/* Header with product image */}
-        <div className="relative">
-          <div className="relative h-32 sm:h-40 bg-gradient-to-br from-brand/25 via-brand/10 to-background overflow-hidden">
-            <div className="absolute -top-10 -right-10 size-40 rounded-full bg-brand/25 blur-3xl" />
-            {product.icon_url && (
-              <img
-                src={product.icon_url}
-                alt={name}
-                className="absolute inset-0 size-full object-cover opacity-40"
-              />
-            )}
+        <div className="p-5 sm:p-6">
+          <div className="flex items-center justify-center mb-4">
+            <div className="size-20 sm:size-24 rounded-2xl border border-border bg-background overflow-hidden shadow-md">
+              {product.icon_url ? (
+                <img src={product.icon_url} alt={name} className="size-full object-cover" />
+              ) : (
+                <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-2xl">
+                  {name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="absolute -bottom-8 start-5 size-16 sm:size-20 rounded-2xl border-4 border-card bg-card overflow-hidden shadow-xl">
-            {product.icon_url ? (
-              <img src={product.icon_url} alt={name} className="size-full object-cover" />
-            ) : (
-              <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-xl">
-                {name.slice(0, 2).toUpperCase()}
-              </div>
-            )}
-          </div>
-        </div>
 
-        <div className="p-5 pt-10 sm:p-6 sm:pt-12">
           <DialogHeader className="text-start space-y-1">
             <DialogTitle className="text-xl sm:text-2xl font-black">{name}</DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
