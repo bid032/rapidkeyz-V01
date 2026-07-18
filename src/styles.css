@@ -282,9 +282,9 @@ header, main, footer, section, nav { position: relative; z-index: 1; }
 
 /* ─── Route (page) transition ──────────────────────────────────── */
 @keyframes routeEnter {
-  0%   { opacity: 0; transform: translateY(18px) scale(0.985); filter: blur(10px); }
+  0%   { opacity: 0; filter: blur(10px); }
   60%  { opacity: 1; filter: blur(0); }
-  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  100% { opacity: 1; filter: blur(0); }
 }
 .route-transition > * { animation: routeEnter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
