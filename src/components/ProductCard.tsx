@@ -78,12 +78,13 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     addToCart({
       productId: p.id,
       planId: p.cheapestPlanId,
-      name,
+      productName: name,
       planLabel: planLabel ?? "",
       price: finalPrice,
       quantity: 1,
-      icon_url: p.icon_url ?? null,
-      slug: p.slug,
+      iconUrl: p.icon_url ?? null,
+      deliveryType: p.delivery_type,
+      accountType: p.account_type,
     });
     flyToCart(e.currentTarget, p.icon_url ?? null, name);
   };
