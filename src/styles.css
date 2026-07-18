@@ -392,3 +392,23 @@ iframe[src*="lovable.dev"][src*="badge"] {
   60% { transform: scale(0.92) rotate(6deg); }
   100% { transform: scale(1) rotate(0); }
 }
+
+/* Brands marquee (auto-scrolling logo strip) */
+.brands-marquee {
+  width: 100%;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+          mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+.brands-track {
+  display: flex;
+  width: max-content;
+  animation: brandsScroll 40s linear infinite;
+}
+.brands-marquee:hover .brands-track { animation-play-state: paused; }
+@keyframes brandsScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+[dir="rtl"] .brands-track { animation-direction: reverse; }
+
