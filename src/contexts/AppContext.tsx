@@ -50,6 +50,7 @@ type AppState = {
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
+  cartBumpKey: number;
   confirm: (opts: ConfirmOptions) => Promise<boolean>;
   notify: (message: string, type?: ToastMsg["type"]) => void;
 };
