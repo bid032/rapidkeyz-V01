@@ -229,6 +229,8 @@ function ProductPage() {
       : t.badges.shared;
 
 
+  const [confirmBuy, setConfirmBuy] = useState(false);
+
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
     const acct: "private" | "shared" | "both" | "own" =
