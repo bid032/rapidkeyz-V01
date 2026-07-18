@@ -11,6 +11,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
+import { BrandsStrip } from "@/components/BrandsStrip";
 import { lazyClient } from "@/components/ClientOnly";
 
 const HeroCanvas = lazyClient(() => import("@/components/HeroCanvas").then((m) => ({ default: m.HeroCanvas })));
