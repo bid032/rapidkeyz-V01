@@ -430,32 +430,39 @@ function HomePage() {
       {/* AI Tools + Designers rows */}
       <CategoryRows slugs={["ai-tools", "design"]} />
 
-      {/* Best Sellers */}
-      {bestSellers.data && bestSellers.data.length > 0 && (
-        <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24">
-          <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
-            <div>
-              <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
-                {lang === "ar" ? "الأكثر طلباً" : "Top ordered"}
+      {/* Best Sellers , fallback to featured products when no order history yet */}
+      {(() => {
+        const list = (bestSellers.data && bestSellers.data.length > 0)
+          ? bestSellers.data
+          : (products.data ?? []);
+        if (!list.length) return null;
+        return (
+          <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24">
+            <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
+              <div>
+                <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
+                  {lang === "ar" ? "الأكثر طلباً" : "Top ordered"}
+                </div>
+                <h2
+                  data-gsap="split-words"
+                  className="font-display font-bold text-3xl sm:text-5xl leading-[1.05] tracking-tight"
+                >
+                  {lang === "ar" ? "الأكثر مبيعاً" : "Best Sellers"}
+                </h2>
               </div>
-              <h2
-                data-gsap="split-words"
-                className="font-display font-bold text-3xl sm:text-5xl leading-[1.05] tracking-tight"
-              >
-                {lang === "ar" ? "الأكثر مبيعاً" : "Best Sellers"}
-              </h2>
+              <ViewAllButton to="/shop" />
             </div>
-            <ViewAllButton to="/shop" />
-          </div>
-          <div data-gsap="card-pop" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            {bestSellers.data.slice(0, 8).map((p) => (
-              <div key={p.id} data-gsap="tilt">
-                <ProductCard p={p} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+            <div data-gsap="card-pop" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+              {list.slice(0, 8).map((p) => (
+                <div key={p.id} data-gsap="tilt">
+                  <ProductCard p={p} />
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
+
 
       <TrustSection />
 
