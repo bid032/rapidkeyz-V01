@@ -12,6 +12,7 @@ import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
 import { HeroCanvas } from "@/components/HeroCanvas";
+import { Logo3D } from "@/components/Logo3D";
 
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
