@@ -8,6 +8,8 @@ import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
+import { CategoriesMenu } from "@/components/CategoriesMenu";
+import { CartDrawer } from "@/components/CartDrawer";
 
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount, cartBumpKey } = useApp();
