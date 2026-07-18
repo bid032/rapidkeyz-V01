@@ -113,21 +113,31 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
   }, [items.length]);
 
   const go = (dir: 1 | -1) => setIndex((i) => (i + dir + items.length) % items.length);
+  const goRef = useRef(go);
+  goRef.current = go;
 
-  // Wheel + swipe on the slider itself
-  const wheelAcc = useRef(0);
-  const wheelT = useRef<number | null>(null);
-  const onWheel = (e: React.WheelEvent) => {
-    wheelAcc.current += e.deltaY || e.deltaX;
-    if (wheelT.current) return;
-    wheelT.current = window.setTimeout(() => {
-      const v = wheelAcc.current;
-      wheelAcc.current = 0;
-      wheelT.current = null;
-      if (Math.abs(v) < 20) return;
-      go(v > 0 ? 1 : -1);
-    }, 80);
-  };
+  // Desktop: while hovering the slider, capture wheel , stop page scroll and step slides
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    let acc = 0;
+    let t: number | null = null;
+    const onWheel = (e: WheelEvent) => {
+      // Only hijack when a real mouse is hovering (desktop). Touch scroll unaffected.
+      if (!paused.current) return;
+      e.preventDefault();
+      acc += e.deltaY || e.deltaX;
+      if (t) return;
+      t = window.setTimeout(() => {
+        const v = acc; acc = 0; t = null;
+        if (Math.abs(v) < 20) return;
+        goRef.current(v > 0 ? 1 : -1);
+      }, 80);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel as any);
+  }, []);
+
   const touchX = useRef<number | null>(null);
   const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
   const onTouchEnd = (e: React.TouchEvent) => {
@@ -143,10 +153,10 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
       className="relative"
       onMouseEnter={() => (paused.current = true)}
       onMouseLeave={() => (paused.current = false)}
-      onWheel={onWheel}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
+
       <div className="relative h-[440px] md:h-[520px] flex items-center justify-center [perspective:1400px]">
 
         {items.map((img, i) => {
