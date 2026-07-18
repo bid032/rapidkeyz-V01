@@ -217,6 +217,83 @@ function AdminOverview() {
       </div>
 
 
+      <section className="relative overflow-hidden p-4 sm:p-6 bg-card border border-border rounded-3xl mb-6 shadow-xl">
+        <div className="absolute inset-0 pointer-events-none opacity-60" style={{
+          background: "radial-gradient(ellipse at top left, color-mix(in oklab, var(--brand) 18%, transparent), transparent 60%), radial-gradient(ellipse at bottom right, color-mix(in oklab, var(--success) 15%, transparent), transparent 60%)",
+        }} />
+        <div className="relative">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <div>
+              <h2 className="font-extrabold text-xl sm:text-2xl bg-gradient-to-r from-brand to-success bg-clip-text text-transparent">لوحة الأداء المالي</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                {month === "all" ? "الإيرادات والأرباح والتعويضات لكل الشهور" : `بيانات شهر ${month}`}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5">
+            {(() => {
+              const totRev = chartData.reduce((s, r) => s + r.revenue, 0);
+              const totProf = chartData.reduce((s, r) => s + r.profit, 0);
+              const totRef = chartData.reduce((s, r) => s + r.refunds, 0);
+              const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
+              const chip = (label: string, val: string, tone: string) => (
+                <div key={label} className={`rounded-2xl p-3 border ${tone}`}>
+                  <div className="text-[10px] uppercase tracking-widest opacity-70">{label}</div>
+                  <div className="text-base sm:text-xl font-extrabold mt-1">{val}</div>
+                </div>
+              );
+              return [
+                chip("الإيرادات", `${totRev} ${t.common.currency}`, "border-brand/40 bg-brand/10 text-brand"),
+                chip("الأرباح", `${totProf} ${t.common.currency}`, "border-success/40 bg-success/10 text-success"),
+                chip("التعويضات", `${totRef} ${t.common.currency}`, "border-destructive/40 bg-destructive/10 text-destructive"),
+                chip("هامش الربح", `${margin}%`, "border-warning/40 bg-warning/10 text-warning"),
+              ];
+            })()}
+          </div>
+
+          <div className="w-full h-80 sm:h-[420px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="var(--brand)" stopOpacity={0.35} />
+                  </linearGradient>
+                  <linearGradient id="gRef" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--destructive)" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="var(--destructive)" stopOpacity={0.3} />
+                  </linearGradient>
+                  <linearGradient id="gProf" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--success)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--success)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 6" stroke="var(--border)" opacity={0.35} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} width={40} />
+                <Tooltip
+                  cursor={{ fill: "color-mix(in oklab, var(--brand) 8%, transparent)" }}
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 14,
+                    fontSize: 12,
+                    boxShadow: "0 10px 40px -10px rgba(0,0,0,0.4)",
+                  }}
+                  formatter={(v: any) => `${v} ${t.common.currency}`}
+                />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} iconType="circle" />
+                <Bar dataKey="revenue" name="الإيرادات" fill="url(#gRev)" radius={[8, 8, 0, 0]} maxBarSize={44} animationDuration={900} />
+                <Bar dataKey="refunds" name="التعويضات" fill="url(#gRef)" radius={[8, 8, 0, 0]} maxBarSize={44} animationDuration={900} />
+                <Area type="monotone" dataKey="profit" name="منطقة الأرباح" stroke="none" fill="url(#gProf)" animationDuration={1200} legendType="none" />
+                <Line type="monotone" dataKey="profit" name="الأرباح" stroke="var(--success)" strokeWidth={3} dot={{ r: 4, fill: "var(--success)" }} activeDot={{ r: 6 }} animationDuration={1200} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
+
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
         {cards.map((c) => (
           <div key={c.label} className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
@@ -232,39 +309,6 @@ function AdminOverview() {
         ))}
       </div>
 
-
-      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mb-6">
-        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-          <div>
-            <h2 className="font-bold text-lg">الرسم البياني</h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              {month === "all" ? "الإيرادات والأرباح والتعويضات لكل الشهور" : `بيانات شهر ${month}`}
-            </p>
-          </div>
-        </div>
-        <div className="w-full h-72 sm:h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-              <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 12,
-                  fontSize: 12,
-                }}
-                formatter={(v: any) => `${v} ${t.common.currency}`}
-              />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="revenue" name="الإيرادات" fill="hsl(var(--brand))" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="refunds" name="التعويضات" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
-              <Line type="monotone" dataKey="profit" name="الأرباح" stroke="hsl(var(--success))" strokeWidth={3} dot={{ r: 4 }} />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
 
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mt-6">
 
