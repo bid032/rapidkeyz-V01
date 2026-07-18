@@ -91,29 +91,31 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
     const el = scrollerRef.current;
     if (!el) return;
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    if (!isDesktop) return; // manual scroll on mobile/tablet
+    if (!isDesktop) return;
     const dir = lang === "ar" ? -1 : 1;
-    let raf = 0;
-    const step = () => {
-      if (!pausedRef.current && el) {
-        const max = el.scrollWidth - el.clientWidth;
-        const next = el.scrollLeft + 0.6 * dir;
-        if (dir === 1 && next >= max - 1) el.scrollLeft = 0;
-        else if (dir === -1 && next <= 1) el.scrollLeft = max;
-        else el.scrollLeft = next;
-      }
-      raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    const id = window.setInterval(() => {
+      if (pausedRef.current || !el) return;
+      const page = el.clientWidth;
+      const max = el.scrollWidth - el.clientWidth;
+      let next = el.scrollLeft + page * dir;
+      if (dir === 1 && next >= max - 4) next = 0;
+      if (dir === -1 && next <= 4) next = max;
+      el.scrollTo({ left: next, behavior: "smooth" });
+    }, 4500);
+    return () => window.clearInterval(id);
   }, [lang]);
 
-  const nudge = (delta: number) => {
+  const nudge = (dir: number) => {
     const el = scrollerRef.current;
     if (!el) return;
     pausedRef.current = true;
-    el.scrollBy({ left: delta, behavior: "smooth" });
-    window.setTimeout(() => (pausedRef.current = false), 1500);
+    const page = el.clientWidth;
+    const max = el.scrollWidth - el.clientWidth;
+    let next = el.scrollLeft + page * dir;
+    if (next > max) next = 0;
+    if (next < 0) next = max;
+    el.scrollTo({ left: next, behavior: "smooth" });
+    window.setTimeout(() => (pausedRef.current = false), 2500);
   };
 
   return (
@@ -128,7 +130,7 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
         <button
           type="button"
           aria-label="prev"
-          onClick={() => nudge(-320)}
+          onClick={() => nudge(-1)}
           className="hidden md:grid shrink-0 place-items-center size-11 rounded-full bg-card border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
         >
           <ChevronLeft className="size-5 rtl:hidden" />
@@ -141,11 +143,13 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
           onMouseLeave={() => (pausedRef.current = false)}
           onTouchStart={() => (pausedRef.current = true)}
           onTouchEnd={() => (pausedRef.current = false)}
-          className="flex-1 min-w-0 flex gap-3 sm:gap-4 overflow-x-auto pb-3 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-          style={{ scrollBehavior: "auto" }}
+          className="flex-1 min-w-0 flex gap-3 sm:gap-4 overflow-x-auto pb-3 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory"
         >
-          {[...cat.products, ...cat.products].map((p, i) => (
-            <div key={`${p.id}-${i}`} className="shrink-0 w-[calc((100%-0.75rem)/2)] sm:w-[calc((100%-1rem*2)/3)] lg:w-[calc((100%-1rem*3)/4)]">
+          {cat.products.map((p, i) => (
+            <div
+              key={`${p.id}-${i}`}
+              className="snap-start shrink-0 w-[calc((100%-0.75rem)/2)] sm:w-[calc((100%-1rem*2)/3)] lg:w-[calc((100%-1rem*3)/4)]"
+            >
               <ProductCard p={p} />
             </div>
           ))}
@@ -154,13 +158,14 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
         <button
           type="button"
           aria-label="next"
-          onClick={() => nudge(320)}
+          onClick={() => nudge(1)}
           className="hidden md:grid shrink-0 place-items-center size-11 rounded-full bg-card border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
         >
           <ChevronRight className="size-5 rtl:hidden" />
           <ChevronLeft className="size-5 hidden rtl:block" />
         </button>
       </div>
+
 
     </div>
   );
