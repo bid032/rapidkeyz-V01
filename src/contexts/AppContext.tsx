@@ -217,8 +217,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     confirm,
     notify,
   };
-    notify,
-  };
+
 
   const isAr = lang === "ar";
 
