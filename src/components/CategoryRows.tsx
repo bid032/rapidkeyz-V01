@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
 
 type CategoryRow = {
@@ -105,22 +104,13 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
     return () => cancelAnimationFrame(raf);
   }, [lang]);
 
-  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
-
   return (
     <div>
       <div className="flex items-end justify-between mb-4 sm:mb-6 gap-4">
         <h2 className="font-display font-bold text-2xl sm:text-4xl tracking-tight">
           {lang === "ar" ? cat.name_ar : cat.name_en}
         </h2>
-        <Link
-          to="/shop"
-          search={{ category: cat.slug } as any}
-          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full bg-brand text-brand-foreground font-bold text-xs sm:text-sm shadow-md hover:brand-glow transition-all shrink-0"
-        >
-          <span>{lang === "ar" ? "عرض الكل" : "View all"}</span>
-          <Arrow className="size-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-        </Link>
+        <ViewAllButton to="/shop" search={{ category: cat.slug }} />
       </div>
       <div
         ref={scrollerRef}
@@ -132,7 +122,7 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
         style={{ scrollBehavior: "auto" }}
       >
         {[...cat.products, ...cat.products].map((p, i) => (
-          <div key={`${p.id}-${i}`} className="shrink-0 w-[75%] sm:w-[280px]">
+          <div key={`${p.id}-${i}`} className="shrink-0 w-[46%] sm:w-[280px]">
             <ProductCard p={p} />
           </div>
         ))}

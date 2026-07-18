@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Zap } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { QuickBuyDialog } from "@/components/QuickBuyDialog";
 
 export type ProductCardData = {
   id: string;
@@ -57,6 +59,7 @@ function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
 
 export function ProductCard({ p }: { p: ProductCardData }) {
   const { lang, t, addToCart, notify } = useApp() as any;
+  const [buyOpen, setBuyOpen] = useState(false);
   const name = lang === "ar" ? p.name_ar : p.name_en;
   const desc = lang === "ar" ? p.description_ar : p.description_en;
   const planLabel = lang === "ar" ? p.planLabel_ar : p.planLabel_en;
@@ -88,73 +91,96 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     flyToCart(e.currentTarget, p.icon_url ?? null, name);
   };
 
-  return (
-    <Link
-      to="/product/$slug"
-      params={{ slug: p.slug }}
-      className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-brand/50 hover:shadow-[0_10px_40px_-12px_color-mix(in_oklab,var(--brand)_35%,transparent)] transition-all flex flex-col"
-    >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-        {p.icon_url ? (
-          <img
-            src={p.icon_url}
-            alt={name}
-            loading="lazy"
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="size-full grid place-items-center">
-            <span className="text-5xl font-black text-brand/70">{name.slice(0, 2).toUpperCase()}</span>
-          </div>
-        )}
-        {hasDiscount && (
-          <span
-            className={`absolute top-3 ${lang === "ar" ? "right-3" : "left-3"} bg-destructive text-destructive-foreground text-xs font-black px-2.5 py-1 rounded-full shadow-lg`}
-          >
-            -{discount}%
-          </span>
-        )}
-      </div>
+  const openBuy = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBuyOpen(true);
+  };
 
-      <div className="p-5 flex flex-col gap-4 flex-1">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold mb-1.5 text-foreground line-clamp-1">{name}</h3>
-          <p className="text-muted-foreground text-sm line-clamp-2 min-h-[2.5rem]">
-            {desc || " "}
-          </p>
+  return (
+    <>
+      <Link
+        to="/product/$slug"
+        params={{ slug: p.slug }}
+        className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-brand/50 hover:shadow-[0_10px_40px_-12px_color-mix(in_oklab,var(--brand)_35%,transparent)] transition-all flex flex-col h-full"
+      >
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+          {p.icon_url ? (
+            <img
+              src={p.icon_url}
+              alt={name}
+              loading="lazy"
+              className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="size-full grid place-items-center">
+              <span className="text-4xl sm:text-5xl font-black text-brand/70">
+                {name.slice(0, 2).toUpperCase()}
+              </span>
+            </div>
+          )}
+          {hasDiscount && (
+            <span
+              className={`absolute top-2 sm:top-3 ${lang === "ar" ? "right-2 sm:right-3" : "left-2 sm:left-3"} bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-full shadow-lg`}
+            >
+              -{discount}%
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/60">
-          <div className="flex flex-col min-w-0">
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+        <div className="p-3 sm:p-5 flex flex-col gap-2 sm:gap-3 flex-1">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm sm:text-lg font-bold mb-1 text-foreground line-clamp-1">
+              {name}
+            </h3>
+            <p className="text-muted-foreground text-[11px] sm:text-sm line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+              {desc || " "}
+            </p>
+          </div>
+
+          <div className="flex flex-col min-w-0 pt-2 border-t border-border/60">
+            <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
               {planLabel || t.product.priceStarting}
             </span>
             {finalPrice !== null ? (
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl font-extrabold text-foreground">
-                  {finalPrice} {t.common.currency}
+              <div className="flex items-baseline gap-1.5 sm:gap-2">
+                <span className="text-base sm:text-xl font-extrabold text-foreground">
+                  {finalPrice} <span className="text-[10px] sm:text-xs font-bold text-muted-foreground">{t.common.currency}</span>
                 </span>
                 {hasDiscount && (
-                  <span className="text-xs text-muted-foreground line-through">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
                     {p.minPrice}
                   </span>
                 )}
               </div>
             ) : (
-              <span className="text-xl font-extrabold text-foreground">,</span>
+              <span className="text-base sm:text-xl font-extrabold text-foreground">,</span>
             )}
           </div>
-          <button
-            type="button"
-            onClick={handleAdd}
-            aria-label={lang === "ar" ? "أضف للسلة" : "Add to cart"}
-            title={lang === "ar" ? "أضف للسلة" : "Add to cart"}
-            className="grid place-items-center size-11 rounded-xl bg-brand text-brand-foreground hover:brand-glow transition-all active:scale-90 shrink-0"
-          >
-            <ShoppingCart className="size-5" />
-          </button>
+
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <button
+              type="button"
+              onClick={openBuy}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl bg-brand text-brand-foreground font-bold text-[11px] sm:text-sm shadow-md hover:brand-glow transition-all active:scale-95"
+            >
+              <Zap className="size-3.5 sm:size-4" />
+              <span>{lang === "ar" ? "شراء الآن" : "Buy now"}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleAdd}
+              aria-label={lang === "ar" ? "أضف للسلة" : "Add to cart"}
+              title={lang === "ar" ? "أضف للسلة" : "Add to cart"}
+              className="grid place-items-center size-9 sm:size-11 rounded-xl border border-border bg-background text-foreground hover:border-brand/60 hover:text-brand transition-all active:scale-90 shrink-0"
+            >
+              <ShoppingCart className="size-4 sm:size-5" />
+            </button>
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+
+      <QuickBuyDialog open={buyOpen} onOpenChange={setBuyOpen} product={p} />
+    </>
   );
 }
