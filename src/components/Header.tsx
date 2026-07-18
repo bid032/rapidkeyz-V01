@@ -8,6 +8,8 @@ import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
+import { CategoriesMenu } from "@/components/CategoriesMenu";
+import { CartDrawer } from "@/components/CartDrawer";
 
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount, cartBumpKey } = useApp();
@@ -21,6 +23,7 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
@@ -60,6 +63,7 @@ export function Header() {
             <Link to="/shop" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.shop}
             </Link>
+            <CategoriesMenu />
             <Link to="/about" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.about}
             </Link>
@@ -112,8 +116,9 @@ export function Header() {
             </button>
           )}
 
-          <Link
-            to="/cart"
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
             aria-label="Cart"
             data-cart-anchor
             className={`relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-transform ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
@@ -126,7 +131,8 @@ export function Header() {
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
+          <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
 
           {user ? (
             <Link
