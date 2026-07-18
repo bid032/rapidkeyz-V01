@@ -62,9 +62,6 @@ export function CategoriesShowcase({
               <Sparkles className="size-3" />
               {lang === "ar" ? "تصفّح حسب القسم" : "Browse by category"}
             </div>
-            <h2 className="mt-2 font-display font-bold tracking-tight leading-[1.15] text-xl sm:text-2xl md:text-3xl">
-              <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
-            </h2>
           </>
         ) : (
           <>
