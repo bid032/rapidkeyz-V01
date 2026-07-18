@@ -82,6 +82,42 @@ function AdminOverview() {
     },
   });
 
+  const refundsMonthly = useQuery({
+    queryKey: ["admin-refunds-monthly"],
+    queryFn: async () => {
+      const { data } = await supabase.from("refunds").select("amount, created_at");
+      const map = new Map<string, number>();
+      (data ?? []).forEach((r: any) => {
+        const d = new Date(r.created_at);
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+        map.set(key, (map.get(key) ?? 0) + Number(r.amount ?? 0));
+      });
+      return map;
+    },
+  });
+
+  const chartData = useMemo(() => {
+    const rows = (monthly.data ?? []).map((r) => {
+      const key = r.month.slice(0, 7);
+      return {
+        month: key,
+        revenue: Math.round(Number(r.revenue ?? 0)),
+        profit: Math.round(Number(r.profit ?? 0)),
+        refunds: Math.round(refundsMonthly.data?.get(key) ?? 0),
+      };
+    });
+    // include refund-only months
+    refundsMonthly.data?.forEach((amount, key) => {
+      if (!rows.find((r) => r.month === key)) {
+        rows.push({ month: key, revenue: 0, profit: 0, refunds: Math.round(amount) });
+      }
+    });
+    rows.sort((a, b) => a.month.localeCompare(b.month));
+    if (month !== "all") return rows.filter((r) => r.month === month);
+    return rows;
+  }, [monthly.data, refundsMonthly.data, month]);
+
+
   const sales = useQuery({
     queryKey: ["admin-sales-details", month],
     queryFn: async () => {
