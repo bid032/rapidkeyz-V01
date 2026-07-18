@@ -179,7 +179,7 @@ function RootShell({ children }: { children: ReactNode }) {
             zIndex: 99998,
             display: "grid",
             placeItems: "center",
-            background: "hsl(var(--background))",
+            background: "#0b1220",
             transition: "opacity 400ms ease",
           }}
         >
@@ -188,18 +188,19 @@ function RootShell({ children }: { children: ReactNode }) {
               width: 96,
               height: 96,
               borderRadius: "9999px",
-              border: "3px solid transparent",
-              borderTopColor: "hsl(var(--brand))",
-              borderRightColor: "color-mix(in oklab, hsl(var(--brand)) 40%, transparent)",
+              border: "3px solid rgba(34,195,230,0.15)",
+              borderTopColor: "#22c3e6",
+              borderRightColor: "rgba(34,195,230,0.5)",
               animation: "rk-pre-spin 1.1s linear infinite",
             }}
           />
         </div>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);var hide=function(){var el=document.getElementById('rk-pre-splash');if(!el)return;el.style.opacity='0';setTimeout(function(){el&&el.parentNode&&el.parentNode.removeChild(el);},450);};if(document.readyState==='complete'){setTimeout(hide,400);}else{window.addEventListener('load',function(){setTimeout(hide,300);},{once:true});}setTimeout(hide,4500);})();`,
+            __html: `(function(){try{var t=localStorage.getItem('rk-theme');var el=document.getElementById('rk-pre-splash');if(el&&t==='light'){el.style.background='#f5f7fb';}}catch(e){}var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);var hide=function(){var el=document.getElementById('rk-pre-splash');if(!el)return;el.style.opacity='0';setTimeout(function(){el&&el.parentNode&&el.parentNode.removeChild(el);},450);};if(document.readyState==='complete'){setTimeout(hide,600);}else{window.addEventListener('load',function(){setTimeout(hide,500);},{once:true});}setTimeout(hide,4500);})();`,
           }}
         />
+
 
         {children}
         <Scripts />
