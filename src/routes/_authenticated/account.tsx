@@ -8,6 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import type { User } from "@supabase/supabase-js";
+import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 
 const searchSchema = z.object({ complete: z.string().optional() });
 
