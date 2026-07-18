@@ -48,8 +48,6 @@ function CheckoutPage() {
       /* ignore */
     }
   };
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const privateItems = cart.filter((c) => c.accountType === "private");
 
   const settings = useQuery({
     queryKey: ["site-settings"],
