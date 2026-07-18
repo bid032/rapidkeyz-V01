@@ -9,6 +9,7 @@ import type { User } from "@supabase/supabase-js";
 import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 import { friendlyErrorMessage } from "@/lib/error-handler";
+import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
