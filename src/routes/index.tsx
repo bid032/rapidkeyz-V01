@@ -448,9 +448,10 @@ function HomePage() {
               to="/shop"
               data-gsap="magnetic"
               data-strength="0.3"
-              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full neon-border text-brand font-mono text-[11px] sm:text-sm uppercase tracking-widest shrink-0"
+              className="group inline-flex items-center gap-2 px-5 sm:px-6 py-3 rounded-full bg-brand text-brand-foreground font-bold text-xs sm:text-sm shadow-lg hover:brand-glow transition-all shrink-0"
             >
-              {lang === "ar" ? "عرض الكل" : "View all"} <span>→</span>
+              <span>{lang === "ar" ? "عرض الكل" : "View all"}</span>
+              <span className="grid place-items-center size-6 rounded-full bg-brand-foreground/20 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">→</span>
             </Link>
           </div>
           <div data-gsap="card-pop" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
