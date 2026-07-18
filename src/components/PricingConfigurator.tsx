@@ -32,8 +32,8 @@ const acctMeta = {
     en: { title: "Shared", sub: "Best value • Single device" },
   },
   own: {
-    ar: { title: "من عندنا", sub: "حساب جاهز • فوري" },
-    en: { title: "Our Account", sub: "Ready-made • Instant" },
+    ar: { title: "خاص", sub: "تحكم كامل • أجهزة متعددة" },
+    en: { title: "Private", sub: "Full control • Multi-device" },
   },
 } as const;
 
