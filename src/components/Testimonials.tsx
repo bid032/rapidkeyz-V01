@@ -72,6 +72,7 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
   const items = useMemo(() => (images.length < 3 ? [...images, ...images, ...images] : images), [images]);
   const [index, setIndex] = useState(0);
   const paused = useRef(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -80,10 +81,42 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
     return () => clearInterval(id);
   }, [items.length]);
 
+  // Scroll-driven advance: as user scrolls the page, advance slides too (web + mobile)
+  useEffect(() => {
+    let lastY = typeof window !== "undefined" ? window.scrollY : 0;
+    let acc = 0;
+    const THRESHOLD = 220; // pixels of scroll per slide step
+
+    const onScroll = () => {
+      const el = wrapRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const inView = rect.bottom > vh * 0.15 && rect.top < vh * 0.85;
+      const y = window.scrollY;
+      const delta = y - lastY;
+      lastY = y;
+      if (!inView) return;
+      acc += delta;
+      while (acc >= THRESHOLD) {
+        acc -= THRESHOLD;
+        setIndex((i) => (i + 1) % items.length);
+      }
+      while (acc <= -THRESHOLD) {
+        acc += THRESHOLD;
+        setIndex((i) => (i - 1 + items.length) % items.length);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [items.length]);
+
   const go = (dir: 1 | -1) => setIndex((i) => (i + dir + items.length) % items.length);
 
   return (
     <div
+      ref={wrapRef}
       className="relative"
       onMouseEnter={() => (paused.current = true)}
       onMouseLeave={() => (paused.current = false)}
