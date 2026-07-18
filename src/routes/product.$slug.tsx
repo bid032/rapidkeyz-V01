@@ -436,6 +436,35 @@ function ProductPage() {
       </div>
       <ProductTabs productId={product.id} productName={name} description={desc} deliveryType={product.delivery_type} />
       <ProductDetails productName={name} accountTypes={accountTypes} />
+      {related.data && related.data.length > 0 && (
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
+          <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
+            <div>
+              <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
+                {lang === "ar" ? "قد يعجبك أيضاً" : "You may also like"}
+              </div>
+              <h2 data-gsap="split-words" className="font-display font-bold text-3xl sm:text-5xl leading-[1.05] tracking-tight">
+                {lang === "ar" ? "منتجات مشابهة" : "Related products"}
+              </h2>
+            </div>
+            <Link
+              to="/shop"
+              data-gsap="magnetic"
+              data-strength="0.3"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full neon-border text-brand font-mono text-[11px] sm:text-sm uppercase tracking-widest shrink-0"
+            >
+              {lang === "ar" ? "عرض الكل" : "View all"} <span>→</span>
+            </Link>
+          </div>
+          <div data-gsap="card-pop" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {related.data.slice(0, 6).map((p) => (
+              <div key={p.id} data-gsap="tilt">
+                <ProductCard p={p} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       <Footer />
     </div>
   );
