@@ -423,6 +423,9 @@ function HomePage() {
         </div>
       </header>
 
+      {/* Brands strip , auto-scrolling logos of every tool we cover */}
+      <BrandsStrip />
+
       {/* Categories , small 4-across clickable pills */}
       <CategoriesShowcase
         compact
