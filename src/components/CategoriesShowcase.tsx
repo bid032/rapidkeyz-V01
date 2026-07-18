@@ -55,8 +55,18 @@ export function CategoriesShowcase({
         />
       </div>
 
-      <div className={`text-center ${mini ? "mb-4" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
-        {!mini && (
+      <div className={`text-center ${mini ? "mb-4 sm:mb-6" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
+        {mini ? (
+          <>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full neon-border text-brand text-[10px] font-bold uppercase tracking-[0.25em]">
+              <Sparkles className="size-3" />
+              {lang === "ar" ? "تصفّح حسب القسم" : "Browse by category"}
+            </div>
+            <h2 className="mt-2 font-display font-bold tracking-tight leading-[1.15] text-xl sm:text-2xl md:text-3xl">
+              <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
+            </h2>
+          </>
+        ) : (
           <>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
               <Sparkles className="size-3.5" />
