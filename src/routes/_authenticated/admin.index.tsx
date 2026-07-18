@@ -165,9 +165,7 @@ function AdminOverview() {
       const d = new Date(r.created_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
-      const amt = Math.round(Number(r.amount ?? 0));
-      rows[idx].refunds += amt;
-      rows[idx].profit -= amt;
+      rows[idx].refunds += Math.round(Number(r.amount ?? 0));
     });
     return rows;
   }, [monthly.data, refundsAll.data, sales.data, month]);
