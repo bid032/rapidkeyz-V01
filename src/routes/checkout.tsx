@@ -246,40 +246,6 @@ function CheckoutPage() {
                 </div>
               </section>
 
-              {privateItems.length > 0 && (
-                <section className="p-6 bg-card border border-border rounded-2xl">
-                  <h2 className="font-bold mb-1">
-                    {lang === "ar" ? "بريد تفعيل الاشتراك الخاص" : "Private subscription email"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {lang === "ar"
-                      ? "أدخل البريد الإلكتروني الذي تريد تفعيل الاشتراك عليه لكل منتج خاص."
-                      : "Enter the email you want the subscription activated on for each private product."}
-                  </p>
-                  <div className="grid gap-3">
-                    {privateItems.map((it) => {
-                      const key = it.productId + it.planId;
-                      return (
-                        <div key={key} className="grid gap-1">
-                          <label className="text-xs font-bold text-muted-foreground">
-                            {it.productName} , {it.planLabel}
-                          </label>
-                          <input
-                            required
-                            type="email"
-                            placeholder={lang === "ar" ? "example@email.com" : "example@email.com"}
-                            value={subEmails[key] ?? ""}
-                            onChange={(e) =>
-                              setSubEmails((s) => ({ ...s, [key]: e.target.value }))
-                            }
-                            className="px-4 py-3 bg-background border border-border rounded-lg"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
 
 
 
