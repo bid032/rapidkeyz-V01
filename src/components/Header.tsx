@@ -115,6 +115,7 @@ export function Header() {
           <Link
             to="/cart"
             aria-label="Cart"
+            data-cart-anchor
             className={`relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-transform ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
           >
             <ShoppingCart className={`size-4 ${bumping ? "text-brand" : ""}`} />
