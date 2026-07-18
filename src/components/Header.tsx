@@ -115,11 +115,13 @@ export function Header() {
           <Link
             to="/cart"
             aria-label="Cart"
-            className="relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
+            className={`relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-transform ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
           >
-            <ShoppingCart className="size-4" />
+            <ShoppingCart className={`size-4 ${bumping ? "text-brand" : ""}`} />
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 size-4 sm:size-5 rounded-full bg-brand text-brand-foreground text-[9px] sm:text-[10px] font-bold grid place-items-center">
+              <span
+                className={`absolute -top-1 -right-1 size-4 sm:size-5 rounded-full bg-brand text-brand-foreground text-[9px] sm:text-[10px] font-bold grid place-items-center ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
+              >
                 {cartCount}
               </span>
             )}
