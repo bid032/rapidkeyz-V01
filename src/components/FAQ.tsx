@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, HelpCircle } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { BrandName } from "@/components/BrandName";
+import { supabase } from "@/integrations/supabase/client";
 
 type QA = { q: string; a: string };
 
