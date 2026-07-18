@@ -454,6 +454,9 @@ function HomePage() {
       {/* Categories , centered creative pill grid */}
       <CategoriesShowcase compact slugs={["ai-tools", "design"]} />
 
+      {/* Horizontal category product rows */}
+      <CategoryRows />
+
 
 
 
