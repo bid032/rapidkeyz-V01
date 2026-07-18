@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ShoppingCart } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 export type ProductCardData = {
@@ -12,13 +13,50 @@ export type ProductCardData = {
   delivery_type: "instant" | "manual";
   account_type: "private" | "shared" | "both" | "own";
   minPrice: number | null;
+  cheapestPlanId?: string | null;
   discount_percent?: number | null;
   planLabel_ar?: string | null;
   planLabel_en?: string | null;
 };
 
+function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
+  const target = document.querySelector<HTMLElement>("[data-cart-anchor]");
+  if (!target) return;
+  const from = fromEl.getBoundingClientRect();
+  const to = target.getBoundingClientRect();
+  const ghost = document.createElement("div");
+  const size = 56;
+  ghost.style.cssText = `
+    position:fixed;left:${from.left + from.width / 2 - size / 2}px;top:${from.top + from.height / 2 - size / 2}px;
+    width:${size}px;height:${size}px;border-radius:16px;pointer-events:none;z-index:9999;
+    background:var(--card);border:1px solid color-mix(in oklab, var(--brand) 60%, transparent);
+    box-shadow:0 12px 40px -8px color-mix(in oklab, var(--brand) 60%, transparent);
+    display:grid;place-items:center;overflow:hidden;color:var(--brand);
+    transition:transform 0.75s cubic-bezier(.55,-0.2,.4,1.4),opacity 0.75s ease,border-radius 0.75s ease;
+  `;
+  if (iconUrl) {
+    const img = document.createElement("img");
+    img.src = iconUrl;
+    img.alt = name;
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+    ghost.appendChild(img);
+  } else {
+    ghost.textContent = name.slice(0, 2).toUpperCase();
+    ghost.style.fontWeight = "900";
+  }
+  document.body.appendChild(ghost);
+  requestAnimationFrame(() => {
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    ghost.style.transform = `translate(${dx}px, ${dy}px) scale(0.15) rotate(360deg)`;
+    ghost.style.opacity = "0";
+    ghost.style.borderRadius = "50%";
+  });
+  setTimeout(() => ghost.remove(), 800);
+}
+
 export function ProductCard({ p }: { p: ProductCardData }) {
-  const { lang, t } = useApp();
+  const { lang, t, addToCart, notify } = useApp() as any;
   const name = lang === "ar" ? p.name_ar : p.name_en;
   const desc = lang === "ar" ? p.description_ar : p.description_en;
   const planLabel = lang === "ar" ? p.planLabel_ar : p.planLabel_en;
@@ -28,6 +66,27 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     hasDiscount && p.minPrice !== null
       ? Math.round(p.minPrice * (100 - discount)) / 100
       : p.minPrice;
+
+  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!p.cheapestPlanId || finalPrice === null) {
+      notify?.(lang === "ar" ? "لا توجد خطة متاحة" : "No plan available", "error");
+      return;
+    }
+    addToCart({
+      productId: p.id,
+      planId: p.cheapestPlanId,
+      productName: name,
+      planLabel: planLabel ?? "",
+      price: finalPrice,
+      quantity: 1,
+      iconUrl: p.icon_url ?? null,
+      deliveryType: p.delivery_type,
+      accountType: p.account_type,
+    });
+    flyToCart(e.currentTarget, p.icon_url ?? null, name);
+  };
 
   return (
     <Link
@@ -87,8 +146,8 @@ export function ProductCard({ p }: { p: ProductCardData }) {
           )}
         </div>
       </div>
-      <div className="mt-auto flex items-center justify-between">
-        <div className="flex flex-col">
+      <div className="mt-auto flex items-center justify-between gap-3">
+        <div className="flex flex-col min-w-0">
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
             {planLabel || t.product.priceStarting}
           </span>
@@ -107,9 +166,20 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             <span className="text-2xl font-extrabold text-foreground">,</span>
           )}
         </div>
-        <span className="px-5 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold text-sm group-hover:brand-glow transition-all">
-          {t.product.buyNow}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={handleAdd}
+            aria-label={lang === "ar" ? "أضف للسلة" : "Add to cart"}
+            title={lang === "ar" ? "أضف للسلة" : "Add to cart"}
+            className="grid place-items-center size-10 rounded-xl border border-brand/40 text-brand hover:bg-brand hover:text-brand-foreground transition-all active:scale-90"
+          >
+            <ShoppingCart className="size-4" />
+          </button>
+          <span className="px-4 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold text-sm group-hover:brand-glow transition-all">
+            {t.product.buyNow}
+          </span>
+        </div>
       </div>
     </Link>
   );
