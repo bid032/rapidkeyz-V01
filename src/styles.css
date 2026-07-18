@@ -143,8 +143,8 @@ body::after {
   100% { transform: translate3d(-2%, 1%, 0) rotate(-3deg) scale(1.04); }
 }
 
-/* Keep app chrome above the fixed background layers */
-header, main, footer, section, nav { position: relative; z-index: 1; }
+/* Keep app chrome above the fixed background layers without overriding fixed navbars */
+header, main, footer, section { position: relative; z-index: 1; }
 
 .light body {
   background-image:
