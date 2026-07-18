@@ -76,13 +76,23 @@ function AdminOrders() {
   }, [orders.data]);
 
   const visible = useMemo(() => {
+    let list = expiring;
     if (tab === "expiring") {
-      return expiring
+      list = list
         .filter((e) => e.minDays !== null && e.minDays <= 30 && e.minDays > -365)
         .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
     }
-    return expiring;
-  }, [expiring, tab]);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter(({ order: o }: any) =>
+        String(o.order_number ?? "").toLowerCase().includes(q) ||
+        String(o.customer_email ?? "").toLowerCase().includes(q) ||
+        String(o.customer_phone ?? "").toLowerCase().includes(q) ||
+        String(o.customer_name ?? "").toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [expiring, tab, search]);
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
