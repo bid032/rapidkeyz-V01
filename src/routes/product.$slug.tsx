@@ -146,7 +146,9 @@ function ProductPage() {
         .eq("status", "active")
         .neq("id", p.id)
         .limit(6);
-      if (p.category_id) q = q.eq("category_id", p.category_id);
+      const cats: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
+      if (cats.length > 0) q = q.overlaps("category_ids", cats);
+      else if (p.category_id) q = q.eq("category_id", p.category_id);
       const { data } = await q;
       return (data ?? []).map((r: any) => {
         const active = (r.product_plans ?? []).filter((pl: any) => pl.is_active);
