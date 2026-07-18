@@ -209,6 +209,22 @@ function Dashboard() {
                       </div>
                     );
                   }
+                  if (o.status === "processing") {
+
+                    return (
+                      <div className="p-4 bg-warning/5 border border-warning/20 rounded-lg text-center">
+                        <div className="text-sm font-bold text-warning mb-1">
+                          {lang === "ar" ? "الطلب تحت التجهيز" : "Order is being processed"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {lang === "ar"
+                            ? "جاري تجهيز الاشتراك وسيتم التواصل معك قريباً."
+                            : "We're preparing your subscription and will contact you shortly."}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div className="space-y-2">
                       {o.order_items?.map((it: any) => {
