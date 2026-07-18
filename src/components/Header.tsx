@@ -10,7 +10,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
 
 export function Header() {
-  const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount } = useApp();
+  const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount, cartBumpKey } = useApp();
+  const [bumping, setBumping] = useState(false);
+  useEffect(() => {
+    if (!cartBumpKey) return;
+    setBumping(true);
+    const id = setTimeout(() => setBumping(false), 520);
+    return () => clearTimeout(id);
+  }, [cartBumpKey]);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
