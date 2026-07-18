@@ -213,7 +213,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     clearCart,
     cartTotal,
     cartCount,
+    cartBumpKey,
     confirm,
+    notify,
+  };
     notify,
   };
 
