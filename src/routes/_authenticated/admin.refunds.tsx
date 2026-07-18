@@ -57,13 +57,14 @@ function AdminRefunds() {
   const visibleOrders = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = orders.data ?? [];
-    if (!q) return list.slice(0, 25);
+    if (!q) return list.slice(0, 5);
     return list.filter((o: any) =>
       String(o.order_number ?? "").toLowerCase().includes(q) ||
       String(o.customer_email ?? "").toLowerCase().includes(q) ||
       String(o.customer_phone ?? "").toLowerCase().includes(q)
     );
   }, [orders.data, search]);
+
 
   const totals = (refunds.data ?? []).reduce(
     (acc, r) => {
