@@ -438,6 +438,111 @@ function AdminUsers() {
           })}
         </div>
       )}
+
+      {stockUser && (
+        <StockAccessDialog
+          user={stockUser}
+          onClose={() => setStockUser(null)}
+          onSaved={() => {
+            setStockUser(null);
+            qc.invalidateQueries({ queryKey: ["admin-users"] });
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function StockAccessDialog({
+  user,
+  onClose,
+  onSaved,
+}: {
+  user: any;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { lang, notify } = useApp();
+  const [access, setAccess] = useState<boolean>(!!user.stock_access);
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const save = async () => {
+    if (access && !user.has_stock_password && !password) {
+      notify(lang === "ar" ? "أدخل كلمة سر عشان اليوزر يقدر يدخل" : "Set a password first", "error");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.rpc("admin_set_stock_access", {
+      _user_id: user.id,
+      _access: access,
+      _password: password || null,
+    });
+    setLoading(false);
+    if (error) return notify(error.message, "error");
+    notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
+    onSaved();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-3 end-3 w-8 h-8 grid place-items-center rounded-full hover:bg-muted">
+          <X className="w-4 h-4" />
+        </button>
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-11 h-11 rounded-2xl grid place-items-center bg-brand/10 text-brand">
+            <Boxes className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-extrabold">{lang === "ar" ? "صلاحية الاستوك" : "Stock Access"}</div>
+            <div className="text-xs text-muted-foreground truncate max-w-[200px]">{user.display_name || user.email}</div>
+          </div>
+        </div>
+
+        <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer mb-4">
+          <input type="checkbox" checked={access} onChange={(e) => setAccess(e.target.checked)} className="mt-1" />
+          <div>
+            <div className="font-bold text-sm">{lang === "ar" ? "السماح بالدخول لصفحة الاستوك" : "Allow access to stock page"}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {lang === "ar" ? "لو مقفول، لن يظهر رابط الاستوك في القائمة." : "Hides the stock link if disabled."}
+            </div>
+          </div>
+        </label>
+
+        <div className="space-y-2 mb-4">
+          <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" />
+            {user.has_stock_password
+              ? (lang === "ar" ? "تغيير كلمة السر (اختياري)" : "Change password (optional)")
+              : (lang === "ar" ? "كلمة السر الأولى" : "Set password")}
+          </label>
+          <input
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={user.has_stock_password ? "•••••• (اتركها فاضية لعدم التغيير)" : "كلمة السر"}
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
+            dir="ltr"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={save}
+            disabled={loading}
+            className="flex-1 px-4 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-60"
+          >
+            {loading ? "..." : (lang === "ar" ? "حفظ" : "Save")}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 bg-muted rounded-xl font-bold text-sm">
+            {lang === "ar" ? "إلغاء" : "Cancel"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
