@@ -448,16 +448,9 @@ function ProductPage() {
                 {lang === "ar" ? "منتجات مشابهة" : "Related products"}
               </h2>
             </div>
-            <Link
-              to="/shop"
-              data-gsap="magnetic"
-              data-strength="0.3"
-              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full neon-border text-brand font-mono text-[11px] sm:text-sm uppercase tracking-widest shrink-0"
-            >
-              {lang === "ar" ? "عرض الكل" : "View all"} <span>→</span>
-            </Link>
+            <ViewAllButton to="/shop" />
           </div>
-          <div data-gsap="card-pop" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div data-gsap="card-pop" className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {related.data.slice(0, 6).map((p) => (
               <div key={p.id} data-gsap="tilt">
                 <ProductCard p={p} />
