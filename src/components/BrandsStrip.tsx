@@ -30,12 +30,13 @@ export function BrandsStrip() {
   const items = data ?? [];
   if (items.length === 0) return null;
 
-  // Duplicate the list to create a seamless marquee loop
-  const loop = [...items, ...items];
+  // Repeat enough times so the track is always wider than the viewport.
+  const repeatCount = Math.max(4, Math.ceil(24 / Math.max(items.length, 1)) * 2);
+  const loop = Array.from({ length: repeatCount }, () => items).flat();
 
   return (
-    <section className="relative py-8 sm:py-12 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center mb-6 sm:mb-8">
+    <section className="relative -mt-2 py-6 sm:py-8 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center mb-4 sm:mb-5">
         <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
           {lang === "ar" ? "شركاؤنا الرقميون" : "Our digital lineup"}
         </div>
@@ -45,7 +46,7 @@ export function BrandsStrip() {
         >
           {lang === "ar" ? "البرامج والأدوات المتوفرة عندنا" : "Apps & tools we cover"}
         </h2>
-        <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+        <p className="mt-1 text-sm sm:text-base text-muted-foreground">
           {lang === "ar"
             ? "اشتراكات أصلية 100% بأفضل الأسعار في مصر"
             : "100% original subscriptions at the best prices"}
@@ -63,7 +64,7 @@ export function BrandsStrip() {
           className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 z-10 bg-gradient-to-l from-background to-transparent"
         />
 
-        <div className="brands-marquee">
+        <div className="brands-marquee" dir="ltr">
           <div className="brands-track">
             {loop.map((p, i) => {
               const name = lang === "ar" ? p.name_ar : p.name_en;

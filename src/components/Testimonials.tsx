@@ -32,8 +32,8 @@ export function Testimonials() {
       */}
 
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20 relative">
-        <div className="relative flex items-end justify-between mb-8 sm:mb-12 flex-wrap gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 relative">
+        <div className="relative flex items-end justify-between mb-5 sm:mb-7 flex-wrap gap-4">
 
         <div>
           <p className="text-xs font-black uppercase tracking-[0.25em] text-brand mb-3">
@@ -158,7 +158,7 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
       onTouchEnd={onTouchEnd}
     >
 
-      <div className="relative h-[440px] md:h-[520px] flex items-center justify-center [perspective:1400px]">
+      <div className="relative h-[340px] md:h-[460px] flex items-center justify-center [perspective:1400px] overflow-hidden">
 
         {items.map((img, i) => {
           // Relative offset with wrap-around
@@ -182,7 +182,7 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
               onClick={() => setIndex(i)}
               aria-hidden={hidden}
               tabIndex={hidden ? -1 : 0}
-              className="absolute top-1/2 left-1/2 -mt-[220px] md:-mt-[260px] -ml-[160px] md:-ml-[200px] w-[320px] md:w-[400px] h-[440px] md:h-[520px] rounded-3xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-[900ms] cursor-pointer"
+              className="absolute top-1/2 left-1/2 -mt-[170px] md:-mt-[230px] -ml-[125px] md:-ml-[176px] w-[250px] md:w-[352px] h-[340px] md:h-[460px] rounded-3xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-[900ms] cursor-pointer"
               style={{
                 transform: `translateX(${translateX}%) scale(${scale}) rotateY(${rotateY}deg)`,
                 opacity,
@@ -208,7 +208,7 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
       </div>
 
       {/* Controls */}
-      <div className="relative mt-8 flex items-center justify-center gap-4">
+      <div className="relative mt-5 flex items-center justify-center gap-4">
         <button
           onClick={() => go(-1)}
           aria-label="Previous"

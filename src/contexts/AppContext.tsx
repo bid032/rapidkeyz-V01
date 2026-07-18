@@ -282,11 +282,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       {/* Toasts */}
       {toasts.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] flex flex-col gap-2 pointer-events-none">
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
           {toasts.map((tt) => (
             <div
               key={tt.id}
-              className={`px-4 py-3 rounded-xl border shadow-lg text-sm font-bold pointer-events-auto backdrop-blur ${
+              className={`px-4 py-3 rounded-xl border shadow-lg text-center text-sm font-bold pointer-events-auto backdrop-blur ${
                 tt.type === "success"
                   ? "bg-success/15 border-success/30 text-success"
                   : tt.type === "error"
