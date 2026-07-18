@@ -33,6 +33,7 @@ function AdminSettings() {
     cta_secondary_ar: "", cta_secondary_en: "",
     trusted_ar: "", trusted_en: "",
   });
+  const [stockSheet, setStockSheet] = useState<any>({ spreadsheet_id: "", sheet_title: "" });
 
   const settings = useQuery({
     queryKey: ["site-settings"],
@@ -53,6 +54,7 @@ function AdminSettings() {
         const m = (s.value as any)?.mode;
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
+      if (s.key === "stock_sheet") setStockSheet((v: any) => ({ ...v, ...(s.value as any) }));
     }
   }, [settings.data]);
 
@@ -67,6 +69,7 @@ function AdminSettings() {
         { key: "socials", value: socials },
         { key: "stats", value: stats },
         { key: "theme_mode", value: { mode: themeMode } },
+        { key: "stock_sheet", value: stockSheet },
       ]);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
@@ -282,6 +285,37 @@ function AdminSettings() {
         </div>
       </Section>
 
+      <Section title={"شيت الاستوك / Stock Sheet"}>
+        <p className="text-xs text-muted-foreground mb-4">
+          اربط شيت جوجل يحتوي بيانات الاستوك. الصفحة "/stock" هتقرأ منه تلقائي كل 20 ثانية. لازم يكون الشيت متشارك مع حساب Google المربوط بالكونيكتور.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">Spreadsheet ID أو الرابط الكامل</label>
+            <input
+              placeholder="https://docs.google.com/spreadsheets/d/.../edit  أو الـ ID فقط"
+              value={stockSheet.spreadsheet_id ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                setStockSheet({ ...stockSheet, spreadsheet_id: m ? m[1] : raw });
+              }}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">اسم التبويب (اختياري)</label>
+            <input
+              placeholder="Sheet1"
+              value={stockSheet.sheet_title ?? ""}
+              onChange={(e) => setStockSheet({ ...stockSheet, sheet_title: e.target.value })}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          </div>
+        </div>
+      </Section>
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
         className="px-6 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow">
