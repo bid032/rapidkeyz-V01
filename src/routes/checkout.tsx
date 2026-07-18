@@ -112,13 +112,15 @@ function CheckoutPage() {
       let proofUrl: string | null = null;
       if (gateway === "wallet_instapay" && proofFile) {
         const ext = proofFile.name.split(".").pop() || "jpg";
-        const path = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const folder = user?.id ?? "guest";
+        const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("payment-proofs")
           .upload(path, proofFile, { contentType: proofFile.type, upsert: false });
         if (upErr) throw upErr;
         proofUrl = path;
       }
+
 
       const { data: order, error: oErr } = await supabase
         .from("orders")
