@@ -5,6 +5,8 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
+import { notifyItemDelivered } from "@/lib/notify-order.functions";
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
   beforeLoad: async () => {
@@ -185,13 +187,22 @@ function AdminOrders() {
         ...creds,
       });
       if (error) throw error;
+      // Fire-and-await customer email with the delivered credentials.
+      try {
+        await notifyItemDelivered({ data: { orderItemId } });
+      } catch (e) {
+        // Non-fatal for delivery, but surface to admin.
+        console.error("notifyItemDelivered failed", e);
+        notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
-      notify(lang === "ar" ? "تم التسليم" : "Delivered", "success");
+      notify(lang === "ar" ? "تم التسليم وإرسال الإيميل" : "Delivered & emailed", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
+
 
   const deleteOrder = useMutation({
     mutationFn: async (id: string) => {
@@ -386,8 +397,22 @@ function AdminOrders() {
 
 
 function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => void }) {
+  const { lang, notify } = useApp();
   const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
+  const [resending, setResending] = useState(false);
   const delivered = item.delivered_accounts?.length > 0;
+
+  const resend = async () => {
+    setResending(true);
+    try {
+      await notifyItemDelivered({ data: { orderItemId: item.id } });
+      notify(lang === "ar" ? "تم إعادة إرسال الإيميل" : "Email resent", "success");
+    } catch (e: any) {
+      notify(e?.message || (lang === "ar" ? "فشل الإرسال" : "Send failed"), "error");
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
     <div className="p-4 bg-background border border-border rounded-xl">
@@ -397,6 +422,9 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
           <span className="text-muted-foreground">, {item.plan_label} × {item.quantity}</span>
           <span className={`ml-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
+          </span>
+          <span className={`ml-2 text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
+            {delivered ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered") : (lang === "ar" ? "⏳ لسه" : "⏳ Pending")}
           </span>
         </div>
         <div className="text-sm font-bold shrink-0">{item.unit_price} EGP</div>
@@ -410,7 +438,17 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
 
       {delivered ? (
         <div className="mt-2 p-3 bg-success/5 border border-success/20 rounded font-mono text-xs">
-          <div>✓ Delivered</div>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span>✓ Delivered</span>
+            <button
+              type="button"
+              onClick={resend}
+              disabled={resending}
+              className="px-2 py-1 rounded bg-brand/10 border border-brand/30 text-brand text-[11px] font-bold hover:bg-brand hover:text-brand-foreground disabled:opacity-50"
+            >
+              {resending ? (lang === "ar" ? "جاري…" : "Sending…") : (lang === "ar" ? "إعادة إرسال الإيميل" : "Resend email")}
+            </button>
+          </div>
           {item.delivered_accounts.map((a: any) => (
             <div key={a.id} className="mt-1">
               {a.account_email && <div>Email: {a.account_email}</div>}
@@ -434,10 +472,11 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
             onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
             className="px-3 py-2 bg-card border border-border rounded text-sm" />
           <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
-            Deliver credentials
+            {lang === "ar" ? "تسليم البيانات وإرسال إيميل" : "Deliver credentials & email"}
           </button>
         </form>
       )}
     </div>
   );
 }
+

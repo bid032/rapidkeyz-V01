@@ -1,5 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
+import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
+
 
 const inputSchema = z.object({
   orderId: z.string().uuid(),
@@ -125,4 +127,61 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
     })
     return { ok: true, count: accounts.length }
   })
+
+const itemInput = z.object({ orderItemId: z.string().uuid() })
+
+// Admin-triggered: email the customer credentials for ONE specific order item.
+// No recency guard — admin can deliver at any time after purchase.
+export const notifyItemDelivered = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => itemInput.parse(data))
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc('has_role', {
+      _user_id: context.userId,
+      _role: 'admin',
+    })
+    if (!isAdmin) {
+      const { data: isMod } = await context.supabase.rpc('has_role', {
+        _user_id: context.userId,
+        _role: 'moderator',
+      })
+      if (!isMod) throw new Error('Forbidden')
+    }
+
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server')
+    const { sendTemplateEmail } = await import('./email-templates/send-email')
+
+    const { data: item, error } = await supabaseAdmin
+      .from('order_items')
+      .select('id, product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes), orders(id, order_number, total, currency, customer_email)')
+      .eq('id', data.orderItemId)
+      .single()
+    if (error || !item) throw new Error(error?.message || 'Order item not found')
+
+    const order: any = (item as any).orders
+    if (!order?.customer_email) return { ok: false, reason: 'no_email' }
+    const accs = (item as any).delivered_accounts ?? []
+    if (accs.length === 0) return { ok: false, reason: 'no_delivered_accounts' }
+
+    const accounts = accs.map((acc: any) => ({
+      product_name: (item as any).product_name,
+      plan_label: (item as any).plan_label,
+      account_email: acc.account_email,
+      account_username: acc.account_username,
+      account_password: acc.account_password,
+      extra_notes: acc.extra_notes,
+    }))
+
+    await sendTemplateEmail('order-delivered', order.customer_email, {
+      idempotencyKey: `item-delivered-${data.orderItemId}`,
+      templateData: {
+        orderNumber: order.order_number,
+        total: order.total,
+        currency: order.currency || 'EGP',
+        accounts,
+      },
+    })
+    return { ok: true }
+  })
+
 
