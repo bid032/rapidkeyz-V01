@@ -15,10 +15,12 @@ export function CategoriesShowcase({
   activeSlug,
   slugs,
   compact = false,
+  mini = false,
 }: {
   activeSlug?: string;
   slugs?: string[];
   compact?: boolean;
+  mini?: boolean;
 }) {
   const { lang } = useApp();
   const cats = useQuery({
