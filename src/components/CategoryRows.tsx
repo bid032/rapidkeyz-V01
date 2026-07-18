@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
+
 
 type CategoryRow = {
   id: string;
@@ -88,6 +90,8 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+    if (!isDesktop) return; // manual scroll on mobile/tablet
     const dir = lang === "ar" ? -1 : 1;
     let raf = 0;
     const step = () => {
@@ -104,6 +108,14 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
     return () => cancelAnimationFrame(raf);
   }, [lang]);
 
+  const nudge = (delta: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    pausedRef.current = true;
+    el.scrollBy({ left: delta, behavior: "smooth" });
+    window.setTimeout(() => (pausedRef.current = false), 1500);
+  };
+
   return (
     <div>
       <div className="flex items-end justify-between mb-4 sm:mb-6 gap-4">
@@ -112,21 +124,44 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
         </h2>
         <ViewAllButton to="/shop" search={{ category: cat.slug }} />
       </div>
-      <div
-        ref={scrollerRef}
-        onMouseEnter={() => (pausedRef.current = true)}
-        onMouseLeave={() => (pausedRef.current = false)}
-        onTouchStart={() => (pausedRef.current = true)}
-        onTouchEnd={() => (pausedRef.current = false)}
-        className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-3 px-3 sm:-mx-6 sm:px-6 scrollbar-none"
-        style={{ scrollBehavior: "auto" }}
-      >
-        {[...cat.products, ...cat.products].map((p, i) => (
-          <div key={`${p.id}-${i}`} className="shrink-0 w-[46%] sm:w-[280px]">
-            <ProductCard p={p} />
-          </div>
-        ))}
+      <div className="relative group">
+        {/* Arrows (desktop) */}
+        <button
+          type="button"
+          aria-label="prev"
+          onClick={() => nudge(-320)}
+          className="hidden md:grid absolute top-1/2 -translate-y-1/2 start-0 -translate-x-1/2 rtl:translate-x-1/2 z-10 place-items-center size-11 rounded-full bg-card border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
+        >
+          <ChevronLeft className="size-5 rtl:hidden" />
+          <ChevronRight className="size-5 hidden rtl:block" />
+        </button>
+        <button
+          type="button"
+          aria-label="next"
+          onClick={() => nudge(320)}
+          className="hidden md:grid absolute top-1/2 -translate-y-1/2 end-0 translate-x-1/2 rtl:-translate-x-1/2 z-10 place-items-center size-11 rounded-full bg-card border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
+        >
+          <ChevronRight className="size-5 rtl:hidden" />
+          <ChevronLeft className="size-5 hidden rtl:block" />
+        </button>
+
+        <div
+          ref={scrollerRef}
+          onMouseEnter={() => (pausedRef.current = true)}
+          onMouseLeave={() => (pausedRef.current = false)}
+          onTouchStart={() => (pausedRef.current = true)}
+          onTouchEnd={() => (pausedRef.current = false)}
+          className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-3 px-3 sm:-mx-6 sm:px-6 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollBehavior: "auto" }}
+        >
+          {[...cat.products, ...cat.products].map((p, i) => (
+            <div key={`${p.id}-${i}`} className="shrink-0 w-[46%] sm:w-[280px]">
+              <ProductCard p={p} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
+

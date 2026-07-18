@@ -104,7 +104,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
         params={{ slug: p.slug }}
         className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-brand/50 hover:shadow-[0_10px_40px_-12px_color-mix(in_oklab,var(--brand)_35%,transparent)] transition-all flex flex-col h-full"
       >
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        <div className="relative aspect-square w-full overflow-hidden bg-muted">
           {p.icon_url ? (
             <img
               src={p.icon_url}
