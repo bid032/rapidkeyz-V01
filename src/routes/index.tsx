@@ -94,6 +94,8 @@ function HomePage() {
   useEffect(() => { setHydrated(true); }, []);
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
+  const trending = (products.data ?? []).slice(0, 3);
+  const trendingLabels = ["TRENDING", "NEW", "HOT"];
   const heroSetting = useQuery({
     queryKey: ["site-settings", "hero"],
     queryFn: async () => {
