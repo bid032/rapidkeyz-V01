@@ -184,11 +184,14 @@ function Dashboard() {
                         </div>
                         <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                       </div>
-                      {o.status === "delivered" ? (
-                        it.delivered_accounts?.map((acc: any) => {
+                      {it.delivered_accounts?.length > 0 ? (
+                        it.delivered_accounts.map((acc: any) => {
                           const rows = buildCredentialRows(acc, lang);
                           return (
                             <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
+                              <div className="text-[11px] font-bold text-success mb-1">
+                                {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
+                              </div>
                               {rows.map((r, i) => (
                                 <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
                               ))}
@@ -203,10 +206,11 @@ function Dashboard() {
                       ) : (
                         <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
                           {lang === "ar"
-                            ? "⏳ بيانات الحساب هتظهر هنا بعد ما يتم تسليم الطلب"
-                            : "⏳ Account details will appear here once the order is delivered"}
+                            ? "⏳ الخدمة دي لسه تحت التجهيز — بيانات الحساب هتظهر هنا بمجرد التسليم"
+                            : "⏳ This item is still being prepared — credentials will appear here once delivered"}
                         </div>
                       )}
+
                     </div>
                   ))}
                 </div>
