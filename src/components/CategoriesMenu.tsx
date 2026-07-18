@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
-type Cat = { id: string; slug: string; name_ar: string; name_en: string; icon_url: string | null };
+type Cat = { id: string; slug: string; name_ar: string; name_en: string; icon: string | null };
 
 export function CategoriesMenu() {
   const { lang, t } = useApp();
@@ -15,10 +15,10 @@ export function CategoriesMenu() {
   useEffect(() => {
     supabase
       .from("categories")
-      .select("id, slug, name_ar, name_en, icon_url")
+      .select("id, slug, name_ar, name_en, icon")
       .eq("is_active", true)
       .order("sort_order")
-      .then(({ data }) => setCats((data as Cat[]) ?? []));
+      .then(({ data }) => setCats((data as Cat[] | null) ?? []));
   }, []);
 
   useEffect(() => {
