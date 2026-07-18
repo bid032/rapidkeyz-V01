@@ -189,9 +189,7 @@ export function Header() {
                   <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className="h-8 w-8 object-contain" />
                   <BrandName className="text-lg" />
                 </div>
-                <button onClick={closeMobile} className="p-1 rounded hover:bg-muted" aria-label="Close">
-                  <X className="size-4" />
-                </button>
+                <span className="w-6" />
               </div>
               <nav className="flex flex-col px-2 py-3">
                 {/* الأقسام */}
