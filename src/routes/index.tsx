@@ -302,48 +302,54 @@ function HomePage() {
               </div>
             </div>
 
-            <div className="col-span-2 relative">
-              {trending[0] && (
-                <Link
-                  to="/product/$slug"
-                  params={{ slug: trending[0].slug }}
-                  data-gsap="tilt"
-                  className="relative block -translate-y-6 translate-x-4 rotate-[-6deg] p-5 rounded-2xl neon-border bg-card/70 backdrop-blur hover:brand-glow transition"
-                >
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-2">TRENDING</div>
-                  <div className="font-display font-bold text-lg leading-tight mb-2 line-clamp-1">
-                    {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
-                  </div>
-                  {trending[0].minPrice !== null && (
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-display font-bold text-2xl text-foreground">{trending[0].minPrice}</span>
-                      <span className="text-xs text-muted-foreground">{t.common.currency}</span>
+            <div className="col-span-3 relative flex flex-col items-stretch gap-6">
+              <div className="flex justify-center">
+                <Logo3D className="w-40 lg:w-52" />
+              </div>
+              <div className="relative min-h-[220px]">
+                {trending[0] && (
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: trending[0].slug }}
+                    data-gsap="tilt"
+                    className="relative block rotate-[-4deg] p-5 rounded-2xl neon-border bg-card/70 backdrop-blur hover:brand-glow transition"
+                  >
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-2">TRENDING</div>
+                    <div className="font-display font-bold text-lg leading-tight mb-2 line-clamp-1">
+                      {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                     </div>
-                  )}
-                  <div className="mt-3 h-1 rounded-full bg-brand/20 overflow-hidden">
-                    <div className="h-full w-3/4 bg-brand animate-pulse" />
-                  </div>
-                </Link>
-              )}
-              {trending[1] && (
-                <Link
-                  to="/product/$slug"
-                  params={{ slug: trending[1].slug }}
-                  data-gsap="tilt"
-                  className="absolute top-40 -left-6 block p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[4deg] hover:brand-glow transition"
-                >
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
-                  <div className="font-display font-bold text-sm line-clamp-1">
-                    {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
-                  </div>
-                  {trending[1].minPrice !== null && (
-                    <div className="text-xs text-brand mt-1 font-bold">
-                      {trending[1].minPrice} {t.common.currency}
+                    {trending[0].minPrice !== null && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-display font-bold text-2xl text-foreground">{trending[0].minPrice}</span>
+                        <span className="text-xs text-muted-foreground">{t.common.currency}</span>
+                      </div>
+                    )}
+                    <div className="mt-3 h-1 rounded-full bg-brand/20 overflow-hidden">
+                      <div className="h-full w-3/4 bg-brand animate-pulse" />
                     </div>
-                  )}
-                </Link>
-              )}
+                  </Link>
+                )}
+                {trending[1] && (
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: trending[1].slug }}
+                    data-gsap="tilt"
+                    className="absolute -bottom-6 -right-4 block p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[4deg] hover:brand-glow transition"
+                  >
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
+                    <div className="font-display font-bold text-sm line-clamp-1">
+                      {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
+                    </div>
+                    {trending[1].minPrice !== null && (
+                      <div className="text-xs text-brand mt-1 font-bold">
+                        {trending[1].minPrice} {t.common.currency}
+                      </div>
+                    )}
+                  </Link>
+                )}
+              </div>
             </div>
+
 
           </div>
         </div>
