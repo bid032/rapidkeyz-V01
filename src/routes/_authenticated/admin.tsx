@@ -52,7 +52,7 @@ function AdminLayout() {
     { to: "/admin/testimonials", label: t.admin.testimonials },
     { to: "/admin/reviews", label: "تقييمات الخدمات" },
     { to: "/admin/faqs", label: "الأسئلة الشائعة" },
-    { to: "/admin/refunds", label: "التعويضات", adminOnly: true },
+    { to: "/admin/refunds", label: "التعويضات" },
     { to: "/admin/settings", label: t.admin.settings },
   ];
 
