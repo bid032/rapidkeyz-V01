@@ -18,25 +18,46 @@ import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-brand">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist.
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[620px] h-[420px] rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-brand/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
+      </div>
+      <div className="relative max-w-lg text-center">
+        <div className="relative mx-auto mb-6 grid h-32 w-32 place-items-center">
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "3s" }} />
+          <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "4s", animationDirection: "reverse" }} />
+          <span className="relative text-5xl font-black text-brand drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]">4·4</span>
+        </div>
+        <h1 className="bg-gradient-to-r from-brand via-foreground to-brand bg-clip-text text-6xl font-black tracking-tight text-transparent">
+          404
+        </h1>
+        <h2 className="mt-3 text-2xl font-bold text-foreground">
+          الصفحة غير موجودة
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+          الرابط اللي بتحاول تفتحه مش موجود أو اتنقل. ارجع للرئيسية وابدأ من هناك.
         </p>
-        <div className="mt-6">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:brand-glow"
+            className="inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-bold text-brand-foreground shadow-lg hover:brand-glow transition-all active:scale-95"
           >
-            Go home
+            الرئيسية
+          </a>
+          <a
+            href="/shop"
+            className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-6 py-3 text-sm font-bold text-foreground hover:border-brand/60 hover:text-brand transition-all active:scale-95"
+          >
+            تصفح المتجر
           </a>
         </div>
       </div>
     </div>
   );
 }
+
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
