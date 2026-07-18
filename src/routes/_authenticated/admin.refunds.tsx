@@ -118,8 +118,9 @@ function AdminRefunds() {
             className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
           />
           <p className="text-xs text-muted-foreground mt-2">
-            {search ? `${visibleOrders.length} نتيجة` : "أحدث 25 طلب — ابحث لتحديد أوسع"}
+            {search ? `${visibleOrders.length} نتيجة` : "أحدث 5 طلبات — ابحث لتحديد أوسع"}
           </p>
+
         </div>
 
         <div className="space-y-2">
