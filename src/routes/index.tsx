@@ -439,7 +439,7 @@ function HomePage() {
           : (products.data ?? []);
         if (!list.length) return null;
         return (
-          <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24">
+          <section className="relative max-w-7xl mx-auto px-3 sm:px-6 py-12 sm:py-20">
             <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
               <div>
                 <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
