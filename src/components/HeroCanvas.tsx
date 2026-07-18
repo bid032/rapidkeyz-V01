@@ -71,9 +71,9 @@ export function HeroCanvas() {
     window.addEventListener("pointermove", onMove);
 
     let raf = 0;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
     const animate = () => {
-      const t = clock.getElapsedTime();
+      const t = (performance.now() - startTime) / 1000;
       pointer.x += (pointer.tx - pointer.x) * 0.05;
       pointer.y += (pointer.ty - pointer.y) * 0.05;
 

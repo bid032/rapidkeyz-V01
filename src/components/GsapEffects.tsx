@@ -30,6 +30,8 @@ export function GsapEffects() {
             filter: "blur(12px)",
             duration: 1.1,
             ease: "power3.out",
+            immediateRender: false,
+            clearProps: "opacity,transform,filter",
             scrollTrigger: { trigger: el, start: "top 90%", once: true },
           });
           break;
@@ -49,6 +51,7 @@ export function GsapEffects() {
             ease: "power3.out",
             stagger: 0.08,
             immediateRender: false,
+            clearProps: "opacity,transform,filter",
             scrollTrigger: { trigger: el, start: "top 95%", once: true },
           });
           requestAnimationFrame(() => ScrollTrigger.refresh());
@@ -95,6 +98,8 @@ export function GsapEffects() {
             stagger: 0.04,
             duration: 0.9,
             ease: "power3.out",
+            immediateRender: false,
+            clearProps: "opacity,transform,filter",
             scrollTrigger: { trigger: el, start: "top 90%", once: true },
           });
           break;
@@ -126,6 +131,8 @@ export function GsapEffects() {
             duration: 1.1,
             ease: "power3.out",
             stagger: 0.055,
+            immediateRender: false,
+            clearProps: "opacity,transform,filter",
             scrollTrigger: { trigger: el, start: "top 90%", once: true },
           });
           break;
@@ -139,6 +146,8 @@ export function GsapEffects() {
             duration: 0.5,
             ease: "power2.out",
             stagger: 0.02,
+            immediateRender: false,
+            clearProps: "opacity,transform",
             scrollTrigger: { trigger: el, start: "top 90%", once: true },
           });
           break;
