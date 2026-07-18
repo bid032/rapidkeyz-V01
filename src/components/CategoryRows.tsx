@@ -145,7 +145,7 @@ function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
           style={{ scrollBehavior: "auto" }}
         >
           {[...cat.products, ...cat.products].map((p, i) => (
-            <div key={`${p.id}-${i}`} className="shrink-0 w-[46%] sm:w-[280px]">
+            <div key={`${p.id}-${i}`} className="shrink-0 w-[calc((100%-0.75rem)/2)] sm:w-[calc((100%-1rem*2)/3)] lg:w-[calc((100%-1rem*3)/4)]">
               <ProductCard p={p} />
             </div>
           ))}
