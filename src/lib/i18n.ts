@@ -30,7 +30,7 @@ export const translations = {
       viewAll: "عرض الكل",
     },
 
-    filters: { all: "الكل" },
+    filters: { all: "كل الخدمات" },
     badges: {
       instant: "تسليم فوري",
       manual: "تسليم يدوي",
