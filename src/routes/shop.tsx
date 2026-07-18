@@ -134,14 +134,12 @@ function ShopPage() {
             </div>
             <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               {([
-                { key: "instant", type: "delivery", label: t.badges.instant, Icon: Zap, tone: "success" },
-                { key: "manual", type: "delivery", label: t.badges.manual, Icon: Clock, tone: "success" },
                 { key: "private", type: "account", label: t.badges.private, Icon: Lock, tone: "brand" },
                 { key: "shared", type: "account", label: t.badges.shared, Icon: Users, tone: "brand" },
               ] as const).map(({ key, type, label, Icon, tone }, i) => {
                 const active =
-                  (type === "delivery" && search.delivery === key) ||
                   (type === "account" && search.account === key);
+                const next = { ...search, account: search.account === key ? undefined : (key as "private" | "shared") };
                 const next =
                   type === "delivery"
                     ? { ...search, delivery: search.delivery === key ? undefined : (key as "instant" | "manual") }
