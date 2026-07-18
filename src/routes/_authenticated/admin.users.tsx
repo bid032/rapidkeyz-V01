@@ -476,7 +476,7 @@ function StockAccessDialog({
     const { error } = await supabase.rpc("admin_set_stock_access", {
       _user_id: user.id,
       _access: access,
-      _password: password || null,
+      _password: password || undefined,
     });
     setLoading(false);
     if (error) return notify(error.message, "error");
