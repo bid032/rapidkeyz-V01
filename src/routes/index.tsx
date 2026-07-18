@@ -173,7 +173,7 @@ function HomePage() {
       <Header />
 
       {/* Hero , Broken Grid with GSAP */}
-      <header className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24">
+      <header className="relative overflow-hidden pt-8 pb-10 sm:pt-14 sm:pb-16">
         {/* Grid noise background */}
         <div aria-hidden className="absolute inset-0 -z-20 grid-noise opacity-40" />
         {/* Blurred glow orbs */}
