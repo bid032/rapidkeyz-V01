@@ -73,18 +73,6 @@ function CheckoutPage() {
       return;
     }
     if (cart.length === 0) return;
-    for (const it of privateItems) {
-      const key = it.productId + it.planId;
-      const v = (subEmails[key] ?? "").trim();
-      if (!emailRegex.test(v)) {
-        setError(
-          lang === "ar"
-            ? `يرجى إدخال بريد إلكتروني صحيح لتفعيل الاشتراك الخاص (${it.productName})`
-            : `Please enter a valid email for the private subscription (${it.productName})`
-        );
-        return;
-      }
-    }
     if (gateway === "wallet_instapay") {
       if (!proofFile) {
         setError(lang === "ar" ? "يرجى رفع صورة إثبات الدفع" : "Please upload the payment screenshot");
