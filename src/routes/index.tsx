@@ -179,6 +179,7 @@ function HomePage() {
           <div className="absolute bottom-[-10%] right-[5%] w-[35%] h-[45%] rounded-full bg-accent/20 blur-[120px]" />
         </div>
         <HeroCanvas />
+        <FloatingLogos />
 
         {/* Desktop: broken grid. Mobile: clean stacked flow */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
