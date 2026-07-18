@@ -27,9 +27,10 @@ type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual" | "simulate";
 const WHATSAPP_NUMBER = "01284234815";
 
 function CheckoutPage() {
-  const { t, cart, cartTotal, clearCart, lang } = useApp();
+  const { t, cart, cartTotal, clearCart, lang, updateQty, removeFromCart } = useApp();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
@@ -59,9 +60,28 @@ function CheckoutPage() {
   const requireLogin = checkoutSettings.require_login ?? true;
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user);
       if (data.user?.email) setEmail(data.user.email);
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, phone, country")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        const meta: any = data.user.user_metadata ?? {};
+        const derived =
+          (profile?.display_name && profile.display_name.trim()) ||
+          meta.display_name ||
+          meta.full_name ||
+          meta.name ||
+          (data.user.email ? data.user.email.split("@")[0] : "");
+        setName(derived || "");
+        if (profile?.country) setCountry(profile.country);
+        if (profile?.phone) {
+          setPhone(String(profile.phone).replace(/^\+?\d+\s*/, "").replace(/[^0-9]/g, ""));
+        }
+      }
     });
   }, []);
 
