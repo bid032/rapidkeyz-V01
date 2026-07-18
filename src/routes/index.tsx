@@ -15,6 +15,7 @@ import { HeroCanvas } from "@/components/HeroCanvas";
 import { Logo3D } from "@/components/Logo3D";
 import { FloatingLogos } from "@/components/FloatingLogos";
 import { CategoryRows } from "@/components/CategoryRows";
+import { ViewAllButton } from "@/components/ViewAllButton";
 
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
