@@ -448,7 +448,7 @@ function HomePage() {
             <ViewAllButton to="/shop" />
           </div>
           <div data-gsap="card-pop" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-            {bestSellers.data.slice(0, 6).map((p) => (
+            {bestSellers.data.slice(0, 8).map((p) => (
               <div key={p.id} data-gsap="tilt">
                 <ProductCard p={p} />
               </div>
