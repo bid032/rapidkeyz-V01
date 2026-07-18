@@ -13,7 +13,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "@/contexts/AppContext";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 
-import { GsapEffects } from "@/components/GsapEffects";
+import { lazyClient } from "@/components/ClientOnly";
+const GsapEffects = lazyClient(() => import("@/components/GsapEffects").then((m) => ({ default: m.GsapEffects })));
 import { supabase } from "@/integrations/supabase/client";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
