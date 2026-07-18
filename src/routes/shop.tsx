@@ -44,7 +44,7 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
   let q = supabase
     .from("products")
     .select(
-      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, categories!inner(slug), product_plans(price, label_ar, label_en, is_active)",
+      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, categories!inner(slug), product_plans(id, price, label_ar, label_en, is_active)",
     )
     .eq("status", "active");
   if (filters.category) q = q.eq("categories.slug", filters.category);
@@ -67,11 +67,13 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
       account_type: p.account_type,
       discount_percent: p.discount_percent ?? 0,
       minPrice: cheapest ? Number(cheapest.price) : null,
+      cheapestPlanId: cheapest?.id ?? null,
       planLabel_ar: cheapest?.label_ar ?? null,
       planLabel_en: cheapest?.label_en ?? null,
     };
   });
 }
+
 
 function ShopPage() {
   const search = Route.useSearch();
