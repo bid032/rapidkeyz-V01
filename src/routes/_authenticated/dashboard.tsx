@@ -125,7 +125,13 @@ function Dashboard() {
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end gap-2 mb-6">
+          <Link
+            to="/account"
+            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-muted"
+          >
+            {lang === "ar" ? "معلومات الحساب" : "Account info"}
+          </Link>
           <button
             onClick={handleSignOut}
             className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
@@ -133,6 +139,7 @@ function Dashboard() {
             {t.nav.logout}
           </button>
         </div>
+
 
 
         <section className="mb-12">
