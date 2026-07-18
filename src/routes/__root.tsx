@@ -15,6 +15,8 @@ import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 
 import { GsapEffects } from "@/components/GsapEffects";
 import { supabase } from "@/integrations/supabase/client";
+import logoLight from "@/assets/black_logo_rapid.png.asset.json";
+import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 
 function NotFoundComponent() {
   return (
@@ -177,29 +179,90 @@ function RootShell({ children }: { children: ReactNode }) {
             position: "fixed",
             inset: 0,
             zIndex: 99998,
-            display: "grid",
-            placeItems: "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
             background: "#0b1220",
             transition: "opacity 400ms ease",
           }}
         >
           <div
             style={{
-              width: 96,
-              height: 96,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: 520,
+              height: 260,
+              transform: "translate(-50%, -50%)",
               borderRadius: "9999px",
-              border: "3px solid rgba(34,195,230,0.15)",
-              borderTopColor: "#22c3e6",
-              borderRightColor: "rgba(34,195,230,0.5)",
-              animation: "rk-pre-spin 1.1s linear infinite",
+              background: "rgba(34,195,230,0.2)",
+              filter: "blur(120px)",
+              opacity: 0.7,
             }}
           />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(circle at center, transparent 0%, #0b1220 72%)",
+            }}
+          />
+          <div
+            style={{
+              position: "relative",
+              width: 208,
+              height: 208,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                inset: -24,
+                borderRadius: "9999px",
+                border: "2px solid transparent",
+                borderTopColor: "#22c3e6",
+                borderRightColor: "rgba(34,195,230,0.4)",
+                animation: "rk-pre-spin 1.2s linear infinite",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: -12,
+                borderRadius: "9999px",
+                border: "2px solid transparent",
+                borderBottomColor: "rgba(34,195,230,0.6)",
+                animation: "rk-pre-spin 1.8s linear infinite reverse",
+              }}
+            />
+            <img
+              id="rk-pre-splash-logo"
+              src={logoDark.url}
+              alt="RapidKeyz"
+              style={{
+                position: "relative",
+                width: "70%",
+                height: "70%",
+                objectFit: "contain",
+                filter: "drop-shadow(0 0 20px rgba(34,195,230,0.55))",
+                animation: "rk-pre-pulse 1.8s ease-in-out infinite",
+              }}
+            />
+          </div>
         </div>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('rk-theme');var el=document.getElementById('rk-pre-splash');if(el&&t==='light'){el.style.background='#f5f7fb';}}catch(e){}var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);var hide=function(){var el=document.getElementById('rk-pre-splash');if(!el)return;el.style.opacity='0';setTimeout(function(){el&&el.parentNode&&el.parentNode.removeChild(el);},450);};if(document.readyState==='complete'){setTimeout(hide,600);}else{window.addEventListener('load',function(){setTimeout(hide,500);},{once:true});}setTimeout(hide,4500);})();`,
+            __html: `(function(){try{var t=localStorage.getItem('rk-theme');var el=document.getElementById('rk-pre-splash');var logo=document.getElementById('rk-pre-splash-logo');if(el&&t==='light'){el.style.background='#f5f7fb';var layers=el.children;if(layers&&layers[1])layers[1].style.background='radial-gradient(circle at center, transparent 0%, #f5f7fb 72%)';if(logo)logo.setAttribute('src','${logoLight.url}');}}catch(e){}var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);var hide=function(){var el=document.getElementById('rk-pre-splash');if(!el)return;el.style.opacity='0';setTimeout(function(){el&&el.parentNode&&el.parentNode.removeChild(el);},450);};if(document.readyState==='complete'){setTimeout(hide,600);}else{window.addEventListener('load',function(){setTimeout(hide,500);},{once:true});}setTimeout(hide,4500);})();`,
           }}
         />
+        <div style={{ display: "none" }}>
+          {/* preload the alternate theme logo for instant theme-correct splash */}
+          <img src={logoLight.url} alt="" />
+        </div>
 
 
         {children}
