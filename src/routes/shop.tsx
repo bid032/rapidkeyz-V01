@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Zap, Clock, Lock, Users, SlidersHorizontal } from "lucide-react";
+import { Lock, Users, SlidersHorizontal } from "lucide-react";
 import { PageHero } from "@/components/PageHero";
 import { z } from "zod";
 import { Header } from "@/components/Header";
