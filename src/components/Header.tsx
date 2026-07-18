@@ -57,7 +57,9 @@ export function Header() {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <nav className={`sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
+    <>
+    <div aria-hidden className={`transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`} />
+    <nav className={`fixed top-0 inset-x-0 z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
       <div className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`}>
         <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
@@ -241,5 +243,6 @@ export function Header() {
         </div>
       </div>
     </nav>
+    </>
   );
 }
