@@ -299,7 +299,7 @@ export const translations = {
       viewAll: "View all",
     },
 
-    filters: { all: "All" },
+    filters: { all: "All Products" },
     badges: {
       instant: "Instant Delivery",
       manual: "Manual Setup",
