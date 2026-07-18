@@ -13,7 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({
   category: z.string().optional(),
-  delivery: z.enum(["instant", "manual"]).optional(),
   account: z.enum(["private", "shared"]).optional(),
 });
 
