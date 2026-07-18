@@ -90,7 +90,7 @@ export function TrustSection() {
   const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع، مش مجرد كلام" : "Real numbers from the field , not just words";
 
   return (
-    <section className="relative py-16 sm:py-24 px-3 sm:px-6 overflow-hidden">
+    <section className="relative py-12 sm:py-20 px-3 sm:px-6 overflow-hidden">
       {/* soft ambient bg */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[520px] h-[260px] bg-brand/15 blur-[130px] rounded-full" />
