@@ -67,7 +67,7 @@ export function CategoriesShowcase({
                 compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
               }`}
             >
-              <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
+              <span className="brand-text">{lang === "ar" ? "كل الخدمات" : "Categories"}</span>
             </h2>
             {!compact && (
               <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
