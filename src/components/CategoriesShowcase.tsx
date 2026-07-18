@@ -55,20 +55,24 @@ export function CategoriesShowcase({
         />
       </div>
 
-      <div className={`text-center ${compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
+      <div className={`text-center ${mini ? "mb-4" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
           <Sparkles className="size-3.5" />
           {lang === "ar" ? "الأقسام" : "Categories"}
         </div>
-        <h2
-          className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
-            compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
-          }`}
-        >
-          <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
-        </h2>
-        {!compact && (
-          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+        {!mini && (
+          <>
+            <h2
+              className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
+                compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
+              }`}
+            >
+              <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
+            </h2>
+            {!compact && (
+              <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+            )}
+          </>
         )}
       </div>
 
@@ -77,7 +81,7 @@ export function CategoriesShowcase({
         data-gsap="card-pop"
         className={
           mini
-            ? "grid grid-cols-4 gap-2 sm:gap-3"
+            ? "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto"
             : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
         }
       >
@@ -91,20 +95,20 @@ export function CategoriesShowcase({
                 search={{ category: c.slug }}
                 data-gsap="magnetic"
                 data-strength="0.15"
-                className={`group relative flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 sm:py-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:brand-glow ${
+                className={`group relative flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 sm:py-2.5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:brand-glow ${
                   isActive
                     ? "border-brand bg-brand/10"
                     : "border-border bg-card hover:border-brand/60"
                 }`}
               >
-                <div className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand/70">
+                <div className="font-mono text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-brand/70">
                   / {String(i + 1).padStart(2, "0")}
                 </div>
-                <h3 className="font-display text-xs sm:text-sm md:text-base font-bold leading-tight group-hover:text-brand transition-colors line-clamp-1">
+                <h3 className="font-display text-[11px] sm:text-xs font-bold leading-tight group-hover:text-brand transition-colors line-clamp-1">
                   {lang === "ar" ? c.name_ar : c.name_en}
                 </h3>
-                <span className="mt-0.5 grid place-items-center size-6 sm:size-7 rounded-full border border-border bg-background/60 text-muted-foreground group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand transition-all">
-                  <ArrowUpRight className="size-3 sm:size-3.5" />
+                <span className="mt-0.5 grid place-items-center size-5 sm:size-6 rounded-full border border-border bg-background/60 text-muted-foreground group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand transition-all">
+                  <ArrowUpRight className="size-2.5 sm:size-3" />
                 </span>
               </Link>
             );
