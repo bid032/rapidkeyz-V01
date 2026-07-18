@@ -551,6 +551,8 @@ export type Database = {
           id: string
           phone: string | null
           preferred_language: string
+          stock_access: boolean
+          stock_password_hash: string | null
           updated_at: string
         }
         Insert: {
@@ -561,6 +563,8 @@ export type Database = {
           id: string
           phone?: string | null
           preferred_language?: string
+          stock_access?: boolean
+          stock_password_hash?: string | null
           updated_at?: string
         }
         Update: {
@@ -571,6 +575,8 @@ export type Database = {
           id?: string
           phone?: string | null
           preferred_language?: string
+          stock_access?: boolean
+          stock_password_hash?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -727,10 +733,15 @@ export type Database = {
           revenue: number
         }[]
       }
+      admin_set_stock_access: {
+        Args: { _access: boolean; _password?: string; _user_id: string }
+        Returns: undefined
+      }
       claim_inventory_for_item: {
         Args: { _order_item_id: string; _plan_id: string }
         Returns: string
       }
+      current_user_stock_access: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -738,6 +749,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      verify_stock_password: { Args: { _password: string }; Returns: boolean }
     }
     Enums: {
       account_type: "private" | "shared" | "both" | "own"
