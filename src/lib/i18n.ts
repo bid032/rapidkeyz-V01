@@ -59,9 +59,9 @@ export const translations = {
     },
     cart: {
       title: "سلة الشراء",
-      empty: "سلتك فارغة",
+      empty: "سلتك فارغة !",
       emptyDesc: "أضف بعض المنتجات للبدء",
-      goShopping: "تصفّح المتجر",
+      goShopping: "تصفّح كل الخدمات\n",
       subtotal: "الإجمالي الفرعي",
       total: "الإجمالي",
       checkout: "إتمام الشراء",
