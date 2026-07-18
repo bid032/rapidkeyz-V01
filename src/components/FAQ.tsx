@@ -80,7 +80,26 @@ export const FAQ_ITEMS_EN: QA[] = [
 
 export function FAQ() {
   const { lang } = useApp();
-  const items = lang === "ar" ? FAQ_ITEMS_AR : FAQ_ITEMS_EN;
+  const dbFaqs = useQuery({
+    queryKey: ["public-faqs"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("faqs")
+        .select("question_ar, question_en, answer_ar, answer_en")
+        .eq("is_active", true)
+        .order("sort_order");
+      return (data ?? []) as { question_ar: string; question_en: string; answer_ar: string; answer_en: string }[];
+    },
+  });
+  const items: QA[] =
+    dbFaqs.data && dbFaqs.data.length > 0
+      ? dbFaqs.data.map((r) => ({
+          q: lang === "ar" ? r.question_ar : r.question_en,
+          a: lang === "ar" ? r.answer_ar : r.answer_en,
+        }))
+      : lang === "ar"
+      ? FAQ_ITEMS_AR
+      : FAQ_ITEMS_EN;
   const [open, setOpen] = useState<number | null>(0);
 
   return (
