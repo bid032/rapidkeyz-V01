@@ -60,7 +60,7 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(price, label_ar, label_en, is_active, sort_order)",
+      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)",
     )
     .eq("status", "active")
     .order("is_featured", { ascending: false })
@@ -82,11 +82,13 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
       account_type: p.account_type,
       discount_percent: (p as any).discount_percent ?? 0,
       minPrice: cheapest ? Number(cheapest.price) : null,
+      cheapestPlanId: cheapest?.id ?? null,
       planLabel_ar: cheapest?.label_ar ?? null,
       planLabel_en: cheapest?.label_en ?? null,
     };
   });
 }
+
 
 function HomePage() {
   const { t, lang } = useApp();
