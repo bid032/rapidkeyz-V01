@@ -5,6 +5,24 @@ const inputSchema = z.object({
   orderId: z.string().uuid(),
 })
 
+// Anti-abuse: only allow notify calls for orders created in the last 30 minutes.
+// This keeps the guest-checkout flow working while preventing an attacker who
+// guesses old order UUIDs from spamming emails.
+const NOTIFY_MAX_AGE_MS = 30 * 60 * 1000
+
+async function getAdminEmail(supabaseAdmin: any): Promise<string> {
+  const envEmail = process.env.ADMIN_NOTIFY_EMAIL
+  if (envEmail && envEmail.includes('@')) return envEmail
+  const { data } = await supabaseAdmin
+    .from('site_settings')
+    .select('value')
+    .eq('key', 'admin_notify_email')
+    .maybeSingle()
+  const v = data?.value
+  if (typeof v === 'string' && v.includes('@')) return v
+  return 'bidotito1@gmail.com'
+}
+
 export const notifyNewOrder = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
@@ -18,6 +36,12 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
       .single()
     if (error || !order) throw new Error(error?.message || 'Order not found')
 
+    // Recency guard — reject old order IDs.
+    const createdAt = order.created_at ? new Date(order.created_at).getTime() : 0
+    if (!createdAt || Date.now() - createdAt > NOTIFY_MAX_AGE_MS) {
+      return { ok: false, reason: 'stale_order' }
+    }
+
     const origin = process.env.SITE_URL || 'https://rapidkeyz.com'
     let proofUrl: string | null = null
     if ((order as any).payment_proof_url) {
@@ -27,7 +51,9 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
       proofUrl = signed?.signedUrl ?? null
     }
 
-    await sendTemplateEmail('new-order', 'bidotito1@gmail.com', {
+    const adminEmail = await getAdminEmail(supabaseAdmin)
+
+    await sendTemplateEmail('new-order', adminEmail, {
       idempotencyKey: `new-order-${order.id}`,
       templateData: {
         orderNumber: order.order_number,
@@ -61,11 +87,17 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
 
     const { data: order, error } = await supabaseAdmin
       .from('orders')
-      .select('id, order_number, total, currency, customer_email, order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
+      .select('id, order_number, total, currency, customer_email, created_at, order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
       .eq('id', data.orderId)
       .single()
     if (error || !order) throw new Error(error?.message || 'Order not found')
     if (!order.customer_email) return { ok: false, reason: 'no_email' }
+
+    // Recency guard — delivery notify should only fire right after checkout.
+    const createdAt = order.created_at ? new Date(order.created_at).getTime() : 0
+    if (!createdAt || Date.now() - createdAt > NOTIFY_MAX_AGE_MS) {
+      return { ok: false, reason: 'stale_order' }
+    }
 
     const accounts: any[] = []
     for (const it of (order.order_items ?? []) as any[]) {
@@ -93,3 +125,4 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
     })
     return { ok: true, count: accounts.length }
   })
+
