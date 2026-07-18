@@ -191,7 +191,10 @@ function AdminProducts() {
         const filtered = products.data
           ?.filter((p: any) => {
             if (statusFilter !== "all" && p.status !== statusFilter) return false;
-            if (categoryFilter !== "all" && p.category_id !== categoryFilter) return false;
+            if (categoryFilter !== "all") {
+              const list: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
+              if (!list.includes(categoryFilter)) return false;
+            }
             if (search.trim()) {
               const q = search.trim().toLowerCase();
               const hay = `${p.name_ar} ${p.name_en} ${p.slug}`.toLowerCase();
