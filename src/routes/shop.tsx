@@ -174,28 +174,14 @@ function ShopPage() {
           </p>
         )}
         {products.data && (
-          <>
-            {/* Mobile: horizontal snap carousel */}
-            <div
-              data-gsap="card-pop"
-              className="md:hidden -mx-3 px-3 flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {products.data.map((p) => (
-                <div key={p.id} className="snap-start shrink-0 w-[85%] xs:w-[75%]">
-                  <ProductCard p={p} />
-                </div>
-              ))}
-            </div>
-            {/* Desktop grid */}
-            <div
-              data-gsap="card-pop"
-              className="hidden md:grid grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              {products.data.map((p) => (
-                <ProductCard key={p.id} p={p} />
-              ))}
-            </div>
-          </>
+          <div
+            data-gsap="card-pop"
+            className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"
+          >
+            {products.data.map((p) => (
+              <ProductCard key={p.id} p={p} />
+            ))}
+          </div>
         )}
 
       </div>
