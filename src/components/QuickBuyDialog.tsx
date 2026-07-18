@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ShoppingCart, Zap, Check } from "lucide-react";
+import { ShoppingCart, Zap, Check, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
