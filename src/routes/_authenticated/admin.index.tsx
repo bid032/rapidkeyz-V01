@@ -4,6 +4,17 @@ import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   beforeLoad: async () => {
@@ -70,6 +81,42 @@ function AdminOverview() {
       return (data ?? []) as { month: string; revenue: number; profit: number; orders_count: number }[];
     },
   });
+
+  const refundsMonthly = useQuery({
+    queryKey: ["admin-refunds-monthly"],
+    queryFn: async () => {
+      const { data } = await supabase.from("refunds").select("amount, created_at");
+      const map = new Map<string, number>();
+      (data ?? []).forEach((r: any) => {
+        const d = new Date(r.created_at);
+        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+        map.set(key, (map.get(key) ?? 0) + Number(r.amount ?? 0));
+      });
+      return map;
+    },
+  });
+
+  const chartData = useMemo(() => {
+    const rows = (monthly.data ?? []).map((r) => {
+      const key = r.month.slice(0, 7);
+      return {
+        month: key,
+        revenue: Math.round(Number(r.revenue ?? 0)),
+        profit: Math.round(Number(r.profit ?? 0)),
+        refunds: Math.round(refundsMonthly.data?.get(key) ?? 0),
+      };
+    });
+    // include refund-only months
+    refundsMonthly.data?.forEach((amount, key) => {
+      if (!rows.find((r) => r.month === key)) {
+        rows.push({ month: key, revenue: 0, profit: 0, refunds: Math.round(amount) });
+      }
+    });
+    rows.sort((a, b) => a.month.localeCompare(b.month));
+    if (month !== "all") return rows.filter((r) => r.month === month);
+    return rows;
+  }, [monthly.data, refundsMonthly.data, month]);
+
 
   const sales = useQuery({
     queryKey: ["admin-sales-details", month],
@@ -185,7 +232,41 @@ function AdminOverview() {
       </div>
 
 
+      <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mb-6">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h2 className="font-bold text-lg">الرسم البياني</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              {month === "all" ? "الإيرادات والأرباح والتعويضات لكل الشهور" : `بيانات شهر ${month}`}
+            </p>
+          </div>
+        </div>
+        <div className="w-full h-72 sm:h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 12,
+                  fontSize: 12,
+                }}
+                formatter={(v: any) => `${v} ${t.common.currency}`}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="revenue" name="الإيرادات" fill="hsl(var(--brand))" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="refunds" name="التعويضات" fill="hsl(var(--destructive))" radius={[6, 6, 0, 0]} />
+              <Line type="monotone" dataKey="profit" name="الأرباح" stroke="hsl(var(--success))" strokeWidth={3} dot={{ r: 4 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mt-6">
+
         <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
           <div>
             <h2 className="font-bold text-lg">تفاصيل المبيعات</h2>
