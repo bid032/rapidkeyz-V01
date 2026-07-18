@@ -92,83 +92,67 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     <Link
       to="/product/$slug"
       params={{ slug: p.slug }}
-      className="group bg-card border border-border rounded-2xl p-6 hover:border-brand/40 transition-all flex flex-col"
+      className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-brand/50 hover:shadow-[0_10px_40px_-12px_color-mix(in_oklab,var(--brand)_35%,transparent)] transition-all flex flex-col"
     >
-      <div className="flex items-stretch gap-4 mb-6">
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
-                p.delivery_type === "instant"
-                  ? "bg-success/10 text-success border-success/20"
-                  : "bg-warning/10 text-warning border-warning/20"
-              }`}
-            >
-              {p.delivery_type === "instant" ? t.badges.instant : t.badges.manual}
-            </span>
-            <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
-                p.account_type === "shared"
-                  ? "bg-muted text-muted-foreground border-border"
-                  : "bg-brand/10 text-brand border-brand/20"
-              }`}
-            >
-              {p.account_type === "shared" ? t.badges.shared : t.badges.private}
-            </span>
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        {p.icon_url ? (
+          <img
+            src={p.icon_url}
+            alt={name}
+            loading="lazy"
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="size-full grid place-items-center">
+            <span className="text-5xl font-black text-brand/70">{name.slice(0, 2).toUpperCase()}</span>
           </div>
-          <h3 className="text-xl font-bold mb-1 text-foreground line-clamp-1">{name}</h3>
+        )}
+        {hasDiscount && (
+          <span
+            className={`absolute top-3 ${lang === "ar" ? "right-3" : "left-3"} bg-destructive text-destructive-foreground text-xs font-black px-2.5 py-1 rounded-full shadow-lg`}
+          >
+            -{discount}%
+          </span>
+        )}
+      </div>
+
+      <div className="p-5 flex flex-col gap-4 flex-1">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-bold mb-1.5 text-foreground line-clamp-1">{name}</h3>
           <p className="text-muted-foreground text-sm line-clamp-2 min-h-[2.5rem]">
             {desc || " "}
           </p>
         </div>
-        <div className="relative size-24 shrink-0 self-end bg-muted rounded-2xl grid place-items-center overflow-hidden border border-border">
-          {p.icon_url ? (
-            <img src={p.icon_url} alt={name} className="size-full object-cover" />
-          ) : (
-            <span className="text-2xl font-black text-brand">{name.slice(0, 2).toUpperCase()}</span>
-          )}
-          {hasDiscount && (
-            <span
-              className={`absolute top-0 ${lang === "ar" ? "right-0 rounded-bl-lg rounded-tr-2xl" : "left-0 rounded-br-lg rounded-tl-2xl"} bg-destructive text-destructive-foreground text-[10px] font-black px-1.5 py-0.5 shadow-md`}
-            >
-              -{discount}%
+
+        <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/60">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+              {planLabel || t.product.priceStarting}
             </span>
-          )}
-        </div>
-      </div>
-      <div className="mt-auto flex items-center justify-between gap-3">
-        <div className="flex flex-col min-w-0">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-tight">
-            {planLabel || t.product.priceStarting}
-          </span>
-          {finalPrice !== null ? (
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-foreground">
-                {finalPrice} {t.common.currency}
-              </span>
-              {hasDiscount && (
-                <span className="text-xs text-muted-foreground line-through">
-                  {p.minPrice} {t.common.currency}
+            {finalPrice !== null ? (
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-extrabold text-foreground">
+                  {finalPrice} {t.common.currency}
                 </span>
-              )}
-            </div>
-          ) : (
-            <span className="text-2xl font-extrabold text-foreground">,</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
+                {hasDiscount && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    {p.minPrice}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <span className="text-xl font-extrabold text-foreground">,</span>
+            )}
+          </div>
           <button
             type="button"
             onClick={handleAdd}
             aria-label={lang === "ar" ? "أضف للسلة" : "Add to cart"}
             title={lang === "ar" ? "أضف للسلة" : "Add to cart"}
-            className="grid place-items-center size-10 rounded-xl border border-brand/40 text-brand hover:bg-brand hover:text-brand-foreground transition-all active:scale-90"
+            className="grid place-items-center size-11 rounded-xl bg-brand text-brand-foreground hover:brand-glow transition-all active:scale-90 shrink-0"
           >
-            <ShoppingCart className="size-4" />
+            <ShoppingCart className="size-5" />
           </button>
-          <span className="px-4 py-2.5 bg-brand text-brand-foreground rounded-xl font-bold text-sm group-hover:brand-glow transition-all">
-            {t.product.buyNow}
-          </span>
         </div>
       </div>
     </Link>
