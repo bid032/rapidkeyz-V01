@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
-import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X } from "lucide-react";
+import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
@@ -35,7 +35,7 @@ function AdminUsers() {
     queryFn: async () => {
       const [{ data: list, error }, profilesRes, rolesRes] = await Promise.all([
         supabase.rpc("admin_list_users"),
-        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at"),
+        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at, stock_access, stock_password_hash"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
       if (error) throw error;
@@ -52,6 +52,8 @@ function AdminUsers() {
           country: p.country ?? "",
           preferred_language: p.preferred_language ?? "",
           created_at: u.created_at ?? p.created_at ?? null,
+          stock_access: !!p.stock_access,
+          has_stock_password: !!p.stock_password_hash,
           user_roles: (rolesRes.data ?? [])
             .filter((r: any) => r.user_id === u.id)
             .map((r: any) => ({ role: r.role })),
