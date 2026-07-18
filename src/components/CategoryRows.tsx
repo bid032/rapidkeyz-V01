@@ -76,28 +76,68 @@ export function CategoryRows({ slugs }: { slugs?: string[] } = {}) {
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-6 py-10 sm:py-16 space-y-12">
       {data.map((cat) => (
-        <div key={cat.id}>
-          <div className="flex items-end justify-between mb-4 sm:mb-6">
-            <h2 className="font-display font-bold text-2xl sm:text-4xl tracking-tight">
-              {lang === "ar" ? cat.name_ar : cat.name_en}
-            </h2>
-            <Link
-              to="/shop"
-              search={{ category: cat.slug } as any}
-              className="text-xs sm:text-sm font-mono uppercase tracking-widest text-brand hover:underline whitespace-nowrap"
-            >
-              {lang === "ar" ? "عرض الكل" : "View all"} →
-            </Link>
-          </div>
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-3 -mx-3 px-3 sm:-mx-6 sm:px-6 scrollbar-none">
-            {cat.products.map((p) => (
-              <div key={p.id} className="snap-start shrink-0 w-[75%] sm:w-[280px]">
-                <ProductCard p={p} />
-              </div>
-            ))}
-          </div>
-        </div>
+        <CategoryRow key={cat.id} cat={cat} lang={lang} />
       ))}
     </section>
   );
+}
+
+function CategoryRow({ cat, lang }: { cat: CategoryRow; lang: string }) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const pausedRef = useRef(false);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const dir = lang === "ar" ? -1 : 1;
+    let raf = 0;
+    const step = () => {
+      if (!pausedRef.current && el) {
+        const max = el.scrollWidth - el.clientWidth;
+        const next = el.scrollLeft + 0.6 * dir;
+        if (dir === 1 && next >= max - 1) el.scrollLeft = 0;
+        else if (dir === -1 && next <= 1) el.scrollLeft = max;
+        else el.scrollLeft = next;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [lang]);
+
+  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
+
+  return (
+    <div>
+      <div className="flex items-end justify-between mb-4 sm:mb-6 gap-4">
+        <h2 className="font-display font-bold text-2xl sm:text-4xl tracking-tight">
+          {lang === "ar" ? cat.name_ar : cat.name_en}
+        </h2>
+        <Link
+          to="/shop"
+          search={{ category: cat.slug } as any}
+          className="group inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full bg-brand text-brand-foreground font-bold text-xs sm:text-sm shadow-md hover:brand-glow transition-all shrink-0"
+        >
+          <span>{lang === "ar" ? "عرض الكل" : "View all"}</span>
+          <Arrow className="size-4 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+        </Link>
+      </div>
+      <div
+        ref={scrollerRef}
+        onMouseEnter={() => (pausedRef.current = true)}
+        onMouseLeave={() => (pausedRef.current = false)}
+        onTouchStart={() => (pausedRef.current = true)}
+        onTouchEnd={() => (pausedRef.current = false)}
+        className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-3 px-3 sm:-mx-6 sm:px-6 scrollbar-none"
+        style={{ scrollBehavior: "auto" }}
+      >
+        {[...cat.products, ...cat.products].map((p, i) => (
+          <div key={`${p.id}-${i}`} className="shrink-0 w-[75%] sm:w-[280px]">
+            <ProductCard p={p} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 }
