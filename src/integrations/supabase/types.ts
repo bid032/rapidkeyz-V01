@@ -169,6 +169,42 @@ export type Database = {
           },
         ]
       }
+      faqs: {
+        Row: {
+          answer_ar: string
+          answer_en: string
+          created_at: string
+          id: string
+          is_active: boolean
+          question_ar: string
+          question_en: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          answer_ar: string
+          answer_en: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          question_ar: string
+          question_en: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          answer_ar?: string
+          answer_en?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          question_ar?: string
+          question_en?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
@@ -503,6 +539,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -512,6 +549,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string | null
           id: string
@@ -521,6 +559,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -529,6 +568,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      refunds: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_settings: {
         Row: {

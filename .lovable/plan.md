@@ -1,68 +1,81 @@
-# ربط المنتجات بـ Google Sheets للتسليم التلقائي
+# خطة التنفيذ
 
-## الفكرة
+قائمة كبيرة (25+ تعديل). هنقسمها لمراحل عشان الجودة والتحكم. لو موافق، هبدأ فورًا بالمرحلة 1 وننزل لبقيتهم بالترتيب.
 
-كل منتج (زي CapCut) بيرتبط بملف جوجل شيتس واحد. جوّه الملف كذا Tab (شيت)، كل tab اسمه = اسم الخطة/المدة (مثلاً "1 شهر"، "3 شهور"، "سنة"). لما زبون يشتري خطة معينة، النظام يفتح الـ tab المطابق ويسحب أول صف متاح ويعلّم عليه Delivered.
+---
 
-## المرونة في شكل الأعمدة
+## المرحلة 1 — الهيرو + الهيدر + التسجيل
 
-كل شيت هيبدأ بصف Header يحدد الأعمدة. النظام يقرأ الـ header ويفهم شكل البيانات تلقائياً. الأسماء المدعومة (case-insensitive):
+**1. لوجو 3D في الهيرو (شمال)**
+- إضافة موديل Three.js: لوجو R يتحرك بالماوس (rotation follow) مع lighting وbrand glow.
+- يستبدل الفراغ الحالي على الديسكتوب فقط.
 
-- `key` أو `code` أو `activation_key` — مفتاح تفعيل
-- `email` — الإيميل
-- `password` — الباسورد
-- `username` أو `user` — اسم المستخدم
-- `notes` أو `extra` — ملاحظات
-- `status` — إجباري (available / delivered)
-- `delivered_at`, `order_id` — النظام يكتب فيهم بعد التسليم
+**2. كروت TRENDING/NEW clickable**
+- تعرض الاسم الحقيقي + السعر من DB (query لأول trending/new product).
+- Link لصفحة المنتج + إضافة لوجو المنتج.
 
-يعني نفس النظام يشتغل مع:
-- شيت فيه `key | status`
-- شيت فيه `email | password | status`
-- شيت فيه `email | password | username | status`
-- شيت فيه `username | password | status`
+**3. "المتجر" → "الأقسام" في الهيدر**
+- تعديل نص الرابط في `Header.tsx` (AR/EN).
 
-## تغييرات قاعدة البيانات
+**التسجيل — حقول إضافية**
+- إضافة: اسم + رقم واتساب + دولة (dropdown) في `auth.tsx` signup mode.
+- تخزينهم في `profiles` (migration: إضافة أعمدة `phone`, `country` لو مش موجودين).
+- Validation بـ zod.
 
-إضافة عمودين على `product_plans`:
-- `google_spreadsheet_id` (text) — ID الملف من الرابط
-- `google_sheet_tab` (text) — اسم الـ tab داخل الملف
+---
 
-خطة واحدة تحدد الملف + الـ tab بتاعها. لو نفس المنتج له 3 خطط، الـ 3 هيشاوروا على نفس `spreadsheet_id` بس بأسماء tabs مختلفة (الأدمن ممكن يعمل copy-paste من خطة لأخرى).
+## المرحلة 2 — عرض الأقسام + المنتجات
 
-## سيرفر فنكشن `claim_from_google_sheet`
+**5. تصغير قسم "تسوق حسب القسم"**
+- حذف كلمة "تسوق حسب" — العنوان يبقى "الأقسام".
+- الأربع أقسام جنب بعض في صف واحد مضغوط (grid-cols-4، أيقونات صغيرة).
 
-خطوات التسليم:
-1. يقرأ header الـ tab (`{tab}!1:1`) ويحدد أرقام الأعمدة.
-2. يقرأ الصفوف (`{tab}!A2:Z`) ويلاقي أول صف status = فاضي أو "available".
-3. يبني object فيه {email, password, username, key, notes} حسب اللي موجود.
-4. يعمل PUT على خانة status = "delivered" + delivered_at + order_id في نفس الصف.
-5. يحفظ نسخة في جدول `delivered_accounts` الموجود عشان الزبون يشوفها بعدين والأدمن يعمل audit.
+**8. تنظيف الأقسام**
+- إبقاء قسمين فقط: AI + أدوات المصممين. حذف الباقي من العرض على الهوم.
 
-يستدعى تلقائياً من نفس المكان اللي بيستدعي `claim_inventory_for_item` حالياً (بعد الدفع). لو الخطة معاها `google_spreadsheet_id` → يستخدم جوجل شيتس. لو لأ → يفضل يستخدم نظام `account_inventory` الموجود.
+---
 
-## واجهة الأدمن
+## المرحلة 3 — كارت المنتج + السلة
 
-في صفحة تعديل الخطط (`admin.inventory` أو صفحة المنتج)، حقلين جديدين لكل خطة:
-- Google Spreadsheet ID (مع زر Extract من الرابط)
-- Tab Name (اسم الشيت)
+**11. زرار "أضف للسلة" + صوت + انيميشن**
+- إضافة sound effect (tick قصير — Web Audio API generated بدون ملف خارجي).
+- Fly-to-cart animation: نسخة مصغرة من الكارت تطير للأيقونة في الهيدر (GSAP).
+- Bump animation على cart badge.
 
-زر "Test Connection" يقرأ header الـ tab ويعرض الأعمدة اللي فهمها النظام + عدد الصفوف المتاحة، عشان الأدمن يتأكد قبل ما يشتغل.
+---
 
-## الاتصال بجوجل شيتس
+## المرحلة 4 — لوحة التحكم (Admin + User)
 
-الـ connector `GOOGLE_SHEETS_API_KEY` موجود ومربوط بالفعل. كل الاستدعاءات تعدي على gateway باستخدام حساب الجوجل بتاع الأدمن.
+**25. تحكم الأدمن في محتوى FAQ**
+- Migration: جدول `faqs` (id, question_ar, question_en, answer_ar, answer_en, order, is_active).
+- صفحة `admin.faqs.tsx` — CRUD.
+- `FAQ.tsx` يقرأ من DB.
+- GRANT: SELECT للجميع (anon+authenticated), ALL للـ service_role + admin write policies.
+
+**تابة "تعويضات" في الداشبورد**
+- Migration: جدول `refunds` (id, user_id, order_id?, amount, type: 'full'|'partial'|'replacement', notes, created_at, created_by).
+- تظهر للعميل في داشبورده (read-only) — تابة جديدة.
+- في الأدمن: صفحة `admin.refunds.tsx` — إضافة/تعديل تعويض لأي عميل.
+- يتخصم من إجمالي الأرباح في `admin_revenue_stats` (تعديل الـ RPC).
+- RLS: العميل يشوف بتاعه فقط, الأدمن يشوف الكل.
+
+---
 
 ## ملاحظات تقنية
 
-- الأدمن لازم يشير الملف Read/Write مع نفس حساب الجوجل المتصل بـ connector.
-- النظام هيتعامل مع الشيت كمخزون بطيء — يقرأ عند الطلب بس، مش على interval.
-- لو حصل فشل من جوجل (429/5xx)، نعمل retry واحد، ولو فشل تاني نرجع للـ order status "manual_delivery" عشان الأدمن يتدخل.
-- الـ status column لازم تكون موجودة في الشيت، لو مش موجودة النظام هيرفض ويقول للأدمن يضيفها.
+- كل الـ migrations تشمل GRANT + RLS policies.
+- Three.js logo: هنستخدم geometry بسيط (extruded R shape) لأن تحميل GLTF ثقيل.
+- الصوت: WebAudio oscillator (tick) — بدون assets.
+- كل التغييرات backward-compatible: الأعمدة الجديدة في profiles nullable.
 
-## ملفات هيتم تعديلها/إنشاؤها
+---
 
-- migration جديد يضيف `google_spreadsheet_id` و `google_sheet_tab` على `product_plans`.
-- `src/lib/google-sheets-inventory.functions.ts` — سيرفر فنكشن `claimFromGoogleSheet` و `testSheetConnection`.
-- تعديل المكان اللي بيستدعي التسليم عشان يفرّق بين جوجل شيت و DB inventory.
-- تعديل صفحة الأدمن (خطط المنتجات) عشان تضيف الحقول + زر الاختبار.
+## اللي مش هيتنفذ (حسب طلبك)
+- ❌ #13 من الـ PDF
+
+---
+
+## الأولوية المقترحة
+1 → 3 → 5 → 8 → 11 → 25 → التسجيل الموسع → التعويضات.
+
+لو موافق أبدأ، هبدأ بالمرحلة 1 كاملة. لو عايز ترتيب مختلف أو تركيز على مرحلة واحدة الأول قوللي.
