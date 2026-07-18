@@ -99,8 +99,12 @@ function AdminProducts() {
   const save = useMutation({
     mutationFn: async (f: ProductForm) => {
       const types = f.account_types.length > 0 ? f.account_types : ["shared" as const];
+      const catIds = Array.from(new Set(f.category_ids.filter(Boolean)));
+      const primary = f.category_id && catIds.includes(f.category_id) ? f.category_id : catIds[0] ?? null;
       const payload: any = {
         ...f,
+        category_id: primary,
+        category_ids: catIds,
         account_types: types,
         account_type: deriveLegacyAccountType(types),
       };
