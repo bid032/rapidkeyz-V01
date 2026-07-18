@@ -321,7 +321,12 @@ function HomePage() {
                     data-gsap="tilt"
                     className="relative block rotate-[-4deg] p-5 rounded-2xl neon-border bg-card/70 backdrop-blur hover:brand-glow transition"
                   >
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-2">TRENDING</div>
+                    <div className="flex items-center gap-2 mb-2">
+                      {trending[0].icon_url && (
+                        <img src={trending[0].icon_url} alt="" loading="lazy" className="size-8 rounded-lg object-cover ring-1 ring-border/60" />
+                      )}
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-brand">TRENDING</div>
+                    </div>
                     <div className="font-display font-bold text-lg leading-tight mb-2 line-clamp-1">
                       {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                     </div>
@@ -343,7 +348,12 @@ function HomePage() {
                     data-gsap="tilt"
                     className="absolute -bottom-6 -right-4 block p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[4deg] hover:brand-glow transition"
                   >
-                    <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
+                    <div className="flex items-center gap-2 mb-1">
+                      {trending[1].icon_url && (
+                        <img src={trending[1].icon_url} alt="" loading="lazy" className="size-6 rounded-md object-cover ring-1 ring-border/60" />
+                      )}
+                      <div className="text-[10px] font-mono uppercase tracking-widest text-accent">NEW</div>
+                    </div>
                     <div className="font-display font-bold text-sm line-clamp-1">
                       {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                     </div>
