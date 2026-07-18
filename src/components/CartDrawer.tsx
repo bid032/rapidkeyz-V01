@@ -126,13 +126,6 @@ export function CartDrawer({
             >
               {t.cart.checkout}
             </Link>
-            <Link
-              to="/cart"
-              onClick={close}
-              className="block text-center w-full py-2.5 rounded-full border border-border text-foreground text-sm font-semibold hover:bg-muted transition"
-            >
-              {t.cart.title}
-            </Link>
           </div>
         )}
       </SheetContent>
