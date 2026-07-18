@@ -174,7 +174,12 @@ function HomePage() {
                       params={{ slug: p.slug }}
                       className={`snap-start shrink-0 ${width} p-4 rounded-2xl neon-border bg-card/70 backdrop-blur ${rot} hover:brand-glow transition`}
                     >
-                      <div className={`text-[10px] font-mono uppercase tracking-widest mb-1.5 ${i === 1 ? "text-accent" : "text-brand"}`}>{trendingLabels[i]}</div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        {p.icon_url && (
+                          <img src={p.icon_url} alt="" loading="lazy" className="size-6 rounded-md object-cover shrink-0 ring-1 ring-border/60" />
+                        )}
+                        <div className={`text-[10px] font-mono uppercase tracking-widest ${i === 1 ? "text-accent" : "text-brand"}`}>{trendingLabels[i]}</div>
+                      </div>
                       <div className="font-display font-bold text-base leading-tight mb-1.5 line-clamp-1">{name}</div>
                       {p.minPrice !== null && (
                         <div className="flex items-baseline gap-1">
