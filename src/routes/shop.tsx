@@ -139,7 +139,7 @@ function ShopPage() {
         {products.data && (
           <div
             data-gsap="card-pop"
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3"
           >
             {products.data.map((p) => (
               <ProductCard key={p.id} p={p} />
