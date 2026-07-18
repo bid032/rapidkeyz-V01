@@ -44,7 +44,7 @@ function AdminOrders() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*, product_plans(duration_days), delivered_accounts(*))")
+        .select("*, order_items(*, product_plans(duration_days), delivered_accounts(*)), refunds(id, amount, type, order_item_id)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
