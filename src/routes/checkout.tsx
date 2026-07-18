@@ -34,7 +34,7 @@ function CheckoutPage() {
   const [gateway, setGateway] = useState<Gateway>("paymob");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [subEmails, setSubEmails] = useState<Record<string, string>>({});
+  const [subEmails] = useState<Record<string, string>>({});
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [successOrder, setSuccessOrder] = useState<{ number: string; delivered: boolean } | null>(null);
