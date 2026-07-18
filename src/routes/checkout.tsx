@@ -474,15 +474,62 @@ function CheckoutPage() {
 
             <aside className="h-fit p-6 bg-card border border-border rounded-2xl">
               <h2 className="font-bold mb-4">{t.cart.title}</h2>
-              <div className="space-y-2 mb-4">
+              <div className="space-y-3 mb-4">
                 {cart.map((c) => (
-                  <div key={c.productId + c.planId} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {c.productName} × {c.quantity}
-                    </span>
-                    <span className="font-bold">
-                      {c.price * c.quantity} {t.common.currency}
-                    </span>
+                  <div
+                    key={c.productId + c.planId}
+                    className="p-3 rounded-xl border border-border bg-background/60 flex gap-3"
+                  >
+                    {c.iconUrl ? (
+                      <img
+                        src={c.iconUrl}
+                        alt={c.productName}
+                        className="size-14 rounded-lg object-cover border border-border shrink-0"
+                      />
+                    ) : (
+                      <div className="size-14 rounded-lg bg-muted border border-border shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm truncate">{c.productName}</div>
+                          <div className="text-xs text-muted-foreground truncate">{c.planLabel}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(c.productId, c.planId)}
+                          className="text-destructive/80 hover:text-destructive text-xs shrink-0"
+                          aria-label={lang === "ar" ? "حذف" : "Remove"}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <div className="inline-flex items-center rounded-lg border border-border overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => updateQty(c.productId, c.planId, Math.max(1, c.quantity - 1))}
+                            className="px-2 py-1 text-sm hover:bg-muted disabled:opacity-40"
+                            disabled={c.quantity <= 1}
+                          >
+                            −
+                          </button>
+                          <span className="px-3 py-1 text-sm font-bold min-w-[2ch] text-center">
+                            {c.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQty(c.productId, c.planId, c.quantity + 1)}
+                            className="px-2 py-1 text-sm hover:bg-muted"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="font-bold text-brand text-sm">
+                          {c.price * c.quantity} {t.common.currency}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
