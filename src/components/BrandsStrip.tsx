@@ -83,7 +83,7 @@ export function BrandsStrip() {
                         src={p.icon_url}
                         alt={name}
                         loading="lazy"
-                        className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                        className="w-full h-full object-contain p-2"
                       />
                     ) : (
                       <span className="font-display font-bold text-brand text-lg">
