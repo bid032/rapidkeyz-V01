@@ -29,9 +29,19 @@ export function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from("categories")
+      .select("id, slug, name_ar, name_en")
+      .eq("is_active", true)
+      .order("sort_order")
+      .then(({ data }) => setMobileCats((data as MobileCat[] | null) ?? []));
   }, []);
 
   useEffect(() => {
