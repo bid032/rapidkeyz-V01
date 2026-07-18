@@ -62,10 +62,17 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { display_name: name },
+            data: { display_name: name, phone, country },
           },
         });
         if (err) throw err;
+        // Persist phone + country onto profile (trigger creates the row already)
+        if (data.user) {
+          await supabase
+            .from("profiles")
+            .update({ display_name: name, phone, country })
+            .eq("id", data.user.id);
+        }
         if (!data.session) {
           setInfo(
             `تم إرسال رابط التأكيد إلى ${email}. يرجى فتح بريدك وتأكيد الحساب لإكمال التسجيل.`
