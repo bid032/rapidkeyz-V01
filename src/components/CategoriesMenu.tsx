@@ -54,8 +54,8 @@ export function CategoriesMenu() {
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted transition-colors group"
               >
-                {c.icon_url ? (
-                  <img src={c.icon_url} alt="" className="size-8 rounded-lg object-cover shrink-0" />
+                {c.icon ? (
+                  <img src={c.icon} alt="" className="size-8 rounded-lg object-cover shrink-0" />
                 ) : (
                   <div className="size-8 rounded-lg bg-brand/10 text-brand grid place-items-center text-xs font-bold shrink-0">
                     {(lang === "ar" ? c.name_ar : c.name_en).slice(0, 2)}
