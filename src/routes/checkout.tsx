@@ -250,11 +250,20 @@ function CheckoutPage() {
                 <div className="grid gap-3">
                   <input
                     required
+                    type="text"
+                    placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="px-4 py-3 bg-background border border-border rounded-lg"
+                  />
+                  <input
+                    required
                     type="email"
                     placeholder={t.checkout.email}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="px-4 py-3 bg-background border border-border rounded-lg"
+                    readOnly={!!user}
+                    className={`px-4 py-3 bg-background border border-border rounded-lg ${user ? "opacity-70 cursor-not-allowed" : ""}`}
                   />
                   <select
                     required
