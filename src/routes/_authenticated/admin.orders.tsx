@@ -79,6 +79,9 @@ function AdminOrders() {
         .filter((e) => e.minDays !== null && e.minDays <= 30 && e.minDays > -365)
         .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
     }
+    if (statusFilter !== "all") {
+      list = list.filter(({ order: o }: any) => o.status === statusFilter);
+    }
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter(({ order: o }: any) =>
@@ -89,7 +92,79 @@ function AdminOrders() {
       );
     }
     return list;
-  }, [expiring, tab, search]);
+  }, [expiring, tab, search, statusFilter]);
+
+  const profilesMap = useQuery({
+    queryKey: ["admin-orders-profiles", (orders.data ?? []).map((o: any) => o.user_id).filter(Boolean).join(",")],
+    enabled: !!orders.data?.length,
+    queryFn: async () => {
+      const ids = Array.from(new Set((orders.data ?? []).map((o: any) => o.user_id).filter(Boolean)));
+      const map = new Map<string, any>();
+      if (!ids.length) return map;
+      const { data } = await supabase.from("profiles").select("id, display_name, phone, country").in("id", ids);
+      (data ?? []).forEach((p: any) => map.set(p.id, p));
+      return map;
+    },
+  });
+
+  const exportOrdersXlsx = () => {
+    const rows: any[] = [];
+    visible.forEach(({ order: o }: any) => {
+      const prof = profilesMap.data?.get(o.user_id) ?? {};
+      const items = o.order_items ?? [];
+      if (!items.length) {
+        rows.push({
+          "رقم الطلب": o.order_number,
+          "اسم العميل": o.customer_name ?? prof.display_name ?? "",
+          "البريد": o.customer_email ?? "",
+          "رقم الواتساب": o.customer_phone ?? prof.phone ?? "",
+          "الدولة": prof.country ?? "",
+          "الحالة": o.status,
+          "الإجمالي": Number(o.total ?? 0),
+          "طريقة الدفع": o.payment_gateway ?? "",
+          "رقم المرسل": o.payment_sender_phone ?? "",
+          "الخدمة": "",
+          "الخطة": "",
+          "الكمية": "",
+          "سعر الوحدة": "",
+          "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
+          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB"),
+          "ملاحظات": o.notes ?? "",
+        });
+        return;
+      }
+      items.forEach((it: any) => {
+        rows.push({
+          "رقم الطلب": o.order_number,
+          "اسم العميل": o.customer_name ?? prof.display_name ?? "",
+          "البريد": o.customer_email ?? "",
+          "رقم الواتساب": o.customer_phone ?? prof.phone ?? "",
+          "الدولة": prof.country ?? "",
+          "الحالة": o.status,
+          "الإجمالي": Number(o.total ?? 0),
+          "طريقة الدفع": o.payment_gateway ?? "",
+          "رقم المرسل": o.payment_sender_phone ?? "",
+          "الخدمة": it.product_name,
+          "الخطة": it.plan_label,
+          "الكمية": it.quantity,
+          "سعر الوحدة": Number(it.unit_price ?? 0),
+          "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
+          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB"),
+          "ملاحظات": o.notes ?? "",
+        });
+      });
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Orders");
+    const rawTitle = (document.title || "orders").split(/[,–|:-]/)[0];
+    const siteName = rawTitle.replace(/[\\/:*?"<>|]+/g, "").trim() || "orders";
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const suffix = statusFilter === "all" ? `all-${today}` : `${statusFilter}-${today}`;
+    XLSX.writeFile(wb, `${siteName} - orders - ${suffix}.xlsx`);
+  };
+
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
