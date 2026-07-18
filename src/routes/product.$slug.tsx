@@ -9,6 +9,7 @@ import { ProductDetails } from "@/components/ProductDetails";
 import { ProductTabs } from "@/components/ProductTabs";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { PricingConfigurator } from "@/components/PricingConfigurator";
+import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
