@@ -230,14 +230,32 @@ function AdminOrders() {
 
 
 
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col sm:flex-row gap-2">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={lang === "ar" ? "بحث برقم الطلب أو الاسم أو الإيميل أو الواتساب…" : "Search by order #, name, email or phone…"}
-          className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
+          className="flex-1 px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
         />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2.5 bg-background border border-border rounded-lg text-sm font-bold"
+        >
+          <option value="all">كل الحالات</option>
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+        <button
+          onClick={exportOrdersXlsx}
+          disabled={!visible.length}
+          className="px-4 py-2.5 bg-brand text-brand-foreground rounded-lg font-bold text-sm disabled:opacity-50 whitespace-nowrap"
+        >
+          تحميل Excel
+        </button>
       </div>
+
 
       {tab === "expiring" && (
         <p className="text-xs text-muted-foreground mb-4">
