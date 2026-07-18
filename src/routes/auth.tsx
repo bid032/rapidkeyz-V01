@@ -6,6 +6,7 @@ import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { friendlyErrorMessage } from "@/lib/error-handler";
+import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -165,8 +166,21 @@ function AuthPage() {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg"
                 />
+                <select
+                  required
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                >
+                  <option value="">{lang === "ar" ? "اختر الدولة" : "Select country"}</option>
+                  {ARAB_COUNTRIES.map((c) => (
+                    <option key={c.code} value={lang === "ar" ? c.ar : c.en}>
+                      {lang === "ar" ? c.ar : c.en} (+{c.dial})
+                    </option>
+                  ))}
+                </select>
                 <div className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
-                  <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none" dir="ltr">+20</span>
+                  <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none" dir="ltr">+{dialForCountry(country)}</span>
                   <input
                     required
                     type="tel"
@@ -178,13 +192,6 @@ function AuthPage() {
                     dir="ltr"
                   />
                 </div>
-                <input
-                  required
-                  placeholder={lang === "ar" ? "الدولة" : "Country"}
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
-                />
               </>
             )}
             <input
