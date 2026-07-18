@@ -413,14 +413,40 @@ function AdminProducts() {
                   requireAspectRatio={{ w: 1, h: 1 }}
                 />
               </div>
-              <Field label="القسم" hint="القسم اللي هيتصنّف تحته المنتج في المتجر">
-                <select value={editing.category_id ?? ""}
-                  onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-lg">
-                  <option value="">، اختر قسم ،</option>
-                  {cats.data?.map((c) => <option key={c.id} value={c.id}>{c.name_ar}</option>)}
-                </select>
+              <Field label="الأقسام" hint="اختر قسم واحد أو أكثر ، الخدمة هتظهر في كل قسم اخترته." className="md:col-span-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {cats.data?.map((c) => {
+                    const active = editing.category_ids.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          const set = new Set(editing.category_ids);
+                          if (set.has(c.id)) set.delete(c.id);
+                          else set.add(c.id);
+                          const next = Array.from(set);
+                          setEditing({
+                            ...editing,
+                            category_ids: next,
+                            category_id: editing.category_id && next.includes(editing.category_id) ? editing.category_id : next[0] ?? null,
+                          });
+                        }}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold border transition text-start ${
+                          active ? "border-brand bg-brand/10 text-brand" : "border-border bg-background hover:border-brand/40"
+                        }`}
+                      >
+                        <span className="inline-block me-1">{active ? "☑" : "☐"}</span>
+                        {c.name_ar}
+                      </button>
+                    );
+                  })}
+                </div>
+                {editing.category_ids.length === 0 && (
+                  <p className="text-[11px] text-muted-foreground mt-2">اختر قسم واحد على الأقل علشان الخدمة تبان في المتجر.</p>
+                )}
               </Field>
+
               <Field label="الحالة" hint="active: ظاهر للعملاء · draft: مخفي (شغل جاري) · archived: مؤرشف">
                 <select value={editing.status}
                   onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
