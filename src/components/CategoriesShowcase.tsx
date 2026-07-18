@@ -11,16 +11,26 @@ type Category = {
   name_en: string;
 };
 
-export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
+export function CategoriesShowcase({
+  activeSlug,
+  slugs,
+  compact = false,
+}: {
+  activeSlug?: string;
+  slugs?: string[];
+  compact?: boolean;
+}) {
   const { lang } = useApp();
   const cats = useQuery({
-    queryKey: ["cats-showcase"],
+    queryKey: ["cats-showcase", slugs?.join(",") ?? "all"],
     queryFn: async () => {
-      const { data } = await supabase
+      let q = supabase
         .from("categories")
         .select("id, slug, name_ar, name_en")
         .eq("is_active", true)
         .order("sort_order");
+      if (slugs && slugs.length) q = q.in("slug", slugs);
+      const { data } = await q;
       return (data ?? []) as Category[];
     },
   });
@@ -28,7 +38,7 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
   if (!cats.data || cats.data.length === 0) return null;
 
   return (
-    <section className="relative max-w-7xl mx-auto px-3 sm:px-6 py-12 sm:py-20">
+    <section className={`relative max-w-7xl mx-auto px-3 sm:px-6 ${compact ? "py-6 sm:py-10" : "py-12 sm:py-20"}`}>
       {/* decorative moving orbs */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div
@@ -43,29 +53,23 @@ export function CategoriesShowcase({ activeSlug }: { activeSlug?: string }) {
         />
       </div>
 
-      <div className="text-center mb-10 sm:mb-14" data-gsap="reveal-stagger">
+      <div className={`text-center ${compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
           <Sparkles className="size-3.5" />
-          {lang === "ar" ? "الأقسام" : "Browse by category"}
+          {lang === "ar" ? "الأقسام" : "Categories"}
         </div>
         <h2
-          className="mt-5 font-display text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.15] pb-2"
+          className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
+            compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
+          }`}
         >
-          {lang === "ar" ? (
-            <>
-              تسوّق حسب{" "}
-              <span className="brand-text">القسم</span>
-            </>
-          ) : (
-            <>
-              Shop by{" "}
-              <span className="brand-text">category</span>
-            </>
-          )}
-
+          <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
         </h2>
-        <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+        {!compact && (
+          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+        )}
       </div>
+
 
       <div
         data-gsap="card-pop"

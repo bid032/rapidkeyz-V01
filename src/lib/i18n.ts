@@ -5,7 +5,7 @@ export const translations = {
     dir: "rtl",
     nav: {
       home: "الرئيسية",
-      shop: "المتجر",
+      shop: "الأقسام",
       about: "من نحن",
       terms: "الشروط والأحكام",
       privacy: "الاسترداد والخصوصية",

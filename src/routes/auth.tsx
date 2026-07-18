@@ -30,6 +30,8 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,10 +62,17 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { display_name: name },
+            data: { display_name: name, phone, country },
           },
         });
         if (err) throw err;
+        // Persist phone + country onto profile (trigger creates the row already)
+        if (data.user) {
+          await supabase
+            .from("profiles")
+            .update({ display_name: name, phone, country })
+            .eq("id", data.user.id);
+        }
         if (!data.session) {
           setInfo(
             `تم إرسال رابط التأكيد إلى ${email}. يرجى فتح بريدك وتأكيد الحساب لإكمال التسجيل.`
@@ -148,13 +157,30 @@ function AuthPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             {mode === "signup" && (
-              <input
-                required
-                placeholder={t.auth.displayName}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-lg"
-              />
+              <>
+                <input
+                  required
+                  placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                />
+                <input
+                  required
+                  type="tel"
+                  placeholder={lang === "ar" ? "رقم الواتساب (مع كود الدولة)" : "WhatsApp number (with country code)"}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                />
+                <input
+                  required
+                  placeholder={lang === "ar" ? "الدولة" : "Country"}
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                />
+              </>
             )}
             <input
               required

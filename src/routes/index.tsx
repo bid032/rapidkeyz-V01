@@ -12,6 +12,7 @@ import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
 import { HeroCanvas } from "@/components/HeroCanvas";
+import { Logo3D } from "@/components/Logo3D";
 
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,6 +94,8 @@ function HomePage() {
   useEffect(() => { setHydrated(true); }, []);
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
+  const trending = (products.data ?? []).slice(0, 3);
+  const trendingLabels = ["TRENDING", "NEW", "HOT"];
   const heroSetting = useQuery({
     queryKey: ["site-settings", "hero"],
     queryFn: async () => {
@@ -156,32 +159,32 @@ function HomePage() {
             </p>
 
 
-            <div data-gsap="card-pop" className="-mt-1 flex gap-3 -mx-4 px-4 py-2 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
-              <div className="snap-start shrink-0 w-[62%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-3deg]">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1.5">TRENDING</div>
-                <div className="font-display font-bold text-base leading-tight mb-1.5">ChatGPT Plus</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-bold text-xl text-foreground">450</span>
-                  <span className="text-[10px] text-muted-foreground">EGP / شهر</span>
-                </div>
-                <div className="mt-2 h-1 rounded-full bg-brand/20 overflow-hidden">
-                  <div className="h-full w-3/4 bg-brand animate-pulse" />
-                </div>
+            {trending.length > 0 && (
+              <div data-gsap="card-pop" className="-mt-1 flex gap-3 -mx-4 px-4 py-2 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
+                {trending.map((p, i) => {
+                  const name = lang === "ar" ? p.name_ar : p.name_en;
+                  const rot = i === 0 ? "rotate-[-3deg]" : i === 1 ? "rotate-[2deg]" : "rotate-[-2deg]";
+                  const width = i === 0 ? "w-[62%]" : i === 1 ? "w-[52%]" : "w-[55%]";
+                  return (
+                    <Link
+                      key={p.id}
+                      to="/product/$slug"
+                      params={{ slug: p.slug }}
+                      className={`snap-start shrink-0 ${width} p-4 rounded-2xl neon-border bg-card/70 backdrop-blur ${rot} hover:brand-glow transition`}
+                    >
+                      <div className={`text-[10px] font-mono uppercase tracking-widest mb-1.5 ${i === 1 ? "text-accent" : "text-brand"}`}>{trendingLabels[i]}</div>
+                      <div className="font-display font-bold text-base leading-tight mb-1.5 line-clamp-1">{name}</div>
+                      {p.minPrice !== null && (
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-display font-bold text-xl text-foreground">{p.minPrice}</span>
+                          <span className="text-[10px] text-muted-foreground">{t.common.currency}</span>
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
-              <div className="snap-start shrink-0 w-[50%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[2deg]">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
-                <div className="font-display font-bold text-sm mb-1">Midjourney V7</div>
-                <div className="text-[10px] text-muted-foreground">إصدار جديد · تسليم فوري</div>
-              </div>
-              <div className="snap-start shrink-0 w-[55%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-2deg]">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1">HOT</div>
-                <div className="font-display font-bold text-sm mb-1">Canva Pro</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-bold text-lg">150</span>
-                  <span className="text-[10px] text-muted-foreground">EGP</span>
-                </div>
-              </div>
-            </div>
+            )}
 
 
 
@@ -233,19 +236,15 @@ function HomePage() {
           {/* DESKTOP: broken grid */}
           <div className="hidden md:grid grid-cols-12 gap-6 items-center min-h-[70vh]">
             <div className="col-span-2 pt-8">
-              <div className="flex flex-col items-start gap-3">
-                <div
-                  data-gsap="split-chars"
-                  className="font-display font-bold text-8xl leading-none text-brand text-glow"
-                >
-                  01
-                </div>
-                <div className="h-24 w-px bg-gradient-to-b from-brand via-brand/40 to-transparent" />
+              <div className="flex flex-col items-start gap-4">
+                <Logo3D className="w-40 lg:w-48" />
+                <div className="h-16 w-px bg-gradient-to-b from-brand via-brand/40 to-transparent" />
                 <div className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground rotate-180" style={{ writingMode: "vertical-rl" }}>
                   {hero.badge}
                 </div>
               </div>
             </div>
+
 
             <div className="col-span-8 relative">
               <div className="flex absolute -top-6 -right-4 items-center gap-2 px-3 py-1.5 rounded-full neon-border bg-background/60 backdrop-blur text-brand text-[11px] font-mono uppercase tracking-widest rotate-3">
@@ -314,28 +313,48 @@ function HomePage() {
             </div>
 
             <div className="col-span-2 relative">
-              <div
-                data-gsap="tilt"
-                className="relative -translate-y-6 translate-x-4 rotate-[-6deg] p-5 rounded-2xl neon-border bg-card/70 backdrop-blur"
-              >
-                <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-2">TRENDING</div>
-                <div className="font-display font-bold text-lg leading-tight mb-2">ChatGPT Plus</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-bold text-2xl text-foreground">450</span>
-                  <span className="text-xs text-muted-foreground">EGP / شهر</span>
-                </div>
-                <div className="mt-3 h-1 rounded-full bg-brand/20 overflow-hidden">
-                  <div className="h-full w-3/4 bg-brand animate-pulse" />
-                </div>
-              </div>
-              <div
-                data-gsap="tilt"
-                className="absolute top-40 -left-6 p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[4deg]"
-              >
-                <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
-                <div className="font-display font-bold text-sm">Midjourney V7</div>
-              </div>
+              {trending[0] && (
+                <Link
+                  to="/product/$slug"
+                  params={{ slug: trending[0].slug }}
+                  data-gsap="tilt"
+                  className="relative block -translate-y-6 translate-x-4 rotate-[-6deg] p-5 rounded-2xl neon-border bg-card/70 backdrop-blur hover:brand-glow transition"
+                >
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-2">TRENDING</div>
+                  <div className="font-display font-bold text-lg leading-tight mb-2 line-clamp-1">
+                    {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
+                  </div>
+                  {trending[0].minPrice !== null && (
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-display font-bold text-2xl text-foreground">{trending[0].minPrice}</span>
+                      <span className="text-xs text-muted-foreground">{t.common.currency}</span>
+                    </div>
+                  )}
+                  <div className="mt-3 h-1 rounded-full bg-brand/20 overflow-hidden">
+                    <div className="h-full w-3/4 bg-brand animate-pulse" />
+                  </div>
+                </Link>
+              )}
+              {trending[1] && (
+                <Link
+                  to="/product/$slug"
+                  params={{ slug: trending[1].slug }}
+                  data-gsap="tilt"
+                  className="absolute top-40 -left-6 block p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[4deg] hover:brand-glow transition"
+                >
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
+                  <div className="font-display font-bold text-sm line-clamp-1">
+                    {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
+                  </div>
+                  {trending[1].minPrice !== null && (
+                    <div className="text-xs text-brand mt-1 font-bold">
+                      {trending[1].minPrice} {t.common.currency}
+                    </div>
+                  )}
+                </Link>
+              )}
             </div>
+
           </div>
         </div>
       </header>
@@ -345,7 +364,7 @@ function HomePage() {
 
 
       {/* Categories , centered creative pill grid */}
-      <CategoriesShowcase />
+      <CategoriesShowcase compact slugs={["ai-tools", "design"]} />
 
 
 

@@ -90,6 +90,19 @@ function Dashboard() {
     },
   });
 
+  const refunds = useQuery({
+    queryKey: ["my-refunds", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("refunds")
+        .select("id, amount, type, notes, created_at")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    },
+  });
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/" });
@@ -178,6 +191,34 @@ function Dashboard() {
             ))}
           </div>
         </section>
+
+        {refunds.data && refunds.data.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl font-bold mb-4">{lang === "ar" ? "التعويضات" : "Compensations"}</h2>
+            <div className="space-y-3">
+              {refunds.data.map((r: any) => (
+                <div key={r.id} className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm">
+                      {r.type === "full_refund"
+                        ? (lang === "ar" ? "ريفاند كامل" : "Full refund")
+                        : r.type === "partial_refund"
+                        ? (lang === "ar" ? "ريفاند جزئي" : "Partial refund")
+                        : (lang === "ar" ? "حساب بديل" : "Replacement account")}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(r.created_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US")}
+                    </div>
+                    {r.notes && <div className="text-xs text-muted-foreground mt-1">{r.notes}</div>}
+                  </div>
+                  <div className="text-lg font-extrabold text-success">
+                    +{r.amount} {t.common.currency}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
       <Footer />
     </div>
