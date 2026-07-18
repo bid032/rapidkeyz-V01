@@ -74,11 +74,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RapidKeyz ، اشتراكات أدوات الذكاء الاصطناعي والترفيه" },
+      { title: "RapidKeyz ، اشتراكات أدوات الـ Ai والترفيه" },
       {
         name: "description",
         content:
-          "RapidKeyz: متجرك العربي لاشتراكات ChatGPT Plus وMidjourney وأدوات الذكاء الاصطناعي بأسعار منافسة وتسليم فوري.",
+          "RapidKeyz: متجرك العربي لاشتراكات ChatGPT Plus وMidjourney وأدوات الـ Ai بأسعار منافسة وتسليم فوري.",
       },
       { property: "og:site_name", content: "RapidKeyz" },
       { property: "og:title", content: "RapidKeyz , Premium AI & Streaming Subscriptions" },

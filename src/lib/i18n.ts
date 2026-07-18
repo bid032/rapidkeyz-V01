@@ -22,7 +22,7 @@ export const translations = {
       title1: "اشتراكات ChatGPT Plus وMidjourney الأصلية في مصر",
       title2: "أسعار بالجنيه وتسليم فوري",
       subtitle:
-        "RapidKeyz أول متجر مصري لبيع اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الذكاء الاصطناعي، بالجنيه المصري، تسليم خلال دقائق، ودعم فني 24/7 عبر واتساب.",
+        "RapidKeyz أول متجر مصري لبيع اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai، بالجنيه المصري، تسليم خلال دقائق، ودعم فني 24/7 عبر واتساب.",
       cta: "تصفّح كل الاشتراكات",
       ctaSecondary: "تواصل معنا واتساب",
       trending: "الأكثر مبيعاً في مصر والوطن العربي، اشتراك ChatGPT وAdobe Creative Cloud",
@@ -248,7 +248,7 @@ export const translations = {
       ],
     },
     footer: {
-      tagline: "المتجر العربي الأول لاشتراكات ChatGPT Plus وMidjourney وأدوات الذكاء الاصطناعي بأسعار مصرية.",
+      tagline: "المتجر العربي الأول لاشتراكات ChatGPT Plus وMidjourney وأدوات الـ Ai بأسعار مصرية.",
       quickLinks: "روابط هامة",
       categories: "أقسام المتجر",
       contact: "تواصل معنا",
