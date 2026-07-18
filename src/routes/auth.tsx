@@ -6,6 +6,7 @@ import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { friendlyErrorMessage } from "@/lib/error-handler";
+import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
