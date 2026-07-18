@@ -112,11 +112,16 @@ function Dashboard() {
   });
 
   const fullRefundByOrder = new Map<string, any>();
+  const refundByItem = new Map<string, any>();
   (refunds.data ?? []).forEach((r: any) => {
     if (r.type === "full_refund" && r.order_id && !r.order_item_id) {
       fullRefundByOrder.set(r.order_id, r);
     }
+    if (r.order_item_id) {
+      refundByItem.set(r.order_item_id, r);
+    }
   });
+
 
 
   const handleSignOut = async () => {
@@ -206,7 +211,9 @@ function Dashboard() {
                   }
                   return (
                     <div className="space-y-2">
-                      {o.order_items?.map((it: any) => (
+                      {o.order_items?.map((it: any) => {
+                        const itemRefund = refundByItem.get(it.id);
+                        return (
                         <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
                           <div className="flex justify-between items-center gap-2 flex-wrap">
                             <div className="text-sm min-w-0">
@@ -215,7 +222,18 @@ function Dashboard() {
                             </div>
                             <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                           </div>
-                          {it.delivered_accounts?.length > 0 ? (
+                          {itemRefund ? (
+                            <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">
+                              <div className="text-xs font-bold text-destructive mb-1">
+                                {lang === "ar" ? "تم استرداد قيمة هذه الخدمة" : "This item has been refunded"}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground">
+                                {itemRefund.notes?.trim() || (lang === "ar"
+                                  ? "بيانات الحساب لم تعد متاحة."
+                                  : "Account details are no longer available.")}
+                              </div>
+                            </div>
+                          ) : it.delivered_accounts?.length > 0 ? (
                             it.delivered_accounts.map((acc: any) => {
                               const rows = buildCredentialRows(acc, lang);
                               return (
@@ -242,7 +260,9 @@ function Dashboard() {
                             </div>
                           )}
                         </div>
-                      ))}
+                        );
+                      })}
+
                     </div>
                   );
                 })()}
