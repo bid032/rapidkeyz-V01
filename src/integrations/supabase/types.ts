@@ -470,6 +470,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           account_types: Database["public"]["Enums"]["account_type"][]
           category_id: string | null
+          category_ids: string[]
           cover_url: string | null
           created_at: string
           delivery_type: Database["public"]["Enums"]["delivery_type"]
@@ -491,6 +492,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           account_types?: Database["public"]["Enums"]["account_type"][]
           category_id?: string | null
+          category_ids?: string[]
           cover_url?: string | null
           created_at?: string
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
@@ -512,6 +514,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           account_types?: Database["public"]["Enums"]["account_type"][]
           category_id?: string | null
+          category_ids?: string[]
           cover_url?: string | null
           created_at?: string
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
