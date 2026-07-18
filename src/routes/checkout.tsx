@@ -27,9 +27,10 @@ type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual" | "simulate";
 const WHATSAPP_NUMBER = "01284234815";
 
 function CheckoutPage() {
-  const { t, cart, cartTotal, clearCart, lang } = useApp();
+  const { t, cart, cartTotal, clearCart, lang, updateQty, removeFromCart } = useApp();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
@@ -59,9 +60,28 @@ function CheckoutPage() {
   const requireLogin = checkoutSettings.require_login ?? true;
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user);
       if (data.user?.email) setEmail(data.user.email);
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, phone, country")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        const meta: any = data.user.user_metadata ?? {};
+        const derived =
+          (profile?.display_name && profile.display_name.trim()) ||
+          meta.display_name ||
+          meta.full_name ||
+          meta.name ||
+          (data.user.email ? data.user.email.split("@")[0] : "");
+        setName(derived || "");
+        if (profile?.country) setCountry(profile.country);
+        if (profile?.phone) {
+          setPhone(String(profile.phone).replace(/^\+?\d+\s*/, "").replace(/[^0-9]/g, ""));
+        }
+      }
     });
   }, []);
 
@@ -109,6 +129,7 @@ function CheckoutPage() {
           subtotal: cartTotal,
           total: cartTotal,
           customer_email: email,
+          customer_name: name.trim() || null,
           customer_phone: phone,
           payment_proof_url: proofUrl,
           payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.trim() : null,
@@ -229,11 +250,20 @@ function CheckoutPage() {
                 <div className="grid gap-3">
                   <input
                     required
+                    type="text"
+                    placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="px-4 py-3 bg-background border border-border rounded-lg"
+                  />
+                  <input
+                    required
                     type="email"
                     placeholder={t.checkout.email}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="px-4 py-3 bg-background border border-border rounded-lg"
+                    readOnly={!!user}
+                    className={`px-4 py-3 bg-background border border-border rounded-lg ${user ? "opacity-70 cursor-not-allowed" : ""}`}
                   />
                   <select
                     required
@@ -444,15 +474,62 @@ function CheckoutPage() {
 
             <aside className="h-fit p-6 bg-card border border-border rounded-2xl">
               <h2 className="font-bold mb-4">{t.cart.title}</h2>
-              <div className="space-y-2 mb-4">
+              <div className="space-y-3 mb-4">
                 {cart.map((c) => (
-                  <div key={c.productId + c.planId} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {c.productName} × {c.quantity}
-                    </span>
-                    <span className="font-bold">
-                      {c.price * c.quantity} {t.common.currency}
-                    </span>
+                  <div
+                    key={c.productId + c.planId}
+                    className="p-3 rounded-xl border border-border bg-background/60 flex gap-3"
+                  >
+                    {c.iconUrl ? (
+                      <img
+                        src={c.iconUrl}
+                        alt={c.productName}
+                        className="size-14 rounded-lg object-cover border border-border shrink-0"
+                      />
+                    ) : (
+                      <div className="size-14 rounded-lg bg-muted border border-border shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm truncate">{c.productName}</div>
+                          <div className="text-xs text-muted-foreground truncate">{c.planLabel}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(c.productId, c.planId)}
+                          className="text-destructive/80 hover:text-destructive text-xs shrink-0"
+                          aria-label={lang === "ar" ? "حذف" : "Remove"}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <div className="inline-flex items-center rounded-lg border border-border overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => updateQty(c.productId, c.planId, Math.max(1, c.quantity - 1))}
+                            className="px-2 py-1 text-sm hover:bg-muted disabled:opacity-40"
+                            disabled={c.quantity <= 1}
+                          >
+                            −
+                          </button>
+                          <span className="px-3 py-1 text-sm font-bold min-w-[2ch] text-center">
+                            {c.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQty(c.productId, c.planId, c.quantity + 1)}
+                            className="px-2 py-1 text-sm hover:bg-muted"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="font-bold text-brand text-sm">
+                          {c.price * c.quantity} {t.common.currency}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
