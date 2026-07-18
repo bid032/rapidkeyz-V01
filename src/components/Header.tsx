@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +26,11 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [shrunk, setShrunk] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setShrunk(window.scrollY > 40);
@@ -56,10 +62,8 @@ export function Header() {
 
   const closeMobile = () => setMobileOpen(false);
 
-  return (
-    <>
-    <div aria-hidden className={`transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`} />
-    <nav className={`fixed top-0 inset-x-0 z-50 border-b border-border bg-background/80 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
+  const nav = (
+    <nav className={`fixed top-0 left-0 right-0 z-[10000] border-b border-border bg-background/90 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
       <div className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`}>
         <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
@@ -243,6 +247,12 @@ export function Header() {
         </div>
       </div>
     </nav>
+  );
+
+  return (
+    <>
+      <div aria-hidden className={`transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`} />
+      {mounted ? createPortal(nav, document.body) : nav}
     </>
   );
 }
