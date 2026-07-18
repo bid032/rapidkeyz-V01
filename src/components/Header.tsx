@@ -12,6 +12,8 @@ import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
 import { CartDrawer } from "@/components/CartDrawer";
 
+type MobileCat = { id: string; slug: string; name_ar: string; name_en: string };
+
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount, cartBumpKey } = useApp();
   const [bumping, setBumping] = useState(false);
