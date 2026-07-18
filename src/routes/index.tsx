@@ -87,6 +87,8 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
 
 function HomePage() {
   const { t, lang } = useApp();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
   const heroSetting = useQuery({
@@ -96,7 +98,7 @@ function HomePage() {
       return (data?.value as any) ?? {};
     },
   });
-  const h = heroSetting.data ?? {};
+  const h = hydrated ? (heroSetting.data ?? {}) : {};
   const pick = (ar: string, en: string, fallback: string) =>
     (lang === "ar" ? h[ar] : h[en])?.toString().trim() || fallback;
   const hero = {
@@ -108,6 +110,7 @@ function HomePage() {
     ctaSecondary: pick("cta_secondary_ar", "cta_secondary_en", t.home.ctaSecondary),
     trusted: pick("trusted_ar", "trusted_en", t.home.trusted),
   };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
