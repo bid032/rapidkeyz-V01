@@ -120,7 +120,12 @@ function ShopPage() {
             </p>
           </div>
 
-          <CategoriesShowcase activeSlug={search.category} />
+          <CategoriesShowcase
+            compact
+            mini
+            activeSlug={search.category}
+            slugs={["design", "ai-tools", "software", "educational"]}
+          />
         </>
       )}
 
@@ -134,13 +139,14 @@ function ShopPage() {
         {products.data && (
           <div
             data-gsap="card-pop"
-            className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
           >
             {products.data.map((p) => (
               <ProductCard key={p.id} p={p} />
             ))}
           </div>
         )}
+
 
         {inCategory && (
           <div className="mt-10 flex justify-center">
