@@ -21,6 +21,7 @@ type ProductForm = {
   description_en: string;
   icon_url: string;
   category_id: string | null;
+  category_ids: string[];
   delivery_type: "instant" | "manual";
   account_type: AccountType;
   account_types: AccountType[];
@@ -37,6 +38,7 @@ const emptyForm: ProductForm = {
   description_en: "",
   icon_url: "",
   category_id: null,
+  category_ids: [],
   delivery_type: "instant",
   account_type: "shared",
   account_types: ["shared"],
