@@ -63,7 +63,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, phone, country")
         .eq("id", user!.id)
         .maybeSingle();
       return data;
@@ -75,6 +75,14 @@ function Dashboard() {
     (user?.user_metadata as any)?.name ||
     user?.email?.split("@")[0] ||
     "";
+
+  // Force profile completion for Google/social sign-ups missing WhatsApp or country.
+  useEffect(() => {
+    if (!user || !profile.data) return;
+    const missing = !profile.data.phone?.trim() || !profile.data.country?.trim();
+    if (missing) navigate({ to: "/account", search: { complete: "1" } });
+  }, [user, profile.data, navigate]);
+
 
   const orders = useQuery({
     queryKey: ["my-orders", user?.id],
