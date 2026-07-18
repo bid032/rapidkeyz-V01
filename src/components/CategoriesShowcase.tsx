@@ -15,10 +15,12 @@ export function CategoriesShowcase({
   activeSlug,
   slugs,
   compact = false,
+  mini = false,
 }: {
   activeSlug?: string;
   slugs?: string[];
   compact?: boolean;
+  mini?: boolean;
 }) {
   const { lang } = useApp();
   const cats = useQuery({
@@ -73,10 +75,40 @@ export function CategoriesShowcase({
 
       <div
         data-gsap="card-pop"
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
+        className={
+          mini
+            ? "grid grid-cols-4 gap-2 sm:gap-3"
+            : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
+        }
       >
         {cats.data.map((c, i) => {
           const isActive = activeSlug === c.slug;
+          if (mini) {
+            return (
+              <Link
+                key={c.id}
+                to="/shop"
+                search={{ category: c.slug }}
+                data-gsap="magnetic"
+                data-strength="0.15"
+                className={`group relative flex flex-col items-center justify-center gap-1.5 rounded-xl border px-2 py-3 sm:py-4 text-center transition-all duration-300 hover:-translate-y-0.5 hover:brand-glow ${
+                  isActive
+                    ? "border-brand bg-brand/10"
+                    : "border-border bg-card hover:border-brand/60"
+                }`}
+              >
+                <div className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand/70">
+                  / {String(i + 1).padStart(2, "0")}
+                </div>
+                <h3 className="font-display text-xs sm:text-sm md:text-base font-bold leading-tight group-hover:text-brand transition-colors line-clamp-1">
+                  {lang === "ar" ? c.name_ar : c.name_en}
+                </h3>
+                <span className="mt-0.5 grid place-items-center size-6 sm:size-7 rounded-full border border-border bg-background/60 text-muted-foreground group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand transition-all">
+                  <ArrowUpRight className="size-3 sm:size-3.5" />
+                </span>
+              </Link>
+            );
+          }
           return (
             <div
               key={c.id}
