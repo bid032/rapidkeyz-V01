@@ -76,13 +76,13 @@ export function CategoryRows({ slugs }: { slugs?: string[] } = {}) {
   return (
     <section className="max-w-7xl mx-auto px-3 sm:px-6 py-10 sm:py-16 space-y-12">
       {data.map((cat) => (
-        <CategoryRow key={cat.id} cat={cat} lang={lang} />
+        <CategoryRowStrip key={cat.id} cat={cat} lang={lang} />
       ))}
     </section>
   );
 }
 
-function CategoryRow({ cat, lang }: { cat: CategoryRow; lang: string }) {
+function CategoryRowStrip({ cat, lang }: { cat: CategoryRow; lang: string }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const pausedRef = useRef(false);
 
