@@ -182,46 +182,71 @@ function Dashboard() {
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  {o.order_items?.map((it: any) => (
-                    <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
-                      <div className="flex justify-between items-center gap-2 flex-wrap">
-                        <div className="text-sm min-w-0">
-                          <span className="font-bold">{it.product_name}</span>{" "}
-                          <span className="text-muted-foreground">, {it.plan_label} × {it.quantity}</span>
+                {(() => {
+                  const fullRefund = fullRefundByOrder.get(o.id);
+                  const isCancelled = o.status === "cancelled" || o.status === "canceled";
+                  if (fullRefund || isCancelled) {
+                    const reason = fullRefund?.notes?.trim();
+                    const title = fullRefund
+                      ? (lang === "ar" ? "تم استرداد قيمة الطلب بالكامل" : "Order fully refunded")
+                      : (lang === "ar" ? "تم إلغاء الطلب" : "Order cancelled");
+                    const fallback = lang === "ar"
+                      ? "لا يمكن عرض بيانات الحساب لأن الطلب "
+                        + (fullRefund ? "تم استرداده بالكامل." : "تم إلغاؤه.")
+                      : "Account details are unavailable because the order has been "
+                        + (fullRefund ? "fully refunded." : "cancelled.");
+                    return (
+                      <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg text-center">
+                        <div className="text-sm font-bold text-destructive mb-1">{title}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {reason || fallback}
                         </div>
-                        <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                       </div>
-                      {it.delivered_accounts?.length > 0 ? (
-                        it.delivered_accounts.map((acc: any) => {
-                          const rows = buildCredentialRows(acc, lang);
-                          return (
-                            <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
-                              <div className="text-[11px] font-bold text-success mb-1">
-                                {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
-                              </div>
-                              {rows.map((r, i) => (
-                                <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
-                              ))}
-                              {acc.extra_notes && (
-                                <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
-                                  {acc.extra_notes}
-                                </div>
-                              )}
+                    );
+                  }
+                  return (
+                    <div className="space-y-2">
+                      {o.order_items?.map((it: any) => (
+                        <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
+                          <div className="flex justify-between items-center gap-2 flex-wrap">
+                            <div className="text-sm min-w-0">
+                              <span className="font-bold">{it.product_name}</span>{" "}
+                              <span className="text-muted-foreground">, {it.plan_label} × {it.quantity}</span>
                             </div>
-                          );
-                        })
-                      ) : (
-                        <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
-                          {lang === "ar"
-                            ? "⏳ الخدمة دي لسه تحت التجهيز — بيانات الحساب هتظهر هنا بمجرد التسليم"
-                            : "⏳ This item is still being prepared — credentials will appear here once delivered"}
+                            <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
+                          </div>
+                          {it.delivered_accounts?.length > 0 ? (
+                            it.delivered_accounts.map((acc: any) => {
+                              const rows = buildCredentialRows(acc, lang);
+                              return (
+                                <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
+                                  <div className="text-[11px] font-bold text-success mb-1">
+                                    {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
+                                  </div>
+                                  {rows.map((r, i) => (
+                                    <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
+                                  ))}
+                                  {acc.extra_notes && (
+                                    <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
+                                      {acc.extra_notes}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
+                              {lang === "ar"
+                                ? "⏳ جاري التواصل عن طريق الواتس اب للأشتراك"
+                                : "⏳ We're contacting you on WhatsApp to complete the subscription"}
+                            </div>
+                          )}
                         </div>
-                      )}
-
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
+
               </div>
             ))}
           </div>
