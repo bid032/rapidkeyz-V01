@@ -170,6 +170,37 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <div
+          id="rk-pre-splash"
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 99998,
+            display: "grid",
+            placeItems: "center",
+            background: "hsl(var(--background))",
+            transition: "opacity 400ms ease",
+          }}
+        >
+          <div
+            style={{
+              width: 96,
+              height: 96,
+              borderRadius: "9999px",
+              border: "3px solid transparent",
+              borderTopColor: "hsl(var(--brand))",
+              borderRightColor: "color-mix(in oklab, hsl(var(--brand)) 40%, transparent)",
+              animation: "rk-pre-spin 1.1s linear infinite",
+            }}
+          />
+        </div>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);var hide=function(){var el=document.getElementById('rk-pre-splash');if(!el)return;el.style.opacity='0';setTimeout(function(){el&&el.parentNode&&el.parentNode.removeChild(el);},450);};if(document.readyState==='complete'){setTimeout(hide,400);}else{window.addEventListener('load',function(){setTimeout(hide,300);},{once:true});}setTimeout(hide,4500);})();`,
+          }}
+        />
+
         {children}
         <Scripts />
       </body>
