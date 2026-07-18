@@ -105,25 +105,26 @@ export function QuickBuyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden gap-0 border-border/60 bg-card">
         <div className="p-5 sm:p-6">
-          <DialogHeader className="text-start space-y-1">
+          <DialogHeader className="text-start space-y-1 pe-12">
             <div className="flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <DialogTitle className="text-xl sm:text-2xl font-black truncate">{name}</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm mt-1">
-                  {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
-                </DialogDescription>
-              </div>
-              <div className="shrink-0 size-12 sm:size-14 rounded-xl border border-border bg-background overflow-hidden shadow-md">
+              <div className="shrink-0 size-11 sm:size-12 rounded-xl border border-border bg-background overflow-hidden shadow-md">
                 {product.icon_url ? (
                   <img src={product.icon_url} alt={name} className="size-full object-cover" />
                 ) : (
-                  <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-lg">
+                  <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-base">
                     {name.slice(0, 2).toUpperCase()}
                   </div>
                 )}
               </div>
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-base sm:text-xl font-black leading-tight break-words">{name}</DialogTitle>
+                <DialogDescription className="text-[11px] sm:text-sm mt-0.5">
+                  {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
+                </DialogDescription>
+              </div>
             </div>
           </DialogHeader>
+
 
 
           {/* Plan grid */}
