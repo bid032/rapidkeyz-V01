@@ -147,6 +147,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setLang = (l: Lang) => setLangState(l);
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
+  const playAddSound = () => {
+    if (!isBrowser) return;
+    try {
+      const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(880, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.12);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.22);
+    } catch {}
+  };
+
   const addToCart = (item: CartItem) => {
     setCart((prev) => {
       const idx = prev.findIndex(
@@ -159,6 +179,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, item];
     });
+    playAddSound();
+    setCartBumpKey((k) => k + 1);
   };
   const removeFromCart = (productId: string, planId: string) =>
     setCart((prev) =>
