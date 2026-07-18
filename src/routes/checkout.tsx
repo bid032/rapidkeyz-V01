@@ -291,6 +291,12 @@ function CheckoutPage() {
                       dir="ltr"
                     />
                   </div>
+                  <p className="text-xs text-warning flex items-center gap-1.5">
+                    <span aria-hidden>⚠️</span>
+                    {lang === "ar"
+                      ? "تأكد إن الرقم ده مفعّل عليه واتساب ، عشان نقدر نوصلك بالطلب."
+                      : "Make sure this number has WhatsApp active , so we can reach you about your order."}
+                  </p>
                 </div>
               </section>
 
