@@ -235,18 +235,8 @@ function HomePage() {
 
           {/* DESKTOP: broken grid */}
           <div className="hidden md:grid grid-cols-12 gap-6 items-center min-h-[70vh]">
-            <div className="col-span-2 pt-8">
-              <div className="flex flex-col items-start gap-4">
-                <Logo3D className="w-40 lg:w-48" />
-                <div className="h-16 w-px bg-gradient-to-b from-brand via-brand/40 to-transparent" />
-                <div className="font-mono text-xs uppercase tracking-[0.3em] text-muted-foreground rotate-180" style={{ writingMode: "vertical-rl" }}>
-                  {hero.badge}
-                </div>
-              </div>
-            </div>
+            <div className="col-span-9 relative">
 
-
-            <div className="col-span-8 relative">
               <div className="flex absolute -top-6 -right-4 items-center gap-2 px-3 py-1.5 rounded-full neon-border bg-background/60 backdrop-blur text-brand text-[11px] font-mono uppercase tracking-widest rotate-3">
                 <span className="size-1.5 rounded-full bg-brand animate-pulse" />
                 live · instant delivery
