@@ -59,9 +59,16 @@ const AppContext = createContext<AppState | null>(null);
 
 const isBrowser = typeof window !== "undefined";
 
+function getInitialTheme(): Theme {
+  if (!isBrowser) return "dark";
+  const storedTheme = localStorage.getItem("rk-theme");
+  if (storedTheme === "dark" || storedTheme === "light") return storedTheme;
+  return document.documentElement.classList.contains("light") ? "light" : "dark";
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ar");
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("both");
@@ -132,11 +139,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [lang, hydrated]);
 
   useEffect(() => {
-    if (!isBrowser) return;
+    if (!isBrowser || !hydrated) return;
     const html = document.documentElement;
     html.classList.remove("light", "dark");
     html.classList.add(theme);
-    if (hydrated) localStorage.setItem("rk-theme", theme);
+    localStorage.setItem("rk-theme", theme);
   }, [theme, hydrated]);
 
   useEffect(() => {
