@@ -105,24 +105,26 @@ export function QuickBuyDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden gap-0 border-border/60 bg-card">
         <div className="p-5 sm:p-6">
-          <div className="flex items-center justify-center mb-4">
-            <div className="size-20 sm:size-24 rounded-2xl border border-border bg-background overflow-hidden shadow-md">
-              {product.icon_url ? (
-                <img src={product.icon_url} alt={name} className="size-full object-cover" />
-              ) : (
-                <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-2xl">
-                  {name.slice(0, 2).toUpperCase()}
-                </div>
-              )}
-            </div>
-          </div>
-
           <DialogHeader className="text-start space-y-1">
-            <DialogTitle className="text-xl sm:text-2xl font-black">{name}</DialogTitle>
-            <DialogDescription className="text-xs sm:text-sm">
-              {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
-            </DialogDescription>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-xl sm:text-2xl font-black truncate">{name}</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm mt-1">
+                  {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
+                </DialogDescription>
+              </div>
+              <div className="shrink-0 size-12 sm:size-14 rounded-xl border border-border bg-background overflow-hidden shadow-md">
+                {product.icon_url ? (
+                  <img src={product.icon_url} alt={name} className="size-full object-cover" />
+                ) : (
+                  <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-lg">
+                    {name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+            </div>
           </DialogHeader>
+
 
           {/* Plan grid */}
           <div className="mt-5">
