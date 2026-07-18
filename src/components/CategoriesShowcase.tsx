@@ -55,20 +55,24 @@ export function CategoriesShowcase({
         />
       </div>
 
-      <div className={`text-center ${compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
+      <div className={`text-center ${mini ? "mb-4" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
           <Sparkles className="size-3.5" />
           {lang === "ar" ? "الأقسام" : "Categories"}
         </div>
-        <h2
-          className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
-            compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
-          }`}
-        >
-          <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
-        </h2>
-        {!compact && (
-          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+        {!mini && (
+          <>
+            <h2
+              className={`mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 ${
+                compact ? "text-2xl sm:text-3xl md:text-4xl" : "text-3xl sm:text-5xl md:text-6xl"
+              }`}
+            >
+              <span className="brand-text">{lang === "ar" ? "الأقسام" : "Categories"}</span>
+            </h2>
+            {!compact && (
+              <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-brand to-transparent" />
+            )}
+          </>
         )}
       </div>
 
@@ -77,7 +81,7 @@ export function CategoriesShowcase({
         data-gsap="card-pop"
         className={
           mini
-            ? "grid grid-cols-4 gap-2 sm:gap-3"
+            ? "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto"
             : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
         }
       >
