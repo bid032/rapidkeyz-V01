@@ -37,7 +37,7 @@ export function CategoriesMenu() {
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
       >
-        <span>{(t.nav as any).categories ?? (lang === "ar" ? "الأقسام" : "Categories")}</span>
+        <span>{(t.nav as any).categories ?? (lang === "ar" ? "كل الخدمات" : "Categories")}</span>
         <ChevronDown className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
