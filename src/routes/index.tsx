@@ -28,13 +28,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "اشترِ اشتراكات ChatGPT Plus، Midjourney، Office 365 وأدوات الذكاء الاصطناعي بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
+          "اشترِ اشتراكات ChatGPT Plus، Midjourney، Office 365 وأدوات الـ Ai بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
       },
       { name: "keywords", content: "شراء ChatGPT Plus مصر, اشتراك Midjourney بالجنيه, Canva Pro اشتراك, Office 365, أدوات ذكاء اصطناعي, RapidKeyz" },
       { property: "og:title", content: "اشتراكات ChatGPT Plus و Midjourney في مصر | RapidKeyz" },
       {
         property: "og:description",
-        content: "اشترِ اشتراكات ChatGPT Plus، Midjourney، Office 365 وأدوات الذكاء الاصطناعي بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
+        content: "اشترِ اشتراكات ChatGPT Plus، Midjourney، Office 365 وأدوات الـ Ai بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
       },
       { property: "og:url", content: "/" },
     ],

@@ -17,7 +17,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "المتجر ، اشتراكات الذكاء الاصطناعي والترفيه | RapidKeyz" },
+      { title: "المتجر ، اشتراكات الـ Ai والترفيه | RapidKeyz" },
       {
         name: "description",
         content:
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/shop")({
       { property: "og:title", content: "المتجر ، RapidKeyz" },
       {
         property: "og:description",
-        content: "كل اشتراكات الذكاء الاصطناعي والترفيه في مكان واحد بتسليم فوري ودفع آمن.",
+        content: "كل اشتراكات الـ Ai والترفيه في مكان واحد بتسليم فوري ودفع آمن.",
       },
       { property: "og:url", content: "/shop" },
     ],
@@ -115,7 +115,7 @@ function ShopPage() {
           <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-4 mb-2 text-center">
             <p className="text-sm sm:text-base text-muted-foreground leading-loose">
               {lang === "ar"
-                ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الذكاء الاصطناعي والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
+                ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
                 : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration."}
             </p>
           </div>
