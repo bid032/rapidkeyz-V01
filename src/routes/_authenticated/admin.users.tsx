@@ -81,7 +81,11 @@ function AdminUsers() {
     const data = users.data ?? [];
     const admins = data.filter((u: any) => u.user_roles?.some((r: any) => r.role === "admin")).length;
     const mods = data.filter((u: any) => u.user_roles?.some((r: any) => r.role === "moderator")).length;
-    return { total: data.length, admins, mods };
+    const customers = data.filter((u: any) => {
+      const roles = (u.user_roles ?? []).map((r: any) => r.role);
+      return roles.includes("user") && !roles.includes("admin") && !roles.includes("moderator");
+    }).length;
+    return { total: data.length, admins, mods, customers };
   }, [users.data]);
 
   const filtered = useMemo(() => {
