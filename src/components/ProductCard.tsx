@@ -29,9 +29,9 @@ function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
   ghost.style.cssText = `
     position:fixed;left:${from.left + from.width / 2 - size / 2}px;top:${from.top + from.height / 2 - size / 2}px;
     width:${size}px;height:${size}px;border-radius:16px;pointer-events:none;z-index:9999;
-    background:hsl(var(--card));border:1px solid hsl(var(--brand)/0.5);
-    box-shadow:0 12px 40px -8px hsl(var(--brand)/0.6);
-    display:grid;place-items:center;overflow:hidden;
+    background:var(--card);border:1px solid color-mix(in oklab, var(--brand) 60%, transparent);
+    box-shadow:0 12px 40px -8px color-mix(in oklab, var(--brand) 60%, transparent);
+    display:grid;place-items:center;overflow:hidden;color:var(--brand);
     transition:transform 0.75s cubic-bezier(.55,-0.2,.4,1.4),opacity 0.75s ease,border-radius 0.75s ease;
   `;
   if (iconUrl) {
@@ -43,7 +43,6 @@ function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
   } else {
     ghost.textContent = name.slice(0, 2).toUpperCase();
     ghost.style.fontWeight = "900";
-    ghost.style.color = "hsl(var(--brand))";
   }
   document.body.appendChild(ghost);
   requestAnimationFrame(() => {
