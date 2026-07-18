@@ -166,7 +166,6 @@ function AuthPage() {
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg"
                 />
-                <div className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
                 <select
                   required
                   value={country}
@@ -193,6 +192,7 @@ function AuthPage() {
                     dir="ltr"
                   />
                 </div>
+              </>
             )}
             <input
               required
