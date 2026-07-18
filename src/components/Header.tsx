@@ -179,9 +179,6 @@ export function Header() {
                 <Link to="/" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }} activeOptions={{ exact: true }}>
                   {t.nav.home}
                 </Link>
-                <Link to="/shop" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                  {t.nav.shop}
-                </Link>
                 <Link to="/about" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
                   {t.nav.about}
                 </Link>
