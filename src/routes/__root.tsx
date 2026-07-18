@@ -226,7 +226,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <SplashLoader />
+        
         <div key={pathname} className="route-transition">
           <Outlet />
         </div>
