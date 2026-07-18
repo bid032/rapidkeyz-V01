@@ -90,7 +90,7 @@ export function TrustSection() {
   const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع، مش مجرد كلام" : "Real numbers from the field , not just words";
 
   return (
-    <section className="relative py-16 sm:py-24 px-3 sm:px-6 overflow-hidden">
+    <section className="relative py-12 sm:py-20 px-3 sm:px-6 overflow-hidden">
       {/* soft ambient bg */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[520px] h-[260px] bg-brand/15 blur-[130px] rounded-full" />
@@ -146,7 +146,7 @@ export function TrustSection() {
         </div>
 
         {/* Features intro */}
-        <div data-gsap="reveal" className="text-center mt-14 sm:mt-20 mb-8 sm:mb-10">
+        <div data-gsap="reveal" className="text-center mt-10 sm:mt-14 mb-8 sm:mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-4">
             <span className="size-1.5 rounded-full bg-brand animate-pulse" />
             {lang === "ar" ? "مميزاتنا" : "What sets us apart"}

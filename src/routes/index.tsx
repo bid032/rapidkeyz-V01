@@ -173,7 +173,7 @@ function HomePage() {
       <Header />
 
       {/* Hero , Broken Grid with GSAP */}
-      <header className="relative overflow-hidden pt-10 pb-16 sm:pt-16 sm:pb-24">
+      <header className="relative overflow-hidden pt-8 pb-10 sm:pt-14 sm:pb-16">
         {/* Grid noise background */}
         <div aria-hidden className="absolute inset-0 -z-20 grid-noise opacity-40" />
         {/* Blurred glow orbs */}
@@ -291,7 +291,7 @@ function HomePage() {
           </div>
 
           {/* DESKTOP: broken grid */}
-          <div className="hidden md:grid grid-cols-12 gap-6 items-center min-h-[70vh]">
+          <div className="hidden md:grid grid-cols-12 gap-6 items-center min-h-[60vh]">
             <div className="col-span-9 relative">
 
               <div className="flex absolute -top-6 -right-4 items-center gap-2 px-3 py-1.5 rounded-full neon-border bg-background/60 backdrop-blur text-brand text-[11px] font-mono uppercase tracking-widest rotate-3">
@@ -439,7 +439,7 @@ function HomePage() {
           : (products.data ?? []);
         if (!list.length) return null;
         return (
-          <section className="relative max-w-7xl mx-auto px-3 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-24">
+          <section className="relative max-w-7xl mx-auto px-3 sm:px-6 py-12 sm:py-20">
             <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
               <div>
                 <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">

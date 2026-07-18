@@ -32,8 +32,9 @@ export function Testimonials() {
       */}
 
 
-      <div className="max-w-7xl mx-auto px-6 py-24 relative">
-        <div className="relative flex items-end justify-between mb-12 flex-wrap gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20 relative">
+        <div className="relative flex items-end justify-between mb-8 sm:mb-12 flex-wrap gap-4">
+
         <div>
           <p className="text-xs font-black uppercase tracking-[0.25em] text-brand mb-3">
             {isAr ? "آراء العملاء" : "Testimonials"}
