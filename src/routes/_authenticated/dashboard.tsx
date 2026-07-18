@@ -104,12 +104,20 @@ function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("refunds")
-        .select("id, amount, type, notes, created_at")
+        .select("id, order_id, order_item_id, amount, type, notes, created_at")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       return data ?? [];
     },
   });
+
+  const fullRefundByOrder = new Map<string, any>();
+  (refunds.data ?? []).forEach((r: any) => {
+    if (r.type === "full_refund" && r.order_id && !r.order_item_id) {
+      fullRefundByOrder.set(r.order_id, r);
+    }
+  });
+
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
