@@ -159,32 +159,32 @@ function HomePage() {
             </p>
 
 
-            <div data-gsap="card-pop" className="-mt-1 flex gap-3 -mx-4 px-4 py-2 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
-              <div className="snap-start shrink-0 w-[62%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-3deg]">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1.5">TRENDING</div>
-                <div className="font-display font-bold text-base leading-tight mb-1.5">ChatGPT Plus</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-bold text-xl text-foreground">450</span>
-                  <span className="text-[10px] text-muted-foreground">EGP / شهر</span>
-                </div>
-                <div className="mt-2 h-1 rounded-full bg-brand/20 overflow-hidden">
-                  <div className="h-full w-3/4 bg-brand animate-pulse" />
-                </div>
+            {trending.length > 0 && (
+              <div data-gsap="card-pop" className="-mt-1 flex gap-3 -mx-4 px-4 py-2 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory">
+                {trending.map((p, i) => {
+                  const name = lang === "ar" ? p.name_ar : p.name_en;
+                  const rot = i === 0 ? "rotate-[-3deg]" : i === 1 ? "rotate-[2deg]" : "rotate-[-2deg]";
+                  const width = i === 0 ? "w-[62%]" : i === 1 ? "w-[52%]" : "w-[55%]";
+                  return (
+                    <Link
+                      key={p.id}
+                      to="/product/$slug"
+                      params={{ slug: p.slug }}
+                      className={`snap-start shrink-0 ${width} p-4 rounded-2xl neon-border bg-card/70 backdrop-blur ${rot} hover:brand-glow transition`}
+                    >
+                      <div className={`text-[10px] font-mono uppercase tracking-widest mb-1.5 ${i === 1 ? "text-accent" : "text-brand"}`}>{trendingLabels[i]}</div>
+                      <div className="font-display font-bold text-base leading-tight mb-1.5 line-clamp-1">{name}</div>
+                      {p.minPrice !== null && (
+                        <div className="flex items-baseline gap-1">
+                          <span className="font-display font-bold text-xl text-foreground">{p.minPrice}</span>
+                          <span className="text-[10px] text-muted-foreground">{t.common.currency}</span>
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
-              <div className="snap-start shrink-0 w-[50%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[2deg]">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-accent mb-1">NEW</div>
-                <div className="font-display font-bold text-sm mb-1">Midjourney V7</div>
-                <div className="text-[10px] text-muted-foreground">إصدار جديد · تسليم فوري</div>
-              </div>
-              <div className="snap-start shrink-0 w-[55%] p-4 rounded-2xl neon-border bg-card/70 backdrop-blur rotate-[-2deg]">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-brand mb-1">HOT</div>
-                <div className="font-display font-bold text-sm mb-1">Canva Pro</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display font-bold text-lg">150</span>
-                  <span className="text-[10px] text-muted-foreground">EGP</span>
-                </div>
-              </div>
-            </div>
+            )}
 
 
 
