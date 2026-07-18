@@ -208,7 +208,9 @@ function Dashboard() {
                         </div>
                       </div>
                     );
+                  }
                   if (o.status === "processing") {
+
                     return (
                       <div className="p-4 bg-warning/5 border border-warning/20 rounded-lg text-center">
                         <div className="text-sm font-bold text-warning mb-1">
