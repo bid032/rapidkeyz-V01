@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   ComposedChart,
   Bar,
+  Area,
   Line,
   XAxis,
   YAxis,
