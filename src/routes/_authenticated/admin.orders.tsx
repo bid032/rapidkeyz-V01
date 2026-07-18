@@ -31,13 +31,8 @@ function AdminOrders() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
 
-  const revenue = useQuery({
-    queryKey: ["admin-revenue-monthly"],
-    queryFn: async () => {
-      const { data } = await supabase.rpc("admin_revenue_by_month");
-      return (data ?? []) as Array<{ month: string; revenue: number; profit: number; orders_count: number }>;
-    },
-  });
+
+
 
   const orders = useQuery({
     queryKey: ["admin-orders"],
