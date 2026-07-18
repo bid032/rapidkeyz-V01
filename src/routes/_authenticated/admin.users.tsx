@@ -138,7 +138,7 @@ function AdminUsers() {
     { key: "all", label: lang === "ar" ? "الكل" : "All", count: stats.total },
     { key: "admin", label: lang === "ar" ? "الأدمن" : "Admins", count: stats.admins },
     { key: "moderator", label: lang === "ar" ? "المشرفين" : "Mods", count: stats.mods },
-    { key: "user", label: lang === "ar" ? "عملاء" : "Users", count: stats.total - stats.admins - stats.mods },
+    { key: "user", label: lang === "ar" ? "عملاء" : "Users", count: stats.customers },
   ];
 
   return (
