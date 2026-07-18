@@ -12,6 +12,8 @@ import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
 import { CartDrawer } from "@/components/CartDrawer";
 
+type MobileCat = { id: string; slug: string; name_ar: string; name_en: string };
+
 export function Header() {
   const { lang, setLang, t, theme, toggleTheme, themeMode, cartCount, cartBumpKey } = useApp();
   const [bumping, setBumping] = useState(false);
@@ -27,9 +29,19 @@ export function Header() {
   const [cartOpen, setCartOpen] = useState(false);
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from("categories")
+      .select("id, slug, name_ar, name_en")
+      .eq("is_active", true)
+      .order("sort_order")
+      .then(({ data }) => setMobileCats((data as MobileCat[] | null) ?? []));
   }, []);
 
   useEffect(() => {
@@ -181,29 +193,62 @@ export function Header() {
                   <X className="size-4" />
                 </button>
               </div>
-              <nav className="flex flex-col p-3 gap-1">
-                <Link to="/" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }} activeOptions={{ exact: true }}>
-                  {t.nav.home}
-                </Link>
-                <Link to="/about" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                  {t.nav.about}
-                </Link>
-                <Link to="/terms" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                  {t.nav.terms}
-                </Link>
-                <Link to="/privacy" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                  {t.nav.privacy}
-                </Link>
-                {user && (
-                  <Link to="/dashboard" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                    {t.nav.dashboard}
+              <nav className="flex flex-col px-2 py-3">
+                {/* الأقسام */}
+                <div className="px-3 pt-2 pb-1">
+                  <h3 className="text-brand text-sm font-extrabold flex items-center gap-2">
+                    <span className="w-1 h-4 bg-brand rounded-full" />
+                    {lang === "ar" ? "الأقسام" : "Categories"}
+                  </h3>
+                </div>
+                <div className="flex flex-col mb-3 border-t border-border/50">
+                  {mobileCats.length === 0 && (
+                    <div className="px-4 py-3 text-xs text-muted-foreground">…</div>
+                  )}
+                  {mobileCats.map((c) => (
+                    <Link
+                      key={c.id}
+                      to="/shop"
+                      search={{ category: c.slug } as any}
+                      onClick={closeMobile}
+                      className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors"
+                    >
+                      {lang === "ar" ? c.name_ar : c.name_en}
+                    </Link>
+                  ))}
+                </div>
+
+                {/* الصفحات */}
+                <div className="px-3 pt-2 pb-1">
+                  <h3 className="text-brand text-sm font-extrabold flex items-center gap-2">
+                    <span className="w-1 h-4 bg-brand rounded-full" />
+                    {lang === "ar" ? "الصفحات" : "Pages"}
+                  </h3>
+                </div>
+                <div className="flex flex-col border-t border-border/50">
+                  <Link to="/" onClick={closeMobile} className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors" activeProps={{ className: "text-brand" }} activeOptions={{ exact: true }}>
+                    {t.nav.home}
                   </Link>
-                )}
-                {isAdmin && (
-                  <Link to="/admin" onClick={closeMobile} className="px-3 py-3 rounded-lg text-sm font-bold hover:bg-muted" activeProps={{ className: "bg-brand/10 text-brand" }}>
-                    {t.nav.admin}
+                  <Link to="/about" onClick={closeMobile} className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors" activeProps={{ className: "text-brand" }}>
+                    {t.nav.about}
                   </Link>
-                )}
+                  <Link to="/privacy" onClick={closeMobile} className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors" activeProps={{ className: "text-brand" }}>
+                    {t.nav.privacy}
+                  </Link>
+                  <Link to="/terms" onClick={closeMobile} className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors" activeProps={{ className: "text-brand" }}>
+                    {t.nav.terms}
+                  </Link>
+                  {user && (
+                    <Link to="/dashboard" onClick={closeMobile} className="px-4 py-3 text-sm font-semibold text-foreground/90 hover:bg-muted hover:text-brand border-b border-border/40 transition-colors" activeProps={{ className: "text-brand" }}>
+                      {t.nav.dashboard}
+                    </Link>
+                  )}
+                  {isAdmin && (
+                    <Link to="/admin" onClick={closeMobile} className="px-4 py-3 text-sm font-extrabold text-brand hover:bg-muted border-b border-border/40 transition-colors">
+                      {t.nav.admin}
+                    </Link>
+                  )}
+                </div>
               </nav>
 
               <div className="p-3 border-t border-border space-y-2">
