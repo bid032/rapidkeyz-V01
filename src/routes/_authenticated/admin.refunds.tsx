@@ -57,13 +57,14 @@ function AdminRefunds() {
   const visibleOrders = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = orders.data ?? [];
-    if (!q) return list.slice(0, 25);
+    if (!q) return list.slice(0, 5);
     return list.filter((o: any) =>
       String(o.order_number ?? "").toLowerCase().includes(q) ||
       String(o.customer_email ?? "").toLowerCase().includes(q) ||
       String(o.customer_phone ?? "").toLowerCase().includes(q)
     );
   }, [orders.data, search]);
+
 
   const totals = (refunds.data ?? []).reduce(
     (acc, r) => {
@@ -117,8 +118,9 @@ function AdminRefunds() {
             className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
           />
           <p className="text-xs text-muted-foreground mt-2">
-            {search ? `${visibleOrders.length} نتيجة` : "أحدث 25 طلب — ابحث لتحديد أوسع"}
+            {search ? `${visibleOrders.length} نتيجة` : "أحدث 5 طلبات — ابحث لتحديد أوسع"}
           </p>
+
         </div>
 
         <div className="space-y-2">
