@@ -31,13 +31,8 @@ function AdminOrders() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
 
-  const revenue = useQuery({
-    queryKey: ["admin-revenue-monthly"],
-    queryFn: async () => {
-      const { data } = await supabase.rpc("admin_revenue_by_month");
-      return (data ?? []) as Array<{ month: string; revenue: number; profit: number; orders_count: number }>;
-    },
-  });
+
+
 
   const orders = useQuery({
     queryKey: ["admin-orders"],
@@ -155,38 +150,8 @@ function AdminOrders() {
         </div>
       </div>
 
-      {/* Monthly revenue/profit chart */}
-      {revenue.data && revenue.data.length > 0 && (() => {
-        const rows = [...revenue.data].reverse().slice(-6);
-        const maxV = Math.max(1, ...rows.map((r) => Number(r.revenue)));
-        return (
-          <div className="mb-6 p-4 bg-card border border-border rounded-2xl">
-            <div className="flex items-baseline justify-between mb-3">
-              <h2 className="font-bold text-sm sm:text-base">أرباح آخر 6 شهور</h2>
-              <span className="text-xs text-muted-foreground">إيراد / ربح</span>
-            </div>
-            <div className="flex items-end gap-3 h-40">
-              {rows.map((r) => {
-                const rev = Number(r.revenue);
-                const pro = Number(r.profit);
-                const revH = Math.max(4, (rev / maxV) * 140);
-                const proH = Math.max(2, (Math.max(0, pro) / maxV) * 140);
-                const label = new Date(r.month).toLocaleDateString("ar-EG", { month: "short" });
-                return (
-                  <div key={r.month} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                    <div className="w-full flex items-end justify-center gap-1 h-36">
-                      <div className="w-3 rounded-t bg-brand/60" style={{ height: `${revH}px` }} title={`إيراد ${rev.toLocaleString()}`} />
-                      <div className="w-3 rounded-t bg-accent" style={{ height: `${proH}px` }} title={`ربح ${pro.toLocaleString()}`} />
-                    </div>
-                    <div className="text-[10px] text-muted-foreground truncate">{label}</div>
-                    <div className="text-[10px] font-bold">{Math.round(rev).toLocaleString()}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
+
+
 
       <div className="mb-4">
         <input
