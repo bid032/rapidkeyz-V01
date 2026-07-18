@@ -63,6 +63,7 @@ export function Header() {
             <Link to="/shop" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.shop}
             </Link>
+            <CategoriesMenu />
             <Link to="/about" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.about}
             </Link>
