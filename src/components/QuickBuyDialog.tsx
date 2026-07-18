@@ -103,11 +103,12 @@ export function QuickBuyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0 overflow-hidden gap-0 border-border/60 bg-card">
-        <div className="p-5 sm:p-6">
+      <DialogContent className="max-w-lg p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)]">
+        {/* Header (sticky top) */}
+        <div className="shrink-0 px-4 pt-5 pb-3 sm:px-6 border-b border-border/60 bg-card">
           <DialogHeader className="text-start space-y-1 pe-12">
             <div className="flex items-center gap-3">
-              <div className="shrink-0 size-11 sm:size-12 rounded-xl border border-border bg-background overflow-hidden shadow-md">
+              <div className="shrink-0 size-10 sm:size-12 rounded-xl border border-border bg-background overflow-hidden shadow-md">
                 {product.icon_url ? (
                   <img src={product.icon_url} alt={name} className="size-full object-cover" />
                 ) : (
@@ -117,157 +118,151 @@ export function QuickBuyDialog({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-base sm:text-xl font-black leading-tight break-words">{name}</DialogTitle>
-                <DialogDescription className="text-[11px] sm:text-sm mt-0.5">
-                  {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
+                <DialogTitle className="text-sm sm:text-xl font-black leading-tight break-words">{name}</DialogTitle>
+                <DialogDescription className="text-[10px] sm:text-xs mt-0.5 leading-tight">
+                  {isAr ? "اختر الخطة والكمية" : "Pick a plan and quantity"}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
+        </div>
 
-
-
-          {/* Plan grid */}
-          <div className="mt-5">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
-              {isAr ? "الخطة" : "Plan"}
+        {/* Scrollable plans area */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
+            {isAr ? "الخطة" : "Plan"}
+          </div>
+          {plansQ.isLoading ? (
+            <div className="grid grid-cols-2 gap-1.5">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />
+              ))}
             </div>
-            {plansQ.isLoading ? (
-              <div className="grid grid-cols-2 gap-2">
-                {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />
-                ))}
-              </div>
-            ) : plans.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                {isAr ? "لا توجد خطط متاحة" : "No plans available"}
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {plans.map((pl) => {
-                  const isSel = selected?.id === pl.id;
-                  const so = Number(pl.stock ?? 0) <= 0;
-                  const raw = Number(pl.price);
-                  const price = hasDiscount ? Math.round(raw * (100 - discount)) / 100 : raw;
-                  return (
-                    <button
-                      key={pl.id}
-                      type="button"
-                      onClick={() => !so && setSelectedId(pl.id)}
-                      disabled={so}
-                      className={`relative text-start p-3 rounded-xl border-2 transition-all ${
-                        so
-                          ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
-                          : isSel
-                            ? "border-brand bg-brand/5 shadow-[0_0_0_3px_color-mix(in_oklab,var(--brand)_15%,transparent)]"
-                            : "border-border bg-background hover:border-brand/50"
-                      }`}
-                    >
+          ) : plans.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              {isAr ? "لا توجد خطط متاحة" : "No plans available"}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              {plans.map((pl) => {
+                const isSel = selected?.id === pl.id;
+                const so = Number(pl.stock ?? 0) <= 0;
+                const raw = Number(pl.price);
+                const price = hasDiscount ? Math.round(raw * (100 - discount)) / 100 : raw;
+                return (
+                  <button
+                    key={pl.id}
+                    type="button"
+                    onClick={() => !so && setSelectedId(pl.id)}
+                    disabled={so}
+                    className={`relative flex items-center justify-between gap-2 text-start px-3 py-2 rounded-lg border-2 transition-all ${
+                      so
+                        ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
+                        : isSel
+                          ? "border-brand bg-brand/5"
+                          : "border-border bg-background hover:border-brand/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
                       {isSel && !so && (
-                        <span className="absolute top-1.5 end-1.5 grid place-items-center size-5 rounded-full bg-brand text-brand-foreground">
-                          <Check className="size-3" />
+                        <span className="shrink-0 grid place-items-center size-4 rounded-full bg-brand text-brand-foreground">
+                          <Check className="size-2.5" />
                         </span>
                       )}
-                      <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-1">
-                        {isAr ? "المدة" : "Plan"}
-                      </div>
-                      <div className={`text-sm font-extrabold mb-1 ${so ? "line-through" : ""}`}>
+                      <span className={`text-xs sm:text-sm font-extrabold truncate ${so ? "line-through" : ""}`}>
                         {(isAr ? pl.label_ar : pl.label_en) || (isAr ? "خطة" : "Plan")}
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span className={`text-base font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
-                          {price}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">{t.common.currency}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                      </span>
+                    </div>
+                    <div className="shrink-0 flex items-baseline gap-1">
+                      <span className={`text-sm font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
+                        {price}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground">{t.common.currency}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-          {/* Quantity */}
-          {plans.length > 0 && (
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                {isAr ? "الكمية" : "Qty"}
-              </div>
-              <div className="flex items-center gap-2 rounded-full border border-border bg-background p-1">
+        {/* Sticky footer with qty + total + actions */}
+        {plans.length > 0 && (
+          <div className="shrink-0 border-t border-border/60 bg-card px-4 sm:px-6 py-3 space-y-2.5">
+            {/* Qty + Total inline */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  className="size-8 rounded-full grid place-items-center hover:bg-muted transition"
+                  className="size-7 rounded-full grid place-items-center hover:bg-muted transition text-sm"
                   aria-label="decrease"
                 >
                   −
                 </button>
-                <span className="min-w-8 text-center font-black tabular-nums">{qty}</span>
+                <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.min(99, q + 1))}
-                  className="size-8 rounded-full grid place-items-center hover:bg-muted transition"
+                  className="size-7 rounded-full grid place-items-center hover:bg-muted transition text-sm"
                   aria-label="increase"
                 >
                   +
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Total */}
-          {selected && (
-            <div className="mt-5 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-4 flex items-baseline justify-between gap-3">
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                {isAr ? "الإجمالي" : "Total"}
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-black text-brand tabular-nums leading-none">
-                  {total}
-                </span>
-                <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
-                {hasDiscount && (
-                  <span className="text-xs text-muted-foreground line-through tabular-nums">
-                    {Math.round(rawUnit * qty * 100) / 100}
+              {selected && (
+                <div className="flex items-baseline gap-1.5">
+                  {hasDiscount && (
+                    <span className="text-[10px] text-muted-foreground line-through tabular-nums">
+                      {Math.round(rawUnit * qty * 100) / 100}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-black uppercase tracking-widest text-brand">
+                    {isAr ? "الإجمالي" : "Total"}
                   </span>
-                )}
-              </div>
+                  <span className="text-2xl font-black text-brand tabular-nums leading-none">
+                    {total}
+                  </span>
+                  <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Actions */}
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-            <button
-              type="button"
-              onClick={() => doAdd(true)}
-              disabled={!selected || soldOut}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-brand text-brand-foreground font-black text-sm shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Zap className="size-4" />
-              {isAr ? "اشترِ الآن" : "Buy now"}
-            </button>
-            <button
-              type="button"
-              onClick={() => doAdd(false)}
-              disabled={!selected || soldOut}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full border border-border bg-background text-foreground font-bold text-sm hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
-            >
-              <ShoppingCart className="size-4" />
-              {isAr ? "أضف للسلة" : "Add to cart"}
-            </button>
-          </div>
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => doAdd(true)}
+                disabled={!selected || soldOut}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full bg-brand text-brand-foreground font-black text-xs sm:text-sm shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Zap className="size-3.5" />
+                {isAr ? "اشترِ الآن" : "Buy now"}
+              </button>
+              <button
+                type="button"
+                onClick={() => doAdd(false)}
+                disabled={!selected || soldOut}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full border border-border bg-background text-foreground font-bold text-xs sm:text-sm hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
+              >
+                <ShoppingCart className="size-3.5" />
+                {isAr ? "أضف للسلة" : "Add to cart"}
+              </button>
+            </div>
 
-          <div className="mt-3 text-center">
-            <Link
-              to="/product/$slug"
-              params={{ slug: product.slug }}
-              className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground hover:text-brand transition"
-            >
-              {isAr ? "التفاصيل الكاملة →" : "Full details →"}
-            </Link>
+            <div className="text-center">
+              <Link
+                to="/product/$slug"
+                params={{ slug: product.slug }}
+                className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-brand transition"
+              >
+                {isAr ? "التفاصيل الكاملة →" : "Full details →"}
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </DialogContent>
+
     </Dialog>
   );
 }
