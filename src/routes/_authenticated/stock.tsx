@@ -2,12 +2,13 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, RefreshCw, Search, Boxes, ShieldCheck } from "lucide-react";
+import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getStockData } from "@/lib/stock-sheet.functions";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
+const LOW_STOCK_THRESHOLD = 5;
 
 export const Route = createFileRoute("/_authenticated/stock")({
   beforeLoad: async () => {
@@ -30,7 +31,7 @@ function StockPage() {
 
   if (!unlocked) return <UnlockGate onUnlock={() => setUnlocked(true)} />;
 
-  return <StockTable onLock={() => { sessionStorage.removeItem(UNLOCK_KEY); setUnlocked(false); notify("تم القفل", "success"); }} />;
+  return <StockDispenser onLock={() => { sessionStorage.removeItem(UNLOCK_KEY); setUnlocked(false); notify("تم القفل", "success"); }} />;
 }
 
 function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
@@ -64,15 +65,17 @@ function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
         <form onSubmit={submit} className="space-y-3">
           <input
             type="password"
+            inputMode="numeric"
+            maxLength={4}
             autoFocus
             value={pwd}
-            onChange={(e) => setPwd(e.target.value)}
-            placeholder="كلمة السر"
-            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
+            onChange={(e) => setPwd(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            placeholder="••••"
+            className="w-full px-4 py-3 bg-background border border-border rounded-xl text-center tracking-[0.6em] text-lg focus:outline-none focus:border-brand"
           />
           <button
             type="submit"
-            disabled={loading || !pwd}
+            disabled={loading || pwd.length !== 4}
             className="w-full px-4 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-60"
           >
             {loading ? "جارٍ التحقق..." : "دخول"}
@@ -83,9 +86,24 @@ function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-function StockTable({ onLock }: { onLock: () => void }) {
+/** Try to find a column index by matching header candidates (case-insensitive, substring). */
+function findCol(headers: string[], candidates: string[]) {
+  const norm = headers.map((h) => (h ?? "").toString().trim().toLowerCase());
+  for (const c of candidates) {
+    const idx = norm.findIndex((h) => h.includes(c.toLowerCase()));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+function StockDispenser({ onLock }: { onLock: () => void }) {
+  const { notify } = useApp();
   const fetcher = useServerFn(getStockData);
-  const [search, setSearch] = useState("");
+  const [employee, setEmployee] = useState("");
+  const [customer, setCustomer] = useState("");
+  const [productKey, setProductKey] = useState("");
+  const [qty, setQty] = useState(1);
+  const [notes, setNotes] = useState("بيبعته للعميل عطول من غير فيزا ولا اي حاجه");
 
   const q = useQuery({
     queryKey: ["stock-sheet"],
@@ -94,20 +112,57 @@ function StockTable({ onLock }: { onLock: () => void }) {
     refetchOnWindowFocus: true,
   });
 
-  const filtered = useMemo(() => {
+  const { productIdx, deliveryIdx, statusIdx, products, totalAvailable, lowCount } = useMemo(() => {
+    const headers = q.data?.headers ?? [];
     const rows = q.data?.rows ?? [];
-    const s = search.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter((r) => r.some((c) => c.toLowerCase().includes(s)));
-  }, [q.data, search]);
+    const pIdx = findCol(headers, ["product_name", "product", "المنتج", "اسم المنتج", "name"]);
+    const dIdx = findCol(headers, ["delivery", "نوع التسليم", "type"]);
+    const sIdx = findCol(headers, ["status", "الحالة", "state"]);
 
-  const stats = useMemo(() => {
-    const rows = q.data?.rows ?? [];
-    return { total: rows.length };
+    const groups = new Map<string, number>();
+    for (const r of rows) {
+      // consider only rows not marked delivered/used
+      if (sIdx !== -1) {
+        const s = (r[sIdx] ?? "").toLowerCase();
+        if (s.includes("delivered") || s.includes("used") || s.includes("تم")) continue;
+      }
+      const key = pIdx !== -1 ? (r[pIdx] ?? "").trim() : "غير محدد";
+      if (!key) continue;
+      groups.set(key, (groups.get(key) ?? 0) + 1);
+    }
+    const arr = Array.from(groups.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name, "ar"));
+    const total = arr.reduce((s, p) => s + p.count, 0);
+    const low = arr.filter((p) => p.count > 0 && p.count <= LOW_STOCK_THRESHOLD).length;
+    return { productIdx: pIdx, deliveryIdx: dIdx, statusIdx: sIdx, products: arr, totalAvailable: total, lowCount: low };
   }, [q.data]);
+
+  const selectedProduct = products.find((p) => p.name === productKey);
+  const availableNow = selectedProduct?.count ?? 0;
+
+  const deliveryType = useMemo(() => {
+    if (!productKey || deliveryIdx === -1) return "-";
+    const rows = q.data?.rows ?? [];
+    const row = rows.find((r) => (productIdx !== -1 ? r[productIdx] : "") === productKey);
+    return (row?.[deliveryIdx] ?? "-") || "-";
+  }, [productKey, deliveryIdx, productIdx, q.data]);
+
+  const stockHealth = totalAvailable > 50 ? { label: "ممتاز", tone: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" }
+    : totalAvailable > 10 ? { label: "جيد", tone: "bg-brand/15 text-brand border-brand/30" }
+    : totalAvailable > 0 ? { label: "منخفض", tone: "bg-amber-500/15 text-amber-500 border-amber-500/30" }
+    : { label: "فارغ", tone: "bg-destructive/15 text-destructive border-destructive/30" };
+
+  const canDeliver = employee && customer.trim() && productKey && qty > 0 && qty <= availableNow;
+
+  const deliver = () => {
+    if (!canDeliver) return notify("اكمل بيانات التسليم أولاً", "error");
+    notify("قريبًا — تسليم الأكواد يحتاج ربط الكتابة على الشيت", "info");
+  };
 
   return (
     <div className="space-y-5">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
@@ -134,74 +189,163 @@ function StockTable({ onLock }: { onLock: () => void }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="p-4 bg-card border border-border rounded-2xl">
-          <div className="text-xs text-muted-foreground">إجمالي الصفوف</div>
-          <div className="text-2xl font-extrabold text-brand">{stats.total}</div>
-        </div>
-        <div className="p-4 bg-card border border-border rounded-2xl">
-          <div className="text-xs text-muted-foreground">الشيت</div>
-          <div className="font-bold truncate">{q.data?.sheetTitle ?? "—"}</div>
-        </div>
-        <div className="p-4 bg-card border border-border rounded-2xl flex items-center gap-2">
-          <ShieldCheck className="text-brand" />
-          <div>
-            <div className="text-xs text-muted-foreground">الصلاحية</div>
-            <div className="font-bold">مفعّلة</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative">
-        <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3.5 text-muted-foreground" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="ابحث في الاستوك…"
-          className="w-full ps-10 pe-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:border-brand"
-        />
-      </div>
-
-      {q.isLoading && <div className="text-center py-10 text-muted-foreground">جارٍ التحميل…</div>}
       {q.error && (
-        <div className="p-6 bg-destructive/10 border border-destructive/30 rounded-2xl text-destructive">
+        <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-2xl text-destructive text-sm">
           {(q.error as Error).message}
         </div>
       )}
 
-      {q.data && (
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 sticky top-0">
-                <tr>
-                  {q.data.headers.map((h, i) => (
-                    <th key={i} className="p-3 text-start text-xs uppercase tracking-wider text-muted-foreground font-bold whitespace-nowrap">
-                      {h}
-                    </th>
+      <div className="grid lg:grid-cols-3 gap-5">
+        {/* Main dispenser panel */}
+        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 className="text-xl font-extrabold">الاستوك</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              الموظف يختار الاسم واسم العميل والمنتج والكمية، والنظام بيسحب أول أكواد متاحة تلقائيًا.
+            </p>
+          </div>
+
+          {/* Info strip */}
+          <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid sm:grid-cols-3 gap-3 text-sm">
+            <div>
+              <div className="text-muted-foreground text-xs">المتاح الآن</div>
+              <div className="font-extrabold text-brand text-lg">{availableNow}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-xs">إجمالي الستوك</div>
+              <div className="font-extrabold text-lg">{totalAvailable}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-xs">نوع التسليم</div>
+              <div className="font-extrabold text-lg">{deliveryType}</div>
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className="space-y-4">
+            <Field label="اسم الموظف">
+              <select
+                value={employee}
+                onChange={(e) => setEmployee(e.target.value)}
+                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
+              >
+                <option value="">اختر اسم الموظف</option>
+                <option value="admin">Admin</option>
+                <option value="support">Support</option>
+                <option value="sales">Sales</option>
+              </select>
+            </Field>
+
+            <Field label="اسم العميل">
+              <input
+                value={customer}
+                onChange={(e) => setCustomer(e.target.value)}
+                placeholder="اكتب اسم العميل"
+                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
+              />
+            </Field>
+
+            <div className="grid grid-cols-[1fr_120px] gap-3">
+              <Field label="المنتج">
+                <select
+                  value={productKey}
+                  onChange={(e) => setProductKey(e.target.value)}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
+                >
+                  <option value="">اختر المنتج</option>
+                  {products.map((p) => (
+                    <option key={p.name} value={p.name}>
+                      {p.name} — المتاح {p.count}
+                    </option>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((r, ri) => (
-                  <tr key={ri} className="border-t border-border/60 hover:bg-muted/30 transition-colors">
-                    {r.map((c, ci) => (
-                      <td key={ci} className="p-3 whitespace-nowrap">{c || "—"}</td>
-                    ))}
-                  </tr>
-                ))}
-                {filtered.length === 0 && (
-                  <tr>
-                    <td colSpan={q.data.headers.length || 1} className="p-8 text-center text-muted-foreground">
-                      لا توجد نتائج
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                </select>
+              </Field>
+              <Field label="الكمية">
+                <input
+                  type="number"
+                  min={1}
+                  max={availableNow || 1}
+                  value={qty}
+                  onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm text-center focus:outline-none focus:border-brand"
+                />
+              </Field>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 pt-2">
+              <button
+                onClick={deliver}
+                disabled={!canDeliver}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
+              >
+                <Send className="w-4 h-4" /> تسليم الأكواد
+              </button>
+              <button
+                onClick={() => q.refetch()}
+                className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-muted text-sm font-bold hover:bg-brand/10 hover:text-brand"
+              >
+                <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} /> تحديث البيانات
+              </button>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Quick panel */}
+        <aside className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 h-fit">
+          <div>
+            <h2 className="text-xl font-extrabold">لوحة سريعة</h2>
+            <p className="text-xs text-muted-foreground mt-1">هنا هتشوف المتاح والملاحظات العامة بسرعة</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-border p-4 text-center">
+              <div className="text-2xl font-extrabold text-brand">{lowCount}</div>
+              <div className="text-xs text-muted-foreground mt-1">منتجات منخفضة</div>
+            </div>
+            <div className="rounded-2xl border border-border p-4 text-center">
+              <div className="text-2xl font-extrabold">{totalAvailable}</div>
+              <div className="text-xs text-muted-foreground mt-1">إجمالي المتاح</div>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+              <PackageCheck className="w-3.5 h-3.5" /> حالة المخزون
+            </div>
+            <span className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold border ${stockHealth.tone}`}>
+              {stockHealth.label}
+            </span>
+          </div>
+
+          <div>
+            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+              <StickyNote className="w-3.5 h-3.5" /> ملاحظات ترسل مع المنتج
+            </div>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/5 text-sm focus:outline-none focus:border-amber-500 resize-none"
+            />
+          </div>
+
+          {lowCount > 0 && (
+            <div className="flex items-start gap-2 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>لو الكود لم يُسلَّم فعلًا، استخدم زر الاستلام لإرجاع آخر صرف للمخزون.</span>
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <div className="text-xs font-bold text-muted-foreground mb-1.5">{label}</div>
+      {children}
+    </label>
   );
 }
