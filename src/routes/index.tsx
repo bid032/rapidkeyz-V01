@@ -173,149 +173,137 @@ function HomePage() {
     <div className="min-h-screen bg-background text-foreground">
       <Header />
 
-      {/* Hero — Kinetic Brand Monolith */}
-      <header className="relative overflow-hidden pt-4 pb-10 sm:pt-8 sm:pb-16">
+      {/* Hero — Balanced Split */}
+      <header className="relative overflow-hidden pt-6 pb-12 sm:pt-10 sm:pb-20">
         <HeroCanvas />
         <FloatingLogos />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6">
-          <section
-            className="relative rounded-[1.75rem] sm:rounded-[2.5rem] bg-card/60 backdrop-blur-xl border border-border/40 overflow-hidden shadow-[0_30px_120px_-40px_rgba(0,0,0,0.6)]"
-          >
-            {/* Ambient blurred orbs inside frame */}
-            <div aria-hidden className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-24 -right-24 w-[55%] h-[55%] rounded-full bg-brand/15 blur-[120px]" />
-              <div className="absolute -bottom-24 -left-16 w-[45%] h-[50%] rounded-full bg-accent/15 blur-[120px]" />
-            </div>
+        {/* Ambient radial glows */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute top-10 -right-24 w-[420px] h-[420px] rounded-full bg-brand/10 blur-[120px]" />
+          <div className="absolute -bottom-20 -left-16 w-[380px] h-[380px] rounded-full bg-accent/10 blur-[120px]" />
+        </div>
 
-            {/* Oversized ghost brand mark */}
-            <div aria-hidden className="pointer-events-none absolute -left-16 -top-16 sm:-left-24 sm:-top-24 opacity-[0.06]">
-              <svg width="620" height="620" viewBox="0 0 100 100" fill="none">
-                <path d="M20 20H50C65 20 75 30 75 45C75 60 65 70 50 70H35V90M35 70L75 90"
-                      stroke="hsl(var(--brand))" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Content Side */}
+            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-6 sm:space-y-8">
+              {/* Live pill */}
+              <div data-gsap="reveal" className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
+                </span>
+                <span className="text-brand text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase font-mono">
+                  {hero.badge || "INSTANT DELIVERY"}
+                </span>
+              </div>
 
-            {/* Grid overlay */}
-            <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.04]"
-                 style={{
-                   backgroundImage:
-                     "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-                   backgroundSize: "44px 44px",
-                 }} />
-
-            <div className="relative grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-10 lg:gap-14 items-center p-6 sm:p-10 lg:p-16 min-h-[560px] lg:min-h-[680px]">
-              {/* Content column */}
-              <div className="relative order-2 lg:order-1 text-right">
-                {/* Live pill */}
-                <div data-gsap="reveal" className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25 mb-5 sm:mb-8">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
-                  </span>
-                  <span className="text-brand text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase font-mono">
-                    {hero.badge || "INSTANT DELIVERY"}
-                  </span>
-                </div>
-
+              {/* Headline + subtitle */}
+              <div className="space-y-4 sm:space-y-5">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2.4rem,7vw,5rem)] leading-[1.08] tracking-tight text-foreground"
+                  className="font-display font-bold text-[clamp(2.25rem,6vw,4.5rem)] leading-[1.08] tracking-tight text-foreground text-balance"
                 >
                   {hero.title1}
                   <br />
                   <span className="brand-text">{hero.title2}</span>
                 </h1>
-
                 <p
                   data-gsap="reveal"
-                  className="mt-5 sm:mt-7 text-base sm:text-xl text-muted-foreground max-w-xl leading-relaxed"
+                  className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed mx-auto lg:mx-0"
                 >
                   {hero.subtitle}
                 </p>
-
-                <div className="mt-7 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  <Link
-                    to="/shop"
-                    data-gsap="magnetic"
-                    data-strength="0.3"
-                    className="group relative inline-flex items-center justify-center gap-3 px-7 sm:px-8 py-3.5 sm:py-4 bg-brand text-brand-foreground font-bold rounded-2xl brand-glow hover:shadow-[0_0_60px_-8px_var(--brand-glow)] transition-shadow font-display"
-                  >
-                    <span>{hero.cta}</span>
-                    <span className="grid place-items-center size-7 rounded-full bg-brand-foreground/15 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">→</span>
-                  </Link>
-                  <a
-                    href="https://wa.me/201284234815"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 sm:py-4 bg-foreground/5 hover:bg-foreground/10 border border-border/60 hover:border-brand/40 rounded-2xl text-foreground font-medium transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                    <span>{hero.ctaSecondary}</span>
-                  </a>
-                </div>
-
-                {/* Stat cards */}
-                <div data-gsap="reveal-stagger" className="mt-8 sm:mt-12 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                  {[
-                    { n: "24/7", l: "دعم فوري" },
-                    { n: "+15k", l: "عملاء" },
-                    { n: "4.9★", l: "تقييم" },
-                    { n: "60s", l: "تسليم" },
-                  ].map((s) => (
-                    <div
-                      key={s.l}
-                      className="rounded-xl sm:rounded-2xl bg-foreground/5 border border-border/50 backdrop-blur px-3 py-3 sm:px-4 sm:py-4"
-                    >
-                      <div className="font-display font-bold text-xl sm:text-2xl text-foreground mb-1 text-glow">{s.n}</div>
-                      <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-tight">{s.l}</div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
-              {/* Visual column — R Monolith (desktop only) */}
-              <div className="hidden lg:flex order-1 lg:order-2 relative justify-center items-center">
-                <div className="relative group">
-                  <div className="absolute inset-0 bg-brand opacity-25 blur-[110px] group-hover:opacity-40 transition-opacity" />
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <Link
+                  to="/shop"
+                  data-gsap="magnetic"
+                  data-strength="0.3"
+                  className="group inline-flex items-center justify-center gap-3 px-7 sm:px-9 py-3.5 sm:py-4 bg-brand text-brand-foreground font-bold rounded-2xl brand-glow hover:shadow-[0_0_60px_-8px_var(--brand-glow)] transition-shadow font-display"
+                >
+                  <span>{hero.cta}</span>
+                  <span className="grid place-items-center size-7 rounded-full bg-brand-foreground/15 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform">→</span>
+                </Link>
+                <a
+                  href="https://wa.me/201284234815"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 bg-foreground/5 hover:bg-foreground/10 border border-border/60 hover:border-brand/40 rounded-2xl text-foreground font-medium transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                  <span>{hero.ctaSecondary}</span>
+                </a>
+              </div>
 
-                  <div className="relative">
-                    <Logo3D className="w-72 xl:w-80" />
-
-                    {/* Floating badge */}
-                    <div className="absolute -bottom-2 -right-2 bg-card/95 border border-brand/60 px-4 py-3 rounded-2xl rotate-3 shadow-xl backdrop-blur">
-                      <p className="text-brand text-xs font-bold tracking-widest uppercase font-mono">Premium Access</p>
-                    </div>
-
-                    {/* Trending mini-card */}
-                    {trending[0] && (
-                      <Link
-                        to="/product/$slug"
-                        params={{ slug: trending[0].slug }}
-                        data-gsap="tilt"
-                        className="absolute -top-4 -left-6 block p-3.5 rounded-2xl bg-card/90 border border-border/60 backdrop-blur -rotate-6 hover:brand-glow transition w-52"
-                      >
-                        <div className="flex items-center gap-2 mb-1.5">
-                          {trending[0].icon_url && (
-                            <img src={trending[0].icon_url} alt="" loading="lazy" className="size-6 rounded-md object-cover ring-1 ring-border/60" />
-                          )}
-                          <div className="text-[10px] font-mono uppercase tracking-widest text-brand">TRENDING</div>
-                        </div>
-                        <div className="font-display font-bold text-sm leading-tight line-clamp-1">
-                          {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
-                        </div>
-                        {trending[0].minPrice !== null && (
-                          <div className="mt-1 text-xs text-brand font-bold">
-                            {trending[0].minPrice} {t.common.currency}
-                          </div>
-                        )}
-                      </Link>
-                    )}
+              {/* Stats Row — divider on top */}
+              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-6 sm:pt-8 border-t border-border/40">
+                {[
+                  { n: "24/7", l: lang === "ar" ? "دعم فوري" : "Support" },
+                  { n: "+15k", l: lang === "ar" ? "عميل سعيد" : "Clients" },
+                  { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
+                  { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
+                ].map((s) => (
+                  <div key={s.l} className="space-y-1 text-center lg:text-right">
+                    <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
+                    <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
-          </section>
+
+            {/* Visual Side */}
+            <div className="lg:col-span-5 order-1 lg:order-2 relative flex justify-center items-center">
+              <div className="relative w-full max-w-[380px] flex flex-col items-center">
+                {/* Radial glow */}
+                <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
+
+                {/* 3D R Monolith card */}
+                <div className="relative group w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Logo3D className="w-40 sm:w-56 lg:w-64" />
+
+                  {/* Premium badge */}
+                  <div className="absolute -top-3 -right-3 bg-brand text-brand-foreground px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
+                    Premium
+                  </div>
+                </div>
+
+                {/* Trending Card Overlay */}
+                {trending[0] && (
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: trending[0].slug }}
+                    data-gsap="tilt"
+                    className="absolute -bottom-4 -left-2 sm:-left-6 w-60 sm:w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      {trending[0].icon_url ? (
+                        <img src={trending[0].icon_url} alt="" loading="lazy" className="w-10 h-10 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-brand/20 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 text-right">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-brand">
+                          {lang === "ar" ? "الأكثر مبيعاً" : "Trending"}
+                        </div>
+                        <div className="text-foreground text-sm font-bold truncate">
+                          {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
+                        </div>
+                      </div>
+                      {trending[0].minPrice !== null && (
+                        <div className="text-brand font-bold text-sm shrink-0">
+                          {trending[0].minPrice} {t.common.currency}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
