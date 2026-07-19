@@ -2,16 +2,17 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, Copy, Undo2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, Copy, Undo2, Minus, Plus, User, UserCircle2, Package, Sparkles, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { PageHero } from "@/components/PageHero";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
 const STAFF_KEY = "rk_stock_staff";
+
 
 export const Route = createFileRoute("/_authenticated/stock")({
   beforeLoad: async () => {
@@ -182,30 +183,59 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
     navigator.clipboard.writeText(text).then(() => notify("تم النسخ", "success"));
   };
 
+  const dec = () => setQty((n) => Math.max(1, n - 1));
+  const inc = () => setQty((n) => Math.min(Math.max(1, availableNow || 5), n + 1));
+
   return (
     <div className="space-y-6">
-      {/* Hero */}
-      <PageHero
-        eyebrow="Stock · الاستوك"
-        title="الاستوك"
-        subtitle={q.data?.fetchedAt ? `آخر تحديث: ${new Date(q.data.fetchedAt).toLocaleTimeString("ar-EG")} · تحديث تلقائي كل 20 ثانية` : "تحديث تلقائي كل 20 ثانية"}
-      />
+      {/* Compact hero + KPI row */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-7"
+      >
+        {/* aurora glow */}
+        <div className="pointer-events-none absolute -top-24 -end-24 h-64 w-64 rounded-full bg-brand/25 blur-[100px]" />
+        <div className="pointer-events-none absolute -bottom-24 -start-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-[100px]" />
 
-      {/* Control bar */}
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <button
-          onClick={() => q.refetch()}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-card border border-border text-sm font-bold hover:border-brand transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} /> تحديث
-        </button>
-        <button
-          onClick={onLock}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-muted text-sm font-bold hover:bg-destructive/10 hover:text-destructive transition-colors"
-        >
-          <Lock className="w-4 h-4" /> قفل
-        </button>
-      </div>
+        <div className="relative grid gap-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="min-w-0">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-brand">
+              <Sparkles className="size-3.5" /> Stock Console
+            </div>
+            <h1 className="mt-3 text-2xl sm:text-4xl font-extrabold tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-cyan-400 to-brand">لوحة الاستوك</span>
+            </h1>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground">
+              {q.data?.fetchedAt ? `آخر تحديث: ${new Date(q.data.fetchedAt).toLocaleTimeString("ar-EG")}` : "جارٍ التحميل..."} · تحديث تلقائي كل 20 ثانية
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
+            <button
+              onClick={() => q.refetch()}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-background/60 backdrop-blur px-3 py-2 text-sm font-bold transition-colors hover:border-brand hover:text-brand"
+            >
+              <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} /> تحديث
+            </button>
+            <button
+              onClick={onLock}
+              className="inline-flex items-center gap-2 rounded-xl bg-muted px-3 py-2 text-sm font-bold transition-colors hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Lock className="w-4 h-4" /> قفل
+            </button>
+          </div>
+        </div>
+
+        {/* KPI tiles */}
+        <div className="relative mt-5 grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+          <KpiTile icon={<Boxes className="size-4" />} label="المتاح الآن" value={availableNow} accent="brand" />
+          <KpiTile icon={<Package className="size-4" />} label="إجمالي الستوك" value={selected?.totalStock ?? 0} />
+          <KpiTile icon={<AlertTriangle className="size-4" />} label="منتجات منخفضة" value={q.data?.lowStockCount ?? 0} accent="amber" />
+          <KpiTile icon={<PackageCheck className="size-4" />} label="إجمالي المتاح" value={q.data?.totalAvailable ?? 0} accent="emerald" />
+        </div>
+      </motion.div>
 
       {q.error && (
         <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-2xl text-destructive text-sm">
@@ -213,96 +243,116 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-5">
-        {/* Main dispenser panel */}
-        <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5 shadow-sm">
+      <div className="grid gap-5 lg:grid-cols-5">
+        {/* Main dispenser */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.5 }}
+          className="lg:col-span-3 relative overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-6 space-y-5"
+        >
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand via-cyan-400 to-brand" />
 
-          {/* Info strip */}
-          <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid grid-cols-3 gap-2 sm:gap-3 text-sm text-center sm:text-start">
-            <div>
-              <div className="text-muted-foreground text-[11px] sm:text-xs">المتاح الآن</div>
-              <div className="font-extrabold text-brand text-base sm:text-lg">{availableNow}</div>
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-brand/10 text-brand">
+              <Send className="size-5" />
             </div>
-            <div>
-              <div className="text-muted-foreground text-[11px] sm:text-xs">إجمالي الستوك</div>
-              <div className="font-extrabold text-base sm:text-lg">{selected?.totalStock ?? 0}</div>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-extrabold truncate">تسليم أكواد</h2>
+              <p className="text-xs text-muted-foreground">اختَر البيانات والنظام هيسحب أول أكواد متاحة</p>
             </div>
-            <div>
-              <div className="text-muted-foreground text-[11px] sm:text-xs">نوع التسليم</div>
-              <div className="font-extrabold text-base sm:text-lg">{selected?.unitLabel || "-"}</div>
-            </div>
+            <span className={`ms-auto shrink-0 inline-block px-3 py-1 rounded-full text-[11px] font-bold border ${stockHealth.tone}`}>
+              {stockHealth.label}
+            </span>
           </div>
 
-          {/* Form */}
-          <div className="space-y-4">
-            <Field label="اسم الموظف">
+          {/* Steps grid */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StepField step={1} icon={<UserCircle2 className="size-4" />} label="اسم الموظف">
               <select
                 value={staffName}
                 onChange={(e) => { setStaffName(e.target.value); localStorage.setItem(STAFF_KEY, e.target.value); }}
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand focus:outline-none"
               >
                 <option value="">اختر اسم الموظف</option>
                 {staffNames.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
-            </Field>
+            </StepField>
 
-            <Field label="اسم العميل">
+            <StepField step={2} icon={<User className="size-4" />} label="اسم العميل">
               <input
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="اكتب اسم العميل"
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand focus:outline-none"
               />
-            </Field>
+            </StepField>
 
-            <div className="grid grid-cols-[1fr_120px] gap-3">
-              <Field label="المنتج">
-                <select
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
-                >
-                  <option value="">اختر المنتج</option>
-                  {products.map((p) => (
-                    <option key={p.productName} value={p.productName}>
-                      {p.productName} — المتاح {p.availableCount}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="الكمية">
-                <select
-                  value={qty}
-                  onChange={(e) => setQty(parseInt(e.target.value, 10))}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm text-center focus:outline-none focus:border-brand"
-                >
-                  {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </Field>
-            </div>
+            <StepField step={3} icon={<Package className="size-4" />} label="المنتج" className="sm:col-span-2">
+              <select
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:border-brand focus:outline-none"
+              >
+                <option value="">اختر المنتج</option>
+                {products.map((p) => (
+                  <option key={p.productName} value={p.productName}>
+                    {p.productName} — المتاح {p.availableCount}
+                  </option>
+                ))}
+              </select>
+            </StepField>
 
-            <div className="flex flex-wrap items-center gap-2 pt-2">
-              <button
-                onClick={doIssue}
-                disabled={!canDeliver}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
-              >
-                <Send className="w-4 h-4" /> {busy ? "جارٍ التنفيذ..." : "تسليم الأكواد"}
-              </button>
-              <button
-                onClick={() => q.refetch()}
-                className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-muted text-sm font-bold hover:bg-brand/10 hover:text-brand"
-              >
-                <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} /> تحديث البيانات
-              </button>
-            </div>
+            <StepField step={4} icon={<Boxes className="size-4" />} label="الكمية" className="sm:col-span-2">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={dec}
+                  disabled={qty <= 1}
+                  className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-background transition-colors hover:border-brand hover:text-brand disabled:opacity-40"
+                >
+                  <Minus className="size-4" />
+                </button>
+                <div className="flex-1 h-11 grid place-items-center rounded-xl border border-border bg-background text-lg font-extrabold tabular-nums">
+                  {qty}
+                </div>
+                <button
+                  type="button"
+                  onClick={inc}
+                  disabled={qty >= availableNow}
+                  className="grid size-11 shrink-0 place-items-center rounded-xl border border-border bg-background transition-colors hover:border-brand hover:text-brand disabled:opacity-40"
+                >
+                  <Plus className="size-4" />
+                </button>
+                <div className="hidden sm:block text-xs text-muted-foreground ms-2">
+                  الحد الأقصى: <span className="font-bold text-foreground">{availableNow}</span>
+                </div>
+              </div>
+            </StepField>
           </div>
+
+          <button
+            onClick={doIssue}
+            disabled={!canDeliver}
+            className="group relative w-full overflow-hidden rounded-2xl bg-brand px-4 py-4 font-extrabold text-brand-foreground shadow-lg shadow-brand/20 transition-all hover:shadow-brand/40 disabled:opacity-50 disabled:shadow-none"
+          >
+            <span className="relative z-10 inline-flex items-center justify-center gap-2">
+              <Send className="w-4 h-4" /> {busy ? "جارٍ التنفيذ..." : "تسليم الأكواد"}
+            </span>
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+          </button>
 
           {/* Result */}
           {result && (
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3"
+            >
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="font-extrabold text-emerald-500">تم تسليم الأكواد · {result.orderId}</div>
+                <div className="inline-flex items-center gap-2 font-extrabold text-emerald-500">
+                  <CheckCircle2 className="size-4" /> تم تسليم الأكواد · {result.orderId}
+                </div>
                 <div className="flex items-center gap-2">
                   <button onClick={copyAll} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-xs font-bold hover:bg-brand/10 hover:text-brand">
                     <Copy className="w-3.5 h-3.5" /> نسخ الكل
@@ -322,61 +372,82 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
-        {/* Quick panel */}
-        <aside className="order-1 lg:order-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 h-fit">
-          <div>
-            <h2 className="text-xl font-extrabold">لوحة سريعة</h2>
-            <p className="text-xs text-muted-foreground mt-1">هنا هتشوف المتاح والملاحظات العامة بسرعة</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-border p-4 text-center">
-              <div className="text-2xl font-extrabold text-brand">{q.data?.lowStockCount ?? 0}</div>
-              <div className="text-xs text-muted-foreground mt-1">منتجات منخفضة</div>
+        {/* Side info panel */}
+        <motion.aside
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+          className="lg:col-span-2 space-y-5 h-fit"
+        >
+          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-amber-500/10 text-amber-500">
+                <StickyNote className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-lg font-extrabold truncate">ملاحظات المنتج</h3>
+                <p className="text-xs text-muted-foreground truncate">تظهر مع كل تسليم</p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-border p-4 text-center">
-              <div className="text-2xl font-extrabold">{q.data?.totalAvailable ?? 0}</div>
-              <div className="text-xs text-muted-foreground mt-1">إجمالي المتاح</div>
-            </div>
-          </div>
-
-          <div>
-            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-              <PackageCheck className="w-3.5 h-3.5" /> حالة المخزون
-            </div>
-            <span className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold border ${stockHealth.tone}`}>
-              {stockHealth.label}
-            </span>
-          </div>
-
-          <div>
-            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-              <StickyNote className="w-3.5 h-3.5" /> ملاحظات ترسل مع المنتج
-            </div>
-            <div className="w-full px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/5 text-sm min-h-[80px] whitespace-pre-wrap">
-              {selected?.notes || "اختر منتجًا لعرض الملاحظات."}
+            <div className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-4 text-sm whitespace-pre-wrap min-h-[100px]">
+              {selected?.notes || <span className="text-muted-foreground">اختر منتجًا لعرض الملاحظات المرتبطة به.</span>}
             </div>
           </div>
 
-          <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/40 border border-border rounded-xl p-3">
-            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
-            <span>لو الكود لم يُسلَّم فعلًا، استخدم زر «لم يتم الاستلام» لإرجاع آخر صرف للمخزون.</span>
+          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 space-y-3">
+            <h3 className="text-lg font-extrabold">تعليمات سريعة</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="mt-1 size-1.5 rounded-full bg-brand shrink-0" />
+                اختر الموظف والعميل ثم المنتج والكمية.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 size-1.5 rounded-full bg-brand shrink-0" />
+                النظام يسحب أول أكواد متاحة تلقائيًا.
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 size-1.5 rounded-full bg-amber-500 shrink-0" />
+                لو الكود لم يُسلَّم، اضغط «لم يتم الاستلام» لإرجاعه.
+              </li>
+            </ul>
           </div>
-        </aside>
+        </motion.aside>
       </div>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function KpiTile({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number | string; accent?: "brand" | "amber" | "emerald" }) {
+  const tone =
+    accent === "brand" ? "text-brand" :
+    accent === "amber" ? "text-amber-500" :
+    accent === "emerald" ? "text-emerald-500" : "text-foreground";
   return (
-    <label className="block">
-      <div className="text-xs font-bold text-muted-foreground mb-1.5">{label}</div>
+    <div className="rounded-2xl border border-border bg-background/60 backdrop-blur p-3 sm:p-4">
+      <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
+        <span className={tone}>{icon}</span>
+        <span className="truncate">{label}</span>
+      </div>
+      <div className={`mt-1 text-xl sm:text-2xl font-extrabold tabular-nums ${tone}`}>{value}</div>
+    </div>
+  );
+}
+
+function StepField({ step, icon, label, children, className = "" }: { step: number; icon: React.ReactNode; label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`block ${className}`}>
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className="inline-flex size-5 items-center justify-center rounded-md bg-brand/10 text-[10px] font-extrabold text-brand">{step}</span>
+        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
+          {icon} {label}
+        </span>
+      </div>
       {children}
     </label>
   );
 }
+
