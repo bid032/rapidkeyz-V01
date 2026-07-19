@@ -8,6 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { PageHero } from "@/components/PageHero";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
 const STAFF_KEY = "rk_stock_staff";
