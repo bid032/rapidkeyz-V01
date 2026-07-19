@@ -158,6 +158,15 @@ export type IssueResult = {
 function pad2(n: number) {
   return n.toString().padStart(2, "0");
 }
+function colToLetter(col: number) {
+  let s = "";
+  while (col > 0) {
+    const m = (col - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    col = Math.floor((col - 1) / 26);
+  }
+  return s;
+}
 function createOrderId() {
   const d = new Date();
   return `ORD-${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
