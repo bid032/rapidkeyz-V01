@@ -217,7 +217,7 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Main dispenser panel */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5">
+        <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5">
           <div>
             <h2 className="text-xl font-extrabold">الاستوك</h2>
             <p className="text-xs text-muted-foreground mt-1">
@@ -226,18 +226,18 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
           </div>
 
           {/* Info strip */}
-          <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid sm:grid-cols-3 gap-3 text-sm">
+          <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid grid-cols-3 gap-2 sm:gap-3 text-sm text-center sm:text-start">
             <div>
-              <div className="text-muted-foreground text-xs">المتاح الآن</div>
-              <div className="font-extrabold text-brand text-lg">{availableNow}</div>
+              <div className="text-muted-foreground text-[11px] sm:text-xs">المتاح الآن</div>
+              <div className="font-extrabold text-brand text-base sm:text-lg">{availableNow}</div>
             </div>
             <div>
-              <div className="text-muted-foreground text-xs">إجمالي الستوك</div>
-              <div className="font-extrabold text-lg">{selected?.totalStock ?? 0}</div>
+              <div className="text-muted-foreground text-[11px] sm:text-xs">إجمالي الستوك</div>
+              <div className="font-extrabold text-base sm:text-lg">{selected?.totalStock ?? 0}</div>
             </div>
             <div>
-              <div className="text-muted-foreground text-xs">نوع التسليم</div>
-              <div className="font-extrabold text-lg">{selected?.unitLabel || "-"}</div>
+              <div className="text-muted-foreground text-[11px] sm:text-xs">نوع التسليم</div>
+              <div className="font-extrabold text-base sm:text-lg">{selected?.unitLabel || "-"}</div>
             </div>
           </div>
 
@@ -335,7 +335,7 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
         </div>
 
         {/* Quick panel */}
-        <aside className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 h-fit">
+        <aside className="order-1 lg:order-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 h-fit">
           <div>
             <h2 className="text-xl font-extrabold">لوحة سريعة</h2>
             <p className="text-xs text-muted-foreground mt-1">هنا هتشوف المتاح والملاحظات العامة بسرعة</p>
