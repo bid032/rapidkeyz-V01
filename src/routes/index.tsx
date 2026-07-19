@@ -274,7 +274,7 @@ function HomePage() {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto -mt-1 sm:mt-0 pt-0">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <Link
                   to="/shop"
                   data-gsap="magnetic"
