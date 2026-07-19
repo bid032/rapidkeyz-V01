@@ -40,7 +40,10 @@ function CheckoutPage() {
   
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
-  const [successOrder, setSuccessOrder] = useState<{ number: string; delivered: boolean } | null>(null);
+  const [successOrder, setSuccessOrder] = useState<{
+    number: string;
+    items: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[];
+  } | null>(null);
   const [copied, setCopied] = useState(false);
   const copyNumber = async () => {
     try {
