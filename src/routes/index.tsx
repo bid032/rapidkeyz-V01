@@ -180,7 +180,7 @@ function HomePage() {
       <Header />
 
       {/* Hero — Balanced Split */}
-      <header className="relative overflow-hidden pt-4 pb-4 sm:pt-10 sm:pb-8">
+      <header className="relative overflow-hidden pt-6 pb-8 sm:pt-12 sm:pb-14">
         <HeroCanvas />
         <FloatingLogos />
 
@@ -191,9 +191,9 @@ function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Content Side */}
-            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-3 sm:space-y-4">
+            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-5 sm:space-y-6">
 
               {/* Live pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
@@ -208,7 +208,7 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-1.5 sm:space-y-2">
+              <div className="space-y-2.5 sm:space-y-3">
                 <h1
                   data-gsap="split-words"
                   className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance"
@@ -222,14 +222,14 @@ function HomePage() {
                 </h2>
 
                 <p
-                  className="text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 pt-0.5"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 pt-1"
                 >
                   {hero.subtitle}
                 </p>
               </div>
 
               {/* Mobile-only: Trending + New mini cards between text and CTAs */}
-              <div className="lg:hidden grid grid-cols-2 gap-2.5 w-full">
+              <div className="lg:hidden grid grid-cols-2 gap-3 w-full">
                 {trending[0] && (
                   <Link
                     to="/product/$slug"
@@ -307,7 +307,7 @@ function HomePage() {
               </div>
 
               {/* Stats Row — divider on top */}
-              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-3 sm:pt-4 border-t border-border/40">
+              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-5 sm:pt-6 border-t border-border/40">
                 {[
                   { n: "24/7", l: lang === "ar" ? "دعم فوري" : "Support" },
                   { n: "+15k", l: lang === "ar" ? "عميل سعيد" : "Clients" },
