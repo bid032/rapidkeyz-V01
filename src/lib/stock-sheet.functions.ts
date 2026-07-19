@@ -79,7 +79,7 @@ export type StockAppData = {
 
 type CacheEntry = { at: number; data: StockAppData };
 const APP_DATA_CACHE = new Map<string, CacheEntry>();
-const APP_DATA_TTL_MS = 20_000;
+const APP_DATA_TTL_MS = 8_000;
 
 export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
   const { requireStockStaff } = await import("@/lib/stock-auth.server");
