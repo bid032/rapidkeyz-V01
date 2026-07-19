@@ -418,113 +418,119 @@ export type DuplicatesResult = {
 let DUPES_CACHE: { at: number; data: DuplicatesResult } | null = null;
 const DUPES_TTL_MS = 5 * 60_000; // 5 minutes — this is a big scan
 
-export const getStockDuplicates = createServerFn({ method: "GET" }).handler(
-  async (): Promise<DuplicatesResult> => {
-    await (await import("@/lib/stock-auth.server")).requireStockStaff();
+async function scanDuplicates(): Promise<DuplicatesResult> {
+  if (DUPES_CACHE && Date.now() - DUPES_CACHE.at < DUPES_TTL_MS) {
+    return DUPES_CACHE.data;
+  }
 
-    if (DUPES_CACHE && Date.now() - DUPES_CACHE.at < DUPES_TTL_MS) {
-      return DUPES_CACHE.data;
+  const ids = await getAllSpreadsheetIds();
+  if (!ids.length) throw new Error("لم يتم ربط شيت الاستوك بعد");
+
+  const map = new Map<string, DuplicateLocation[]>();
+  let scannedTabs = 0;
+  let totalCodes = 0;
+
+  for (const spreadsheetId of ids) {
+    let titles: string[] = [];
+    let bookTitle = spreadsheetId.slice(0, 8);
+    try {
+      [titles, bookTitle] = await Promise.all([
+        listSheetTitles(spreadsheetId),
+        getSpreadsheetTitle(spreadsheetId),
+      ]);
+    } catch {
+      continue;
     }
 
-    const ids = await getAllSpreadsheetIds();
-    if (!ids.length) throw new Error("لم يتم ربط شيت الاستوك بعد");
+    for (const tab of titles) {
+      const t = tab.trim().toLowerCase();
+      if (["products", "orders", "staff", "settings", "config", "log", "logs"].includes(t)) continue;
 
-    // code -> list of locations
-    const map = new Map<string, DuplicateLocation[]>();
-    let scannedTabs = 0;
-    let totalCodes = 0;
-
-    for (const spreadsheetId of ids) {
-      let titles: string[] = [];
-      let bookTitle = spreadsheetId.slice(0, 8);
+      let rows: string[][] = [];
       try {
-        [titles, bookTitle] = await Promise.all([
-          listSheetTitles(spreadsheetId),
-          getSpreadsheetTitle(spreadsheetId),
-        ]);
+        rows = await sheetsGet(spreadsheetId, `${tab}!A1:Z20000`);
       } catch {
         continue;
       }
+      if (rows.length < 2) continue;
+      scannedTabs += 1;
 
-      for (const tab of titles) {
-        // Skip clearly non-inventory tabs by name to reduce noise / API usage
-        const t = tab.trim().toLowerCase();
-        if (["products", "orders", "staff", "settings", "config", "log", "logs"].includes(t)) continue;
+      const header = (rows[0] ?? []).map((h) => (h ?? "").trim().toLowerCase());
+      const KEY_HEADERS = [
+        "code", "key", "license", "licence", "serial", "product",
+        "email", "mail", "username", "user", "login", "account",
+        "كود", "مفتاح", "ايميل", "بريد", "يوزر",
+      ];
+      let keyCols: number[] = [];
+      header.forEach((h, idx) => {
+        if (!h) return;
+        if (KEY_HEADERS.some((k) => h === k || h.includes(k))) keyCols.push(idx);
+      });
+      if (keyCols.length === 0) keyCols = [2];
 
-        // Read the full sheet range so we can auto-detect the code column(s)
-        let rows: string[][] = [];
-        try {
-          rows = await sheetsGet(spreadsheetId, `${tab}!A1:Z20000`);
-        } catch {
-          continue;
-        }
-        if (rows.length < 2) continue;
-        scannedTabs += 1;
-
-        const header = (rows[0] ?? []).map((h) => (h ?? "").trim().toLowerCase());
-        // Columns that typically hold a unique identifier for a stock item.
-        const KEY_HEADERS = [
-          "code", "key", "license", "licence", "serial", "product",
-          "email", "mail", "username", "user", "login", "account",
-          "كود", "مفتاح", "ايميل", "بريد", "يوزر",
-        ];
-        let keyCols: number[] = [];
-        header.forEach((h, idx) => {
-          if (!h) return;
-          if (KEY_HEADERS.some((k) => h === k || h.includes(k))) keyCols.push(idx);
-        });
-        // Fallback: main stock layout uses column C (index 2) for the code with no matching header
-        if (keyCols.length === 0) keyCols = [2];
-
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i] ?? [];
-          for (const c of keyCols) {
-            const raw = (row[c] ?? "").trim();
-            if (!raw) continue;
-            const key = `${c}::${raw.toUpperCase()}`;
-            totalCodes += 1;
-            const arr = map.get(key) ?? [];
-            arr.push({
-              spreadsheetId,
-              spreadsheetTitle: bookTitle,
-              tab,
-              row: i + 1,
-            });
-            map.set(key, arr);
-          }
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i] ?? [];
+        for (const c of keyCols) {
+          const raw = (row[c] ?? "").trim();
+          if (!raw) continue;
+          const key = `${c}::${raw.toUpperCase()}`;
+          totalCodes += 1;
+          const arr = map.get(key) ?? [];
+          arr.push({ spreadsheetId, spreadsheetTitle: bookTitle, tab, row: i + 1 });
+          map.set(key, arr);
         }
       }
     }
+  }
 
-    const groups: DuplicateGroup[] = [];
-    for (const [key, locations] of map) {
-      if (locations.length < 2) continue;
-      const code = key.split("::").slice(1).join("::");
-      const tabs = new Set(locations.map((l) => `${l.spreadsheetId}::${l.tab}`));
-      const files = new Set(locations.map((l) => l.spreadsheetId));
-      groups.push({
-        code,
-        count: locations.length,
+  const groups: DuplicateGroup[] = [];
+  for (const [key, locations] of map) {
+    if (locations.length < 2) continue;
+    const code = key.split("::").slice(1).join("::");
+    const tabs = new Set(locations.map((l) => `${l.spreadsheetId}::${l.tab}`));
+    const files = new Set(locations.map((l) => l.spreadsheetId));
+    groups.push({
+      code,
+      count: locations.length,
+      locations,
+      crossTab: tabs.size > 1,
+      crossFile: files.size > 1,
+    });
+  }
+  groups.sort((a, b) => b.count - a.count);
 
-        locations,
-        crossTab: tabs.size > 1,
-        crossFile: files.size > 1,
-      });
-    }
-    groups.sort((a, b) => b.count - a.count);
+  const result: DuplicatesResult = {
+    scannedAt: new Date().toISOString(),
+    scannedFiles: ids.length,
+    scannedTabs,
+    totalCodes,
+    duplicateCount: groups.length,
+    groups: groups.slice(0, 200),
+  };
+  DUPES_CACHE = { at: Date.now(), data: result };
+  return result;
+}
 
-    const result: DuplicatesResult = {
-      scannedAt: new Date().toISOString(),
-      scannedFiles: ids.length,
-      scannedTabs,
-      totalCodes,
-      duplicateCount: groups.length,
-      groups: groups.slice(0, 200), // safety cap
-    };
-    DUPES_CACHE = { at: Date.now(), data: result };
-    return result;
+export const getStockDuplicates = createServerFn({ method: "GET" }).handler(
+  async (): Promise<DuplicatesResult> => {
+    await (await import("@/lib/stock-auth.server")).requireStockStaff();
+    return scanDuplicates();
   },
 );
+
+export const getInventoryDuplicatesAdmin = createServerFn({ method: "GET" })
+  .middleware([(await import("@/integrations/supabase/auth-middleware")).requireSupabaseAuth])
+  .handler(async ({ context }): Promise<DuplicatesResult> => {
+    const { data, error } = await (context as any).supabase
+      .rpc("has_role", { _user_id: (context as any).userId, _role: "admin" });
+    if (error || !data) {
+      const err: any = new Error("Forbidden");
+      err.statusCode = 403;
+      throw err;
+    }
+    return scanDuplicates();
+  });
+
 
 // Back-compat
 
