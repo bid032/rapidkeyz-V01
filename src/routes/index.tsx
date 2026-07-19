@@ -230,7 +230,7 @@ function HomePage() {
               </div>
 
               {/* Mobile-only: Trending + New mini cards between text and CTAs */}
-              <div className="lg:hidden grid grid-cols-2 gap-2.5 w-full">
+              <div className="lg:hidden grid grid-cols-2 gap-2.5 w-full -mt-2 sm:-mt-3">
                 {trending[0] && (
                   <Link
                     to="/product/$slug"
@@ -270,14 +270,14 @@ function HomePage() {
                         <div className="w-9 h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-right">
-                        <div className="text-[9px] font-mono uppercase tracking-widest text-accent">
+                        <div className="text-[9px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
                         {priceOf(trending[1]) && (
-                          <div className="text-accent text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
                         )}
                       </div>
                     </div>
@@ -344,14 +344,14 @@ function HomePage() {
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-right">
-                        <div className="text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-accent">
+                        <div className="text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
                         <div className="text-foreground text-[11px] sm:text-xs font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
                         {priceOf(trending[1]) && (
-                          <div className="text-accent text-[11px] sm:text-xs font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                          <div className="text-brand text-[11px] sm:text-xs font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
                         )}
                       </div>
                     </div>
