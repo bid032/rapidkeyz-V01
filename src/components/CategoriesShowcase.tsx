@@ -133,11 +133,12 @@ export function CategoriesShowcase({
 
                 {/* title — always visible */}
                 <div className="relative min-w-0 flex-1">
-                  <h3 className="font-display text-[13px] sm:text-sm md:text-base font-extrabold leading-tight text-foreground group-hover:text-brand transition-colors truncate">
+                  <h3 className="font-display text-[12px] sm:text-sm md:text-base font-extrabold leading-snug text-foreground group-hover:text-brand transition-colors break-words">
                     {lang === "ar" ? c.name_ar : c.name_en}
                   </h3>
                   <div className="mt-1 h-[2px] w-5 rounded-full bg-gradient-to-r from-brand via-accent to-transparent group-hover:w-full transition-all duration-500" />
                 </div>
+
 
                 {/* arrow */}
                 <span className="relative shrink-0 grid place-items-center size-7 sm:size-8 rounded-full border border-border bg-background/70 backdrop-blur text-muted-foreground transition-all duration-500 group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand group-hover:rotate-45">
