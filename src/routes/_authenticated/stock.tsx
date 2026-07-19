@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/stock")({
 });
 
 function StockPage() {
-  const { notify, confirm } = useApp();
+  const { notify } = useApp();
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
 }
 
 function StockDispenser({ onLock }: { onLock: () => void }) {
-  const { notify } = useApp();
+  const { notify, confirm } = useApp();
   const fetcher = useServerFn(getStockAppData);
   const issueFn = useServerFn(issueStock);
   const revertFn = useServerFn(revertIssue);
