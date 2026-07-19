@@ -165,6 +165,7 @@ function CheckoutPage() {
       // Auto-claim inventory for instant items
       let allInstantDelivered = true;
       let hasInstant = false;
+      const itemStatuses: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[] = [];
       for (const it of insertedItems ?? []) {
         if (it.delivery_type === "instant" && it.plan_id) {
           hasInstant = true;
@@ -172,13 +173,18 @@ function CheckoutPage() {
             _order_item_id: it.id,
             _plan_id: it.plan_id,
           });
-          if (!claimedId) allInstantDelivered = false;
-          else {
+          if (!claimedId) {
+            allInstantDelivered = false;
+            itemStatuses.push({ name: it.product_name, mode: "instant_pending" });
+          } else {
+            itemStatuses.push({ name: it.product_name, mode: "instant_delivered" });
             // Best-effort: mark the row as 'sold' in the source Google Sheet.
             markInventorySoldOnSheet({ data: { inventoryId: claimedId as string } }).catch((e) =>
               console.error("sheet sync failed", e),
             );
           }
+        } else {
+          itemStatuses.push({ name: it.product_name, mode: "manual" });
         }
       }
       // Auto-flip status when everything was auto-delivered (admins may still adjust).
@@ -203,7 +209,7 @@ function CheckoutPage() {
       if (gateway === "simulate") {
         setSuccessOrder({
           number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
-          delivered: hasInstant && allInstantDelivered,
+          items: itemStatuses,
         });
         return;
       }
