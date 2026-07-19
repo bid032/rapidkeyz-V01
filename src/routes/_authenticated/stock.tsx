@@ -8,6 +8,7 @@ import { useApp } from "@/contexts/AppContext";
 import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { PageHero } from "@/components/PageHero";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
 const STAFF_KEY = "rk_stock_staff";
@@ -182,32 +183,28 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
-            <Boxes className="text-brand" /> الاستوك
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {q.data?.fetchedAt ? `آخر تحديث: ${new Date(q.data.fetchedAt).toLocaleTimeString("ar-EG")}` : "..."}
-            {" · "}تحديث تلقائي كل 20 ثانية
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => q.refetch()}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-card border border-border text-sm font-bold hover:border-brand"
-          >
-            <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} /> تحديث
-          </button>
-          <button
-            onClick={onLock}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-muted text-sm font-bold hover:bg-destructive/10 hover:text-destructive"
-          >
-            <Lock className="w-4 h-4" /> قفل
-          </button>
-        </div>
+    <div className="space-y-6">
+      {/* Hero */}
+      <PageHero
+        eyebrow="Stock · الاستوك"
+        title="الاستوك"
+        subtitle={q.data?.fetchedAt ? `آخر تحديث: ${new Date(q.data.fetchedAt).toLocaleTimeString("ar-EG")} · تحديث تلقائي كل 20 ثانية` : "تحديث تلقائي كل 20 ثانية"}
+      />
+
+      {/* Control bar */}
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <button
+          onClick={() => q.refetch()}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-card border border-border text-sm font-bold hover:border-brand transition-colors"
+        >
+          <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} /> تحديث
+        </button>
+        <button
+          onClick={onLock}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-muted text-sm font-bold hover:bg-destructive/10 hover:text-destructive transition-colors"
+        >
+          <Lock className="w-4 h-4" /> قفل
+        </button>
       </div>
 
       {q.error && (
@@ -218,13 +215,7 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Main dispenser panel */}
-        <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5">
-          <div>
-            <h2 className="text-xl font-extrabold">الاستوك</h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              الموظف يختار الاسم واسم العميل والمنتج والكمية، والنظام بيسحب أول أكواد متاحة تلقائيًا.
-            </p>
-          </div>
+        <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5 shadow-sm">
 
           {/* Info strip */}
           <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid grid-cols-3 gap-2 sm:gap-3 text-sm text-center sm:text-start">
