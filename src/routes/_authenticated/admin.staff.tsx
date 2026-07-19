@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Save, RefreshCw, Eye, EyeOff, Copy } from "lucide-react";
 import { listStockStaff, saveStockStaff } from "@/lib/stock-staff.functions";
 import { useApp } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { StaffRecord } from "@/lib/stock-auth.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/staff")({
