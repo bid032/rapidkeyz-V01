@@ -307,7 +307,7 @@ function HomePage() {
               </div>
 
               {/* Stats Row — divider on top */}
-              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-3 sm:pt-4 border-t border-border/40">
+              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-5 sm:pt-6 border-t border-border/40">
                 {[
                   { n: "24/7", l: lang === "ar" ? "دعم فوري" : "Support" },
                   { n: "+15k", l: lang === "ar" ? "عميل سعيد" : "Clients" },
