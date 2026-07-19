@@ -78,7 +78,8 @@ export type StockAppData = {
 };
 
 export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
-  const { requireStockStaff } = await import("@/lib/stock-auth.server"); const session = await (await import("@/lib/stock-auth.server")).requireStockStaff();
+  const { requireStockStaff } = await import("@/lib/stock-auth.server");
+  const session = await requireStockStaff();
   const spreadsheetId = await getSpreadsheetId();
 
   const [productsRaw, stockRaw] = await Promise.all([
@@ -152,7 +153,8 @@ function createOrderId() {
 export const issueStock = createServerFn({ method: "POST" })
   .inputValidator((d: { customerName: string; productName: string; qty: number; customerWhatsapp?: string }) => d)
   .handler(async ({ data }): Promise<IssueResult> => {
-    const { requireStockStaff } = await import("@/lib/stock-auth.server"); const session = await (await import("@/lib/stock-auth.server")).requireStockStaff();
+    const { requireStockStaff } = await import("@/lib/stock-auth.server");
+  const session = await requireStockStaff();
     const staffName = session.staffName;
     const customerName = (data.customerName ?? "").trim();
     const productName = (data.productName ?? "").trim();
