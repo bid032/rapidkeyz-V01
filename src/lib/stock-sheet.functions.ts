@@ -225,14 +225,45 @@ export const issueStock = createServerFn({ method: "POST" })
       range: `${TABS.STOCK}!F${p.sheetRow}:K${p.sheetRow}`,
       values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName]] as (string | number)[][],
     }));
+    // Write customer WhatsApp into any column named "Customer_Num" in the Stock sheet
+    const stockHeader = stockRaw[0] ?? [];
+    const stockCustNumIdx = stockHeader.findIndex((h) => norm(h) === "CUSTOMER_NUM");
+    if (stockCustNumIdx >= 0 && customerWhatsapp) {
+      const colLetter = colToLetter(stockCustNumIdx + 1);
+      for (const p of picks) {
+        updates.push({
+          range: `${TABS.STOCK}!${colLetter}${p.sheetRow}`,
+          values: [[customerWhatsapp]],
+        });
+      }
+    }
     await sheetsBatchUpdate(spreadsheetId, updates);
     APP_DATA_CACHE.clear();
 
     const deliveredText = picks.map((p) => p.code).filter(Boolean).join("\n\n");
-    // Orders columns: A orderId, B time, C staff, D customer, E product, F qty, G delivered, H notes, I status, J customer whatsapp
+    // Orders: append base row, then patch Customer_Num column if it exists
     await sheetsAppend(spreadsheetId, `${TABS.ORDERS}!A1`, [[
       orderId, nowStr, staffName, customerName, productName, qty, deliveredText, productNotes, "DONE", customerWhatsapp,
     ]]);
+    if (customerWhatsapp) {
+      try {
+        const ordersHeader = (await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:Z1`))[0] ?? [];
+        const ordersCustNumIdx = ordersHeader.findIndex((h) => norm(h) === "CUSTOMER_NUM");
+        if (ordersCustNumIdx >= 0) {
+          const ordersAll = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:A20000`);
+          let targetRow = -1;
+          for (let i = ordersAll.length - 1; i >= 1; i--) {
+            if ((ordersAll[i][0] ?? "").trim() === orderId) { targetRow = i + 1; break; }
+          }
+          if (targetRow > 0) {
+            await sheetsBatchUpdate(spreadsheetId, [{
+              range: `${TABS.ORDERS}!${colToLetter(ordersCustNumIdx + 1)}${targetRow}`,
+              values: [[customerWhatsapp]],
+            }]);
+          }
+        }
+      } catch { /* non-fatal */ }
+    }
 
     let availableAfter = 0;
     for (let i = 1; i < stockRaw.length; i++) {
