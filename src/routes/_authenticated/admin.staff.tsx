@@ -125,31 +125,19 @@ function AdminStaff() {
             <Save className="w-4 h-4" /> {saveSheet.isPending ? "..." : "حفظ الربط"}
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-muted-foreground">Spreadsheet ID أو الرابط</label>
-            <input
-              placeholder="https://docs.google.com/..."
-              value={stockSheet.spreadsheet_id ?? ""}
-              onChange={(e) => {
-                const raw = e.target.value.trim();
-                const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                setStockSheet({ ...stockSheet, spreadsheet_id: m ? m[1] : raw });
-              }}
-              className="px-3 py-2 bg-background border border-border rounded-lg text-sm"
-              dir="ltr"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-muted-foreground">اسم التبويب (اختياري)</label>
-            <input
-              placeholder="Sheet1"
-              value={stockSheet.sheet_title ?? ""}
-              onChange={(e) => setStockSheet({ ...stockSheet, sheet_title: e.target.value })}
-              className="px-3 py-2 bg-background border border-border rounded-lg text-sm"
-              dir="ltr"
-            />
-          </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[11px] font-bold text-muted-foreground">Spreadsheet ID أو الرابط</label>
+          <input
+            placeholder="https://docs.google.com/..."
+            value={stockSheet.spreadsheet_id ?? ""}
+            onChange={(e) => {
+              const raw = e.target.value.trim();
+              const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+              setStockSheet({ ...stockSheet, spreadsheet_id: m ? m[1] : raw });
+            }}
+            className="px-3 py-2 bg-background border border-border rounded-lg text-sm"
+            dir="ltr"
+          />
         </div>
       </div>
 
