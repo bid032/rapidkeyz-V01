@@ -265,7 +265,7 @@ function CheckoutPage() {
                     type="text"
                     placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(filterName(e.target.value))}
                     className="px-4 py-3 bg-background border border-border rounded-lg"
                   />
                   <input
