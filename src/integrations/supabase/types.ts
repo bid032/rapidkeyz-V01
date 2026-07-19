@@ -754,6 +754,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      sync_plan_stock_from_inventory: {
+        Args: { _plan_id: string }
+        Returns: undefined
+      }
       verify_stock_password: { Args: { _password: string }; Returns: boolean }
     }
     Enums: {
