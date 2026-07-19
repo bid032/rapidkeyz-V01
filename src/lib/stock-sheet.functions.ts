@@ -288,6 +288,7 @@ export const revertIssue = createServerFn({ method: "POST" })
       values: [["AVAILABLE", r.addedOnRaw, "", "", "", ""]] as (string | number)[][],
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
+    APP_DATA_CACHE.clear();
 
     const ordersRaw = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:J20000`);
     for (let i = 1; i < ordersRaw.length; i++) {
