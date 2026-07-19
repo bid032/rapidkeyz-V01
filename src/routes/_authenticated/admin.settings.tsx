@@ -60,7 +60,7 @@ function AdminSettings() {
 
   const save = useMutation({
     mutationFn: async () => {
-      await supabase.from("site_settings").upsert([
+      const { error } = await supabase.from("site_settings").upsert([
         { key: "brand", value: brand },
         { key: "contact", value: contact },
         { key: "payments", value: payments },
@@ -71,8 +71,13 @@ function AdminSettings() {
         { key: "theme_mode", value: { mode: themeMode } },
         { key: "stock_sheet", value: stockSheet },
       ]);
+      if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["site-settings"] });
+      notify(lang === "ar" ? "تم حفظ الإعدادات" : "Settings saved", "success");
+    },
+    onError: (e: any) => notify(e?.message ?? (lang === "ar" ? "فشل الحفظ" : "Save failed"), "error"),
   });
 
   return (
