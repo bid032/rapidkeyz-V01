@@ -433,7 +433,7 @@ function AdminOverview() {
                   pending: "bg-warning/15 text-warning",
                 };
                 return (
-                  <>
+                  <React.Fragment key={r.id}>
                     <tr
                       key={r.id}
                       className="border-b border-border/60 hover:bg-muted/30 cursor-pointer transition-colors"
