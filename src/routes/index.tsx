@@ -199,23 +199,28 @@ function HomePage() {
                 </span>
               </div>
 
-              {/* Headline + subtitle */}
-              <div className="space-y-3 sm:space-y-4">
+              {/* Headline + sub-headline + subtitle */}
+              <div className="space-y-2 sm:space-y-3">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2.25rem,6vw,4.5rem)] leading-[1.08] tracking-tight text-foreground text-balance"
+                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance"
                 >
                   {hero.title1}
-                  <br />
-                  <span className="brand-text">{hero.title2}</span>
                 </h1>
+                <h2
+                  data-gsap="reveal"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance"
+                >
+                  <span className="brand-text">{hero.title2}</span>
+                </h2>
                 <p
                   data-gsap="reveal"
-                  className="text-xs sm:text-sm text-muted-foreground/80 max-w-md leading-relaxed mx-auto lg:mx-0"
+                  className="text-xs sm:text-sm text-muted-foreground/80 max-w-md leading-relaxed mx-auto lg:mx-0 pt-1"
                 >
                   {hero.subtitle}
                 </p>
               </div>
+
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
