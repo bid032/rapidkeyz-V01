@@ -310,7 +310,8 @@ function AdminOrders() {
                 <select value={o.status}
                   onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
                   className="px-3 py-1.5 bg-background border border-border rounded text-sm">
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {MANUAL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {o.status === "refunded" && <option value="refunded">refunded</option>}
                 </select>
                 <span className="font-extrabold text-brand">{o.total} EGP</span>
                 <button onClick={() => setExpanded(expanded === o.id ? null : o.id)}
