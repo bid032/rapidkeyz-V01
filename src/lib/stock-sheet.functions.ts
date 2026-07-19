@@ -32,8 +32,19 @@ async function getAllSpreadsheetIds(): Promise<string[]> {
   for (const id of cfg.extra_spreadsheet_ids ?? []) {
     if (id && !ids.includes(id)) ids.push(id);
   }
+  // Auto-include every product-linked spreadsheet from the DB so duplicates
+  // across the main stock sheet and per-product inventory sheets are detected.
+  const { data: prods } = await supabaseAdmin
+    .from("products")
+    .select("google_spreadsheet_id")
+    .not("google_spreadsheet_id", "is", null);
+  for (const p of prods ?? []) {
+    const id = (p as any).google_spreadsheet_id as string | null;
+    if (id && !ids.includes(id)) ids.push(id);
+  }
   return ids;
 }
+
 
 
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
