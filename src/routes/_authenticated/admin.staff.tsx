@@ -18,6 +18,7 @@ function emptyRow(): StaffRecord {
 
 function AdminStaff() {
   const { notify, confirm } = useApp();
+  const qc = useQueryClient();
   const listFn = useServerFn(listStockStaff);
   const saveFn = useServerFn(saveStockStaff);
 
@@ -25,6 +26,30 @@ function AdminStaff() {
   const [rows, setRows] = useState<StaffRecord[]>([]);
   const [reveal, setReveal] = useState<Record<number, boolean>>({});
   const [saving, setSaving] = useState(false);
+
+  // Stock sheet setting
+  const sheetQ = useQuery({
+    queryKey: ["stock-sheet-setting"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+      return (data?.value as any) ?? { spreadsheet_id: "", sheet_title: "" };
+    },
+  });
+  const [stockSheet, setStockSheet] = useState<{ spreadsheet_id: string; sheet_title: string }>({ spreadsheet_id: "", sheet_title: "" });
+  useEffect(() => {
+    if (sheetQ.data) setStockSheet({ spreadsheet_id: sheetQ.data.spreadsheet_id ?? "", sheet_title: sheetQ.data.sheet_title ?? "" });
+  }, [sheetQ.data]);
+  const saveSheet = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("site_settings").upsert([{ key: "stock_sheet", value: stockSheet }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["stock-sheet-setting"] });
+      notify("تم حفظ ربط الشيت", "success");
+    },
+    onError: (e: any) => notify(e?.message ?? "فشل الحفظ", "error"),
+  });
 
   useEffect(() => {
     if (q.data) setRows(q.data.length ? q.data : [emptyRow()]);
@@ -42,7 +67,6 @@ function AdminStaff() {
   };
 
   const save = async () => {
-    // basic client validation
     const cleaned = rows.filter((r) => r.name.trim());
     for (const r of cleaned) {
       if (r.username && !r.password) {
@@ -67,10 +91,10 @@ function AdminStaff() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black">موظفو الاستوك</h2>
+          <h2 className="text-xl sm:text-2xl font-black">الاستوك</h2>
           <p className="text-sm text-muted-foreground mt-1">
             الحسابات هنا تتحكم بالدخول إلى صفحة <code className="px-1 py-0.5 rounded bg-muted text-xs">/stock</code>. أي تغيير هنا يُكتب مباشرة على شيت Staff، ويمكنك أيضًا تعديل الشيت مباشرة.
           </p>
