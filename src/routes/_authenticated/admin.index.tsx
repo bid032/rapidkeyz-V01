@@ -502,6 +502,7 @@ function AdminOverview() {
                               {r.orders?.payment_sender_phone && <div>رقم المُحوَّل منه: {r.orders.payment_sender_phone}</div>}
                               {r.orders?.payment_reference && <div>مرجع الدفع: {r.orders.payment_reference}</div>}
                               {r.orders?.total != null && <div>إجمالي الطلب كامل: {Math.round(Number(r.orders.total))} {t.common.currency}</div>}
+                            </div>
                             <div>
                               <div className="font-bold text-muted-foreground mb-1">التسليم</div>
                               {delivered ? (
