@@ -22,11 +22,18 @@ export const Route = createFileRoute("/stock")({
 
 function StockPage() {
   const sessionFn = useServerFn(getStockSession);
+  const queryClient = useQueryClient();
   const q = useQuery({
     queryKey: ["stock-session"],
     queryFn: () => sessionFn(),
-    staleTime: 30_000,
+    staleTime: 0,
   });
+
+  const handleLoggedIn = (staffName: string) => {
+    queryClient.setQueryData(["stock-session"], { loggedIn: true as const, staffName });
+    queryClient.invalidateQueries({ queryKey: ["stock-session"] });
+    queryClient.invalidateQueries({ queryKey: ["stock-app-data"] });
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -37,7 +44,7 @@ function StockPage() {
         ) : q.data?.loggedIn ? (
           <StockDispenser staffName={q.data.staffName} onLogout={() => q.refetch()} />
         ) : (
-          <LoginGate onLoggedIn={() => q.refetch()} />
+          <LoginGate onLoggedIn={handleLoggedIn} />
         )}
       </main>
       <Footer />
@@ -45,7 +52,7 @@ function StockPage() {
   );
 }
 
-function LoginGate({ onLoggedIn }: { onLoggedIn: () => void }) {
+function LoginGate({ onLoggedIn }: { onLoggedIn: (staffName: string) => void }) {
   const { notify } = useApp();
   const loginFn = useServerFn(stockLogin);
   const [username, setUsername] = useState("");
@@ -60,7 +67,7 @@ function LoginGate({ onLoggedIn }: { onLoggedIn: () => void }) {
       const res = await loginFn({ data: { username: username.trim(), password } });
       if (res.ok) {
         notify(`أهلاً ${res.staffName}`, "success");
-        onLoggedIn();
+        onLoggedIn(res.staffName);
       } else {
         notify(res.error || "بيانات الدخول غير صحيحة", "error");
       }
