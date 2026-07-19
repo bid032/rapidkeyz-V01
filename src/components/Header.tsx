@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import { ShoppingCart, Sun, Moon, Menu, X, Boxes } from "lucide-react";
+import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
@@ -105,8 +105,8 @@ export function Header() {
               </Link>
             )}
             {hasStock && (
-              <Link to="/stock" className="hover:text-brand transition-colors inline-flex items-center gap-1 font-bold">
-                <Boxes className="w-4 h-4" /> الاستوك
+              <Link to="/stock" className="hover:text-brand transition-colors font-bold">
+                {lang === "ar" ? "الاستوك" : "Stock"}
               </Link>
             )}
             {isAdmin && (
@@ -250,8 +250,8 @@ export function Header() {
                     </Link>
                   )}
                   {hasStock && (
-                    <Link to="/stock" onClick={closeMobile} className="px-4 py-3 text-sm font-extrabold text-brand hover:bg-muted border-b border-border/40 transition-colors inline-flex items-center gap-2">
-                      <Boxes className="w-4 h-4" /> الاستوك
+                    <Link to="/stock" onClick={closeMobile} className="px-4 py-3 text-sm font-extrabold text-brand hover:bg-muted border-b border-border/40 transition-colors">
+                      {lang === "ar" ? "الاستوك" : "Stock"}
                     </Link>
                   )}
                   {isAdmin && (
