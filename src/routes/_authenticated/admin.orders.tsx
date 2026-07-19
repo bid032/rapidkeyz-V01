@@ -464,14 +464,45 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
               {resending ? (lang === "ar" ? "جاري…" : "Sending…") : (lang === "ar" ? "إعادة إرسال الإيميل" : "Resend email")}
             </button>
           </div>
-          {item.delivered_accounts.map((a: any) => (
-            <div key={a.id} className="mt-1">
-              {a.account_email && <div>Email: {a.account_email}</div>}
-              {a.account_username && <div>User: {a.account_username}</div>}
-              {a.account_password && <div>Pass: {a.account_password}</div>}
-            </div>
-          ))}
+          {item.delivered_accounts.map((a: any) => {
+            const dur = Number(item.product_plans?.duration_days ?? 0);
+            const startAt = a.delivered_at ? new Date(a.delivered_at) : null;
+            const endAt = startAt && dur > 0 ? new Date(startAt.getTime() + dur * 86400_000) : null;
+            const fmt = (d: Date) => d.toLocaleString(lang === "ar" ? "ar-EG" : "en-US");
+            const daysLeft = endAt ? Math.ceil((endAt.getTime() - Date.now()) / 86400_000) : null;
+            return (
+              <div key={a.id} className="mt-1">
+                {a.account_email && <div>Email: {a.account_email}</div>}
+                {a.account_username && <div>User: {a.account_username}</div>}
+                {a.account_password && <div>Pass: {a.account_password}</div>}
+                {startAt && (
+                  <div className="mt-2 pt-2 border-t border-success/20 grid grid-cols-1 sm:grid-cols-2 gap-1 font-sans">
+                    <div>
+                      <span className="text-muted-foreground">{lang === "ar" ? "تاريخ الاشتراك:" : "Subscribed:"}</span>{" "}
+                      <span className="font-bold">{fmt(startAt)}</span>
+                    </div>
+                    {endAt ? (
+                      <div>
+                        <span className="text-muted-foreground">{lang === "ar" ? "تاريخ الانتهاء:" : "Expires:"}</span>{" "}
+                        <span className={`font-bold ${daysLeft !== null && daysLeft < 0 ? "text-destructive" : daysLeft !== null && daysLeft <= 7 ? "text-destructive" : daysLeft !== null && daysLeft <= 30 ? "text-warning" : ""}`}>
+                          {fmt(endAt)}
+                          {daysLeft !== null && (
+                            <span className="ml-1 text-[10px]">
+                              ({daysLeft < 0 ? (lang === "ar" ? `انتهت من ${Math.abs(daysLeft)} يوم` : `expired ${Math.abs(daysLeft)}d ago`) : (lang === "ar" ? `باقي ${daysLeft} يوم` : `${daysLeft}d left`)})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-muted-foreground">{lang === "ar" ? "المدة: غير محددة" : "Duration: N/A"}</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+
       ) : (
         <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           <input placeholder="Account email" value={creds.account_email}
