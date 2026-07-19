@@ -335,7 +335,7 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
         </div>
 
         {/* Quick panel */}
-        <aside className="bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 h-fit">
+        <aside className="order-1 lg:order-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-4 h-fit">
           <div>
             <h2 className="text-xl font-extrabold">لوحة سريعة</h2>
             <p className="text-xs text-muted-foreground mt-1">هنا هتشوف المتاح والملاحظات العامة بسرعة</p>
