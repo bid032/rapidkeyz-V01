@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireStockStaff } from "@/lib/stock-auth.functions";
+
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
@@ -78,7 +78,7 @@ export type StockAppData = {
 };
 
 export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
-  const session = await requireStockStaff();
+  const { requireStockStaff } = await import("@/lib/stock-auth.server"); const session = await (await import("@/lib/stock-auth.server")).requireStockStaff();
   const spreadsheetId = await getSpreadsheetId();
 
   const [productsRaw, stockRaw] = await Promise.all([
@@ -152,7 +152,7 @@ function createOrderId() {
 export const issueStock = createServerFn({ method: "POST" })
   .inputValidator((d: { customerName: string; productName: string; qty: number; customerWhatsapp?: string }) => d)
   .handler(async ({ data }): Promise<IssueResult> => {
-    const session = await requireStockStaff();
+    const { requireStockStaff } = await import("@/lib/stock-auth.server"); const session = await (await import("@/lib/stock-auth.server")).requireStockStaff();
     const staffName = session.staffName;
     const customerName = (data.customerName ?? "").trim();
     const productName = (data.productName ?? "").trim();
@@ -248,7 +248,7 @@ export const issueStock = createServerFn({ method: "POST" })
 export const revertIssue = createServerFn({ method: "POST" })
   .inputValidator((d: { orderId: string }) => d)
   .handler(async ({ data }): Promise<{ orderId: string; itemCount: number }> => {
-    await requireStockStaff();
+    await (await import("@/lib/stock-auth.server")).requireStockStaff();
     const orderId = (data.orderId ?? "").trim();
     if (!orderId) throw new Error("رقم العملية غير موجود");
 
