@@ -235,7 +235,7 @@ function HomePage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
-                    className="p-2.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg hover:brand-glow transition"
+                    className="p-2.5 bg-card border border-border rounded-2xl shadow-lg hover:brand-glow transition"
                   >
                     <div className="flex items-center gap-2">
                       {trending[0].icon_url ? (
@@ -250,6 +250,9 @@ function HomePage() {
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
+                        {priceOf(trending[0]) && (
+                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -258,7 +261,7 @@ function HomePage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
-                    className="p-2.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg hover:brand-glow transition"
+                    className="p-2.5 bg-card border border-border rounded-2xl shadow-lg hover:brand-glow transition"
                   >
                     <div className="flex items-center gap-2">
                       {trending[1].icon_url ? (
@@ -273,6 +276,9 @@ function HomePage() {
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
+                        {priceOf(trending[1]) && (
+                          <div className="text-accent text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
