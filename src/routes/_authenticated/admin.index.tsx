@@ -38,6 +38,7 @@ type MonthKey = string; // YYYY-MM or "all"
 function AdminOverview() {
   const { t, lang } = useApp();
   const [month, setMonth] = useState<MonthKey>("all");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const range = useMemo(() => {
     if (month === "all") return { start: null as string | null, end: null as string | null };
