@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
 
 
 const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "refunded"] as const;
+// "refunded" must not be set manually — it's driven by the refunds flow to keep totals consistent.
+const MANUAL_STATUSES = STATUSES.filter((s) => s !== "refunded");
 
 type Tab = "all" | "expiring";
 
@@ -51,8 +53,12 @@ function AdminOrders() {
   });
 
   const proofUrl = async (path: string) => {
-    const { data } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    const { data, error } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) {
+      notify(error?.message ?? (lang === "ar" ? "تعذّر فتح إثبات الدفع" : "Failed to open proof"), "error");
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
   };
 
   // Compute per-order min days-remaining (over delivered items with duration)
@@ -304,7 +310,8 @@ function AdminOrders() {
                 <select value={o.status}
                   onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
                   className="px-3 py-1.5 bg-background border border-border rounded text-sm">
-                  {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {MANUAL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                  {o.status === "refunded" && <option value="refunded">refunded</option>}
                 </select>
                 <span className="font-extrabold text-brand">{o.total} EGP</span>
                 <button onClick={() => setExpanded(expanded === o.id ? null : o.id)}

@@ -122,8 +122,11 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
   const q = useQuery({
     queryKey: ["stock-app-data"],
     queryFn: () => fetcher(),
-    refetchInterval: 20_000,
+    refetchInterval: 8_000,
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
   });
 
   const products = q.data?.products ?? [];
@@ -207,8 +210,13 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
             <h1 className="mt-3 text-2xl sm:text-4xl font-extrabold tracking-tight">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand via-cyan-400 to-brand">لوحة الاستوك</span>
             </h1>
-            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground">
-              {q.data?.fetchedAt ? `آخر تحديث: ${new Date(q.data.fetchedAt).toLocaleTimeString("ar-EG")}` : "جارٍ التحميل..."} · تحديث تلقائي كل 20 ثانية
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground inline-flex items-center gap-2">
+              <span className="relative inline-flex h-2 w-2">
+                <span className={`absolute inline-flex h-full w-full rounded-full ${q.isFetching ? "bg-brand" : "bg-emerald-500"} opacity-60 animate-ping`} />
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${q.isFetching ? "bg-brand" : "bg-emerald-500"}`} />
+              </span>
+              مزامنة مباشرة مع Google Sheets · تحديث كل 8 ثوانٍ
+              {q.data?.fetchedAt && <span className="opacity-70">· آخر تحديث {new Date(q.data.fetchedAt).toLocaleTimeString("ar-EG")}</span>}
             </p>
           </div>
 

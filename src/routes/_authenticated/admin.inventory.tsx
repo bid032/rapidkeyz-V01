@@ -260,9 +260,20 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
 
   const handleFetchSheet = async () => {
     if (!sheetUrl.trim()) return;
+    const normalized = normalizeSheetUrl(sheetUrl);
+    try {
+      const host = new URL(normalized).hostname.toLowerCase();
+      if (host !== "docs.google.com" && !host.endsWith(".googleusercontent.com")) {
+        notify("الرابط لازم يكون Google Sheets فقط (docs.google.com).", "error");
+        return;
+      }
+    } catch {
+      notify("رابط غير صالح.", "error");
+      return;
+    }
     setBusy(true);
     try {
-      const res = await fetch(normalizeSheetUrl(sheetUrl));
+      const res = await fetch(normalized);
       if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
       const text = await res.text();
       if (/^\s*<(!doctype|html)/i.test(text)) {

@@ -99,7 +99,7 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_method, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total)")
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -212,7 +212,7 @@ function AdminOverview() {
         "البريد الإلكتروني": r.orders?.customer_email ?? "",
         "رقم الواتساب": r.orders?.customer_phone ?? p.phone ?? "",
         "الدولة": p.country ?? "",
-        "طريقة الدفع": r.orders?.payment_method ?? "",
+        "طريقة الدفع": r.orders?.payment_gateway ?? "",
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
@@ -497,8 +497,7 @@ function AdminOverview() {
                               {refundAmount > 0 && (
                                 <div className="text-destructive font-bold">الصافي بعد الاسترداد: {Math.round(netProfit)} {t.common.currency}</div>
                               )}
-                              {r.orders?.payment_method && <div>طريقة الدفع: {r.orders.payment_method}</div>}
-                              {r.orders?.payment_gateway && <div>البوابة: {r.orders.payment_gateway}</div>}
+                              {r.orders?.payment_gateway && <div>طريقة الدفع: {r.orders.payment_gateway}</div>}
                               {r.orders?.payment_sender_phone && <div>رقم المُحوَّل منه: {r.orders.payment_sender_phone}</div>}
                               {r.orders?.payment_reference && <div>مرجع الدفع: {r.orders.payment_reference}</div>}
                               {r.orders?.total != null && <div>إجمالي الطلب كامل: {Math.round(Number(r.orders.total))} {t.common.currency}</div>}

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 });
 
 function AdminSettings() {
-  const { t } = useApp();
+  const { t, lang, notify } = useApp();
   const qc = useQueryClient();
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
@@ -60,7 +60,7 @@ function AdminSettings() {
 
   const save = useMutation({
     mutationFn: async () => {
-      await supabase.from("site_settings").upsert([
+      const { error } = await supabase.from("site_settings").upsert([
         { key: "brand", value: brand },
         { key: "contact", value: contact },
         { key: "payments", value: payments },
@@ -71,8 +71,13 @@ function AdminSettings() {
         { key: "theme_mode", value: { mode: themeMode } },
         { key: "stock_sheet", value: stockSheet },
       ]);
+      if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["site-settings"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["site-settings"] });
+      notify(lang === "ar" ? "تم حفظ الإعدادات" : "Settings saved", "success");
+    },
+    onError: (e: any) => notify(e?.message ?? (lang === "ar" ? "فشل الحفظ" : "Save failed"), "error"),
   });
 
   return (
