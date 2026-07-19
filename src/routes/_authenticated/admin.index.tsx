@@ -272,9 +272,11 @@ function AdminOverview() {
     { label: "الأرباح (بيع − شراء)", value: `${Math.round(stats.data?.profit ?? 0)} ${t.common.currency}`, tone: "success" },
     { label: "التعويضات", value: `-${Math.round(stats.data?.refunds ?? 0)} ${t.common.currency}`, tone: "danger" },
     { label: "عدد الطلبات", value: stats.data?.ordersCount ?? 0, tone: "default" },
+    { label: "الطلبات الناجحة", value: stats.data?.deliveredCount ?? 0, tone: "success" },
     { label: t.admin.pendingOrders, value: stats.data?.pending ?? 0, tone: "warning" },
     { label: t.admin.totalProducts, value: stats.data?.products ?? 0, tone: "default" },
     { label: t.admin.totalUsers, value: stats.data?.users ?? 0, tone: "default" },
+
   ];
 
 
