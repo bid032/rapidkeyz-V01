@@ -172,51 +172,44 @@ function AdminOverview() {
 
 
 
-  const exportSalesXlsx = () => {
-    const wb = XLSX.utils.book_new();
-    const s = stats.data ?? { revenue: 0, profit: 0, refunds: 0, ordersCount: 0, pending: 0, products: 0, users: 0 };
+  const exportSalesXlsx = async () => {
     const salesData = sales.data ?? [];
-    const itemsCount = salesData.reduce((sum: number, r: any) => sum + Number(r.quantity ?? 0), 0);
-    const totalCost = salesData.reduce((sum: number, r: any) => sum + Number(r._cost ?? 0) * Number(r.quantity ?? 0), 0);
-    const net = Math.round(Number(s.profit ?? 0) - Number(s.refunds ?? 0));
-    const avgOrder = s.ordersCount ? Math.round(Number(s.revenue ?? 0) / Number(s.ordersCount)) : 0;
-    const margin = s.revenue ? ((Number(s.profit ?? 0) / Number(s.revenue)) * 100).toFixed(2) + "%" : "0%";
-
-    // Sheet 1: Overview KPIs
-    const overviewRows = [
-      { "البيان": "الفترة", "القيمة": month === "all" ? "كل المبيعات" : `شهر ${month}` },
-      { "البيان": "الإيرادات", "القيمة": Math.round(Number(s.revenue ?? 0)) },
-      { "البيان": "الأرباح (بيع − شراء)", "القيمة": Math.round(Number(s.profit ?? 0)) },
-      { "البيان": "التعويضات", "القيمة": -Math.round(Number(s.refunds ?? 0)) },
-      { "البيان": "صافي الربح بعد التعويضات", "القيمة": net },
-      { "البيان": "هامش الربح", "القيمة": margin },
-      { "البيان": "عدد الطلبات", "القيمة": Number(s.ordersCount ?? 0) },
-      { "البيان": "متوسط قيمة الطلب", "القيمة": avgOrder },
-      { "البيان": "عدد العناصر المباعة", "القيمة": itemsCount },
-      { "البيان": "إجمالي تكلفة الشراء", "القيمة": Math.round(totalCost) },
-      { "البيان": "الطلبات المعلقة", "القيمة": Number(s.pending ?? 0) },
-      { "البيان": "إجمالي المنتجات", "القيمة": Number(s.products ?? 0) },
-      { "البيان": "إجمالي المستخدمين", "القيمة": Number(s.users ?? 0) },
-    ];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(overviewRows), "النظرة العامة");
-
-    // Sheet 2: Chart breakdown (monthly or daily)
-    const chartRows = (chartData ?? []).map((r: any) => ({
-      [month === "all" ? "الشهر" : "اليوم"]: r.bucket,
-      "الإيرادات": r.revenue,
-      "الأرباح": r.profit,
-      "التعويضات": r.refunds,
-      "الصافي": (r.profit ?? 0) - (r.refunds ?? 0),
-    }));
-    if (chartRows.length) {
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(chartRows), month === "all" ? "شهري" : "يومي");
+    const orderIds = Array.from(new Set(salesData.map((r: any) => r.orders?.id ?? r.order_id).filter(Boolean)));
+    // fetch refunds for these orders
+    const refundsByOrder = new Map<string, any[]>();
+    const refundsByItem = new Map<string, any[]>();
+    if (orderIds.length) {
+      const { data: refs } = await supabase
+        .from("refunds")
+        .select("order_id, order_item_id, amount, type, notes, created_at");
+      (refs ?? []).forEach((r: any) => {
+        if (r.order_id) {
+          const arr = refundsByOrder.get(r.order_id) ?? [];
+          arr.push(r);
+          refundsByOrder.set(r.order_id, arr);
+        }
+        if (r.order_item_id) {
+          const arr = refundsByItem.get(r.order_item_id) ?? [];
+          arr.push(r);
+          refundsByItem.set(r.order_item_id, arr);
+        }
+      });
     }
 
-    // Sheet 3: Sales details
     const rows = salesData.map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
       const total = Number(r.unit_price) * Number(r.quantity);
       const p = r._profile ?? {};
+      const orderId = r.orders?.id ?? r.order_id;
+      const itemRefunds = refundsByItem.get(r.id) ?? [];
+      const orderRefunds = refundsByOrder.get(orderId) ?? [];
+      // prefer per-item refunds; fall back to order-level if no item-specific
+      const applicable = itemRefunds.length ? itemRefunds : orderRefunds.filter((x: any) => !x.order_item_id);
+      const refundAmount = applicable.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+      const refundTypes = Array.from(new Set(applicable.map((x: any) => x.type).filter(Boolean))).join(", ");
+      const refundNotes = applicable.map((x: any) => x.notes).filter(Boolean).join(" | ");
+      const refundDates = applicable.map((x: any) => new Date(x.created_at).toLocaleDateString("en-GB")).join(", ");
+      const netProfit = Number(r._profit ?? 0) - refundAmount;
       return {
         "رقم الطلب": r.orders?.order_number,
         "اسم العميل": r.orders?.customer_name ?? p.display_name ?? "",
@@ -230,14 +223,21 @@ function AdminOverview() {
         "الإجمالي": total,
         "سعر الشراء": r._cost ?? 0,
         "الربح": r._profit ?? 0,
+        "تم عمل استرداد؟": refundAmount > 0 ? "نعم" : "لا",
+        "قيمة الاسترداد": refundAmount,
+        "نوع الاسترداد": refundTypes,
+        "تاريخ الاسترداد": refundDates,
+        "ملاحظات الاسترداد": refundNotes,
+        "صافي الربح بعد الاسترداد": netProfit,
         "التاريخ": d.toLocaleDateString("en-GB"),
         "الوقت": d.toLocaleTimeString("en-GB"),
         "الحالة": r.orders?.status,
         "ملاحظات": r.orders?.notes ?? "",
       };
     });
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "تفاصيل المبيعات");
-
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sales");
     const rawTitle = (document.title || "site").split(/[,–|:-]/)[0];
     const siteName = rawTitle.replace(/[\\/:*?"<>|]+/g, "").trim() || "site";
     const now = new Date();
