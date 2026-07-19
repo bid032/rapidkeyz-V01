@@ -38,7 +38,7 @@ function AdminUsers() {
     queryFn: async () => {
       const [{ data: list, error }, profilesRes, rolesRes] = await Promise.all([
         supabase.rpc("admin_list_users"),
-        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at, stock_access, stock_password_hash"),
+        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at, stock_access"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
       if (error) throw error;
@@ -56,7 +56,7 @@ function AdminUsers() {
           preferred_language: p.preferred_language ?? "",
           created_at: u.created_at ?? p.created_at ?? null,
           stock_access: !!p.stock_access,
-          has_stock_password: !!p.stock_password_hash,
+          has_stock_password: !!u.has_stock_password,
           user_roles: (rolesRes.data ?? [])
             .filter((r: any) => r.user_id === u.id)
             .map((r: any) => ({ role: r.role })),

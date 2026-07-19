@@ -712,6 +712,7 @@ export type Database = {
           created_at: string
           display_name: string
           email: string
+          has_stock_password: boolean
           id: string
         }[]
       }
@@ -736,6 +737,10 @@ export type Database = {
       admin_set_stock_access: {
         Args: { _access: boolean; _password?: string; _user_id: string }
         Returns: undefined
+      }
+      admin_user_has_stock_password: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       claim_inventory_for_item: {
         Args: { _order_item_id: string; _plan_id: string }
