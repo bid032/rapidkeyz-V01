@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/stock")({
 });
 
 function StockPage() {
-  const { notify } = useApp();
+  const { notify, confirm } = useApp();
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
@@ -157,7 +157,8 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
 
   const doRevert = async () => {
     if (!result?.orderId) return;
-    if (!confirm("هل أنت متأكد أن الكود لم يتم استلامه وتريد إرجاع آخر صرف للمخزون؟")) return;
+    const ok = await confirm({ title: "إرجاع للمخزون", message: "هل أنت متأكد أن الكود لم يتم استلامه وتريد إرجاع آخر صرف للمخزون؟", tone: "danger", confirmLabel: "أرجِع" });
+    if (!ok) return;
     setBusy(true);
     try {
       await revertFn({ data: { orderId: result.orderId } });
