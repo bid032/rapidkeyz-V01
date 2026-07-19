@@ -8,6 +8,7 @@ import {
   previewProductSheetTabs,
   importAllTabsForProduct,
 } from "@/lib/sheet-product-import.functions";
+import { getStockDuplicates } from "@/lib/stock-sheet.functions";
 import { friendlyErrorMessage, showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
