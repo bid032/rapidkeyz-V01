@@ -290,37 +290,6 @@ function AdminSettings() {
         </div>
       </Section>
 
-      <Section title={"شيت الاستوك / Stock Sheet"}>
-        <p className="text-xs text-muted-foreground mb-4">
-          اربط شيت جوجل يحتوي بيانات الاستوك. الصفحة "/stock" هتقرأ منه تلقائي كل 20 ثانية. لازم يكون الشيت متشارك مع حساب Google المربوط بالكونيكتور.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-muted-foreground">Spreadsheet ID أو الرابط الكامل</label>
-            <input
-              placeholder="https://docs.google.com/spreadsheets/d/.../edit  أو الـ ID فقط"
-              value={stockSheet.spreadsheet_id ?? ""}
-              onChange={(e) => {
-                const raw = e.target.value.trim();
-                const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                setStockSheet({ ...stockSheet, spreadsheet_id: m ? m[1] : raw });
-              }}
-              className="px-3 py-2 bg-background border border-border rounded"
-              dir="ltr"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-muted-foreground">اسم التبويب (اختياري)</label>
-            <input
-              placeholder="Sheet1"
-              value={stockSheet.sheet_title ?? ""}
-              onChange={(e) => setStockSheet({ ...stockSheet, sheet_title: e.target.value })}
-              className="px-3 py-2 bg-background border border-border rounded"
-              dir="ltr"
-            />
-          </div>
-        </div>
-      </Section>
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
         className="px-6 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow">
