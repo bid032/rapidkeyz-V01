@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/settings")({
 });
 
 function AdminSettings() {
-  const { t } = useApp();
+  const { t, lang, notify } = useApp();
   const qc = useQueryClient();
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
