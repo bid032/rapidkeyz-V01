@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
