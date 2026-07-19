@@ -51,8 +51,12 @@ function AdminOrders() {
   });
 
   const proofUrl = async (path: string) => {
-    const { data } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+    const { data, error } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
+    if (error || !data?.signedUrl) {
+      notify(error?.message ?? (lang === "ar" ? "تعذّر فتح إثبات الدفع" : "Failed to open proof"), "error");
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
   };
 
   // Compute per-order min days-remaining (over delivered items with duration)
