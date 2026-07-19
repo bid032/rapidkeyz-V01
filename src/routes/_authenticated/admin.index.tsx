@@ -100,10 +100,20 @@ function AdminOverview() {
   const refundsAll = useQuery({
     queryKey: ["admin-refunds-all"],
     queryFn: async () => {
-      const { data } = await supabase.from("refunds").select("amount, created_at");
-      return (data ?? []) as { amount: number; created_at: string }[];
+      // Pull refunds joined to their order so the chart buckets by order date
+      // (matches admin_revenue_by_month / admin_revenue_stats basis).
+      const { data } = await supabase
+        .from("refunds")
+        .select("amount, created_at, orders!inner(created_at, status)")
+        .in("orders.status", ["paid", "delivered"]);
+      return (data ?? []).map((r: any) => ({
+        amount: Number(r.amount ?? 0),
+        // basis_at = order's created_at; fall back to refund's own date if missing
+        basis_at: (r.orders?.created_at as string) ?? r.created_at,
+      })) as { amount: number; basis_at: string }[];
     },
   });
+
 
 
 
