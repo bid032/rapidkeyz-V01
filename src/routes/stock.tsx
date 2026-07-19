@@ -31,7 +31,6 @@ function StockPage() {
 
   const handleLoggedIn = (staffName: string) => {
     queryClient.setQueryData(["stock-session"], { loggedIn: true as const, staffName });
-    queryClient.invalidateQueries({ queryKey: ["stock-session"] });
     queryClient.invalidateQueries({ queryKey: ["stock-app-data"] });
   };
 
