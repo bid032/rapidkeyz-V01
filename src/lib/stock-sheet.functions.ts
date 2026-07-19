@@ -447,44 +447,65 @@ export const getStockDuplicates = createServerFn({ method: "GET" }).handler(
       }
 
       for (const tab of titles) {
-        // Skip non-inventory tabs by name to reduce noise / API usage
+        // Skip clearly non-inventory tabs by name to reduce noise / API usage
         const t = tab.trim().toLowerCase();
         if (["products", "orders", "staff", "settings", "config", "log", "logs"].includes(t)) continue;
 
-        // Read only column C (code column in Stock tabs)
-        let col: string[][] = [];
+        // Read the full sheet range so we can auto-detect the code column(s)
+        let rows: string[][] = [];
         try {
-          col = await sheetsGet(spreadsheetId, `${tab}!C1:C20000`);
+          rows = await sheetsGet(spreadsheetId, `${tab}!A1:Z20000`);
         } catch {
           continue;
         }
+        if (rows.length < 2) continue;
         scannedTabs += 1;
 
-        for (let i = 1; i < col.length; i++) {
-          const raw = (col[i]?.[0] ?? "").trim();
-          if (!raw) continue;
-          const key = raw.toUpperCase();
-          totalCodes += 1;
-          const arr = map.get(key) ?? [];
-          arr.push({
-            spreadsheetId,
-            spreadsheetTitle: bookTitle,
-            tab,
-            row: i + 1,
-          });
-          map.set(key, arr);
+        const header = (rows[0] ?? []).map((h) => (h ?? "").trim().toLowerCase());
+        // Columns that typically hold a unique identifier for a stock item.
+        const KEY_HEADERS = [
+          "code", "key", "license", "licence", "serial", "product",
+          "email", "mail", "username", "user", "login", "account",
+          "كود", "مفتاح", "ايميل", "بريد", "يوزر",
+        ];
+        let keyCols: number[] = [];
+        header.forEach((h, idx) => {
+          if (!h) return;
+          if (KEY_HEADERS.some((k) => h === k || h.includes(k))) keyCols.push(idx);
+        });
+        // Fallback: main stock layout uses column C (index 2) for the code with no matching header
+        if (keyCols.length === 0) keyCols = [2];
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i] ?? [];
+          for (const c of keyCols) {
+            const raw = (row[c] ?? "").trim();
+            if (!raw) continue;
+            const key = `${c}::${raw.toUpperCase()}`;
+            totalCodes += 1;
+            const arr = map.get(key) ?? [];
+            arr.push({
+              spreadsheetId,
+              spreadsheetTitle: bookTitle,
+              tab,
+              row: i + 1,
+            });
+            map.set(key, arr);
+          }
         }
       }
     }
 
     const groups: DuplicateGroup[] = [];
-    for (const [code, locations] of map) {
+    for (const [key, locations] of map) {
       if (locations.length < 2) continue;
+      const code = key.split("::").slice(1).join("::");
       const tabs = new Set(locations.map((l) => `${l.spreadsheetId}::${l.tab}`));
       const files = new Set(locations.map((l) => l.spreadsheetId));
       groups.push({
         code,
         count: locations.length,
+
         locations,
         crossTab: tabs.size > 1,
         crossFile: files.size > 1,
