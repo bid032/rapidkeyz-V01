@@ -190,7 +190,7 @@ function AuthPage() {
                     inputMode="tel"
                     placeholder={lang === "ar" ? "رقم الواتساب" : "WhatsApp number"}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                    onChange={(e) => setPhone(filterDigits(e.target.value, 15))}
                     className="flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-left placeholder:text-right"
                     dir="ltr"
                   />
