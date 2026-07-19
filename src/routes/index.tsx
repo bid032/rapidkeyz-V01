@@ -148,6 +148,12 @@ function HomePage() {
   const bestSellers = useQuery({ queryKey: ["best-sellers"], queryFn: fetchBestSellers });
   const trending = (products.data ?? []).slice(0, 3);
   const trendingLabels = ["TRENDING", "NEW", "HOT"];
+  const priceOf = (p: any) => {
+    if (!p || p.minPrice == null) return null;
+    const d = Number(p.discount_percent ?? 0);
+    const v = d > 0 ? Math.round(p.minPrice * (100 - d)) / 100 : p.minPrice;
+    return `${v} ${lang === "ar" ? "ج.م" : "EGP"}`;
+  };
   const heroSetting = useQuery({
     queryKey: ["site-settings", "hero"],
     queryFn: async () => {
