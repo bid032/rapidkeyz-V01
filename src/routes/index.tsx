@@ -208,7 +208,7 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-1.5 sm:space-y-2">
+              <div className="space-y-2.5 sm:space-y-3">
                 <h1
                   data-gsap="split-words"
                   className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance"
@@ -222,7 +222,7 @@ function HomePage() {
                 </h2>
 
                 <p
-                  className="text-xs sm:text-sm text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 pt-0.5"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 pt-1"
                 >
                   {hero.subtitle}
                 </p>
