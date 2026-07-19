@@ -174,7 +174,7 @@ function HomePage() {
       <Header />
 
       {/* Hero — Balanced Split */}
-      <header className="relative overflow-hidden pt-4 pb-10 sm:pt-10 sm:pb-20">
+      <header className="relative overflow-hidden pt-4 pb-4 sm:pt-10 sm:pb-8">
         <HeroCanvas />
         <FloatingLogos />
 
@@ -187,7 +187,7 @@ function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-12 items-center">
             {/* Content Side */}
-            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-3 sm:space-y-6">
+            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-2 sm:space-y-3">
 
               {/* Live pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
@@ -274,7 +274,7 @@ function HomePage() {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-1 sm:pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-0">
                 <Link
                   to="/shop"
                   data-gsap="magnetic"
@@ -296,7 +296,7 @@ function HomePage() {
               </div>
 
               {/* Stats Row — divider on top */}
-              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-5 sm:pt-6 border-t border-border/40">
+              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-3 sm:pt-4 border-t border-border/40">
                 {[
                   { n: "24/7", l: lang === "ar" ? "دعم فوري" : "Support" },
                   { n: "+15k", l: lang === "ar" ? "عميل سعيد" : "Clients" },
