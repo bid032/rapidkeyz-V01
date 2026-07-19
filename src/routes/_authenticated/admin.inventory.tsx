@@ -202,6 +202,12 @@ function AdminInventory() {
         </div>
       )}
 
+      <div className="mb-4">
+        <DuplicatesAlert data={dupesQ.data} isFetching={dupesQ.isFetching} onRefresh={() => dupesQ.refetch()} />
+      </div>
+
+
+
 
       <div className="space-y-4">
         {plans.data?.map((p: any) => (
