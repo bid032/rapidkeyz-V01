@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import type { User } from "@supabase/supabase-js";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
+import { filterName, filterDigits } from "@/lib/input-filters";
 
 const searchSchema = z.object({ complete: z.string().optional() });
 
