@@ -185,7 +185,9 @@ export const issueStock = createServerFn({ method: "POST" })
     const qty = Number(data.qty || 0);
 
     if (!staffName) throw new Error("اختر اسم الموظف");
-    if (!STAFF_NAMES.includes(staffName)) throw new Error("اسم الموظف غير مسموح");
+    const spreadsheetId = await getSpreadsheetId(context.supabase);
+    const allowedStaff = await fetchStaffNames(spreadsheetId);
+    if (!allowedStaff.includes(staffName)) throw new Error("اسم الموظف غير مسموح");
     if (!customerName) throw new Error("اكتب اسم العميل");
     if (!productName) throw new Error("اختر المنتج");
     if (!qty || qty < 1) throw new Error("الكمية لازم تكون 1 أو أكثر");
