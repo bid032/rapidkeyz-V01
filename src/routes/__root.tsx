@@ -199,15 +199,24 @@ function RootComponent() {
   const pathname = router.state.location.pathname;
 
   useEffect(() => {
-    // Hide the pre-render splash only after React has actually painted content
-    try { (window as any).__rkHideSplash?.(); } catch {}
+    // Hide the pre-render splash only after fonts are ready and React actually painted
+    let cancelled = false;
+    const trigger = () => {
+      if (cancelled) return;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        try { (window as any).__rkHideSplash?.(); } catch {}
+      }));
+    };
+    const fontsReady = (document as any).fonts?.ready as Promise<unknown> | undefined;
+    if (fontsReady) fontsReady.then(trigger, trigger);
+    else trigger();
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => sub.subscription.unsubscribe();
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [router, queryClient]);
 
 
