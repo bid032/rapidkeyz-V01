@@ -335,7 +335,18 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
               />
             </StepField>
 
-            <StepField step={3} icon={<Package className="w-3.5 h-3.5" />} label="المنتج">
+            <StepField step={3} icon={<Phone className="w-3.5 h-3.5" />} label="واتس العميل (اختياري)">
+              <input
+                type="tel"
+                dir="ltr"
+                value={customerWhatsapp}
+                onChange={(e) => setCustomerWhatsapp(e.target.value)}
+                placeholder="+20…"
+                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand text-left"
+              />
+            </StepField>
+
+            <StepField step={4} icon={<Package className="w-3.5 h-3.5" />} label="المنتج">
               <select
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
@@ -350,7 +361,7 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
               </select>
             </StepField>
 
-            <StepField step={4} icon={<Boxes className="w-3.5 h-3.5" />} label={`الكمية${selected ? ` (متاح ${availableNow})` : ""}`}>
+            <StepField step={5} icon={<Boxes className="w-3.5 h-3.5" />} label={`الكمية${selected ? ` (متاح ${availableNow})` : ""}`}>
               <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl p-1 w-fit">
                 <button type="button" onClick={dec} className="p-2 rounded-lg hover:bg-muted"><Minus className="w-4 h-4" /></button>
                 <input
@@ -362,17 +373,6 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
                 />
                 <button type="button" onClick={inc} className="p-2 rounded-lg hover:bg-muted"><Plus className="w-4 h-4" /></button>
               </div>
-            </StepField>
-
-            <StepField step={5} icon={<Phone className="w-3.5 h-3.5" />} label="واتس العميل (اختياري)" className="sm:col-span-2">
-              <input
-                type="tel"
-                dir="ltr"
-                value={customerWhatsapp}
-                onChange={(e) => setCustomerWhatsapp(e.target.value)}
-                placeholder="+20…"
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand text-left"
-              />
             </StepField>
           </div>
 
