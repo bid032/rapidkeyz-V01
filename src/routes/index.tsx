@@ -262,7 +262,7 @@ function HomePage() {
 
             {/* Visual Side */}
             <div className="lg:col-span-5 order-1 lg:order-2 relative flex justify-center items-center">
-              <div className="relative w-full max-w-[420px] py-8 sm:py-12 flex justify-center items-center">
+              <div className="relative w-full max-w-[420px] px-2 py-6 sm:py-12 flex justify-center items-center">
                 {/* Radial glow */}
                 <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
 
@@ -272,27 +272,22 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="absolute -top-2 -right-2 sm:-top-4 sm:-right-8 w-52 sm:w-56 p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="absolute top-0 right-0 sm:-top-4 sm:-right-8 w-40 sm:w-56 p-2.5 sm:p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
-                        <img src={trending[1].icon_url} alt="" loading="lazy" className="w-9 h-9 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                        <img src={trending[1].icon_url} alt="" loading="lazy" className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
                       ) : (
-                        <div className="w-9 h-9 rounded-lg bg-accent/20 shrink-0" />
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-right">
-                        <div className="text-[9px] font-mono uppercase tracking-widest text-accent">
+                        <div className="text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-accent">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
-                        <div className="text-foreground text-xs font-bold truncate">
+                        <div className="text-foreground text-[11px] sm:text-xs font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
                       </div>
-                      {trending[1].minPrice !== null && (
-                        <div className="text-accent font-bold text-xs shrink-0">
-                          {trending[1].minPrice} {t.common.currency}
-                        </div>
-                      )}
                     </div>
                   </Link>
                 )}
@@ -303,37 +298,32 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-8 w-56 sm:w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="absolute bottom-0 left-0 sm:-bottom-4 sm:-left-8 w-44 sm:w-64 p-2.5 sm:p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
-                        <img src={trending[0].icon_url} alt="" loading="lazy" className="w-10 h-10 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                        <img src={trending[0].icon_url} alt="" loading="lazy" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-brand/20 shrink-0" />
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-right">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-brand">
+                        <div className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "الأكثر مبيعاً" : "Trending"}
                         </div>
-                        <div className="text-foreground text-sm font-bold truncate">
+                        <div className="text-foreground text-[12px] sm:text-sm font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
                       </div>
-                      {trending[0].minPrice !== null && (
-                        <div className="text-brand font-bold text-sm shrink-0">
-                          {trending[0].minPrice} {t.common.currency}
-                        </div>
-                      )}
                     </div>
                   </Link>
                 )}
 
                 {/* 3D R Monolith card — on top */}
-                <div className="relative z-20 group w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <Logo3D className="w-40 sm:w-56 lg:w-64" />
+                <div className="relative z-20 group w-44 h-44 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Logo3D className="w-32 sm:w-56 lg:w-64" />
 
                   {/* Premium badge */}
-                  <div className="absolute -top-3 -right-3 bg-brand text-brand-foreground px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
+                  <div className="absolute -top-3 -right-3 bg-brand text-brand-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
                     Premium
                   </div>
                 </div>
