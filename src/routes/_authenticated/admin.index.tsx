@@ -51,9 +51,12 @@ function AdminOverview() {
   const stats = useQuery({
     queryKey: ["admin-stats", month],
     queryFn: async () => {
-      let refundsQ = supabase.from("refunds").select("amount");
-      if (range.start) refundsQ = refundsQ.gte("created_at", range.start);
-      if (range.end) refundsQ = refundsQ.lt("created_at", range.end);
+      // Refunds must be attributed to the ORIGINATING order's date, not refunds.created_at,
+      // so the KPI card matches the profit figure from admin_revenue_stats.
+      let refundsQ = supabase.from("refunds").select("amount, orders!inner(created_at, status)").in("orders.status", ["paid", "delivered"]);
+      if (range.start) refundsQ = refundsQ.gte("orders.created_at", range.start);
+      if (range.end) refundsQ = refundsQ.lt("orders.created_at", range.end);
+
       let allOrdersQ = supabase.from("orders").select("id", { count: "exact", head: true });
       if (range.start) allOrdersQ = allOrdersQ.gte("created_at", range.start);
       if (range.end) allOrdersQ = allOrdersQ.lt("created_at", range.end);
@@ -97,10 +100,20 @@ function AdminOverview() {
   const refundsAll = useQuery({
     queryKey: ["admin-refunds-all"],
     queryFn: async () => {
-      const { data } = await supabase.from("refunds").select("amount, created_at");
-      return (data ?? []) as { amount: number; created_at: string }[];
+      // Pull refunds joined to their order so the chart buckets by order date
+      // (matches admin_revenue_by_month / admin_revenue_stats basis).
+      const { data } = await supabase
+        .from("refunds")
+        .select("amount, created_at, orders!inner(created_at, status)")
+        .in("orders.status", ["paid", "delivered"]);
+      return (data ?? []).map((r: any) => ({
+        amount: Number(r.amount ?? 0),
+        // basis_at = order's created_at; fall back to refund's own date if missing
+        basis_at: (r.orders?.created_at as string) ?? r.created_at,
+      })) as { amount: number; basis_at: string }[];
     },
   });
+
 
 
 
@@ -146,16 +159,31 @@ function AdminOverview() {
           }
         });
       }
+      // Pre-compute each order's total revenue for pro-rating order-level refunds across items.
+      const orderTotal = new Map<string, number>();
+      items.forEach((r) => {
+        const t = Number(r.unit_price) * Number(r.quantity);
+        orderTotal.set(r.order_id, (orderTotal.get(r.order_id) ?? 0) + t);
+      });
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
         const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
         const itemRefs = refundsByItem.get(r.id) ?? [];
         const orderRefs = refundsByOrder.get(r.order_id) ?? [];
-        const refs = itemRefs.length ? itemRefs : orderRefs;
-        const refundAmount = refs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+        // Item-level refunds attach directly. Order-level refunds are pro-rated
+        // by this line's share of the order revenue so multi-item orders don't
+        // count the same refund N times.
+        const itemAmount = itemRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+        const lineTotal = Number(r.unit_price) * Number(r.quantity);
+        const orderRev = orderTotal.get(r.order_id) ?? 0;
+        const share = orderRev > 0 ? lineTotal / orderRev : 0;
+        const orderAmount = orderRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0) * share;
+        const refundAmount = itemAmount + orderAmount;
+        const refs = [...itemRefs, ...orderRefs];
         return { ...r, _cost: cost, _profit: profit, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
       });
+
     },
   });
 
@@ -168,7 +196,7 @@ function AdminOverview() {
         refunds: 0,
       }));
       (refundsAll.data ?? []).forEach((r) => {
-        const d = new Date(r.created_at);
+        const d = new Date(r.basis_at);
         const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
         const row = rows.find((x) => x.bucket === key);
         const amt = Math.round(Number(r.amount ?? 0));
@@ -194,7 +222,7 @@ function AdminOverview() {
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
     (refundsAll.data ?? []).forEach((r) => {
-      const d = new Date(r.created_at);
+      const d = new Date(r.basis_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
       rows[idx].refunds += Math.round(Number(r.amount ?? 0));
