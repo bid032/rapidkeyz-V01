@@ -364,7 +364,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -bottom-4 -left-8 w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden lg:block absolute -bottom-4 -left-8 w-64 p-3.5 bg-card border border-border rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
@@ -379,6 +379,9 @@ function HomePage() {
                         <div className="text-foreground text-[12px] sm:text-sm font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
+                        {priceOf(trending[0]) && (
+                          <div className="text-brand text-[12px] sm:text-sm font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
