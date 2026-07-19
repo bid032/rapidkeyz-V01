@@ -23,6 +23,19 @@ async function getSpreadsheetId(): Promise<string> {
   return cfg.spreadsheet_id;
 }
 
+async function getAllSpreadsheetIds(): Promise<string[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string; extra_spreadsheet_ids?: string[] };
+  const ids: string[] = [];
+  if (cfg.spreadsheet_id) ids.push(cfg.spreadsheet_id);
+  for (const id of cfg.extra_spreadsheet_ids ?? []) {
+    if (id && !ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
+
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
   const res = await fetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
