@@ -173,7 +173,47 @@ function AdminOverview() {
 
 
   const exportSalesXlsx = () => {
-    const rows = (sales.data ?? []).map((r) => {
+    const wb = XLSX.utils.book_new();
+    const s = stats.data ?? { revenue: 0, profit: 0, refunds: 0, ordersCount: 0, pending: 0, products: 0, users: 0 };
+    const salesData = sales.data ?? [];
+    const itemsCount = salesData.reduce((sum: number, r: any) => sum + Number(r.quantity ?? 0), 0);
+    const totalCost = salesData.reduce((sum: number, r: any) => sum + Number(r._cost ?? 0) * Number(r.quantity ?? 0), 0);
+    const net = Math.round(Number(s.profit ?? 0) - Number(s.refunds ?? 0));
+    const avgOrder = s.ordersCount ? Math.round(Number(s.revenue ?? 0) / Number(s.ordersCount)) : 0;
+    const margin = s.revenue ? ((Number(s.profit ?? 0) / Number(s.revenue)) * 100).toFixed(2) + "%" : "0%";
+
+    // Sheet 1: Overview KPIs
+    const overviewRows = [
+      { "البيان": "الفترة", "القيمة": month === "all" ? "كل المبيعات" : `شهر ${month}` },
+      { "البيان": "الإيرادات", "القيمة": Math.round(Number(s.revenue ?? 0)) },
+      { "البيان": "الأرباح (بيع − شراء)", "القيمة": Math.round(Number(s.profit ?? 0)) },
+      { "البيان": "التعويضات", "القيمة": -Math.round(Number(s.refunds ?? 0)) },
+      { "البيان": "صافي الربح بعد التعويضات", "القيمة": net },
+      { "البيان": "هامش الربح", "القيمة": margin },
+      { "البيان": "عدد الطلبات", "القيمة": Number(s.ordersCount ?? 0) },
+      { "البيان": "متوسط قيمة الطلب", "القيمة": avgOrder },
+      { "البيان": "عدد العناصر المباعة", "القيمة": itemsCount },
+      { "البيان": "إجمالي تكلفة الشراء", "القيمة": Math.round(totalCost) },
+      { "البيان": "الطلبات المعلقة", "القيمة": Number(s.pending ?? 0) },
+      { "البيان": "إجمالي المنتجات", "القيمة": Number(s.products ?? 0) },
+      { "البيان": "إجمالي المستخدمين", "القيمة": Number(s.users ?? 0) },
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(overviewRows), "النظرة العامة");
+
+    // Sheet 2: Chart breakdown (monthly or daily)
+    const chartRows = (chartData ?? []).map((r: any) => ({
+      [month === "all" ? "الشهر" : "اليوم"]: r.bucket,
+      "الإيرادات": r.revenue,
+      "الأرباح": r.profit,
+      "التعويضات": r.refunds,
+      "الصافي": (r.profit ?? 0) - (r.refunds ?? 0),
+    }));
+    if (chartRows.length) {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(chartRows), month === "all" ? "شهري" : "يومي");
+    }
+
+    // Sheet 3: Sales details
+    const rows = salesData.map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
       const total = Number(r.unit_price) * Number(r.quantity);
       const p = r._profile ?? {};
@@ -196,9 +236,8 @@ function AdminOverview() {
         "ملاحظات": r.orders?.notes ?? "",
       };
     });
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sales");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), "تفاصيل المبيعات");
+
     const rawTitle = (document.title || "site").split(/[,–|:-]/)[0];
     const siteName = rawTitle.replace(/[\\/:*?"<>|]+/g, "").trim() || "site";
     const now = new Date();
