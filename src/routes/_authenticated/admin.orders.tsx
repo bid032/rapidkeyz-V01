@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
 
 
 const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "refunded"] as const;
+// "refunded" must not be set manually — it's driven by the refunds flow to keep totals consistent.
+const MANUAL_STATUSES = STATUSES.filter((s) => s !== "refunded");
 
 type Tab = "all" | "expiring";
 
