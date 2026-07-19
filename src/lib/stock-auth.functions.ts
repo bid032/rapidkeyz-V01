@@ -109,6 +109,7 @@ export const stockLogin = createServerFn({ method: "POST" })
     }
     const { updateStockSession } = await import("@/lib/stock-auth.server");
     await updateStockSession({ staffName: match!.name, loggedAt: Date.now() });
+    console.log("[stockLogin] session updated for:", match!.name);
     return { ok: true as const, staffName: match!.name };
   });
 
