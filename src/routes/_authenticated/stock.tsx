@@ -122,8 +122,11 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
   const q = useQuery({
     queryKey: ["stock-app-data"],
     queryFn: () => fetcher(),
-    refetchInterval: 20_000,
+    refetchInterval: 8_000,
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
   });
 
   const products = q.data?.products ?? [];
