@@ -6,6 +6,8 @@ import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, 
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
 const STAFF_KEY = "rk_stock_staff";
@@ -29,9 +31,19 @@ function StockPage() {
     setUnlocked(sessionStorage.getItem(UNLOCK_KEY) === "1");
   }, []);
 
-  if (!unlocked) return <UnlockGate onUnlock={() => setUnlocked(true)} />;
-
-  return <StockDispenser onLock={() => { sessionStorage.removeItem(UNLOCK_KEY); setUnlocked(false); notify("تم القفل", "success"); }} />;
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <Header />
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 sm:py-10">
+        {!unlocked ? (
+          <UnlockGate onUnlock={() => setUnlocked(true)} />
+        ) : (
+          <StockDispenser onLock={() => { sessionStorage.removeItem(UNLOCK_KEY); setUnlocked(false); notify("تم القفل", "success"); }} />
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
