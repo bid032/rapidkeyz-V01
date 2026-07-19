@@ -226,6 +226,7 @@ export const issueStock = createServerFn({ method: "POST" })
       values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName]] as (string | number)[][],
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
+    APP_DATA_CACHE.clear();
 
     const deliveredText = picks.map((p) => p.code).filter(Boolean).join("\n\n");
     // Orders columns: A orderId, B time, C staff, D customer, E product, F qty, G delivered, H notes, I status, J customer whatsapp
