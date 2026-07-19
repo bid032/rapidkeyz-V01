@@ -194,50 +194,25 @@ function AdminOverview() {
 
 
 
-  const exportSalesXlsx = async () => {
-    const salesData = sales.data ?? [];
-    const orderIds = Array.from(new Set(salesData.map((r: any) => r.orders?.id ?? r.order_id).filter(Boolean)));
-    // fetch refunds for these orders
-    const refundsByOrder = new Map<string, any[]>();
-    const refundsByItem = new Map<string, any[]>();
-    if (orderIds.length) {
-      const { data: refs } = await supabase
-        .from("refunds")
-        .select("order_id, order_item_id, amount, type, notes, created_at");
-      (refs ?? []).forEach((r: any) => {
-        if (r.order_id) {
-          const arr = refundsByOrder.get(r.order_id) ?? [];
-          arr.push(r);
-          refundsByOrder.set(r.order_id, arr);
-        }
-        if (r.order_item_id) {
-          const arr = refundsByItem.get(r.order_item_id) ?? [];
-          arr.push(r);
-          refundsByItem.set(r.order_item_id, arr);
-        }
-      });
-    }
-
-    const rows = salesData.map((r: any) => {
+  const exportSalesXlsx = () => {
+    const rows = (sales.data ?? []).map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
       const total = Number(r.unit_price) * Number(r.quantity);
       const p = r._profile ?? {};
-      const orderId = r.orders?.id ?? r.order_id;
-      const itemRefunds = refundsByItem.get(r.id) ?? [];
-      const orderRefunds = refundsByOrder.get(orderId) ?? [];
-      // prefer per-item refunds; fall back to order-level if no item-specific
-      const applicable = itemRefunds.length ? itemRefunds : orderRefunds.filter((x: any) => !x.order_item_id);
-      const refundAmount = applicable.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+      const applicable = r._refunds ?? [];
+      const refundAmount = Number(r._refundAmount ?? 0);
       const refundTypes = Array.from(new Set(applicable.map((x: any) => x.type).filter(Boolean))).join(", ");
       const refundNotes = applicable.map((x: any) => x.notes).filter(Boolean).join(" | ");
       const refundDates = applicable.map((x: any) => new Date(x.created_at).toLocaleDateString("en-GB")).join(", ");
       const netProfit = Number(r._profit ?? 0) - refundAmount;
+      const delivered = (r.delivered_accounts ?? [])[0];
       return {
         "رقم الطلب": r.orders?.order_number,
         "اسم العميل": r.orders?.customer_name ?? p.display_name ?? "",
         "البريد الإلكتروني": r.orders?.customer_email ?? "",
         "رقم الواتساب": r.orders?.customer_phone ?? p.phone ?? "",
         "الدولة": p.country ?? "",
+        "طريقة الدفع": r.orders?.payment_method ?? "",
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
@@ -245,6 +220,9 @@ function AdminOverview() {
         "الإجمالي": total,
         "سعر الشراء": r._cost ?? 0,
         "الربح": r._profit ?? 0,
+        "تم التسليم؟": delivered ? "نعم" : "لا",
+        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB") : "",
+        "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
         "تم عمل استرداد؟": refundAmount > 0 ? "نعم" : "لا",
         "قيمة الاسترداد": refundAmount,
         "نوع الاسترداد": refundTypes,
