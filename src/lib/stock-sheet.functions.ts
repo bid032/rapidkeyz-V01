@@ -77,9 +77,20 @@ export type StockAppData = {
   fetchedAt: string;
 };
 
+type CacheEntry = { at: number; data: StockAppData };
+const APP_DATA_CACHE = new Map<string, CacheEntry>();
+const APP_DATA_TTL_MS = 20_000;
+
 export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
   const { requireStockStaff } = await import("@/lib/stock-auth.server");
   const session = await requireStockStaff();
+
+  const cacheKey = session.staffName || "_";
+  const cached = APP_DATA_CACHE.get(cacheKey);
+  if (cached && Date.now() - cached.at < APP_DATA_TTL_MS) {
+    return cached.data;
+  }
+
   const spreadsheetId = await getSpreadsheetId();
 
   const [productsRaw, stockRaw] = await Promise.all([
@@ -122,13 +133,15 @@ export const getStockAppData = createServerFn({ method: "GET" }).handler(async (
   const totalAvailable = products.reduce((s, p) => s + p.availableCount, 0);
   const lowStockCount = products.filter((p) => p.availableCount <= 3).length;
 
-  return {
+  const result: StockAppData = {
     products,
     staffName: session.staffName,
     totalAvailable,
     lowStockCount,
     fetchedAt: new Date().toISOString(),
   };
+  APP_DATA_CACHE.set(cacheKey, { at: Date.now(), data: result });
+  return result;
 });
 
 export type IssueResult = {
