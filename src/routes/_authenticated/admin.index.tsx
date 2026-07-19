@@ -207,7 +207,7 @@ function AdminOverview() {
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
     (refundsAll.data ?? []).forEach((r) => {
-      const d = new Date(r.created_at);
+      const d = new Date(r.basis_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
       rows[idx].refunds += Math.round(Number(r.amount ?? 0));
