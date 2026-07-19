@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
@@ -38,6 +38,7 @@ type MonthKey = string; // YYYY-MM or "all"
 function AdminOverview() {
   const { t, lang } = useApp();
   const [month, setMonth] = useState<MonthKey>("all");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const range = useMemo(() => {
     if (month === "all") return { start: null as string | null, end: null as string | null };
@@ -98,8 +99,8 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at)")
-        .in("orders.status", ["paid", "delivered"])
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_method)")
+        .in("orders.status", ["paid", "delivered", "refunded"])
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -118,11 +119,33 @@ function AdminOverview() {
         const { data: profs } = await supabase.from("profiles").select("id, display_name, phone, country").in("id", userIds);
         (profs ?? []).forEach((p: any) => profileMap.set(p.id, p));
       }
+      const orderIds = Array.from(new Set(items.map((r) => r.order_id).filter(Boolean)));
+      const refundsByOrder = new Map<string, any[]>();
+      const refundsByItem = new Map<string, any[]>();
+      if (orderIds.length) {
+        const { data: refs } = await supabase
+          .from("refunds")
+          .select("order_id, order_item_id, amount, type, notes, created_at")
+          .in("order_id", orderIds);
+        (refs ?? []).forEach((r: any) => {
+          if (r.order_item_id) {
+            const arr = refundsByItem.get(r.order_item_id) ?? [];
+            arr.push(r); refundsByItem.set(r.order_item_id, arr);
+          } else if (r.order_id) {
+            const arr = refundsByOrder.get(r.order_id) ?? [];
+            arr.push(r); refundsByOrder.set(r.order_id, arr);
+          }
+        });
+      }
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
         const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
-        return { ...r, _cost: cost, _profit: profit, _profile: prof };
+        const itemRefs = refundsByItem.get(r.id) ?? [];
+        const orderRefs = refundsByOrder.get(r.order_id) ?? [];
+        const refs = itemRefs.length ? itemRefs : orderRefs;
+        const refundAmount = refs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+        return { ...r, _cost: cost, _profit: profit, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
       });
     },
   });
@@ -172,50 +195,25 @@ function AdminOverview() {
 
 
 
-  const exportSalesXlsx = async () => {
-    const salesData = sales.data ?? [];
-    const orderIds = Array.from(new Set(salesData.map((r: any) => r.orders?.id ?? r.order_id).filter(Boolean)));
-    // fetch refunds for these orders
-    const refundsByOrder = new Map<string, any[]>();
-    const refundsByItem = new Map<string, any[]>();
-    if (orderIds.length) {
-      const { data: refs } = await supabase
-        .from("refunds")
-        .select("order_id, order_item_id, amount, type, notes, created_at");
-      (refs ?? []).forEach((r: any) => {
-        if (r.order_id) {
-          const arr = refundsByOrder.get(r.order_id) ?? [];
-          arr.push(r);
-          refundsByOrder.set(r.order_id, arr);
-        }
-        if (r.order_item_id) {
-          const arr = refundsByItem.get(r.order_item_id) ?? [];
-          arr.push(r);
-          refundsByItem.set(r.order_item_id, arr);
-        }
-      });
-    }
-
-    const rows = salesData.map((r: any) => {
+  const exportSalesXlsx = () => {
+    const rows = (sales.data ?? []).map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
       const total = Number(r.unit_price) * Number(r.quantity);
       const p = r._profile ?? {};
-      const orderId = r.orders?.id ?? r.order_id;
-      const itemRefunds = refundsByItem.get(r.id) ?? [];
-      const orderRefunds = refundsByOrder.get(orderId) ?? [];
-      // prefer per-item refunds; fall back to order-level if no item-specific
-      const applicable = itemRefunds.length ? itemRefunds : orderRefunds.filter((x: any) => !x.order_item_id);
-      const refundAmount = applicable.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+      const applicable = r._refunds ?? [];
+      const refundAmount = Number(r._refundAmount ?? 0);
       const refundTypes = Array.from(new Set(applicable.map((x: any) => x.type).filter(Boolean))).join(", ");
       const refundNotes = applicable.map((x: any) => x.notes).filter(Boolean).join(" | ");
       const refundDates = applicable.map((x: any) => new Date(x.created_at).toLocaleDateString("en-GB")).join(", ");
       const netProfit = Number(r._profit ?? 0) - refundAmount;
+      const delivered = (r.delivered_accounts ?? [])[0];
       return {
         "رقم الطلب": r.orders?.order_number,
         "اسم العميل": r.orders?.customer_name ?? p.display_name ?? "",
         "البريد الإلكتروني": r.orders?.customer_email ?? "",
         "رقم الواتساب": r.orders?.customer_phone ?? p.phone ?? "",
         "الدولة": p.country ?? "",
+        "طريقة الدفع": r.orders?.payment_method ?? "",
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
@@ -223,6 +221,9 @@ function AdminOverview() {
         "الإجمالي": total,
         "سعر الشراء": r._cost ?? 0,
         "الربح": r._profit ?? 0,
+        "تم التسليم؟": delivered ? "نعم" : "لا",
+        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB") : "",
+        "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
         "تم عمل استرداد؟": refundAmount > 0 ? "نعم" : "لا",
         "قيمة الاسترداد": refundAmount,
         "نوع الاسترداد": refundTypes,
@@ -398,39 +399,152 @@ function AdminOverview() {
             تحميل Excel
           </button>
         </div>
-        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-card">
+            <thead className="sticky top-0 bg-card z-10">
               <tr className="text-start text-xs uppercase text-muted-foreground border-b border-border">
-                <th className="p-2 text-start">الخدمة</th>
-                <th className="p-2 text-start">الخطة</th>
-                <th className="p-2 text-start">الكمية</th>
-                <th className="p-2 text-start">السعر</th>
-                <th className="p-2 text-start">الربح</th>
-                <th className="p-2 text-start">التاريخ</th>
-                <th className="p-2 text-start">الوقت</th>
+                <th className="p-2 text-start w-8"></th>
                 <th className="p-2 text-start">الطلب</th>
+                <th className="p-2 text-start">العميل</th>
+                <th className="p-2 text-start">الخدمة / الخطة</th>
+                <th className="p-2 text-start">الكمية</th>
+                <th className="p-2 text-start">الإجمالي</th>
+                <th className="p-2 text-start">الربح</th>
+                <th className="p-2 text-start">الحالة</th>
+                <th className="p-2 text-start">التسليم</th>
+                <th className="p-2 text-start">الاسترداد</th>
+                <th className="p-2 text-start">التاريخ</th>
               </tr>
             </thead>
             <tbody>
               {sales.data?.map((r: any) => {
                 const d = new Date(r.orders?.created_at ?? r.created_at);
                 const profit = Number(r._profit ?? 0);
+                const refundAmount = Number(r._refundAmount ?? 0);
+                const netProfit = profit - refundAmount;
+                const delivered = (r.delivered_accounts ?? [])[0];
+                const p = r._profile ?? {};
+                const status = r.orders?.status;
+                const isExpanded = expandedRow === r.id;
+                const statusColors: Record<string, string> = {
+                  delivered: "bg-success/15 text-success",
+                  paid: "bg-brand/15 text-brand",
+                  refunded: "bg-destructive/15 text-destructive",
+                  pending: "bg-warning/15 text-warning",
+                };
                 return (
-                  <tr key={r.id} className="border-b border-border/60">
-                    <td className="p-2 font-bold">{r.product_name}</td>
-                    <td className="p-2 text-muted-foreground">{r.plan_label}</td>
-                    <td className="p-2">{r.quantity}</td>
-                    <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
-                    <td className={`p-2 font-bold ${profit >= 0 ? "text-success" : "text-destructive"}`}>{Math.round(profit)} {t.common.currency}</td>
-                    <td className="p-2 font-mono text-xs">{d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
-                    <td className="p-2 font-mono text-xs">{d.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
-                    <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
-                  </tr>
+                  <React.Fragment key={r.id}>
+                    <tr
+                      key={r.id}
+                      className="border-b border-border/60 hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={() => setExpandedRow(isExpanded ? null : r.id)}
+                    >
+                      <td className="p-2 text-muted-foreground">{isExpanded ? "▾" : "▸"}</td>
+                      <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
+                      <td className="p-2 text-xs">
+                        <div className="font-bold truncate max-w-[140px]">{r.orders?.customer_name ?? p.display_name ?? "—"}</div>
+                        <div className="text-muted-foreground truncate max-w-[140px]">{r.orders?.customer_email}</div>
+                      </td>
+                      <td className="p-2">
+                        <div className="font-bold truncate max-w-[180px]">{r.product_name}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[180px]">{r.plan_label}</div>
+                      </td>
+                      <td className="p-2">{r.quantity}</td>
+                      <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                      <td className={`p-2 font-bold ${netProfit >= 0 ? "text-success" : "text-destructive"}`}>
+                        {Math.round(netProfit)} {t.common.currency}
+                      </td>
+                      <td className="p-2">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColors[status] ?? "bg-muted text-muted-foreground"}`}>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="p-2 text-xs">
+                        {delivered ? (
+                          <span className="text-success font-bold">✓ تم</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-2 text-xs">
+                        {refundAmount > 0 ? (
+                          <span className="text-destructive font-bold">-{Math.round(refundAmount)} {t.common.currency}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-2 font-mono text-[11px] whitespace-nowrap">
+                        {d.toLocaleDateString("en-GB")}<br />
+                        <span className="text-muted-foreground">{d.toLocaleTimeString("en-GB")}</span>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-muted/20 border-b border-border/60">
+                        <td colSpan={11} className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">بيانات العميل</div>
+                              <div>الاسم: {r.orders?.customer_name ?? p.display_name ?? "—"}</div>
+                              <div>البريد: {r.orders?.customer_email ?? "—"}</div>
+                              <div>الواتساب: {r.orders?.customer_phone ?? p.phone ?? "—"}</div>
+                              <div>الدولة: {p.country ?? "—"}</div>
+                            </div>
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
+                              <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
+                              <div>الإجمالي: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
+                              <div className="text-success">الربح: {Math.round(profit)} {t.common.currency}</div>
+                              {refundAmount > 0 && (
+                                <div className="text-destructive font-bold">الصافي بعد الاسترداد: {Math.round(netProfit)} {t.common.currency}</div>
+                              )}
+                              {r.orders?.payment_method && <div>طريقة الدفع: {r.orders.payment_method}</div>}
+                            </div>
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">التسليم</div>
+                              {delivered ? (
+                                <>
+                                  <div className="text-success">✓ تم التسليم</div>
+                                  <div>الحساب: {delivered.account_email ?? delivered.account_username ?? "—"}</div>
+                                  {delivered.delivered_at && (
+                                    <div>التاريخ: {new Date(delivered.delivered_at).toLocaleString("en-GB")}</div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="text-muted-foreground">لم يتم التسليم بعد</div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">الاسترداد</div>
+                              {(r._refunds ?? []).length > 0 ? (
+                                <div className="space-y-1">
+                                  {r._refunds.map((rf: any, i: number) => (
+                                    <div key={i} className="border-s-2 border-destructive ps-2">
+                                      <div className="text-destructive font-bold">-{Math.round(Number(rf.amount))} {t.common.currency} • {rf.type ?? "—"}</div>
+                                      <div className="text-muted-foreground">{new Date(rf.created_at).toLocaleString("en-GB")}</div>
+                                      {rf.notes && <div className="italic">{rf.notes}</div>}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-muted-foreground">لا يوجد</div>
+                              )}
+                            </div>
+                            {r.orders?.notes && (
+                              <div className="md:col-span-2 lg:col-span-4">
+                                <div className="font-bold text-muted-foreground mb-1">ملاحظات الطلب</div>
+                                <div className="whitespace-pre-wrap">{r.orders.notes}</div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })}
               {!sales.data?.length && (
-                <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
+                <tr><td colSpan={11} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
               )}
             </tbody>
           </table>
