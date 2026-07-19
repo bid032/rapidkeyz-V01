@@ -89,7 +89,7 @@ export function CategoriesShowcase({
         data-gsap="card-pop"
         className={
           mini
-            ? "grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 max-w-3xl mx-auto"
+            ? "grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 max-w-4xl mx-auto"
             : "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5"
         }
       >
@@ -103,21 +103,54 @@ export function CategoriesShowcase({
                 search={{ category: c.slug }}
                 data-gsap="magnetic"
                 data-strength="0.15"
-                className={`group relative flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 sm:py-2.5 text-center transition-all duration-300 hover:-translate-y-0.5 hover:brand-glow ${
+                className={`group relative block overflow-hidden rounded-2xl border p-3 sm:p-4 text-start transition-all duration-300 hover:-translate-y-1 hover:brand-glow ${
                   isActive
                     ? "border-brand bg-brand/10"
                     : "border-border bg-card hover:border-brand/60"
                 }`}
               >
-                <div className="font-mono text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-brand/70">
-                  / {String(i + 1).padStart(2, "0")}
+                {/* gradient border glow on hover */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, var(--brand) 0%, transparent 40%, transparent 60%, var(--brand-deep) 100%)",
+                    WebkitMask:
+                      "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                    padding: 1,
+                  }}
+                />
+                {/* glow blob */}
+                <div className="pointer-events-none absolute -top-10 -end-10 size-24 rounded-full bg-brand/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* shine sweep */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-brand/20 to-transparent"
+                />
+
+                <div className="relative flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand/70 mb-1.5">
+                      / {String(i + 1).padStart(2, "0")}
+                    </div>
+                    <h3 className="font-display text-[13px] sm:text-sm md:text-base font-bold leading-tight group-hover:text-brand transition-colors line-clamp-2">
+                      {lang === "ar" ? c.name_ar : c.name_en}
+                    </h3>
+                  </div>
+                  <span className="shrink-0 grid place-items-center size-7 sm:size-8 rounded-full border border-border bg-background/60 text-muted-foreground group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand group-hover:rotate-45 transition-all duration-300">
+                    <ArrowUpRight className="size-3 sm:size-3.5" />
+                  </span>
                 </div>
-                <h3 className="font-display text-[11px] sm:text-xs font-bold leading-tight group-hover:text-brand transition-colors line-clamp-1">
-                  {lang === "ar" ? c.name_ar : c.name_en}
-                </h3>
-                <span className="mt-0.5 grid place-items-center size-5 sm:size-6 rounded-full border border-border bg-background/60 text-muted-foreground group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand transition-all">
-                  <ArrowUpRight className="size-2.5 sm:size-3" />
-                </span>
+
+                <div className="relative mt-3 sm:mt-4 flex items-center gap-2 text-[10px] font-semibold text-muted-foreground group-hover:text-brand transition-colors">
+                  <span className="h-px flex-1 bg-border group-hover:bg-gradient-to-r group-hover:from-brand group-hover:via-accent group-hover:to-transparent transition-colors" />
+                  <span className="font-mono uppercase tracking-widest">
+                    {lang === "ar" ? "استكشف" : "Explore"}
+                  </span>
+                </div>
               </Link>
             );
           }
@@ -198,3 +231,4 @@ export function CategoriesShowcase({
     </section>
   );
 }
+
