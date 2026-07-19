@@ -51,9 +51,12 @@ function AdminOverview() {
   const stats = useQuery({
     queryKey: ["admin-stats", month],
     queryFn: async () => {
-      let refundsQ = supabase.from("refunds").select("amount");
-      if (range.start) refundsQ = refundsQ.gte("created_at", range.start);
-      if (range.end) refundsQ = refundsQ.lt("created_at", range.end);
+      // Refunds must be attributed to the ORIGINATING order's date, not refunds.created_at,
+      // so the KPI card matches the profit figure from admin_revenue_stats.
+      let refundsQ = supabase.from("refunds").select("amount, orders!inner(created_at, status)").in("orders.status", ["paid", "delivered"]);
+      if (range.start) refundsQ = refundsQ.gte("orders.created_at", range.start);
+      if (range.end) refundsQ = refundsQ.lt("orders.created_at", range.end);
+
       let allOrdersQ = supabase.from("orders").select("id", { count: "exact", head: true });
       if (range.start) allOrdersQ = allOrdersQ.gte("created_at", range.start);
       if (range.end) allOrdersQ = allOrdersQ.lt("created_at", range.end);
