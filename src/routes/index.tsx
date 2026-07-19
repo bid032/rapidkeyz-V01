@@ -263,7 +263,7 @@ function HomePage() {
 
             {/* Visual Side */}
             <div className="lg:col-span-5 order-1 lg:order-2 relative flex justify-center items-center">
-              <div className="relative w-full max-w-[420px] px-2 py-6 sm:py-12 flex justify-center items-center">
+              <div className="relative w-full max-w-[420px] px-2 py-3 sm:py-12 flex justify-center items-center">
                 {/* Radial glow */}
                 <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
 
