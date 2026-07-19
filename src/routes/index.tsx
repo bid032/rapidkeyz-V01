@@ -185,12 +185,13 @@ function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-12 items-center">
             {/* Content Side */}
             <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-4 sm:space-y-6">
 
               {/* Live pill */}
-              <div data-gsap="reveal" className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
+
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
