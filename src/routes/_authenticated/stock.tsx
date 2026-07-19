@@ -2,16 +2,17 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, Copy, Undo2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, Copy, Undo2, Minus, Plus, User, UserCircle2, Package, Sparkles, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { PageHero } from "@/components/PageHero";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
 const STAFF_KEY = "rk_stock_staff";
+
 
 export const Route = createFileRoute("/_authenticated/stock")({
   beforeLoad: async () => {
