@@ -266,23 +266,13 @@ function HomePage() {
                 {/* Radial glow */}
                 <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
 
-                {/* 3D R Monolith card */}
-                <div className="relative group w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <Logo3D className="w-40 sm:w-56 lg:w-64" />
-
-                  {/* Premium badge */}
-                  <div className="absolute -top-3 -right-3 bg-brand text-brand-foreground px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
-                    Premium
-                  </div>
-                </div>
-
-                {/* NEW Card — top-right overlay */}
+                {/* NEW Card — top-right overlay (behind logo) */}
                 {trending[1] && (
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="absolute top-0 right-0 sm:-right-4 w-52 sm:w-56 p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-20"
+                    className="absolute -top-2 -right-2 sm:-top-4 sm:-right-8 w-52 sm:w-56 p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2.5">
                       {trending[1].icon_url ? (
@@ -307,13 +297,13 @@ function HomePage() {
                   </Link>
                 )}
 
-                {/* TRENDING Card — bottom-left overlay */}
+                {/* TRENDING Card — bottom-left overlay (behind logo) */}
                 {trending[0] && (
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="absolute bottom-0 left-0 sm:-left-4 w-56 sm:w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-20"
+                    className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-8 w-56 sm:w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-3">
                       {trending[0].icon_url ? (
@@ -337,6 +327,17 @@ function HomePage() {
                     </div>
                   </Link>
                 )}
+
+                {/* 3D R Monolith card — on top */}
+                <div className="relative z-20 group w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Logo3D className="w-40 sm:w-56 lg:w-64" />
+
+                  {/* Premium badge */}
+                  <div className="absolute -top-3 -right-3 bg-brand text-brand-foreground px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
+                    Premium
+                  </div>
+                </div>
+
               </div>
             </div>
 
