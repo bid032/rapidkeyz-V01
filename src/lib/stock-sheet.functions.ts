@@ -77,9 +77,20 @@ export type StockAppData = {
   fetchedAt: string;
 };
 
+type CacheEntry = { at: number; data: StockAppData };
+const APP_DATA_CACHE = new Map<string, CacheEntry>();
+const APP_DATA_TTL_MS = 20_000;
+
 export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
   const { requireStockStaff } = await import("@/lib/stock-auth.server");
   const session = await requireStockStaff();
+
+  const cacheKey = session.staffName || "_";
+  const cached = APP_DATA_CACHE.get(cacheKey);
+  if (cached && Date.now() - cached.at < APP_DATA_TTL_MS) {
+    return cached.data;
+  }
+
   const spreadsheetId = await getSpreadsheetId();
 
   const [productsRaw, stockRaw] = await Promise.all([
@@ -122,13 +133,15 @@ export const getStockAppData = createServerFn({ method: "GET" }).handler(async (
   const totalAvailable = products.reduce((s, p) => s + p.availableCount, 0);
   const lowStockCount = products.filter((p) => p.availableCount <= 3).length;
 
-  return {
+  const result: StockAppData = {
     products,
     staffName: session.staffName,
     totalAvailable,
     lowStockCount,
     fetchedAt: new Date().toISOString(),
   };
+  APP_DATA_CACHE.set(cacheKey, { at: Date.now(), data: result });
+  return result;
 });
 
 export type IssueResult = {
@@ -213,6 +226,7 @@ export const issueStock = createServerFn({ method: "POST" })
       values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName]] as (string | number)[][],
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
+    APP_DATA_CACHE.clear();
 
     const deliveredText = picks.map((p) => p.code).filter(Boolean).join("\n\n");
     // Orders columns: A orderId, B time, C staff, D customer, E product, F qty, G delivered, H notes, I status, J customer whatsapp
@@ -274,6 +288,7 @@ export const revertIssue = createServerFn({ method: "POST" })
       values: [["AVAILABLE", r.addedOnRaw, "", "", "", ""]] as (string | number)[][],
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
+    APP_DATA_CACHE.clear();
 
     const ordersRaw = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:J20000`);
     for (let i = 1; i < ordersRaw.length; i++) {

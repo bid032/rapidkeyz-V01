@@ -174,7 +174,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div id="rk-pre-splash" aria-hidden="true" suppressHydrationWarning />
+        <div id="rk-pre-splash" aria-hidden="true" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: "" }} />
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
