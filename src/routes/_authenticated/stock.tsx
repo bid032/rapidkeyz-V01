@@ -6,6 +6,8 @@ import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, 
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
 const STAFF_KEY = "rk_stock_staff";
