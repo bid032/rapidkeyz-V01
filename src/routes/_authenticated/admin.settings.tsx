@@ -69,7 +69,6 @@ function AdminSettings() {
         { key: "socials", value: socials },
         { key: "stats", value: stats },
         { key: "theme_mode", value: { mode: themeMode } },
-        { key: "stock_sheet", value: stockSheet },
       ]);
       if (error) throw error;
     },
