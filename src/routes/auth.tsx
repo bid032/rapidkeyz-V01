@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
+import { filterName, filterDigits, filterEmail } from "@/lib/input-filters";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
 
@@ -163,7 +164,7 @@ function AuthPage() {
                   required
                   placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setName(filterName(e.target.value))}
                   className="w-full px-4 py-3 bg-background border border-border rounded-lg"
                 />
                 <select
@@ -189,7 +190,7 @@ function AuthPage() {
                     inputMode="tel"
                     placeholder={lang === "ar" ? "رقم الواتساب" : "WhatsApp number"}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                    onChange={(e) => setPhone(filterDigits(e.target.value, 15))}
                     className="flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-left placeholder:text-right"
                     dir="ltr"
                   />
@@ -201,7 +202,7 @@ function AuthPage() {
               type="email"
               placeholder={t.auth.email}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(filterEmail(e.target.value))}
               className="w-full px-4 py-3 bg-background border border-border rounded-lg"
             />
             {mode !== "forgot" && (

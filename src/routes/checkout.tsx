@@ -10,6 +10,7 @@ import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.funct
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
+import { filterName, filterDigits, filterEmail, filterPhone } from "@/lib/input-filters";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -264,7 +265,7 @@ function CheckoutPage() {
                     type="text"
                     placeholder={lang === "ar" ? "الاسم بالكامل" : "Full name"}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(filterName(e.target.value))}
                     className="px-4 py-3 bg-background border border-border rounded-lg"
                   />
                   <input
@@ -272,7 +273,7 @@ function CheckoutPage() {
                     type="email"
                     placeholder={t.checkout.email}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(filterEmail(e.target.value))}
                     readOnly={!!user}
                     className={`px-4 py-3 bg-background border border-border rounded-lg ${user ? "opacity-70 cursor-not-allowed" : ""}`}
                   />
@@ -297,7 +298,7 @@ function CheckoutPage() {
                       inputMode="tel"
                       placeholder={lang === "ar" ? "1XXXXXXXXX" : "1XXXXXXXXX"}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                      onChange={(e) => setPhone(filterDigits(e.target.value, 15))}
                       className="flex-1 px-4 py-3 bg-transparent outline-none"
                       dir="ltr"
                     />
@@ -431,7 +432,7 @@ function CheckoutPage() {
                         required
                         type="tel"
                         value={senderPhone}
-                        onChange={(e) => setSenderPhone(e.target.value)}
+                        onChange={(e) => setSenderPhone(filterDigits(e.target.value, 15))}
                         placeholder={lang === "ar" ? "01xxxxxxxxx" : "01xxxxxxxxx"}
                         className="px-4 py-3 bg-background border border-border rounded-lg"
                       />

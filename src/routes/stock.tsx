@@ -15,6 +15,7 @@ import {
 import { getStockSession } from "@/lib/stock-auth.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { filterName, filterPhone } from "@/lib/input-filters";
 
 export const Route = createFileRoute("/stock")({
   component: StockPage,
@@ -329,7 +330,7 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
               <input
                 type="text"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                onChange={(e) => setCustomerName(filterName(e.target.value))}
                 placeholder="اكتب اسم العميل"
                 className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand"
               />
@@ -340,7 +341,7 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
                 type="tel"
                 dir="ltr"
                 value={customerWhatsapp}
-                onChange={(e) => setCustomerWhatsapp(e.target.value)}
+                onChange={(e) => setCustomerWhatsapp(filterPhone(e.target.value, 20))}
                 placeholder="+20…"
                 className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand text-left"
               />

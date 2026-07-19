@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import type { User } from "@supabase/supabase-js";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
+import { filterName, filterDigits } from "@/lib/input-filters";
 
 const searchSchema = z.object({ complete: z.string().optional() });
 
@@ -144,7 +145,7 @@ function AccountPage() {
             <input
               required
               value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={(e) => setDisplayName(filterName(e.target.value))}
               className="w-full px-4 py-3 bg-background border border-border rounded-lg"
             />
           </div>
@@ -187,7 +188,7 @@ function AccountPage() {
                 type="tel"
                 inputMode="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                onChange={(e) => setPhone(filterDigits(e.target.value, 15))}
                 className="flex-1 px-4 py-3 bg-transparent outline-none"
                 dir="ltr"
               />
