@@ -99,11 +99,6 @@ export function Header() {
             <Link to="/privacy" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.privacy}
             </Link>
-            {user && (
-              <Link to="/dashboard" className="hover:text-foreground transition-colors">
-                {t.nav.dashboard}
-              </Link>
-            )}
             {hasStock && (
               <Link to="/stock" className="inline-flex items-center rounded-full px-3 py-1 text-xs font-extrabold bg-blue-600 text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 transition-colors">
                 {lang === "ar" ? "الاستوك" : "Stock"}
