@@ -57,17 +57,10 @@ export function CategoriesShowcase({
 
       <div className={`text-center ${mini ? "mb-5 sm:mb-7" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
         {mini ? (
-          <>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
-              <Sparkles className="size-3.5" />
-              {lang === "ar" ? "تصفّح حسب القسم" : "Browse by category"}
-            </div>
-            <h2 className="mt-3 font-display font-bold tracking-tight leading-[1.15] pb-1 text-xl sm:text-2xl md:text-3xl">
-              <span className="brand-text">{lang === "ar" ? "اختر قسمك" : "Pick your category"}</span>
-            </h2>
-            <div className="mx-auto mt-4 h-px w-20 bg-gradient-to-r from-transparent via-brand to-transparent" />
-          </>
-
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
+            <Sparkles className="size-3.5" />
+            {lang === "ar" ? "تصفّح حسب القسم" : "Browse by category"}
+          </div>
         ) : (
           <>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full neon-border text-brand text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">
@@ -107,57 +100,69 @@ export function CategoriesShowcase({
                 to="/shop"
                 search={{ category: c.slug }}
                 data-gsap="magnetic"
-                data-strength="0.15"
-                className={`group relative block overflow-hidden rounded-2xl border p-3 sm:p-4 text-start transition-all duration-300 hover:-translate-y-1 hover:brand-glow ${
+                data-strength="0.2"
+                className={`group relative block overflow-hidden rounded-2xl border p-3.5 sm:p-4 text-start transition-all duration-500 hover:-translate-y-1.5 hover:brand-glow ${
                   isActive
                     ? "border-brand bg-brand/10"
-                    : "border-border bg-card hover:border-brand/60"
+                    : "border-border bg-card hover:border-brand"
                 }`}
+                style={{ aspectRatio: "1 / 1.05" }}
               >
-                {/* gradient border glow on hover */}
+                {/* dotted grid background */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  className="pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-70 transition-opacity duration-500"
                   style={{
-                    background:
-                      "linear-gradient(135deg, var(--brand) 0%, transparent 40%, transparent 60%, var(--brand-deep) 100%)",
-                    WebkitMask:
-                      "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                    WebkitMaskComposite: "xor",
-                    maskComposite: "exclude",
-                    padding: 1,
+                    backgroundImage:
+                      "radial-gradient(circle, var(--brand) 1px, transparent 1px)",
+                    backgroundSize: "14px 14px",
+                    maskImage:
+                      "radial-gradient(circle at 100% 0%, black 0%, transparent 70%)",
                   }}
                 />
-                {/* glow blob */}
-                <div className="pointer-events-none absolute -top-10 -end-10 size-24 rounded-full bg-brand/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                {/* shine sweep */}
+
+                {/* huge watermark number */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-brand/20 to-transparent"
+                  className="pointer-events-none absolute -bottom-4 -end-2 font-display font-black leading-none text-transparent bg-gradient-to-br from-brand/25 to-brand/0 bg-clip-text text-[80px] sm:text-[96px] select-none transition-transform duration-700 group-hover:-rotate-6 group-hover:scale-110"
+                  style={{ WebkitTextStroke: "1px color-mix(in oklab, var(--brand) 30%, transparent)" }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+
+                {/* diagonal shine sweep */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-brand/25 to-transparent"
                 />
 
-                <div className="relative flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand/70 mb-1.5">
-                      / {String(i + 1).padStart(2, "0")}
-                    </div>
-                    <h3 className="font-display text-[13px] sm:text-sm md:text-base font-bold leading-tight group-hover:text-brand transition-colors line-clamp-2">
-                      {lang === "ar" ? c.name_ar : c.name_en}
-                    </h3>
-                  </div>
-                  <span className="shrink-0 grid place-items-center size-7 sm:size-8 rounded-full border border-border bg-background/60 text-muted-foreground group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand group-hover:rotate-45 transition-all duration-300">
+                {/* corner glow */}
+                <div className="pointer-events-none absolute -top-12 -start-12 size-28 rounded-full bg-brand/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                {/* top row: live dot + arrow */}
+                <div className="relative flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/40 bg-background/70 backdrop-blur px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-brand">
+                    <span className="relative flex size-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
+                      <span className="relative inline-flex size-1.5 rounded-full bg-brand" />
+                    </span>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="grid place-items-center size-7 sm:size-8 rounded-full border border-border bg-background/70 backdrop-blur text-muted-foreground transition-all duration-500 group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand group-hover:rotate-45 group-hover:scale-110">
                     <ArrowUpRight className="size-3 sm:size-3.5" />
                   </span>
                 </div>
 
-                <div className="relative mt-3 sm:mt-4 flex items-center gap-2 text-[10px] font-semibold text-muted-foreground group-hover:text-brand transition-colors">
-                  <span className="h-px flex-1 bg-border group-hover:bg-gradient-to-r group-hover:from-brand group-hover:via-accent group-hover:to-transparent transition-colors" />
-                  <span className="font-mono uppercase tracking-widest">
-                    {lang === "ar" ? "استكشف" : "Explore"}
-                  </span>
+                {/* title anchored bottom */}
+                <div className="absolute inset-x-3.5 sm:inset-x-4 bottom-3.5 sm:bottom-4">
+                  <h3 className="font-display text-[15px] sm:text-base md:text-lg font-extrabold leading-tight text-foreground group-hover:text-brand transition-colors line-clamp-2">
+                    {lang === "ar" ? c.name_ar : c.name_en}
+                  </h3>
+                  <div className="mt-1.5 h-[2px] w-6 origin-left rounded-full bg-gradient-to-r from-brand via-accent to-transparent scale-x-100 group-hover:w-full transition-all duration-500" />
                 </div>
               </Link>
             );
+
           }
           return (
             <div
