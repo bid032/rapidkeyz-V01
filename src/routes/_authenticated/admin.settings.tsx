@@ -33,7 +33,7 @@ function AdminSettings() {
     cta_secondary_ar: "", cta_secondary_en: "",
     trusted_ar: "", trusted_en: "",
   });
-  const [stockSheet, setStockSheet] = useState<any>({ spreadsheet_id: "", sheet_title: "" });
+  
 
   const settings = useQuery({
     queryKey: ["site-settings"],
