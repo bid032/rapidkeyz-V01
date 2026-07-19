@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/admin/staff")({
 });
 
 function emptyRow(): StaffRecord {
-  return { name: "", username: "", password: "", whatsapp: "", active: true };
+  return { name: "", username: "", password: "", active: true };
 }
 
 function AdminStaff() {
@@ -169,7 +169,6 @@ function AdminStaff() {
                   <th className="p-3 text-right">الاسم</th>
                   <th className="p-3 text-right">Username</th>
                   <th className="p-3 text-right">Password</th>
-                  <th className="p-3 text-right">WhatsApp</th>
                   <th className="p-3 text-right">مفعّل</th>
                   <th className="p-3 text-right w-16">حذف</th>
                 </tr>
@@ -213,16 +212,6 @@ function AdminStaff() {
                           <Copy className="w-4 h-4" />
                         </button>
                       </div>
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="tel"
-                        dir="ltr"
-                        value={row.whatsapp}
-                        onChange={(e) => update(i, { whatsapp: e.target.value })}
-                        placeholder="+20…"
-                        className="w-full px-2 py-1.5 bg-background border border-border rounded-lg text-sm focus:outline-none focus:border-brand"
-                      />
                     </td>
                     <td className="p-2 text-center">
                       <label className="inline-flex items-center gap-1.5 cursor-pointer">

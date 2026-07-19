@@ -4,7 +4,7 @@ import { fetchStaffFromSheet, type StaffRecord } from "@/lib/stock-auth.function
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const STAFF_TAB = "Staff";
-const HEADER = ["Name", "Username", "Password", "WhatsApp", "Active"];
+const HEADER = ["Name", "Username", "Password", "Active"];
 const MAX_ROWS = 1000;
 
 function authHeaders() {
@@ -63,21 +63,20 @@ export const saveStockStaff = createServerFn({ method: "POST" })
         name,
         username,
         password: String(s.password ?? ""),
-        whatsapp: (s.whatsapp ?? "").trim(),
         active: !!s.active,
       });
     }
 
     if (cleaned.length + 1 > MAX_ROWS) throw new Error("عدد الموظفين تجاوز الحد المسموح");
 
-    // Build A1:E{MAX_ROWS} padded with blanks
+    // Build A1:D{MAX_ROWS} padded with blanks
     const rows: (string | number)[][] = [HEADER];
     for (const s of cleaned) {
-      rows.push([s.name, s.username, s.password, s.whatsapp, s.active ? "TRUE" : "FALSE"]);
+      rows.push([s.name, s.username, s.password, s.active ? "TRUE" : "FALSE"]);
     }
-    while (rows.length < MAX_ROWS) rows.push(["", "", "", "", ""]);
+    while (rows.length < MAX_ROWS) rows.push(["", "", "", ""]);
 
-    const range = `${STAFF_TAB}!A1:E${MAX_ROWS}`;
+    const range = `${STAFF_TAB}!A1:D${MAX_ROWS}`;
     const url = `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
     const res = await fetch(url, {
       method: "PUT",
