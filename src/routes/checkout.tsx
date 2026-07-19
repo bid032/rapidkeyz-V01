@@ -10,6 +10,7 @@ import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.funct
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
+import { filterName, filterDigits, filterEmail, filterPhone } from "@/lib/input-filters";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
