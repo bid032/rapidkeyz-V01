@@ -217,9 +217,6 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
         {/* Main dispenser panel */}
         <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5 shadow-sm">
 
-            </p>
-          </div>
-
           {/* Info strip */}
           <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid grid-cols-3 gap-2 sm:gap-3 text-sm text-center sm:text-start">
             <div>
