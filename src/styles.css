@@ -224,14 +224,6 @@ header, main, footer, section { position: relative; z-index: 1; }
   text-shadow: 0 0 24px color-mix(in oklab, var(--brand) 60%, transparent);
 }
 
-@utility grid-noise {
-  background-image:
-    linear-gradient(color-mix(in oklab, var(--brand) 10%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--brand) 10%, transparent) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse at center, black 40%, transparent 90%);
-}
-
 @utility neon-border {
   border: 1px solid color-mix(in oklab, var(--brand) 35%, transparent);
   box-shadow:
