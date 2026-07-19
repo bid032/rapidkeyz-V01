@@ -497,8 +497,7 @@ function AdminOverview() {
                               {refundAmount > 0 && (
                                 <div className="text-destructive font-bold">الصافي بعد الاسترداد: {Math.round(netProfit)} {t.common.currency}</div>
                               )}
-                              {r.orders?.payment_method && <div>طريقة الدفع: {r.orders.payment_method}</div>}
-                              {r.orders?.payment_gateway && <div>البوابة: {r.orders.payment_gateway}</div>}
+                              {r.orders?.payment_gateway && <div>طريقة الدفع: {r.orders.payment_gateway}</div>}
                               {r.orders?.payment_sender_phone && <div>رقم المُحوَّل منه: {r.orders.payment_sender_phone}</div>}
                               {r.orders?.payment_reference && <div>مرجع الدفع: {r.orders.payment_reference}</div>}
                               {r.orders?.total != null && <div>إجمالي الطلب كامل: {Math.round(Number(r.orders.total))} {t.common.currency}</div>}
