@@ -25,7 +25,7 @@ type Review = {
 
 function AdminReviews() {
   const qc = useQueryClient();
-  const { lang } = useApp();
+  const { lang, confirm: confirmDialog } = useApp();
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Partial<Review>>({
@@ -322,8 +322,9 @@ function AdminReviews() {
                         <Pencil className="size-4" />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm("تأكيد الحذف؟")) del.mutate(r.id);
+                        onClick={async () => {
+                          const ok = await confirmDialog({ message: "تأكيد الحذف؟", tone: "danger", confirmLabel: "احذف" });
+                          if (ok) del.mutate(r.id);
                         }}
                         className="p-2 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10"
                         title="حذف"
