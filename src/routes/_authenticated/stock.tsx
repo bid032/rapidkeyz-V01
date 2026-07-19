@@ -217,7 +217,7 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
 
       <div className="grid lg:grid-cols-3 gap-5">
         {/* Main dispenser panel */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5">
+        <div className="order-2 lg:order-1 lg:col-span-2 bg-card border border-border rounded-3xl p-5 sm:p-6 space-y-5">
           <div>
             <h2 className="text-xl font-extrabold">الاستوك</h2>
             <p className="text-xs text-muted-foreground mt-1">
