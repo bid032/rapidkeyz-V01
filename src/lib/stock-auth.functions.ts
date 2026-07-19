@@ -107,23 +107,41 @@ export const stockLogin = createServerFn({ method: "POST" })
       await new Promise((r) => setTimeout(r, 400));
       return { ok: false as const, error: "بيانات الدخول غير صحيحة" };
     }
-    const { updateStockSession } = await import("@/lib/stock-auth.server");
-    await updateStockSession({ staffName: match!.name, loggedAt: Date.now() });
-    console.log("[stockLogin] session updated for:", match!.name);
+    const { useSession } = await import("@tanstack/react-start/server");
+    const session = await useSession<{ staffName?: string; loggedAt?: number }>(getSessionConfig());
+    await session.update({ staffName: match!.name, loggedAt: Date.now() });
     return { ok: true as const, staffName: match!.name };
   });
 
 /** PUBLIC: log out from stock session. */
 export const stockLogout = createServerFn({ method: "POST" }).handler(async () => {
-  const { clearStockSession } = await import("@/lib/stock-auth.server");
-  await clearStockSession();
+  const { useSession } = await import("@tanstack/react-start/server");
+  const session = await useSession<{ staffName?: string }>(getSessionConfig());
+  await session.clear();
   return { ok: true as const };
 });
 
 /** PUBLIC: read current stock session (safe fields only). */
 export const getStockSession = createServerFn({ method: "GET" }).handler(async () => {
-  const { readStockSession } = await import("@/lib/stock-auth.server");
-  const data = await readStockSession();
+  const { useSession } = await import("@tanstack/react-start/server");
+  const session = await useSession<{ staffName?: string }>(getSessionConfig());
+  const data = session.data ?? {};
   if (!data.staffName) return { loggedIn: false as const };
   return { loggedIn: true as const, staffName: data.staffName };
 });
+
+function getSessionConfig() {
+  const password = process.env.SESSION_SECRET;
+  if (!password) throw new Error("SESSION_SECRET is not configured");
+  return {
+    password,
+    name: "rk-stock-session",
+    maxAge: 60 * 60 * 24 * 7,
+    cookie: {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax" as const,
+      path: "/",
+    },
+  };
+}
