@@ -10,8 +10,10 @@ import {
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import {
-  getStockAppData, issueStock, revertIssue, type IssueResult,
+  getStockAppData, issueStock, revertIssue, getStockDuplicates,
+  type IssueResult, type DuplicatesResult,
 } from "@/lib/stock-sheet.functions";
+
 import { getStockSession } from "@/lib/stock-auth.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
