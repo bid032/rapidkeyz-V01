@@ -52,12 +52,12 @@ export async function readStockSessionFromCookieHeader(cookieHeader: string | nu
   }
 }
 
-export function stockSessionSetCookie(value: string, requestUrl?: string) {
+export function stockSessionSetCookie(value: string, requestUrl?: string | URL) {
   const secure = requestUrl ? new URL(requestUrl).protocol === "https:" : process.env.NODE_ENV === "production";
   return `${COOKIE_NAME}=${encodeURIComponent(value)}; Max-Age=${MAX_AGE_SECONDS}; Path=/; HttpOnly; SameSite=Lax${secure ? "; Secure" : ""}`;
 }
 
-export function stockSessionClearCookie(requestUrl?: string) {
+export function stockSessionClearCookie(requestUrl?: string | URL) {
   const secure = requestUrl ? new URL(requestUrl).protocol === "https:" : process.env.NODE_ENV === "production";
   return `${COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax${secure ? "; Secure" : ""}`;
 }
