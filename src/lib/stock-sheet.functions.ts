@@ -148,7 +148,7 @@ export const getStockAppData = createServerFn({ method: "GET" })
 
     return {
       products,
-      staffNames: STAFF_NAMES,
+      staffNames,
       totalAvailable,
       lowStockCount,
       fetchedAt: new Date().toISOString(),
