@@ -540,7 +540,7 @@ function AdminOverview() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 );
               })}
               {!sales.data?.length && (
