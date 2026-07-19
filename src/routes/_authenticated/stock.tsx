@@ -226,18 +226,18 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
           </div>
 
           {/* Info strip */}
-          <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid sm:grid-cols-3 gap-3 text-sm">
+          <div className="rounded-2xl border border-brand/30 bg-brand/5 p-4 grid grid-cols-3 gap-2 sm:gap-3 text-sm text-center sm:text-start">
             <div>
-              <div className="text-muted-foreground text-xs">المتاح الآن</div>
-              <div className="font-extrabold text-brand text-lg">{availableNow}</div>
+              <div className="text-muted-foreground text-[11px] sm:text-xs">المتاح الآن</div>
+              <div className="font-extrabold text-brand text-base sm:text-lg">{availableNow}</div>
             </div>
             <div>
-              <div className="text-muted-foreground text-xs">إجمالي الستوك</div>
-              <div className="font-extrabold text-lg">{selected?.totalStock ?? 0}</div>
+              <div className="text-muted-foreground text-[11px] sm:text-xs">إجمالي الستوك</div>
+              <div className="font-extrabold text-base sm:text-lg">{selected?.totalStock ?? 0}</div>
             </div>
             <div>
-              <div className="text-muted-foreground text-xs">نوع التسليم</div>
-              <div className="font-extrabold text-lg">{selected?.unitLabel || "-"}</div>
+              <div className="text-muted-foreground text-[11px] sm:text-xs">نوع التسليم</div>
+              <div className="font-extrabold text-base sm:text-lg">{selected?.unitLabel || "-"}</div>
             </div>
           </div>
 
