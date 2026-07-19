@@ -250,7 +250,7 @@ export function Header() {
                     </Link>
                   )}
                   {hasStock && (
-                    <Link to="/stock" onClick={closeMobile} className="px-4 py-3 text-sm font-extrabold hover:bg-muted border-b border-border/40 transition-colors bg-gradient-to-r from-amber-500 via-orange-600 to-pink-600 dark:from-amber-300 dark:via-orange-400 dark:to-pink-400 bg-clip-text text-transparent">
+                    <Link to="/stock" onClick={closeMobile} className="px-4 py-3 text-sm font-extrabold border-b border-border/40 transition-colors text-fuchsia-600 dark:text-fuchsia-400 hover:bg-fuchsia-500/10">
                       {lang === "ar" ? "الاستوك" : "Stock"}
                     </Link>
                   )}
