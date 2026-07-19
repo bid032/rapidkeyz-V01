@@ -330,7 +330,7 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
               <input
                 type="text"
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                onChange={(e) => setCustomerName(filterName(e.target.value))}
                 placeholder="اكتب اسم العميل"
                 className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand"
               />
