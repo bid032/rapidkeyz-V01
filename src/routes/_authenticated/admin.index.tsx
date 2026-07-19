@@ -212,7 +212,7 @@ function AdminOverview() {
         "البريد الإلكتروني": r.orders?.customer_email ?? "",
         "رقم الواتساب": r.orders?.customer_phone ?? p.phone ?? "",
         "الدولة": p.country ?? "",
-        "طريقة الدفع": r.orders?.payment_method ?? "",
+        "طريقة الدفع": r.orders?.payment_gateway ?? "",
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
