@@ -184,6 +184,17 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
     },
   });
 
+  const dupesQ = useQuery({
+    queryKey: ["stock-duplicates"],
+    queryFn: () => dupesFn(),
+    refetchInterval: 5 * 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+
+
 
   const products = q.data?.products ?? [];
   const selected = products.find((p) => p.productName === productName);
