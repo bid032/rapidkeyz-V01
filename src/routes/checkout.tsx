@@ -432,7 +432,7 @@ function CheckoutPage() {
                         required
                         type="tel"
                         value={senderPhone}
-                        onChange={(e) => setSenderPhone(e.target.value)}
+                        onChange={(e) => setSenderPhone(filterDigits(e.target.value, 15))}
                         placeholder={lang === "ar" ? "01xxxxxxxxx" : "01xxxxxxxxx"}
                         className="px-4 py-3 bg-background border border-border rounded-lg"
                       />
