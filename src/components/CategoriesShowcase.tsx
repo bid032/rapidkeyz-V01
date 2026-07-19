@@ -101,34 +101,24 @@ export function CategoriesShowcase({
                 search={{ category: c.slug }}
                 data-gsap="magnetic"
                 data-strength="0.2"
-                className={`group relative block overflow-hidden rounded-2xl border p-3.5 sm:p-4 text-start transition-all duration-500 hover:-translate-y-1.5 hover:brand-glow ${
+                className={`group relative flex items-center gap-2.5 sm:gap-3 overflow-hidden rounded-xl border px-3 py-2.5 sm:px-3.5 sm:py-3 text-start transition-all duration-500 hover:-translate-y-0.5 hover:brand-glow ${
                   isActive
                     ? "border-brand bg-brand/10"
                     : "border-border bg-card hover:border-brand"
                 }`}
-                style={{ aspectRatio: "1 / 1.05" }}
               >
                 {/* dotted grid background */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-70 transition-opacity duration-500"
+                  className="pointer-events-none absolute inset-0 opacity-30 group-hover:opacity-60 transition-opacity duration-500"
                   style={{
                     backgroundImage:
                       "radial-gradient(circle, var(--brand) 1px, transparent 1px)",
-                    backgroundSize: "14px 14px",
+                    backgroundSize: "12px 12px",
                     maskImage:
-                      "radial-gradient(circle at 100% 0%, black 0%, transparent 70%)",
+                      "radial-gradient(circle at 100% 0%, black 0%, transparent 65%)",
                   }}
                 />
-
-                {/* huge watermark number */}
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute -bottom-4 -end-2 font-display font-black leading-none text-transparent bg-gradient-to-br from-brand/25 to-brand/0 bg-clip-text text-[80px] sm:text-[96px] select-none transition-transform duration-700 group-hover:-rotate-6 group-hover:scale-110"
-                  style={{ WebkitTextStroke: "1px color-mix(in oklab, var(--brand) 30%, transparent)" }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </div>
 
                 {/* diagonal shine sweep */}
                 <div
@@ -136,32 +126,26 @@ export function CategoriesShowcase({
                   className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-brand/25 to-transparent"
                 />
 
-                {/* corner glow */}
-                <div className="pointer-events-none absolute -top-12 -start-12 size-28 rounded-full bg-brand/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                {/* index badge */}
+                <span className="relative shrink-0 grid place-items-center size-8 sm:size-9 rounded-lg border border-brand/40 bg-background/70 backdrop-blur font-mono text-[10px] sm:text-[11px] font-black text-brand">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
 
-                {/* top row: live dot + arrow */}
-                <div className="relative flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/40 bg-background/70 backdrop-blur px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-brand">
-                    <span className="relative flex size-1.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-75" />
-                      <span className="relative inline-flex size-1.5 rounded-full bg-brand" />
-                    </span>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="grid place-items-center size-7 sm:size-8 rounded-full border border-border bg-background/70 backdrop-blur text-muted-foreground transition-all duration-500 group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand group-hover:rotate-45 group-hover:scale-110">
-                    <ArrowUpRight className="size-3 sm:size-3.5" />
-                  </span>
-                </div>
-
-                {/* title anchored bottom */}
-                <div className="absolute inset-x-3.5 sm:inset-x-4 bottom-3.5 sm:bottom-4">
-                  <h3 className="font-display text-[15px] sm:text-base md:text-lg font-extrabold leading-tight text-foreground group-hover:text-brand transition-colors line-clamp-2">
+                {/* title — always visible */}
+                <div className="relative min-w-0 flex-1">
+                  <h3 className="font-display text-[13px] sm:text-sm md:text-base font-extrabold leading-tight text-foreground group-hover:text-brand transition-colors truncate">
                     {lang === "ar" ? c.name_ar : c.name_en}
                   </h3>
-                  <div className="mt-1.5 h-[2px] w-6 origin-left rounded-full bg-gradient-to-r from-brand via-accent to-transparent scale-x-100 group-hover:w-full transition-all duration-500" />
+                  <div className="mt-1 h-[2px] w-5 rounded-full bg-gradient-to-r from-brand via-accent to-transparent group-hover:w-full transition-all duration-500" />
                 </div>
+
+                {/* arrow */}
+                <span className="relative shrink-0 grid place-items-center size-7 sm:size-8 rounded-full border border-border bg-background/70 backdrop-blur text-muted-foreground transition-all duration-500 group-hover:bg-brand group-hover:text-brand-foreground group-hover:border-brand group-hover:rotate-45">
+                  <ArrowUpRight className="size-3 sm:size-3.5" />
+                </span>
               </Link>
             );
+
 
           }
           return (
