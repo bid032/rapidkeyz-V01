@@ -98,8 +98,8 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at)")
-        .in("orders.status", ["paid", "delivered"])
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_method)")
+        .in("orders.status", ["paid", "delivered", "refunded"])
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -118,11 +118,33 @@ function AdminOverview() {
         const { data: profs } = await supabase.from("profiles").select("id, display_name, phone, country").in("id", userIds);
         (profs ?? []).forEach((p: any) => profileMap.set(p.id, p));
       }
+      const orderIds = Array.from(new Set(items.map((r) => r.order_id).filter(Boolean)));
+      const refundsByOrder = new Map<string, any[]>();
+      const refundsByItem = new Map<string, any[]>();
+      if (orderIds.length) {
+        const { data: refs } = await supabase
+          .from("refunds")
+          .select("order_id, order_item_id, amount, type, notes, created_at")
+          .in("order_id", orderIds);
+        (refs ?? []).forEach((r: any) => {
+          if (r.order_item_id) {
+            const arr = refundsByItem.get(r.order_item_id) ?? [];
+            arr.push(r); refundsByItem.set(r.order_item_id, arr);
+          } else if (r.order_id) {
+            const arr = refundsByOrder.get(r.order_id) ?? [];
+            arr.push(r); refundsByOrder.set(r.order_id, arr);
+          }
+        });
+      }
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
         const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
-        return { ...r, _cost: cost, _profit: profit, _profile: prof };
+        const itemRefs = refundsByItem.get(r.id) ?? [];
+        const orderRefs = refundsByOrder.get(r.order_id) ?? [];
+        const refs = itemRefs.length ? itemRefs : orderRefs;
+        const refundAmount = refs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+        return { ...r, _cost: cost, _profit: profit, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
       });
     },
   });
