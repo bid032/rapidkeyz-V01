@@ -61,7 +61,7 @@ function AdminOrders() {
     window.open(data.signedUrl, "_blank");
   };
 
-  // Compute per-order min days-remaining (over delivered items with duration)
+  // Compute per-order min days-remaining (over items actually delivered to the customer)
   const expiring = useMemo(() => {
     const now = Date.now();
     return (orders.data ?? []).map((o: any) => {
@@ -69,7 +69,9 @@ function AdminOrders() {
       for (const it of o.order_items ?? []) {
         const dur = Number(it.product_plans?.duration_days ?? 0);
         const dAcc = it.delivered_accounts?.[0];
-        const startAt = dAcc ? new Date(dAcc.delivered_at).getTime() : new Date(o.created_at).getTime();
+        // Only count items that were actually delivered to the customer
+        if (!dAcc) continue;
+        const startAt = new Date(dAcc.delivered_at).getTime();
         if (dur > 0) {
           const endAt = startAt + dur * 86400_000;
           const days = Math.ceil((endAt - now) / 86400_000);
@@ -84,9 +86,15 @@ function AdminOrders() {
     let list = expiring;
     if (tab === "expiring") {
       list = list
-        .filter((e) => e.minDays !== null && e.minDays <= 30 && e.minDays > -365)
+        .filter(({ order: o, minDays }) =>
+          minDays !== null &&
+          minDays <= 30 &&
+          minDays > -365 &&
+          o.status === "delivered"
+        )
         .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
     }
+
     if (statusFilter !== "all") {
       list = list.filter(({ order: o }: any) => o.status === statusFilter);
     }
