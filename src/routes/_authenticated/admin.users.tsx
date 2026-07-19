@@ -491,10 +491,18 @@ function StockAccessDialog({
   };
 
 
-  return (
-    <div className="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-sm grid place-items-center p-4 overflow-y-auto" onClick={onClose}>
       <div
-        className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl relative"
+        className="w-full max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl relative my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-3 end-3 w-8 h-8 grid place-items-center rounded-full hover:bg-muted">
@@ -554,9 +562,11 @@ function StockAccessDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+
 
 function StatCard({
   icon: Icon,
