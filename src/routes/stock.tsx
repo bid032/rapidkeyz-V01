@@ -158,6 +158,8 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
   const fetcher = useServerFn(getStockAppData);
   const issueFn = useServerFn(issueStock);
   const revertFn = useServerFn(revertIssue);
+  const dupesFn = useServerFn(getStockDuplicates);
+
 
   const [customerName, setCustomerName] = useState("");
   const [customerWhatsapp, setCustomerWhatsapp] = useState("");
