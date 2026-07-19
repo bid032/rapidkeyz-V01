@@ -82,15 +82,32 @@ export type StockAppData = {
   fetchedAt: string;
 };
 
+async function fetchStaffNames(spreadsheetId: string): Promise<string[]> {
+  try {
+    const rows = await sheetsGet(spreadsheetId, `${TABS.STAFF}!A1:A1000`);
+    const names: string[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const v = (rows[i]?.[0] ?? "").trim();
+      if (!v) continue;
+      if (i === 0 && /name|الاسم|موظف|staff/i.test(v)) continue;
+      names.push(v);
+    }
+    return names.length ? names : DEFAULT_STAFF_NAMES;
+  } catch {
+    return DEFAULT_STAFF_NAMES;
+  }
+}
+
 export const getStockAppData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<StockAppData> => {
     await ensureAccess(context.supabase);
     const spreadsheetId = await getSpreadsheetId(context.supabase);
 
-    const [productsRaw, stockRaw] = await Promise.all([
+    const [productsRaw, stockRaw, staffNames] = await Promise.all([
       sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
       sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
+      fetchStaffNames(spreadsheetId),
     ]);
 
     // Aggregate stock by product name
