@@ -2,13 +2,13 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote } from "lucide-react";
+import { Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote, Copy, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
-import { getStockData } from "@/lib/stock-sheet.functions";
+import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
 
 const UNLOCK_KEY = "rk_stock_unlocked";
-const LOW_STOCK_THRESHOLD = 5;
+const STAFF_KEY = "rk_stock_staff";
 
 export const Route = createFileRoute("/_authenticated/stock")({
   beforeLoad: async () => {
@@ -41,7 +41,7 @@ function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pwd) return;
+    if (pwd.length !== 4) return;
     setLoading(true);
     const { data, error } = await supabase.rpc("verify_stock_password", { _password: pwd });
     setLoading(false);
@@ -86,78 +86,86 @@ function UnlockGate({ onUnlock }: { onUnlock: () => void }) {
   );
 }
 
-/** Try to find a column index by matching header candidates (case-insensitive, substring). */
-function findCol(headers: string[], candidates: string[]) {
-  const norm = headers.map((h) => (h ?? "").toString().trim().toLowerCase());
-  for (const c of candidates) {
-    const idx = norm.findIndex((h) => h.includes(c.toLowerCase()));
-    if (idx !== -1) return idx;
-  }
-  return -1;
-}
-
 function StockDispenser({ onLock }: { onLock: () => void }) {
   const { notify } = useApp();
-  const fetcher = useServerFn(getStockData);
-  const [employee, setEmployee] = useState("");
-  const [customer, setCustomer] = useState("");
-  const [productKey, setProductKey] = useState("");
+  const fetcher = useServerFn(getStockAppData);
+  const issueFn = useServerFn(issueStock);
+  const revertFn = useServerFn(revertIssue);
+
+  const [staffName, setStaffName] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [productName, setProductName] = useState("");
   const [qty, setQty] = useState(1);
-  const [notes, setNotes] = useState("بيبعته للعميل عطول من غير فيزا ولا اي حاجه");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<IssueResult | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(STAFF_KEY);
+    if (saved) setStaffName(saved);
+  }, []);
 
   const q = useQuery({
-    queryKey: ["stock-sheet"],
+    queryKey: ["stock-app-data"],
     queryFn: () => fetcher(),
     refetchInterval: 20_000,
     refetchOnWindowFocus: true,
   });
 
-  const { productIdx, deliveryIdx, statusIdx, products, totalAvailable, lowCount } = useMemo(() => {
-    const headers = q.data?.headers ?? [];
-    const rows = q.data?.rows ?? [];
-    const pIdx = findCol(headers, ["product_name", "product", "المنتج", "اسم المنتج", "name"]);
-    const dIdx = findCol(headers, ["delivery", "نوع التسليم", "type"]);
-    const sIdx = findCol(headers, ["status", "الحالة", "state"]);
+  const products = q.data?.products ?? [];
+  const staffNames = q.data?.staffNames ?? [];
+  const selected = products.find((p) => p.productName === productName);
 
-    const groups = new Map<string, number>();
-    for (const r of rows) {
-      // consider only rows not marked delivered/used
-      if (sIdx !== -1) {
-        const s = (r[sIdx] ?? "").toLowerCase();
-        if (s.includes("delivered") || s.includes("used") || s.includes("تم")) continue;
-      }
-      const key = pIdx !== -1 ? (r[pIdx] ?? "").trim() : "غير محدد";
-      if (!key) continue;
-      groups.set(key, (groups.get(key) ?? 0) + 1);
-    }
-    const arr = Array.from(groups.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => a.name.localeCompare(b.name, "ar"));
-    const total = arr.reduce((s, p) => s + p.count, 0);
-    const low = arr.filter((p) => p.count > 0 && p.count <= LOW_STOCK_THRESHOLD).length;
-    return { productIdx: pIdx, deliveryIdx: dIdx, statusIdx: sIdx, products: arr, totalAvailable: total, lowCount: low };
-  }, [q.data]);
+  const stockHealth = useMemo(() => {
+    if (!selected) return { label: "لا يوجد اختيار", tone: "bg-muted text-muted-foreground border-border" };
+    if (selected.availableCount === 0) return { label: "فارغ", tone: "bg-destructive/15 text-destructive border-destructive/30" };
+    if (selected.availableCount <= 3) return { label: "منخفض", tone: "bg-amber-500/15 text-amber-500 border-amber-500/30" };
+    return { label: "جيد", tone: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" };
+  }, [selected]);
 
-  const selectedProduct = products.find((p) => p.name === productKey);
-  const availableNow = selectedProduct?.count ?? 0;
+  const availableNow = selected?.availableCount ?? 0;
+  const canDeliver = !busy && staffName && customerName.trim() && productName && qty > 0 && qty <= availableNow;
 
-  const deliveryType = useMemo(() => {
-    if (!productKey || deliveryIdx === -1) return "-";
-    const rows = q.data?.rows ?? [];
-    const row = rows.find((r) => (productIdx !== -1 ? r[productIdx] : "") === productKey);
-    return (row?.[deliveryIdx] ?? "-") || "-";
-  }, [productKey, deliveryIdx, productIdx, q.data]);
-
-  const stockHealth = totalAvailable > 50 ? { label: "ممتاز", tone: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" }
-    : totalAvailable > 10 ? { label: "جيد", tone: "bg-brand/15 text-brand border-brand/30" }
-    : totalAvailable > 0 ? { label: "منخفض", tone: "bg-amber-500/15 text-amber-500 border-amber-500/30" }
-    : { label: "فارغ", tone: "bg-destructive/15 text-destructive border-destructive/30" };
-
-  const canDeliver = employee && customer.trim() && productKey && qty > 0 && qty <= availableNow;
-
-  const deliver = () => {
+  const doIssue = async () => {
     if (!canDeliver) return notify("اكمل بيانات التسليم أولاً", "error");
-    notify("قريبًا — تسليم الأكواد يحتاج ربط الكتابة على الشيت", "info");
+    setBusy(true);
+    setResult(null);
+    try {
+      const res = await issueFn({ data: { staffName, customerName: customerName.trim(), productName, qty } });
+      setResult(res);
+      notify("تم تسليم الأكواد", "success");
+      setCustomerName("");
+      q.refetch();
+    } catch (e: any) {
+      notify(e?.message ?? "حصل خطأ", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const doRevert = async () => {
+    if (!result?.orderId) return;
+    if (!confirm("هل أنت متأكد أن الكود لم يتم استلامه وتريد إرجاع آخر صرف للمخزون؟")) return;
+    setBusy(true);
+    try {
+      await revertFn({ data: { orderId: result.orderId } });
+      notify("تم إرجاع الأكواد للمخزون", "success");
+      setResult(null);
+      q.refetch();
+    } catch (e: any) {
+      notify(e?.message ?? "حصل خطأ", "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copyAll = () => {
+    if (!result?.displayText) return;
+    navigator.clipboard.writeText(result.displayText).then(() => notify("تم نسخ الأكواد", "success"));
+  };
+
+  const copyOne = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => notify("تم النسخ", "success"));
   };
 
   return (
@@ -213,11 +221,11 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
             </div>
             <div>
               <div className="text-muted-foreground text-xs">إجمالي الستوك</div>
-              <div className="font-extrabold text-lg">{totalAvailable}</div>
+              <div className="font-extrabold text-lg">{selected?.totalStock ?? 0}</div>
             </div>
             <div>
               <div className="text-muted-foreground text-xs">نوع التسليم</div>
-              <div className="font-extrabold text-lg">{deliveryType}</div>
+              <div className="font-extrabold text-lg">{selected?.unitLabel || "-"}</div>
             </div>
           </div>
 
@@ -225,21 +233,19 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
           <div className="space-y-4">
             <Field label="اسم الموظف">
               <select
-                value={employee}
-                onChange={(e) => setEmployee(e.target.value)}
+                value={staffName}
+                onChange={(e) => { setStaffName(e.target.value); localStorage.setItem(STAFF_KEY, e.target.value); }}
                 className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
               >
                 <option value="">اختر اسم الموظف</option>
-                <option value="admin">Admin</option>
-                <option value="support">Support</option>
-                <option value="sales">Sales</option>
+                {staffNames.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
             </Field>
 
             <Field label="اسم العميل">
               <input
-                value={customer}
-                onChange={(e) => setCustomer(e.target.value)}
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="اكتب اسم العميل"
                 className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
               />
@@ -248,37 +254,36 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
             <div className="grid grid-cols-[1fr_120px] gap-3">
               <Field label="المنتج">
                 <select
-                  value={productKey}
-                  onChange={(e) => setProductKey(e.target.value)}
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
                 >
                   <option value="">اختر المنتج</option>
                   {products.map((p) => (
-                    <option key={p.name} value={p.name}>
-                      {p.name} — المتاح {p.count}
+                    <option key={p.productName} value={p.productName}>
+                      {p.productName} — المتاح {p.availableCount}
                     </option>
                   ))}
                 </select>
               </Field>
               <Field label="الكمية">
-                <input
-                  type="number"
-                  min={1}
-                  max={availableNow || 1}
+                <select
                   value={qty}
-                  onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
+                  onChange={(e) => setQty(parseInt(e.target.value, 10))}
                   className="w-full px-4 py-3 bg-background border border-border rounded-xl text-sm text-center focus:outline-none focus:border-brand"
-                />
+                >
+                  {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
+                </select>
               </Field>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
               <button
-                onClick={deliver}
+                onClick={doIssue}
                 disabled={!canDeliver}
                 className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
               >
-                <Send className="w-4 h-4" /> تسليم الأكواد
+                <Send className="w-4 h-4" /> {busy ? "جارٍ التنفيذ..." : "تسليم الأكواد"}
               </button>
               <button
                 onClick={() => q.refetch()}
@@ -288,6 +293,33 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
               </button>
             </div>
           </div>
+
+          {/* Result */}
+          {result && (
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="font-extrabold text-emerald-500">تم تسليم الأكواد · {result.orderId}</div>
+                <div className="flex items-center gap-2">
+                  <button onClick={copyAll} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-xs font-bold hover:bg-brand/10 hover:text-brand">
+                    <Copy className="w-3.5 h-3.5" /> نسخ الكل
+                  </button>
+                  <button onClick={doRevert} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-xs font-bold hover:bg-destructive hover:text-white">
+                    <Undo2 className="w-3.5 h-3.5" /> لم يتم الاستلام
+                  </button>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                {result.codes.map((c, i) => (
+                  <div key={i} className="flex items-start justify-between gap-2 bg-background border border-border rounded-xl p-3">
+                    <pre className="text-xs whitespace-pre-wrap break-all font-mono flex-1 m-0">{c.displayText}</pre>
+                    <button onClick={() => copyOne(c.displayText)} className="p-1.5 rounded-md hover:bg-muted shrink-0">
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Quick panel */}
@@ -299,11 +331,11 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-border p-4 text-center">
-              <div className="text-2xl font-extrabold text-brand">{lowCount}</div>
+              <div className="text-2xl font-extrabold text-brand">{q.data?.lowStockCount ?? 0}</div>
               <div className="text-xs text-muted-foreground mt-1">منتجات منخفضة</div>
             </div>
             <div className="rounded-2xl border border-border p-4 text-center">
-              <div className="text-2xl font-extrabold">{totalAvailable}</div>
+              <div className="text-2xl font-extrabold">{q.data?.totalAvailable ?? 0}</div>
               <div className="text-xs text-muted-foreground mt-1">إجمالي المتاح</div>
             </div>
           </div>
@@ -321,20 +353,15 @@ function StockDispenser({ onLock }: { onLock: () => void }) {
             <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
               <StickyNote className="w-3.5 h-3.5" /> ملاحظات ترسل مع المنتج
             </div>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/5 text-sm focus:outline-none focus:border-amber-500 resize-none"
-            />
+            <div className="w-full px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/5 text-sm min-h-[80px] whitespace-pre-wrap">
+              {selected?.notes || "اختر منتجًا لعرض الملاحظات."}
+            </div>
           </div>
 
-          {lowCount > 0 && (
-            <div className="flex items-start gap-2 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>لو الكود لم يُسلَّم فعلًا، استخدم زر الاستلام لإرجاع آخر صرف للمخزون.</span>
-            </div>
-          )}
+          <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/40 border border-border rounded-xl p-3">
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+            <span>لو الكود لم يُسلَّم فعلًا، استخدم زر «لم يتم الاستلام» لإرجاع آخر صرف للمخزون.</span>
+          </div>
         </aside>
       </div>
     </div>
