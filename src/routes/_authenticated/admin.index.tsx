@@ -54,19 +54,28 @@ function AdminOverview() {
       let refundsQ = supabase.from("refunds").select("amount");
       if (range.start) refundsQ = refundsQ.gte("created_at", range.start);
       if (range.end) refundsQ = refundsQ.lt("created_at", range.end);
-      const [rev, products, users, pending, refundsRes] = await Promise.all([
+      let allOrdersQ = supabase.from("orders").select("id", { count: "exact", head: true });
+      if (range.start) allOrdersQ = allOrdersQ.gte("created_at", range.start);
+      if (range.end) allOrdersQ = allOrdersQ.lt("created_at", range.end);
+      let deliveredQ = supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "delivered");
+      if (range.start) deliveredQ = deliveredQ.gte("created_at", range.start);
+      if (range.end) deliveredQ = deliveredQ.lt("created_at", range.end);
+      const [rev, products, users, pending, refundsRes, allOrders, delivered] = await Promise.all([
         supabase.rpc("admin_revenue_stats", { _start: range.start ?? undefined, _end: range.end ?? undefined }),
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
         refundsQ,
+        allOrdersQ,
+        deliveredQ,
       ]);
       const row = (rev.data as any[])?.[0] ?? { revenue: 0, profit: 0, orders_count: 0, items_count: 0 };
       const refundsTotal = (refundsRes.data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
       return {
         revenue: Number(row.revenue ?? 0),
         profit: Number(row.profit ?? 0),
-        ordersCount: Number(row.orders_count ?? 0),
+        ordersCount: allOrders.count ?? 0,
+        deliveredCount: delivered.count ?? 0,
         products: products.count ?? 0,
         users: users.count ?? 0,
         pending: pending.count ?? 0,
@@ -74,6 +83,7 @@ function AdminOverview() {
       };
     },
   });
+
 
 
   const monthly = useQuery({
@@ -262,9 +272,11 @@ function AdminOverview() {
     { label: "الأرباح (بيع − شراء)", value: `${Math.round(stats.data?.profit ?? 0)} ${t.common.currency}`, tone: "success" },
     { label: "التعويضات", value: `-${Math.round(stats.data?.refunds ?? 0)} ${t.common.currency}`, tone: "danger" },
     { label: "عدد الطلبات", value: stats.data?.ordersCount ?? 0, tone: "default" },
+    { label: "الطلبات الناجحة", value: stats.data?.deliveredCount ?? 0, tone: "success" },
     { label: t.admin.pendingOrders, value: stats.data?.pending ?? 0, tone: "warning" },
     { label: t.admin.totalProducts, value: stats.data?.products ?? 0, tone: "default" },
     { label: t.admin.totalUsers, value: stats.data?.users ?? 0, tone: "default" },
+
   ];
 
 
