@@ -199,6 +199,9 @@ function RootComponent() {
   const pathname = router.state.location.pathname;
 
   useEffect(() => {
+    // Hide the pre-render splash only after React has actually painted content
+    try { (window as any).__rkHideSplash?.(); } catch {}
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
@@ -206,6 +209,7 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
