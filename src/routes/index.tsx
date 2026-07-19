@@ -187,7 +187,7 @@ function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-12 items-center">
             {/* Content Side */}
-            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-4 sm:space-y-6">
+            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-3 sm:space-y-6">
 
               {/* Live pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
@@ -223,9 +223,58 @@ function HomePage() {
                 </p>
               </div>
 
+              {/* Mobile-only: Trending + New mini cards between text and CTAs */}
+              <div className="lg:hidden grid grid-cols-2 gap-2.5 w-full">
+                {trending[0] && (
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: trending[0].slug }}
+                    className="p-2.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg hover:brand-glow transition"
+                  >
+                    <div className="flex items-center gap-2">
+                      {trending[0].icon_url ? (
+                        <img src={trending[0].icon_url} alt="" loading="lazy" className="w-9 h-9 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-brand/20 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 text-right">
+                        <div className="text-[9px] font-mono uppercase tracking-widest text-brand">
+                          {lang === "ar" ? "الأكثر مبيعاً" : "Trending"}
+                        </div>
+                        <div className="text-foreground text-[12px] font-bold truncate">
+                          {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )}
+                {trending[1] && (
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: trending[1].slug }}
+                    className="p-2.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg hover:brand-glow transition"
+                  >
+                    <div className="flex items-center gap-2">
+                      {trending[1].icon_url ? (
+                        <img src={trending[1].icon_url} alt="" loading="lazy" className="w-9 h-9 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-accent/20 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 text-right">
+                        <div className="text-[9px] font-mono uppercase tracking-widest text-accent">
+                          {lang === "ar" ? "جديد" : "New"}
+                        </div>
+                        <div className="text-foreground text-[12px] font-bold truncate">
+                          {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )}
+              </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto pt-1 sm:pt-2">
                 <Link
                   to="/shop"
                   data-gsap="magnetic"
