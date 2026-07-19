@@ -192,7 +192,6 @@ export const issueStock = createServerFn({ method: "POST" })
     if (!productName) throw new Error("اختر المنتج");
     if (!qty || qty < 1) throw new Error("الكمية لازم تكون 1 أو أكثر");
 
-    const spreadsheetId = await getSpreadsheetId(context.supabase);
 
     const [productsRaw, stockRaw] = await Promise.all([
       sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
