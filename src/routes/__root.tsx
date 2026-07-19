@@ -203,8 +203,11 @@ function RootComponent() {
     let cancelled = false;
     const trigger = () => {
       if (cancelled) return;
+      // Wait for content route-enter animation (~700ms) to finish so there is no visual gap
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        try { (window as any).__rkHideSplash?.(); } catch {}
+        setTimeout(() => {
+          try { (window as any).__rkHideSplash?.(); } catch {}
+        }, 750);
       }));
     };
     const fontsReady = (document as any).fonts?.ready as Promise<unknown> | undefined;
