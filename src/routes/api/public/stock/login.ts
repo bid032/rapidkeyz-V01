@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/public/stock/login")({
         }
 
         const match = staff.find((s) => s.username && s.username.toLowerCase() === username && s.active);
-        const ok = !!match && verifyStaffPassword(password, match.password);
+        const ok = !!match && await verifyStaffPassword(password, match.password);
         if (!ok) {
           await new Promise((r) => setTimeout(r, 400));
           return Response.json({ ok: false, error: "بيانات الدخول غير صحيحة" }, { status: 401 });
