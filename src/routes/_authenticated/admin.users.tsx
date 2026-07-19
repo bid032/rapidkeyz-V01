@@ -1,11 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
 import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
