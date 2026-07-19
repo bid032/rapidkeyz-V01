@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
-const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders" } as const;
-const STAFF_NAMES = ["Ammar", "mahmoud", "Omar", "Medhat", "Nour", "Weka", "Osama", "Hussein", "Ahmed Elsharkawy"];
+const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
+const DEFAULT_STAFF_NAMES = ["Ammar", "mahmoud", "Omar", "Medhat", "Nour", "Weka", "Osama", "Hussein", "Ahmed Elsharkawy"];
 
 function authHeaders() {
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -82,15 +82,32 @@ export type StockAppData = {
   fetchedAt: string;
 };
 
+async function fetchStaffNames(spreadsheetId: string): Promise<string[]> {
+  try {
+    const rows = await sheetsGet(spreadsheetId, `${TABS.STAFF}!A1:A1000`);
+    const names: string[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const v = (rows[i]?.[0] ?? "").trim();
+      if (!v) continue;
+      if (i === 0 && /name|الاسم|موظف|staff/i.test(v)) continue;
+      names.push(v);
+    }
+    return names.length ? names : DEFAULT_STAFF_NAMES;
+  } catch {
+    return DEFAULT_STAFF_NAMES;
+  }
+}
+
 export const getStockAppData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<StockAppData> => {
     await ensureAccess(context.supabase);
     const spreadsheetId = await getSpreadsheetId(context.supabase);
 
-    const [productsRaw, stockRaw] = await Promise.all([
+    const [productsRaw, stockRaw, staffNames] = await Promise.all([
       sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
       sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
+      fetchStaffNames(spreadsheetId),
     ]);
 
     // Aggregate stock by product name
@@ -131,7 +148,7 @@ export const getStockAppData = createServerFn({ method: "GET" })
 
     return {
       products,
-      staffNames: STAFF_NAMES,
+      staffNames,
       totalAvailable,
       lowStockCount,
       fetchedAt: new Date().toISOString(),
@@ -168,12 +185,13 @@ export const issueStock = createServerFn({ method: "POST" })
     const qty = Number(data.qty || 0);
 
     if (!staffName) throw new Error("اختر اسم الموظف");
-    if (!STAFF_NAMES.includes(staffName)) throw new Error("اسم الموظف غير مسموح");
+    const spreadsheetId = await getSpreadsheetId(context.supabase);
+    const allowedStaff = await fetchStaffNames(spreadsheetId);
+    if (!allowedStaff.includes(staffName)) throw new Error("اسم الموظف غير مسموح");
     if (!customerName) throw new Error("اكتب اسم العميل");
     if (!productName) throw new Error("اختر المنتج");
     if (!qty || qty < 1) throw new Error("الكمية لازم تكون 1 أو أكثر");
 
-    const spreadsheetId = await getSpreadsheetId(context.supabase);
 
     const [productsRaw, stockRaw] = await Promise.all([
       sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
