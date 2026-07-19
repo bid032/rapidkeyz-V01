@@ -54,7 +54,7 @@ function AdminSettings() {
         const m = (s.value as any)?.mode;
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
-      if (s.key === "stock_sheet") setStockSheet((v: any) => ({ ...v, ...(s.value as any) }));
+      
     }
   }, [settings.data]);
 
