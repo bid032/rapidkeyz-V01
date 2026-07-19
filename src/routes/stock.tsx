@@ -6,12 +6,15 @@ import { motion } from "framer-motion";
 import {
   Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote,
   Copy, Undo2, Minus, Plus, UserCircle2, Package, Sparkles, CheckCircle2,
-  LogOut, KeyRound, Phone,
+  LogOut, KeyRound, Phone, ShieldAlert, ChevronDown, ChevronUp,
 } from "lucide-react";
+
 import { useApp } from "@/contexts/AppContext";
 import {
-  getStockAppData, issueStock, revertIssue, type IssueResult,
+  getStockAppData, issueStock, revertIssue, getStockDuplicates,
+  type IssueResult, type DuplicatesResult,
 } from "@/lib/stock-sheet.functions";
+
 import { getStockSession } from "@/lib/stock-auth.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -155,6 +158,8 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
   const fetcher = useServerFn(getStockAppData);
   const issueFn = useServerFn(issueStock);
   const revertFn = useServerFn(revertIssue);
+  const dupesFn = useServerFn(getStockDuplicates);
+
 
   const [customerName, setCustomerName] = useState("");
   const [customerWhatsapp, setCustomerWhatsapp] = useState("");
@@ -178,6 +183,17 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
       return count < 2;
     },
   });
+
+  const dupesQ = useQuery({
+    queryKey: ["stock-duplicates"],
+    queryFn: () => dupesFn(),
+    refetchInterval: 5 * 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+
 
 
   const products = q.data?.products ?? [];
@@ -305,7 +321,11 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
         </div>
       </motion.div>
 
+      {/* Duplicate codes alert */}
+      <DuplicatesAlert data={dupesQ.data} isFetching={dupesQ.isFetching} onRefresh={() => dupesQ.refetch()} />
+
       {/* Main grid */}
+
       <div className="grid lg:grid-cols-5 gap-5">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
@@ -472,6 +492,106 @@ function KpiTile({ icon, label, value, accent }: { icon: React.ReactNode; label:
     </div>
   );
 }
+
+function DuplicatesAlert({
+  data, isFetching, onRefresh,
+}: { data: DuplicatesResult | undefined; isFetching: boolean; onRefresh: () => void }) {
+  const [open, setOpen] = useState(false);
+  if (!data) return null;
+  if (data.duplicateCount === 0) return null;
+
+  const shown = open ? data.groups : data.groups.slice(0, 3);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-3xl border border-amber-500/40 bg-amber-500/5 p-4 sm:p-5"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 shrink-0">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400">
+              تنبيه: بيانات مكررة في المخزون
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              في <b>{data.duplicateCount}</b> كود مكرر بين{" "}
+              <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b> فايل — راجع الأكواد التالية عشان تمنع التسليم المزدوج.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/40 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-500/10"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
+          فحص
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        {shown.map((g) => (
+          <div
+            key={g.code}
+            className="rounded-xl border border-amber-500/30 bg-background/60 p-3"
+          >
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0">
+                <code className="text-xs sm:text-sm font-mono bg-muted px-2 py-1 rounded-md truncate max-w-[240px] sm:max-w-[420px]" dir="ltr">
+                  {g.code}
+                </code>
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                  ×{g.count}
+                </span>
+                {g.crossFile && (
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">
+                    بين فايلين
+                  </span>
+                )}
+                {!g.crossFile && g.crossTab && (
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-brand/15 text-brand">
+                    بين تابين
+                  </span>
+                )}
+              </div>
+            </div>
+            <ul className="mt-2 space-y-1 text-[11px] sm:text-xs text-muted-foreground">
+              {g.locations.map((loc, i) => (
+                <li key={`${loc.spreadsheetId}-${loc.tab}-${loc.row}-${i}`} className="flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-amber-500" />
+                  <span className="truncate">
+                    <b className="text-foreground">{loc.spreadsheetTitle}</b>
+                    {" · "}
+                    <span className="text-foreground">{loc.tab}</span>
+                    {" · "}
+                    صف <span className="tabular-nums">{loc.row}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {data.groups.length > 3 && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
+        >
+          {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {open ? "إخفاء" : `عرض الكل (${data.groups.length})`}
+        </button>
+      )}
+    </motion.div>
+  );
+}
+
+
 
 function StepField({ step, icon, label, children, className = "" }: { step: number; icon: React.ReactNode; label: string; children: React.ReactNode; className?: string }) {
   return (

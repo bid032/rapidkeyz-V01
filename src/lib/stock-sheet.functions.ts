@@ -23,6 +23,19 @@ async function getSpreadsheetId(): Promise<string> {
   return cfg.spreadsheet_id;
 }
 
+async function getAllSpreadsheetIds(): Promise<string[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string; extra_spreadsheet_ids?: string[] };
+  const ids: string[] = [];
+  if (cfg.spreadsheet_id) ids.push(cfg.spreadsheet_id);
+  for (const id of cfg.extra_spreadsheet_ids ?? []) {
+    if (id && !ids.includes(id)) ids.push(id);
+  }
+  return ids;
+}
+
+
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
   const res = await fetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
@@ -343,5 +356,144 @@ export const revertIssue = createServerFn({ method: "POST" })
     return { orderId, itemCount: reverts.length };
   });
 
+// ============================================================
+// Duplicate code detector across tabs and linked spreadsheets
+// ============================================================
+
+async function listSheetTitles(spreadsheetId: string): Promise<string[]> {
+  const res = await fetch(
+    `${GATEWAY}/spreadsheets/${spreadsheetId}?fields=sheets.properties(title)`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) throw new Error(`Sheets meta ${res.status}: ${await res.text()}`);
+  const j = (await res.json()) as { sheets?: Array<{ properties?: { title?: string } }> };
+  return (j.sheets ?? []).map((s) => s.properties?.title ?? "").filter(Boolean);
+}
+
+async function getSpreadsheetTitle(spreadsheetId: string): Promise<string> {
+  const res = await fetch(
+    `${GATEWAY}/spreadsheets/${spreadsheetId}?fields=properties.title`,
+    { headers: authHeaders() },
+  );
+  if (!res.ok) return spreadsheetId.slice(0, 8);
+  const j = (await res.json()) as { properties?: { title?: string } };
+  return j.properties?.title ?? spreadsheetId.slice(0, 8);
+}
+
+export type DuplicateLocation = {
+  spreadsheetId: string;
+  spreadsheetTitle: string;
+  tab: string;
+  row: number;
+};
+
+export type DuplicateGroup = {
+  code: string;
+  count: number;
+  locations: DuplicateLocation[];
+  crossTab: boolean;   // appears in more than one tab or file
+  crossFile: boolean;  // appears in more than one spreadsheet file
+};
+
+export type DuplicatesResult = {
+  scannedAt: string;
+  scannedFiles: number;
+  scannedTabs: number;
+  totalCodes: number;
+  duplicateCount: number;
+  groups: DuplicateGroup[];
+};
+
+let DUPES_CACHE: { at: number; data: DuplicatesResult } | null = null;
+const DUPES_TTL_MS = 5 * 60_000; // 5 minutes — this is a big scan
+
+export const getStockDuplicates = createServerFn({ method: "GET" }).handler(
+  async (): Promise<DuplicatesResult> => {
+    await (await import("@/lib/stock-auth.server")).requireStockStaff();
+
+    if (DUPES_CACHE && Date.now() - DUPES_CACHE.at < DUPES_TTL_MS) {
+      return DUPES_CACHE.data;
+    }
+
+    const ids = await getAllSpreadsheetIds();
+    if (!ids.length) throw new Error("لم يتم ربط شيت الاستوك بعد");
+
+    // code -> list of locations
+    const map = new Map<string, DuplicateLocation[]>();
+    let scannedTabs = 0;
+    let totalCodes = 0;
+
+    for (const spreadsheetId of ids) {
+      let titles: string[] = [];
+      let bookTitle = spreadsheetId.slice(0, 8);
+      try {
+        [titles, bookTitle] = await Promise.all([
+          listSheetTitles(spreadsheetId),
+          getSpreadsheetTitle(spreadsheetId),
+        ]);
+      } catch {
+        continue;
+      }
+
+      for (const tab of titles) {
+        // Skip non-inventory tabs by name to reduce noise / API usage
+        const t = tab.trim().toLowerCase();
+        if (["products", "orders", "staff", "settings", "config", "log", "logs"].includes(t)) continue;
+
+        // Read only column C (code column in Stock tabs)
+        let col: string[][] = [];
+        try {
+          col = await sheetsGet(spreadsheetId, `${tab}!C1:C20000`);
+        } catch {
+          continue;
+        }
+        scannedTabs += 1;
+
+        for (let i = 1; i < col.length; i++) {
+          const raw = (col[i]?.[0] ?? "").trim();
+          if (!raw) continue;
+          const key = raw.toUpperCase();
+          totalCodes += 1;
+          const arr = map.get(key) ?? [];
+          arr.push({
+            spreadsheetId,
+            spreadsheetTitle: bookTitle,
+            tab,
+            row: i + 1,
+          });
+          map.set(key, arr);
+        }
+      }
+    }
+
+    const groups: DuplicateGroup[] = [];
+    for (const [code, locations] of map) {
+      if (locations.length < 2) continue;
+      const tabs = new Set(locations.map((l) => `${l.spreadsheetId}::${l.tab}`));
+      const files = new Set(locations.map((l) => l.spreadsheetId));
+      groups.push({
+        code,
+        count: locations.length,
+        locations,
+        crossTab: tabs.size > 1,
+        crossFile: files.size > 1,
+      });
+    }
+    groups.sort((a, b) => b.count - a.count);
+
+    const result: DuplicatesResult = {
+      scannedAt: new Date().toISOString(),
+      scannedFiles: ids.length,
+      scannedTabs,
+      totalCodes,
+      duplicateCount: groups.length,
+      groups: groups.slice(0, 200), // safety cap
+    };
+    DUPES_CACHE = { at: Date.now(), data: result };
+    return result;
+  },
+);
+
 // Back-compat
+
 export const getStockData = getStockAppData;
