@@ -109,6 +109,51 @@ function AdminStaff() {
         </div>
       </div>
 
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 className="font-bold text-sm sm:text-base">ربط شيت الاستوك</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              اربط شيت جوجل يحتوي بيانات الاستوك. صفحة <code className="px-1 py-0.5 rounded bg-muted">/stock</code> بتقرأ منه تلقائي. لازم يكون الشيت متشارك مع حساب Google المربوط بالكونيكتور.
+            </p>
+          </div>
+          <button
+            onClick={() => saveSheet.mutate()}
+            disabled={saveSheet.isPending}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-brand-foreground font-extrabold hover:brand-glow disabled:opacity-60"
+          >
+            <Save className="w-4 h-4" /> {saveSheet.isPending ? "جارٍ الحفظ..." : "حفظ الربط"}
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">Spreadsheet ID أو الرابط الكامل</label>
+            <input
+              placeholder="https://docs.google.com/spreadsheets/d/.../edit  أو الـ ID فقط"
+              value={stockSheet.spreadsheet_id ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                setStockSheet({ ...stockSheet, spreadsheet_id: m ? m[1] : raw });
+              }}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">اسم التبويب (اختياري)</label>
+            <input
+              placeholder="Sheet1"
+              value={stockSheet.sheet_title ?? ""}
+              onChange={(e) => setStockSheet({ ...stockSheet, sheet_title: e.target.value })}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          </div>
+        </div>
+      </div>
+
+
       {q.isLoading ? (
         <div className="py-12 text-center text-sm text-muted-foreground">جارٍ التحميل...</div>
       ) : q.error ? (
