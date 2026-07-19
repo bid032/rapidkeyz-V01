@@ -38,7 +38,7 @@ function AdminUsers() {
     queryFn: async () => {
       const [{ data: list, error }, profilesRes, rolesRes] = await Promise.all([
         supabase.rpc("admin_list_users"),
-        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at, stock_access, stock_password_hash"),
+        supabase.from("profiles").select("id, display_name, phone, country, preferred_language, created_at, stock_access"),
         supabase.from("user_roles").select("user_id, role"),
       ]);
       if (error) throw error;
