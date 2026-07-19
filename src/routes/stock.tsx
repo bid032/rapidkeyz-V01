@@ -166,17 +166,18 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
   const q = useQuery({
     queryKey: ["stock-app-data"],
     queryFn: () => fetcher(),
-    refetchInterval: 45_000,
-    refetchIntervalInBackground: false,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 30_000,
+    staleTime: 5_000,
     retry: (count, err: any) => {
       const msg = String(err?.message ?? "");
       if (msg.includes(" 429")) return false;
       return count < 2;
     },
   });
+
 
   const products = q.data?.products ?? [];
   const selected = products.find((p) => p.productName === productName);
