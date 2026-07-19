@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createHash, timingSafeEqual } from "node:crypto";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const STAFF_TAB = "Staff";
@@ -78,13 +77,14 @@ export async function fetchStaffFromSheet(): Promise<StaffRecord[]> {
   return out;
 }
 
-function eqHash(a: string, b: string) {
+async function eqHash(a: string, b: string) {
+  const { createHash, timingSafeEqual } = await import("node:crypto");
   const ah = createHash("sha256").update(a, "utf8").digest();
   const bh = createHash("sha256").update(b, "utf8").digest();
   return timingSafeEqual(ah, bh);
 }
 
-export function verifyStaffPassword(inputPassword: string, storedPassword: string) {
+export async function verifyStaffPassword(inputPassword: string, storedPassword: string) {
   return eqHash(inputPassword, storedPassword || "___never_matches___");
 }
 
@@ -105,7 +105,7 @@ export const stockLogin = createServerFn({ method: "POST" })
       return { ok: false as const, error: e?.message ?? "تعذر الاتصال بالشيت" };
     }
     const match = staff.find((s) => s.username && s.username.toLowerCase() === username && s.active);
-    const ok = !!match && verifyStaffPassword(password, match.password);
+    const ok = !!match && await verifyStaffPassword(password, match.password);
     if (!ok) {
       await new Promise((r) => setTimeout(r, 400));
       return { ok: false as const, error: "بيانات الدخول غير صحيحة" };
