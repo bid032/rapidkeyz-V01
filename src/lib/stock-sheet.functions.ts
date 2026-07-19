@@ -1,9 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireStockStaff } from "@/lib/stock-auth.functions";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
-const DEFAULT_STAFF_NAMES = ["Ammar", "mahmoud", "Omar", "Medhat", "Nour", "Weka", "Osama", "Hussein", "Ahmed Elsharkawy"];
 
 function authHeaders() {
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -16,10 +15,11 @@ function authHeaders() {
   } as Record<string, string>;
 }
 
-async function getSpreadsheetId(supabase: any): Promise<string> {
-  const { data: setting } = await supabase.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
-  const cfg = (setting?.value ?? {}) as { spreadsheet_id?: string };
-  if (!cfg.spreadsheet_id) throw new Error("لم يقم الأدمن بربط شيت الاستوك بعد");
+async function getSpreadsheetId(): Promise<string> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
+  if (!cfg.spreadsheet_id) throw new Error("لم يتم ربط شيت الاستوك بعد");
   return cfg.spreadsheet_id;
 }
 
@@ -59,11 +59,6 @@ function toBool(v: unknown) {
   return t === "true" || t === "1" || t === "yes" || t === "نعم";
 }
 
-async function ensureAccess(supabase: any) {
-  const { data: hasAccess } = await supabase.rpc("current_user_stock_access");
-  if (!hasAccess) throw new Error("Forbidden");
-}
-
 export type StockProduct = {
   productId: string;
   productName: string;
@@ -76,84 +71,64 @@ export type StockProduct = {
 
 export type StockAppData = {
   products: StockProduct[];
-  staffNames: string[];
+  staffName: string;
   totalAvailable: number;
   lowStockCount: number;
   fetchedAt: string;
 };
 
-async function fetchStaffNames(spreadsheetId: string): Promise<string[]> {
-  try {
-    const rows = await sheetsGet(spreadsheetId, `${TABS.STAFF}!A1:A1000`);
-    const names: string[] = [];
-    for (let i = 0; i < rows.length; i++) {
-      const v = (rows[i]?.[0] ?? "").trim();
-      if (!v) continue;
-      if (i === 0 && /name|الاسم|موظف|staff/i.test(v)) continue;
-      names.push(v);
-    }
-    return names.length ? names : DEFAULT_STAFF_NAMES;
-  } catch {
-    return DEFAULT_STAFF_NAMES;
+export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
+  const session = await requireStockStaff();
+  const spreadsheetId = await getSpreadsheetId();
+
+  const [productsRaw, stockRaw] = await Promise.all([
+    sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
+    sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
+  ]);
+
+  const summary = new Map<string, { available: number; total: number }>();
+  for (let i = 1; i < stockRaw.length; i++) {
+    const row = stockRaw[i];
+    const productName = (row[1] ?? "").trim();
+    const code = (row[2] ?? "").trim();
+    const status = norm(row[5]);
+    if (!productName || !code) continue;
+    const s = summary.get(productName) ?? { available: 0, total: 0 };
+    s.total += 1;
+    if (status === "AVAILABLE") s.available += 1;
+    summary.set(productName, s);
   }
-}
 
-export const getStockAppData = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<StockAppData> => {
-    await ensureAccess(context.supabase);
-    const spreadsheetId = await getSpreadsheetId(context.supabase);
+  const products: StockProduct[] = [];
+  for (let i = 1; i < productsRaw.length; i++) {
+    const row = productsRaw[i];
+    const productName = (row[1] ?? "").trim();
+    const isActive = toBool(row[4]);
+    if (!productName || !isActive) continue;
+    const counts = summary.get(productName) ?? { available: 0, total: 0 };
+    products.push({
+      productId: (row[0] ?? "").trim(),
+      productName,
+      notes: (row[2] ?? "").trim(),
+      unitLabel: (row[3] ?? "").trim(),
+      isActive,
+      availableCount: counts.available,
+      totalStock: counts.total,
+    });
+  }
+  products.sort((a, b) => a.productName.localeCompare(b.productName, "ar"));
 
-    const [productsRaw, stockRaw, staffNames] = await Promise.all([
-      sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
-      sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
-      fetchStaffNames(spreadsheetId),
-    ]);
+  const totalAvailable = products.reduce((s, p) => s + p.availableCount, 0);
+  const lowStockCount = products.filter((p) => p.availableCount <= 3).length;
 
-    // Aggregate stock by product name
-    const summary = new Map<string, { available: number; total: number }>();
-    for (let i = 1; i < stockRaw.length; i++) {
-      const row = stockRaw[i];
-      const productName = (row[1] ?? "").trim();
-      const code = (row[2] ?? "").trim();
-      const status = norm(row[5]);
-      if (!productName || !code) continue;
-      const s = summary.get(productName) ?? { available: 0, total: 0 };
-      s.total += 1;
-      if (status === "AVAILABLE") s.available += 1;
-      summary.set(productName, s);
-    }
-
-    const products: StockProduct[] = [];
-    for (let i = 1; i < productsRaw.length; i++) {
-      const row = productsRaw[i];
-      const productName = (row[1] ?? "").trim();
-      const isActive = toBool(row[4]);
-      if (!productName || !isActive) continue;
-      const counts = summary.get(productName) ?? { available: 0, total: 0 };
-      products.push({
-        productId: (row[0] ?? "").trim(),
-        productName,
-        notes: (row[2] ?? "").trim(),
-        unitLabel: (row[3] ?? "").trim(),
-        isActive,
-        availableCount: counts.available,
-        totalStock: counts.total,
-      });
-    }
-    products.sort((a, b) => a.productName.localeCompare(b.productName, "ar"));
-
-    const totalAvailable = products.reduce((s, p) => s + p.availableCount, 0);
-    const lowStockCount = products.filter((p) => p.availableCount <= 3).length;
-
-    return {
-      products,
-      staffNames,
-      totalAvailable,
-      lowStockCount,
-      fetchedAt: new Date().toISOString(),
-    };
-  });
+  return {
+    products,
+    staffName: session.staffName,
+    totalAvailable,
+    lowStockCount,
+    fetchedAt: new Date().toISOString(),
+  };
+});
 
 export type IssueResult = {
   orderId: string;
@@ -175,30 +150,25 @@ function createOrderId() {
 }
 
 export const issueStock = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: { staffName: string; customerName: string; productName: string; qty: number }) => d)
-  .handler(async ({ data, context }): Promise<IssueResult> => {
-    await ensureAccess(context.supabase);
-    const staffName = data.staffName.trim();
-    const customerName = data.customerName.trim();
-    const productName = data.productName.trim();
+  .inputValidator((d: { customerName: string; productName: string; qty: number; customerWhatsapp?: string }) => d)
+  .handler(async ({ data }): Promise<IssueResult> => {
+    const session = await requireStockStaff();
+    const staffName = session.staffName;
+    const customerName = (data.customerName ?? "").trim();
+    const productName = (data.productName ?? "").trim();
+    const customerWhatsapp = (data.customerWhatsapp ?? "").trim();
     const qty = Number(data.qty || 0);
 
-    if (!staffName) throw new Error("اختر اسم الموظف");
-    const spreadsheetId = await getSpreadsheetId(context.supabase);
-    const allowedStaff = await fetchStaffNames(spreadsheetId);
-    if (!allowedStaff.includes(staffName)) throw new Error("اسم الموظف غير مسموح");
     if (!customerName) throw new Error("اكتب اسم العميل");
     if (!productName) throw new Error("اختر المنتج");
     if (!qty || qty < 1) throw new Error("الكمية لازم تكون 1 أو أكثر");
 
-
+    const spreadsheetId = await getSpreadsheetId();
     const [productsRaw, stockRaw] = await Promise.all([
       sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
       sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
     ]);
 
-    // find product info
     let productNotes = "";
     let unitLabel = "";
     let isActive = false;
@@ -213,7 +183,6 @@ export const issueStock = createServerFn({ method: "POST" })
     }
     if (!isActive) throw new Error("المنتج غير موجود أو غير مفعل");
 
-    // pick available rows
     const picks: Array<{ sheetRow: number; code: string; extraInfo: string; addedOnRaw: string }> = [];
     const targetNorm = norm(productName);
     for (let i = 1; i < stockRaw.length; i++) {
@@ -237,20 +206,18 @@ export const issueStock = createServerFn({ method: "POST" })
     const now = new Date();
     const nowStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
 
-    // Batch update Stock rows F:K (columns 6..11)
     const updates = picks.map((p) => ({
       range: `${TABS.STOCK}!F${p.sheetRow}:K${p.sheetRow}`,
       values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName]] as (string | number)[][],
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
 
-    // Append to Orders
     const deliveredText = picks.map((p) => p.code).filter(Boolean).join("\n\n");
+    // Orders columns: A orderId, B time, C staff, D customer, E product, F qty, G delivered, H notes, I status, J customer whatsapp
     await sheetsAppend(spreadsheetId, `${TABS.ORDERS}!A1`, [[
-      orderId, nowStr, staffName, customerName, productName, qty, deliveredText, productNotes, "DONE",
+      orderId, nowStr, staffName, customerName, productName, qty, deliveredText, productNotes, "DONE", customerWhatsapp,
     ]]);
 
-    // recount available after
     let availableAfter = 0;
     for (let i = 1; i < stockRaw.length; i++) {
       const row = stockRaw[i];
@@ -279,14 +246,13 @@ export const issueStock = createServerFn({ method: "POST" })
   });
 
 export const revertIssue = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: { orderId: string }) => d)
-  .handler(async ({ data, context }): Promise<{ orderId: string; itemCount: number }> => {
-    await ensureAccess(context.supabase);
-    const orderId = data.orderId.trim();
+  .handler(async ({ data }): Promise<{ orderId: string; itemCount: number }> => {
+    await requireStockStaff();
+    const orderId = (data.orderId ?? "").trim();
     if (!orderId) throw new Error("رقم العملية غير موجود");
 
-    const spreadsheetId = await getSpreadsheetId(context.supabase);
+    const spreadsheetId = await getSpreadsheetId();
     const stockRaw = await sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`);
 
     const reverts: Array<{ sheetRow: number; addedOnRaw: string }> = [];
@@ -307,8 +273,7 @@ export const revertIssue = createServerFn({ method: "POST" })
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
 
-    // mark order as REVERTED
-    const ordersRaw = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:I20000`);
+    const ordersRaw = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:J20000`);
     for (let i = 1; i < ordersRaw.length; i++) {
       if ((ordersRaw[i][0] ?? "").trim() === orderId) {
         await sheetsBatchUpdate(spreadsheetId, [
@@ -321,5 +286,5 @@ export const revertIssue = createServerFn({ method: "POST" })
     return { orderId, itemCount: reverts.length };
   });
 
-// Back-compat export used elsewhere (kept)
+// Back-compat
 export const getStockData = getStockAppData;
