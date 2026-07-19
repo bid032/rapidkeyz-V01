@@ -166,11 +166,12 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
   const q = useQuery({
     queryKey: ["stock-app-data"],
     queryFn: () => fetcher(),
-    refetchInterval: 10_000,
-    refetchIntervalInBackground: true,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 5_000,
+    staleTime: 45_000,
+
     retry: (count, err: any) => {
       const msg = String(err?.message ?? "");
       if (msg.includes(" 429")) return false;
