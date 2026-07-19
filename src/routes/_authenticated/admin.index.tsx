@@ -398,39 +398,152 @@ function AdminOverview() {
             تحميل Excel
           </button>
         </div>
-        <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-card">
+            <thead className="sticky top-0 bg-card z-10">
               <tr className="text-start text-xs uppercase text-muted-foreground border-b border-border">
-                <th className="p-2 text-start">الخدمة</th>
-                <th className="p-2 text-start">الخطة</th>
-                <th className="p-2 text-start">الكمية</th>
-                <th className="p-2 text-start">السعر</th>
-                <th className="p-2 text-start">الربح</th>
-                <th className="p-2 text-start">التاريخ</th>
-                <th className="p-2 text-start">الوقت</th>
+                <th className="p-2 text-start w-8"></th>
                 <th className="p-2 text-start">الطلب</th>
+                <th className="p-2 text-start">العميل</th>
+                <th className="p-2 text-start">الخدمة / الخطة</th>
+                <th className="p-2 text-start">الكمية</th>
+                <th className="p-2 text-start">الإجمالي</th>
+                <th className="p-2 text-start">الربح</th>
+                <th className="p-2 text-start">الحالة</th>
+                <th className="p-2 text-start">التسليم</th>
+                <th className="p-2 text-start">الاسترداد</th>
+                <th className="p-2 text-start">التاريخ</th>
               </tr>
             </thead>
             <tbody>
               {sales.data?.map((r: any) => {
                 const d = new Date(r.orders?.created_at ?? r.created_at);
                 const profit = Number(r._profit ?? 0);
+                const refundAmount = Number(r._refundAmount ?? 0);
+                const netProfit = profit - refundAmount;
+                const delivered = (r.delivered_accounts ?? [])[0];
+                const p = r._profile ?? {};
+                const status = r.orders?.status;
+                const isExpanded = expandedRow === r.id;
+                const statusColors: Record<string, string> = {
+                  delivered: "bg-success/15 text-success",
+                  paid: "bg-brand/15 text-brand",
+                  refunded: "bg-destructive/15 text-destructive",
+                  pending: "bg-warning/15 text-warning",
+                };
                 return (
-                  <tr key={r.id} className="border-b border-border/60">
-                    <td className="p-2 font-bold">{r.product_name}</td>
-                    <td className="p-2 text-muted-foreground">{r.plan_label}</td>
-                    <td className="p-2">{r.quantity}</td>
-                    <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
-                    <td className={`p-2 font-bold ${profit >= 0 ? "text-success" : "text-destructive"}`}>{Math.round(profit)} {t.common.currency}</td>
-                    <td className="p-2 font-mono text-xs">{d.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
-                    <td className="p-2 font-mono text-xs">{d.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-GB")}</td>
-                    <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
-                  </tr>
+                  <>
+                    <tr
+                      key={r.id}
+                      className="border-b border-border/60 hover:bg-muted/30 cursor-pointer transition-colors"
+                      onClick={() => setExpandedRow(isExpanded ? null : r.id)}
+                    >
+                      <td className="p-2 text-muted-foreground">{isExpanded ? "▾" : "▸"}</td>
+                      <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
+                      <td className="p-2 text-xs">
+                        <div className="font-bold truncate max-w-[140px]">{r.orders?.customer_name ?? p.display_name ?? "—"}</div>
+                        <div className="text-muted-foreground truncate max-w-[140px]">{r.orders?.customer_email}</div>
+                      </td>
+                      <td className="p-2">
+                        <div className="font-bold truncate max-w-[180px]">{r.product_name}</div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[180px]">{r.plan_label}</div>
+                      </td>
+                      <td className="p-2">{r.quantity}</td>
+                      <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                      <td className={`p-2 font-bold ${netProfit >= 0 ? "text-success" : "text-destructive"}`}>
+                        {Math.round(netProfit)} {t.common.currency}
+                      </td>
+                      <td className="p-2">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColors[status] ?? "bg-muted text-muted-foreground"}`}>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="p-2 text-xs">
+                        {delivered ? (
+                          <span className="text-success font-bold">✓ تم</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-2 text-xs">
+                        {refundAmount > 0 ? (
+                          <span className="text-destructive font-bold">-{Math.round(refundAmount)} {t.common.currency}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="p-2 font-mono text-[11px] whitespace-nowrap">
+                        {d.toLocaleDateString("en-GB")}<br />
+                        <span className="text-muted-foreground">{d.toLocaleTimeString("en-GB")}</span>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-muted/20 border-b border-border/60">
+                        <td colSpan={11} className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">بيانات العميل</div>
+                              <div>الاسم: {r.orders?.customer_name ?? p.display_name ?? "—"}</div>
+                              <div>البريد: {r.orders?.customer_email ?? "—"}</div>
+                              <div>الواتساب: {r.orders?.customer_phone ?? p.phone ?? "—"}</div>
+                              <div>الدولة: {p.country ?? "—"}</div>
+                            </div>
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
+                              <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
+                              <div>الإجمالي: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
+                              <div className="text-success">الربح: {Math.round(profit)} {t.common.currency}</div>
+                              {refundAmount > 0 && (
+                                <div className="text-destructive font-bold">الصافي بعد الاسترداد: {Math.round(netProfit)} {t.common.currency}</div>
+                              )}
+                              {r.orders?.payment_method && <div>طريقة الدفع: {r.orders.payment_method}</div>}
+                            </div>
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">التسليم</div>
+                              {delivered ? (
+                                <>
+                                  <div className="text-success">✓ تم التسليم</div>
+                                  <div>الحساب: {delivered.account_email ?? delivered.account_username ?? "—"}</div>
+                                  {delivered.delivered_at && (
+                                    <div>التاريخ: {new Date(delivered.delivered_at).toLocaleString("en-GB")}</div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="text-muted-foreground">لم يتم التسليم بعد</div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-bold text-muted-foreground mb-1">الاسترداد</div>
+                              {(r._refunds ?? []).length > 0 ? (
+                                <div className="space-y-1">
+                                  {r._refunds.map((rf: any, i: number) => (
+                                    <div key={i} className="border-s-2 border-destructive ps-2">
+                                      <div className="text-destructive font-bold">-{Math.round(Number(rf.amount))} {t.common.currency} • {rf.type ?? "—"}</div>
+                                      <div className="text-muted-foreground">{new Date(rf.created_at).toLocaleString("en-GB")}</div>
+                                      {rf.notes && <div className="italic">{rf.notes}</div>}
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-muted-foreground">لا يوجد</div>
+                              )}
+                            </div>
+                            {r.orders?.notes && (
+                              <div className="md:col-span-2 lg:col-span-4">
+                                <div className="font-bold text-muted-foreground mb-1">ملاحظات الطلب</div>
+                                <div className="whitespace-pre-wrap">{r.orders.notes}</div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
                 );
               })}
               {!sales.data?.length && (
-                <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
+                <tr><td colSpan={11} className="p-6 text-center text-muted-foreground">مفيش مبيعات في الفترة دي</td></tr>
               )}
             </tbody>
           </table>
