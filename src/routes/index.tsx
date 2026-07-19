@@ -230,7 +230,7 @@ function HomePage() {
               </div>
 
               {/* Mobile-only: Trending + New mini cards between text and CTAs */}
-              <div className="lg:hidden grid grid-cols-2 gap-2.5 w-full">
+              <div className="lg:hidden grid grid-cols-2 gap-2.5 w-full -mt-2 sm:-mt-3">
                 {trending[0] && (
                   <Link
                     to="/product/$slug"
