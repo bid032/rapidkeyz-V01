@@ -100,6 +100,8 @@ function AdminInventory() {
   const { notify } = useApp();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<string | null>(null);
+  const [refreshingAll, setRefreshingAll] = useState(false);
+  const [refreshProgress, setRefreshProgress] = useState<{ done: number; total: number } | null>(null);
 
   const plans = useQuery({
     queryKey: ["instant-plans"],
@@ -126,9 +128,56 @@ function AdminInventory() {
     },
   });
 
+  const refreshAllSheets = async () => {
+    const linked = (plans.data ?? []).filter((p: any) => p.google_spreadsheet_id);
+    if (linked.length === 0) {
+      notify("مفيش أي منتج مربوط بشيت.", "info");
+      return;
+    }
+    setRefreshingAll(true);
+    setRefreshProgress({ done: 0, total: linked.length });
+    let totalInserted = 0;
+    let failed = 0;
+    for (let i = 0; i < linked.length; i++) {
+      const p: any = linked[i];
+      try {
+        const res = await importAllTabsForProduct({
+          data: { productId: p.id, spreadsheetId: p.google_spreadsheet_id, overrides: [] },
+        });
+        totalInserted += res.results.reduce((s: number, r: any) => s + r.inserted, 0);
+      } catch (e) {
+        console.error("refresh failed for", p.name_ar, e);
+        failed++;
+      }
+      setRefreshProgress({ done: i + 1, total: linked.length });
+    }
+    qc.invalidateQueries({ queryKey: ["inventory-counts"] });
+    qc.invalidateQueries({ queryKey: ["instant-plans"] });
+    qc.invalidateQueries({ queryKey: ["inventory-rows"] });
+    qc.invalidateQueries({ queryKey: ["inventory-batches"] });
+    notify(
+      `تم التحديث: ${totalInserted} حساب جديد من ${linked.length - failed}/${linked.length} منتج${failed ? ` (فشل ${failed})` : ""}`,
+      failed ? "info" : "success",
+    );
+    setRefreshingAll(false);
+    setRefreshProgress(null);
+  };
+
   return (
     <div>
-      <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">مخزون التسليم الفوري</h1>
+      <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+        <h1 className="text-2xl sm:text-3xl font-extrabold">مخزون التسليم الفوري</h1>
+        <button
+          onClick={refreshAllSheets}
+          disabled={refreshingAll || !plans.data?.length}
+          className="px-4 py-2 bg-brand text-brand-foreground rounded-lg text-sm font-bold disabled:opacity-50 flex items-center gap-2"
+        >
+          <span className={refreshingAll ? "animate-spin" : ""}>↻</span>
+          {refreshingAll
+            ? `جاري التحديث... ${refreshProgress?.done ?? 0}/${refreshProgress?.total ?? 0}`
+            : "تحديث كل الشيتات"}
+        </button>
+      </div>
       <p className="text-sm text-muted-foreground mb-6">
         كل خدمة "تسليم فوري" لازم يكون لها مخزون حسابات جاهزة. لما العميل يشتري، النظام هيسحب أول حساب متاح تلقائيًا ويثبّت الطلب "تم التسليم".
         <br />
@@ -140,6 +189,7 @@ function AdminInventory() {
           <p className="text-muted-foreground">مفيش خدمات "تسليم فوري" لسه. غيّر نوع التسليم من صفحة الخدمات.</p>
         </div>
       )}
+
 
       <div className="space-y-4">
         {plans.data?.map((p: any) => (
