@@ -321,7 +321,11 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
         </div>
       </motion.div>
 
+      {/* Duplicate codes alert */}
+      <DuplicatesAlert data={dupesQ.data} isFetching={dupesQ.isFetching} onRefresh={() => dupesQ.refetch()} />
+
       {/* Main grid */}
+
       <div className="grid lg:grid-cols-5 gap-5">
         <motion.div
           initial={{ opacity: 0, y: 14 }}
