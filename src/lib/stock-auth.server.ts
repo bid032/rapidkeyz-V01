@@ -1,5 +1,3 @@
-import { useSession } from "@tanstack/react-start/server";
-
 export type StockSessionData = {
   staffName?: string;
   loggedAt?: number;
@@ -22,18 +20,9 @@ export function getSessionConfig() {
 }
 
 export async function readStockSession(): Promise<StockSessionData> {
+  const { useSession } = await import("@tanstack/react-start/server");
   const session = await useSession<StockSessionData>(getSessionConfig());
   return session.data ?? {};
-}
-
-export async function updateStockSession(patch: StockSessionData) {
-  const session = await useSession<StockSessionData>(getSessionConfig());
-  await session.update(patch);
-}
-
-export async function clearStockSession() {
-  const session = await useSession<StockSessionData>(getSessionConfig());
-  await session.clear();
 }
 
 export async function requireStockStaff(): Promise<Required<Pick<StockSessionData, "staffName">> & StockSessionData> {
