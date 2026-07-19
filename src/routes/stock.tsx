@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import {
   Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote,
   Copy, Undo2, Minus, Plus, UserCircle2, Package, Sparkles, CheckCircle2,
-  LogOut, KeyRound, Phone,
+  LogOut, KeyRound, Phone, ShieldAlert, ChevronDown, ChevronUp,
 } from "lucide-react";
+
 import { useApp } from "@/contexts/AppContext";
 import {
   getStockAppData, issueStock, revertIssue, getStockDuplicates,
