@@ -145,7 +145,7 @@ function AccountPage() {
             <input
               required
               value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={(e) => setDisplayName(filterName(e.target.value))}
               className="w-full px-4 py-3 bg-background border border-border rounded-lg"
             />
           </div>
