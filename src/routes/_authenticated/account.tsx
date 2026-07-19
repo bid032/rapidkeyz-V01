@@ -122,7 +122,7 @@ function AccountPage() {
       <Header />
       <PageHero
         title={lang === "ar" ? "معلومات الحساب" : "Account Info"}
-        eyebrow={user?.email ?? ""}
+        eyebrow={`${lang === "ar" ? "أهلاً" : "Welcome"}${displayName ? ` · ${displayName}` : ""}`}
       />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pb-12 space-y-6">
         {mustComplete && (
