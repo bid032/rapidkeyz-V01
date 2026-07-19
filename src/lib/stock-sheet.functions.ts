@@ -2,8 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
-const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders" } as const;
-const STAFF_NAMES = ["Ammar", "mahmoud", "Omar", "Medhat", "Nour", "Weka", "Osama", "Hussein", "Ahmed Elsharkawy"];
+const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
+const DEFAULT_STAFF_NAMES = ["Ammar", "mahmoud", "Omar", "Medhat", "Nour", "Weka", "Osama", "Hussein", "Ahmed Elsharkawy"];
 
 function authHeaders() {
   const lovableKey = process.env.LOVABLE_API_KEY;
