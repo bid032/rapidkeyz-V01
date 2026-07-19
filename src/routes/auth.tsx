@@ -179,8 +179,10 @@ function AuthPage() {
                     </option>
                   ))}
                 </select>
-                <div className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
-                  <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none" dir="ltr">+{dialForCountry(country)}</span>
+                <div dir="ltr" className="flex items-stretch rounded-lg border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-brand/40">
+                  <span className="px-3 grid place-items-center bg-muted text-sm font-mono font-bold text-muted-foreground select-none shrink-0 border-r border-border">
+                    +{dialForCountry(country)}
+                  </span>
                   <input
                     required
                     type="tel"
@@ -188,7 +190,7 @@ function AuthPage() {
                     placeholder={lang === "ar" ? "رقم الواتساب" : "WhatsApp number"}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
-                    className="flex-1 px-4 py-3 bg-transparent outline-none"
+                    className="flex-1 min-w-0 px-4 py-3 bg-transparent outline-none text-left placeholder:text-right"
                     dir="ltr"
                   />
                 </div>
