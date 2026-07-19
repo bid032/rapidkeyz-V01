@@ -159,16 +159,31 @@ function AdminOverview() {
           }
         });
       }
+      // Pre-compute each order's total revenue for pro-rating order-level refunds across items.
+      const orderTotal = new Map<string, number>();
+      items.forEach((r) => {
+        const t = Number(r.unit_price) * Number(r.quantity);
+        orderTotal.set(r.order_id, (orderTotal.get(r.order_id) ?? 0) + t);
+      });
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
         const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
         const itemRefs = refundsByItem.get(r.id) ?? [];
         const orderRefs = refundsByOrder.get(r.order_id) ?? [];
-        const refs = itemRefs.length ? itemRefs : orderRefs;
-        const refundAmount = refs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+        // Item-level refunds attach directly. Order-level refunds are pro-rated
+        // by this line's share of the order revenue so multi-item orders don't
+        // count the same refund N times.
+        const itemAmount = itemRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
+        const lineTotal = Number(r.unit_price) * Number(r.quantity);
+        const orderRev = orderTotal.get(r.order_id) ?? 0;
+        const share = orderRev > 0 ? lineTotal / orderRev : 0;
+        const orderAmount = orderRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0) * share;
+        const refundAmount = itemAmount + orderAmount;
+        const refs = [...itemRefs, ...orderRefs];
         return { ...r, _cost: cost, _profit: profit, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
       });
+
     },
   });
 
