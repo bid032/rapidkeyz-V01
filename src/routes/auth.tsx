@@ -202,7 +202,7 @@ function AuthPage() {
               type="email"
               placeholder={t.auth.email}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(filterEmail(e.target.value))}
               className="w-full px-4 py-3 bg-background border border-border rounded-lg"
             />
             {mode !== "forgot" && (
