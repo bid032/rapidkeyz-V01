@@ -257,7 +257,7 @@ function HomePage() {
 
             {/* Visual Side */}
             <div className="lg:col-span-5 order-1 lg:order-2 relative flex justify-center items-center">
-              <div className="relative w-full max-w-[380px] flex flex-col items-center">
+              <div className="relative w-full max-w-[420px] py-8 sm:py-12 flex justify-center items-center">
                 {/* Radial glow */}
                 <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
 
@@ -271,13 +271,44 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Trending Card Overlay */}
+                {/* NEW Card — top-right overlay */}
+                {trending[1] && (
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: trending[1].slug }}
+                    data-gsap="tilt"
+                    className="absolute top-0 right-0 sm:-right-4 w-52 sm:w-56 p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-20"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {trending[1].icon_url ? (
+                        <img src={trending[1].icon_url} alt="" loading="lazy" className="w-9 h-9 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-accent/20 shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 text-right">
+                        <div className="text-[9px] font-mono uppercase tracking-widest text-accent">
+                          {lang === "ar" ? "جديد" : "New"}
+                        </div>
+                        <div className="text-foreground text-xs font-bold truncate">
+                          {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
+                        </div>
+                      </div>
+                      {trending[1].minPrice !== null && (
+                        <div className="text-accent font-bold text-xs shrink-0">
+                          {trending[1].minPrice} {t.common.currency}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                )}
+
+                {/* TRENDING Card — bottom-left overlay */}
                 {trending[0] && (
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="absolute -bottom-4 -left-2 sm:-left-6 w-60 sm:w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition"
+                    className="absolute bottom-0 left-0 sm:-left-4 w-56 sm:w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-20"
                   >
                     <div className="flex items-center gap-3">
                       {trending[0].icon_url ? (
@@ -303,6 +334,7 @@ function HomePage() {
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </header>
