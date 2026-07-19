@@ -53,7 +53,7 @@ function AdminLayout() {
     { to: "/admin/reviews", label: "تقييمات الخدمات" },
     { to: "/admin/faqs", label: "الأسئلة الشائعة" },
     { to: "/admin/refunds", label: "التعويضات" },
-    { to: "/admin/staff", label: "موظفو الاستوك", adminOnly: true },
+    { to: "/admin/staff", label: "الاستوك", adminOnly: true },
     { to: "/admin/settings", label: t.admin.settings },
   ];
 

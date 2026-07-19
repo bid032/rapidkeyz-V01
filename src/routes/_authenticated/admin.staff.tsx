@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Save, RefreshCw, Eye, EyeOff, Copy } from "lucide-react";
 import { listStockStaff, saveStockStaff } from "@/lib/stock-staff.functions";
 import { useApp } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
 import type { StaffRecord } from "@/lib/stock-auth.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/staff")({
@@ -17,6 +18,7 @@ function emptyRow(): StaffRecord {
 
 function AdminStaff() {
   const { notify, confirm } = useApp();
+  const qc = useQueryClient();
   const listFn = useServerFn(listStockStaff);
   const saveFn = useServerFn(saveStockStaff);
 
@@ -24,6 +26,30 @@ function AdminStaff() {
   const [rows, setRows] = useState<StaffRecord[]>([]);
   const [reveal, setReveal] = useState<Record<number, boolean>>({});
   const [saving, setSaving] = useState(false);
+
+  // Stock sheet setting
+  const sheetQ = useQuery({
+    queryKey: ["stock-sheet-setting"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+      return (data?.value as any) ?? { spreadsheet_id: "", sheet_title: "" };
+    },
+  });
+  const [stockSheet, setStockSheet] = useState<{ spreadsheet_id: string; sheet_title: string }>({ spreadsheet_id: "", sheet_title: "" });
+  useEffect(() => {
+    if (sheetQ.data) setStockSheet({ spreadsheet_id: sheetQ.data.spreadsheet_id ?? "", sheet_title: sheetQ.data.sheet_title ?? "" });
+  }, [sheetQ.data]);
+  const saveSheet = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("site_settings").upsert([{ key: "stock_sheet", value: stockSheet }]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["stock-sheet-setting"] });
+      notify("تم حفظ ربط الشيت", "success");
+    },
+    onError: (e: any) => notify(e?.message ?? "فشل الحفظ", "error"),
+  });
 
   useEffect(() => {
     if (q.data) setRows(q.data.length ? q.data : [emptyRow()]);
@@ -41,7 +67,6 @@ function AdminStaff() {
   };
 
   const save = async () => {
-    // basic client validation
     const cleaned = rows.filter((r) => r.name.trim());
     for (const r of cleaned) {
       if (r.username && !r.password) {
@@ -66,10 +91,10 @@ function AdminStaff() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black">موظفو الاستوك</h2>
+          <h2 className="text-xl sm:text-2xl font-black">الاستوك</h2>
           <p className="text-sm text-muted-foreground mt-1">
             الحسابات هنا تتحكم بالدخول إلى صفحة <code className="px-1 py-0.5 rounded bg-muted text-xs">/stock</code>. أي تغيير هنا يُكتب مباشرة على شيت Staff، ويمكنك أيضًا تعديل الشيت مباشرة.
           </p>
@@ -83,6 +108,51 @@ function AdminStaff() {
           </button>
         </div>
       </div>
+
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-5 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h3 className="font-bold text-sm sm:text-base">ربط شيت الاستوك</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              اربط شيت جوجل يحتوي بيانات الاستوك. صفحة <code className="px-1 py-0.5 rounded bg-muted">/stock</code> بتقرأ منه تلقائي. لازم يكون الشيت متشارك مع حساب Google المربوط بالكونيكتور.
+            </p>
+          </div>
+          <button
+            onClick={() => saveSheet.mutate()}
+            disabled={saveSheet.isPending}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-brand-foreground font-extrabold hover:brand-glow disabled:opacity-60"
+          >
+            <Save className="w-4 h-4" /> {saveSheet.isPending ? "جارٍ الحفظ..." : "حفظ الربط"}
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">Spreadsheet ID أو الرابط الكامل</label>
+            <input
+              placeholder="https://docs.google.com/spreadsheets/d/.../edit  أو الـ ID فقط"
+              value={stockSheet.spreadsheet_id ?? ""}
+              onChange={(e) => {
+                const raw = e.target.value.trim();
+                const m = raw.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                setStockSheet({ ...stockSheet, spreadsheet_id: m ? m[1] : raw });
+              }}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">اسم التبويب (اختياري)</label>
+            <input
+              placeholder="Sheet1"
+              value={stockSheet.sheet_title ?? ""}
+              onChange={(e) => setStockSheet({ ...stockSheet, sheet_title: e.target.value })}
+              className="px-3 py-2 bg-background border border-border rounded"
+              dir="ltr"
+            />
+          </div>
+        </div>
+      </div>
+
 
       {q.isLoading ? (
         <div className="py-12 text-center text-sm text-muted-foreground">جارٍ التحميل...</div>
