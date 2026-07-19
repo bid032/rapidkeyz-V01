@@ -323,7 +323,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="absolute top-0 right-0 sm:-top-4 sm:-right-8 w-40 sm:w-56 p-2.5 sm:p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden lg:block absolute -top-4 -right-8 w-56 p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
