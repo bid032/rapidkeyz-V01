@@ -578,21 +578,34 @@ function CheckoutPage() {
               </svg>
             </div>
             <h3 className="text-xl sm:text-2xl font-extrabold mb-2">
-              {lang === "ar" ? "تم الدفع بنجاح " : "Payment successful "}
+              {lang === "ar" ? "تم إرسال الطلب بنجاح" : "Order sent successfully"}
             </h3>
-            <p className="text-sm text-muted-foreground mb-1">
+            <p className="text-sm text-muted-foreground mb-4">
               {lang === "ar" ? "رقم الطلب:" : "Order number:"}{" "}
               <span className="font-mono font-bold text-foreground">#{successOrder.number}</span>
             </p>
-            <p className="text-sm leading-relaxed mb-6 mt-4">
-              {successOrder.delivered
-                ? (lang === "ar"
-                    ? <>تم إرسال بيانات الحساب على بريدك الإلكتروني <span className="font-bold text-brand">{email}</span>. تقدر تلاقيها كمان في لوحة حسابك.</>
-                    : <>Your account details were emailed to <span className="font-bold text-brand">{email}</span>. You can also find them in your dashboard.</>)
-                : (lang === "ar"
-                    ? <>تم استلام الدفع بنجاح. فريقنا هيتواصل معاك قريبًا على رقم الهاتف أو واتساب لتسليم الخدمة. تقدر كمان تكلمنا مباشرة على واتساب من الأيقونة في أسفل الصفحة.</>
-                    : <>Payment received successfully. Our team will contact you shortly via phone or WhatsApp to deliver your service. You can also reach us directly on WhatsApp using the icon at the bottom of the page.</>)}
-            </p>
+            <ul className="text-sm leading-relaxed mb-6 space-y-2 text-start">
+              {successOrder.items.map((it, i) => (
+                <li key={i} className="flex gap-2 items-start bg-muted/40 rounded-lg p-3">
+                  <span className="mt-0.5 text-brand">•</span>
+                  <span>
+                    <span className="font-bold">{it.name}:</span>{" "}
+                    {it.mode === "instant_delivered"
+                      ? (lang === "ar"
+                          ? <>تم إرسال بيانات الحساب / مفتاح التفعيل على بريدك <span className="font-bold text-brand">{email}</span>، وتقدر تلاقيها في <span className="font-bold">حسابي</span>.</>
+                          : <>Account details / activation key sent to <span className="font-bold text-brand">{email}</span>. You can find them in <span className="font-bold">My Account</span>.</>)
+                      : it.mode === "manual"
+                      ? (lang === "ar"
+                          ? <>هيتم التواصل معاك على واتساب لتفعيل الاشتراك.</>
+                          : <>We'll contact you on WhatsApp to activate your subscription.</>)
+                      : (lang === "ar"
+                          ? <>هيتم التواصل معاك قريبًا لتسليم بيانات الخدمة.</>
+                          : <>We'll contact you shortly to deliver your service details.</>)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => {
