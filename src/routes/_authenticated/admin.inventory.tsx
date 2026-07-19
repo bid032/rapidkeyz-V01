@@ -131,6 +131,15 @@ function AdminInventory() {
     },
   });
 
+  const dupesFn = useServerFn(getInventoryDuplicatesAdmin);
+  const dupesQ = useQuery({
+    queryKey: ["inventory-duplicates-admin"],
+    queryFn: () => dupesFn(),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
   const refreshAllSheets = async () => {
     const linked = (plans.data ?? []).filter((p: any) => p.google_spreadsheet_id);
     if (linked.length === 0) {
