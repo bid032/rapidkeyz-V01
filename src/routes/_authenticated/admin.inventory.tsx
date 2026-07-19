@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { ShieldAlert, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getSheetInfo } from "@/lib/sheet-sync.functions";
@@ -8,6 +10,7 @@ import {
   previewProductSheetTabs,
   importAllTabsForProduct,
 } from "@/lib/sheet-product-import.functions";
+import { getInventoryDuplicatesAdmin, type DuplicatesResult } from "@/lib/stock-sheet.functions";
 import { friendlyErrorMessage, showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
@@ -128,6 +131,15 @@ function AdminInventory() {
     },
   });
 
+  const dupesFn = useServerFn(getInventoryDuplicatesAdmin);
+  const dupesQ = useQuery({
+    queryKey: ["inventory-duplicates-admin"],
+    queryFn: () => dupesFn(),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
   const refreshAllSheets = async () => {
     const linked = (plans.data ?? []).filter((p: any) => p.google_spreadsheet_id);
     if (linked.length === 0) {
@@ -189,6 +201,12 @@ function AdminInventory() {
           <p className="text-muted-foreground">مفيش خدمات "تسليم فوري" لسه. غيّر نوع التسليم من صفحة الخدمات.</p>
         </div>
       )}
+
+      <div className="mb-4">
+        <DuplicatesAlert data={dupesQ.data} isFetching={dupesQ.isFetching} onRefresh={() => dupesQ.refetch()} />
+      </div>
+
+
 
 
       <div className="space-y-4">
@@ -760,4 +778,88 @@ function ProductSheetPanel({
     </div>
   );
 }
+
+function DuplicatesAlert({
+  data, isFetching, onRefresh,
+}: { data: DuplicatesResult | undefined; isFetching: boolean; onRefresh: () => void }) {
+  const [open, setOpen] = useState(false);
+  if (!data || data.duplicateCount === 0) return null;
+  const shown = open ? data.groups : data.groups.slice(0, 3);
+  return (
+    <div className="rounded-3xl border border-amber-500/40 bg-amber-500/5 p-4 sm:p-5">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-amber-500/15 text-amber-500 shrink-0">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400">
+              تنبيه: بيانات مكررة في المخزون
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              في <b>{data.duplicateCount}</b> كود مكرر بين <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b> فايل — راجع الأكواد التالية عشان تمنع التسليم المزدوج.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-500/40 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-500/10"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
+          فحص
+        </button>
+      </div>
+      <div className="mt-4 grid gap-2">
+        {shown.map((g) => (
+          <div key={g.code} className="rounded-xl border border-amber-500/30 bg-background/60 p-3">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <code className="text-xs sm:text-sm font-mono bg-muted px-2 py-1 rounded-md truncate max-w-[240px] sm:max-w-[420px]" dir="ltr">
+                {g.code}
+              </code>
+              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                ×{g.count}
+              </span>
+              {g.crossFile && (
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-destructive/15 text-destructive">
+                  بين فايلين
+                </span>
+              )}
+              {!g.crossFile && g.crossTab && (
+                <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-brand/15 text-brand">
+                  بين تابين
+                </span>
+              )}
+            </div>
+            <ul className="mt-2 space-y-1 text-[11px] sm:text-xs text-muted-foreground">
+              {g.locations.map((loc, i) => (
+                <li key={`${loc.spreadsheetId}-${loc.tab}-${loc.row}-${i}`} className="flex items-center gap-2">
+                  <span className="w-1 h-1 rounded-full bg-amber-500" />
+                  <span className="truncate">
+                    <b className="text-foreground">{loc.spreadsheetTitle}</b>
+                    {" · "}
+                    <span className="text-foreground">{loc.tab}</span>
+                    {" · "}
+                    صف <span className="tabular-nums">{loc.row}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      {data.groups.length > 3 && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
+        >
+          {open ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          {open ? "إخفاء" : `عرض الكل (${data.groups.length})`}
+        </button>
+      )}
+    </div>
+  );
+}
+
 
