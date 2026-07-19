@@ -208,11 +208,11 @@ function HomePage() {
                   {hero.title1}
                 </h1>
                 <h2
-                  data-gsap="reveal"
-                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance brand-text"
                 >
-                  <span className="brand-text">{hero.title2}</span>
+                  {hero.title2}
                 </h2>
+
                 <p
                   data-gsap="reveal"
                   className="text-xs sm:text-sm text-muted-foreground/80 max-w-md leading-relaxed mx-auto lg:mx-0 pt-1"
