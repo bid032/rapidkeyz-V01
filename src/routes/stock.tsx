@@ -12,7 +12,7 @@ import { useApp } from "@/contexts/AppContext";
 import {
   getStockAppData, issueStock, revertIssue, type IssueResult,
 } from "@/lib/stock-sheet.functions";
-import { stockLogin, stockLogout, getStockSession } from "@/lib/stock-auth.functions";
+import { getStockSession } from "@/lib/stock-auth.functions";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -54,7 +54,6 @@ function StockPage() {
 
 function LoginGate({ onLoggedIn }: { onLoggedIn: (staffName: string) => void }) {
   const { notify } = useApp();
-  const loginFn = useServerFn(stockLogin);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -64,10 +63,16 @@ function LoginGate({ onLoggedIn }: { onLoggedIn: (staffName: string) => void }) 
     if (!username.trim() || !password) return;
     setLoading(true);
     try {
-      const res = await loginFn({ data: { username: username.trim(), password } });
+      const response = await fetch("/api/public/stock/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
+      const res = (await response.json()) as { ok: boolean; staffName?: string; error?: string };
       if (res.ok) {
-        notify(`أهلاً ${res.staffName}`, "success");
-        onLoggedIn(res.staffName);
+        notify(`أهلاً ${res.staffName ?? ""}`, "success");
+        onLoggedIn(res.staffName ?? "");
       } else {
         notify(res.error || "بيانات الدخول غير صحيحة", "error");
       }
@@ -150,7 +155,6 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
   const fetcher = useServerFn(getStockAppData);
   const issueFn = useServerFn(issueStock);
   const revertFn = useServerFn(revertIssue);
-  const logoutFn = useServerFn(stockLogout);
 
   const [customerName, setCustomerName] = useState("");
   const [customerWhatsapp, setCustomerWhatsapp] = useState("");
@@ -230,7 +234,7 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
   };
 
   const doLogout = async () => {
-    await logoutFn({});
+    await fetch("/api/public/stock/logout", { method: "POST", credentials: "include" });
     qc.setQueryData(["stock-session"], { loggedIn: false });
     notify("تم تسجيل الخروج", "success");
     onLogout();

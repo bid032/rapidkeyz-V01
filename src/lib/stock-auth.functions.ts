@@ -84,6 +84,10 @@ function eqHash(a: string, b: string) {
   return timingSafeEqual(ah, bh);
 }
 
+export function verifyStaffPassword(inputPassword: string, storedPassword: string) {
+  return eqHash(inputPassword, storedPassword || "___never_matches___");
+}
+
 /** PUBLIC: login with username + password against Staff sheet. */
 export const stockLogin = createServerFn({ method: "POST" })
   .inputValidator((d: { username: string; password: string }) => d)
@@ -101,31 +105,30 @@ export const stockLogin = createServerFn({ method: "POST" })
       return { ok: false as const, error: e?.message ?? "تعذر الاتصال بالشيت" };
     }
     const match = staff.find((s) => s.username && s.username.toLowerCase() === username && s.active);
-    const target = match?.password ?? "___never_matches___";
-    const ok = eqHash(password, target) && !!match;
+    const ok = !!match && verifyStaffPassword(password, match.password);
     if (!ok) {
       await new Promise((r) => setTimeout(r, 400));
       return { ok: false as const, error: "بيانات الدخول غير صحيحة" };
     }
-    const { useSession } = await import("@tanstack/react-start/server");
-    const session = await useSession<{ staffName?: string; loggedAt?: number }>(getSessionConfig());
-    await session.update({ staffName: match!.name, loggedAt: Date.now() });
+    const { createStockSessionValue, stockSessionSetCookie } = await import("@/lib/stock-auth.server");
+    const { setResponseHeader, getRequestUrl } = await import("@tanstack/react-start/server");
+    const sessionValue = await createStockSessionValue(match!.name);
+    setResponseHeader("Set-Cookie", stockSessionSetCookie(sessionValue, getRequestUrl()));
     return { ok: true as const, staffName: match!.name };
   });
 
 /** PUBLIC: log out from stock session. */
 export const stockLogout = createServerFn({ method: "POST" }).handler(async () => {
-  const { useSession } = await import("@tanstack/react-start/server");
-  const session = await useSession<{ staffName?: string }>(getSessionConfig());
-  await session.clear();
+  const { stockSessionClearCookie } = await import("@/lib/stock-auth.server");
+  const { setResponseHeader, getRequestUrl } = await import("@tanstack/react-start/server");
+  setResponseHeader("Set-Cookie", stockSessionClearCookie(getRequestUrl()));
   return { ok: true as const };
 });
 
 /** PUBLIC: read current stock session (safe fields only). */
 export const getStockSession = createServerFn({ method: "GET" }).handler(async () => {
-  const { useSession } = await import("@tanstack/react-start/server");
-  const session = await useSession<{ staffName?: string }>(getSessionConfig());
-  const data = session.data ?? {};
+  const { readStockSession } = await import("@/lib/stock-auth.server");
+  const data = await readStockSession();
   if (!data.staffName) return { loggedIn: false as const };
   return { loggedIn: true as const, staffName: data.staffName };
 });
