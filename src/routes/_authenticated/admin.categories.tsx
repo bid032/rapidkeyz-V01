@@ -49,7 +49,7 @@ function AdminCategories() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-cats-list"] });
       setForm({ slug: "", name_ar: "", name_en: "", sort_order: 0 });
-      notify(lang === "ar" ? "تم إضافة التصنيف" : "Category added", "success");
+      notify(lang === "ar" ? "تم إضافة القسم" : "Section added", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
@@ -108,7 +108,7 @@ function AdminCategories() {
 
   const askDelete = async (c: any) => {
     const ok = await confirm({
-      title: "حذف التصنيف",
+      title: "حذف القسم",
       message: `متأكد إنك عاوز تمسح "${c.name_ar}"؟`,
       tone: "danger",
       confirmLabel: "احذف",
@@ -330,7 +330,7 @@ function AdminCategories() {
           );
         })}
         {cats.data?.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">مفيش تصنيفات</p>
+          <p className="text-center text-muted-foreground py-8">مفيش أقسام</p>
         )}
       </div>
     </div>
