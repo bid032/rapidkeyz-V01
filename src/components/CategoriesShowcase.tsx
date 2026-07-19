@@ -41,19 +41,8 @@ export function CategoriesShowcase({
 
   return (
     <section className={`relative max-w-7xl mx-auto px-3 sm:px-6 ${compact ? "py-6 sm:py-10" : "py-12 sm:py-20"}`}>
-      {/* decorative moving orbs */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div
-          data-gsap="parallax"
-          data-speed="0.6"
-          className="absolute top-10 left-1/4 w-72 h-72 rounded-full bg-brand/15 blur-3xl"
-        />
-        <div
-          data-gsap="parallax"
-          data-speed="0.35"
-          className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-[--brand-deep]/25 blur-3xl"
-        />
-      </div>
+
+
 
       <div className={`text-center ${mini ? "mb-5 sm:mb-7" : compact ? "mb-5 sm:mb-7" : "mb-10 sm:mb-14"}`} data-gsap="reveal-stagger">
         {mini ? (
