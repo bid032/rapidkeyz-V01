@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { ShieldAlert, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getSheetInfo } from "@/lib/sheet-sync.functions";
@@ -8,7 +10,7 @@ import {
   previewProductSheetTabs,
   importAllTabsForProduct,
 } from "@/lib/sheet-product-import.functions";
-import { getInventoryDuplicatesAdmin } from "@/lib/stock-sheet.functions";
+import { getInventoryDuplicatesAdmin, type DuplicatesResult } from "@/lib/stock-sheet.functions";
 import { friendlyErrorMessage, showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
