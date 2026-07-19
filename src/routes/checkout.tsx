@@ -273,7 +273,7 @@ function CheckoutPage() {
                     type="email"
                     placeholder={t.checkout.email}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(filterEmail(e.target.value))}
                     readOnly={!!user}
                     className={`px-4 py-3 bg-background border border-border rounded-lg ${user ? "opacity-70 cursor-not-allowed" : ""}`}
                   />
