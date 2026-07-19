@@ -298,7 +298,7 @@ function CheckoutPage() {
                       inputMode="tel"
                       placeholder={lang === "ar" ? "1XXXXXXXXX" : "1XXXXXXXXX"}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ""))}
+                      onChange={(e) => setPhone(filterDigits(e.target.value, 15))}
                       className="flex-1 px-4 py-3 bg-transparent outline-none"
                       dir="ltr"
                     />
