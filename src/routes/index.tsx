@@ -148,6 +148,12 @@ function HomePage() {
   const bestSellers = useQuery({ queryKey: ["best-sellers"], queryFn: fetchBestSellers });
   const trending = (products.data ?? []).slice(0, 3);
   const trendingLabels = ["TRENDING", "NEW", "HOT"];
+  const priceOf = (p: any) => {
+    if (!p || p.minPrice == null) return null;
+    const d = Number(p.discount_percent ?? 0);
+    const v = d > 0 ? Math.round(p.minPrice * (100 - d)) / 100 : p.minPrice;
+    return `${v} ${lang === "ar" ? "ج.م" : "EGP"}`;
+  };
   const heroSetting = useQuery({
     queryKey: ["site-settings", "hero"],
     queryFn: async () => {
@@ -229,7 +235,7 @@ function HomePage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
-                    className="p-2.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg hover:brand-glow transition"
+                    className="p-2.5 bg-card border border-border rounded-2xl shadow-lg hover:brand-glow transition"
                   >
                     <div className="flex items-center gap-2">
                       {trending[0].icon_url ? (
@@ -244,6 +250,9 @@ function HomePage() {
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
+                        {priceOf(trending[0]) && (
+                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -252,7 +261,7 @@ function HomePage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
-                    className="p-2.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-lg hover:brand-glow transition"
+                    className="p-2.5 bg-card border border-border rounded-2xl shadow-lg hover:brand-glow transition"
                   >
                     <div className="flex items-center gap-2">
                       {trending[1].icon_url ? (
@@ -267,6 +276,9 @@ function HomePage() {
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
+                        {priceOf(trending[1]) && (
+                          <div className="text-accent text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -323,7 +335,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -top-4 -right-8 w-56 p-3 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden lg:block absolute -top-4 -right-8 w-56 p-3 bg-card border border-border rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
@@ -338,6 +350,9 @@ function HomePage() {
                         <div className="text-foreground text-[11px] sm:text-xs font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
+                        {priceOf(trending[1]) && (
+                          <div className="text-accent text-[11px] sm:text-xs font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -349,7 +364,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -bottom-4 -left-8 w-64 p-3.5 bg-card/90 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden lg:block absolute -bottom-4 -left-8 w-64 p-3.5 bg-card border border-border rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
@@ -364,6 +379,9 @@ function HomePage() {
                         <div className="text-foreground text-[12px] sm:text-sm font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
+                        {priceOf(trending[0]) && (
+                          <div className="text-brand text-[12px] sm:text-sm font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
+                        )}
                       </div>
                     </div>
                   </Link>
