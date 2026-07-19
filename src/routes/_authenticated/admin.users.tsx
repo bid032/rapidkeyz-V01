@@ -472,17 +472,22 @@ function StockAccessDialog({
       notify(lang === "ar" ? "أدخل كلمة سر عشان اليوزر يقدر يدخل" : "Set a password first", "error");
       return;
     }
+    if (password && !/^\d{4}$/.test(password)) {
+      notify(lang === "ar" ? "كلمة السر لازم تكون 4 أرقام" : "Password must be exactly 4 digits", "error");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.rpc("admin_set_stock_access", {
       _user_id: user.id,
       _access: access,
-      _password: password || undefined,
+      _password: password || "",
     });
     setLoading(false);
     if (error) return notify(error.message, "error");
     notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
     onSaved();
   };
+
 
   return (
     <div className="fixed inset-0 z-[10001] bg-black/60 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
@@ -522,12 +527,16 @@ function StockAccessDialog({
           </label>
           <input
             type="text"
+            inputMode="numeric"
+            pattern="\d{4}"
+            maxLength={4}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={user.has_stock_password ? "•••••• (اتركها فاضية لعدم التغيير)" : "كلمة السر"}
-            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
+            onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            placeholder={user.has_stock_password ? "•••• (اتركها فاضية لعدم التغيير)" : "٤ أرقام"}
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm tracking-[0.5em] text-center"
             dir="ltr"
           />
+
         </div>
 
         <div className="flex gap-2">
