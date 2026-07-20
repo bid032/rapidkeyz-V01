@@ -396,7 +396,7 @@ function AdminProducts() {
                                 slug: !prev.id && !prev.name_en ? slugify(name_ar) : prev.slug,
                               });
                             }}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg" />
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg" />
                         </Field>
                         <Field label="Name (English)">
                           <input required placeholder="Netflix Premium" value={editing.name_en}
@@ -408,16 +408,16 @@ function AdminProducts() {
                                 slug: !prev.id ? slugify(name_en) : prev.slug,
                               });
                             }}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg" dir="ltr" />
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg" dir="ltr" />
                         </Field>
                         <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي.">
                           <div className="flex gap-2">
                             <input required placeholder="netflix-premium" value={editing.slug}
                               onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
-                              className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
+                              className="flex-1 min-w-0 h-10 px-3 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
                             <button type="button"
                               onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
-                              className="px-3 py-2 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
+                              className="h-10 px-3 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
                               تحديث
                             </button>
                           </div>
