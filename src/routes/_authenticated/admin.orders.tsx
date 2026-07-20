@@ -361,7 +361,7 @@ function AdminOrders() {
                   )}
                   {o.payment_proof_url && (
                     <div className="md:col-span-2">
-                      <button onClick={() => proofUrl(o.payment_proof_url)} className="text-sm px-3 py-1.5 bg-brand text-brand-foreground rounded font-bold">
+                      <button onClick={() => openProof(o.payment_proof_url)} className="text-sm px-3 py-1.5 bg-brand text-brand-foreground rounded font-bold">
                         عرض إثبات الدفع
                       </button>
                     </div>
