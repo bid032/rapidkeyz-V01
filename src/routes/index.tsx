@@ -258,9 +258,9 @@ function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center">
             {/* Content Side */}
-            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-end space-y-4 sm:space-y-5">
+            <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-end space-y-4 sm:space-y-5">
 
 
               {/* Live pill */}
