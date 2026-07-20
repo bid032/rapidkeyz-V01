@@ -72,7 +72,7 @@ function AdminLayout() {
     { to: "/admin/reviews", label: "تقييمات الخدمات" },
     { to: "/admin/faqs", label: "الأسئلة الشائعة", adminOnly: true },
     { to: "/admin/refunds", label: "التعويضات" },
-    { to: "/admin/staff", label: "الاستوك" },
+    { to: "/admin/staff", label: "الاستوك", adminOnly: true },
     { to: "/admin/settings", label: t.admin.settings, adminOnly: true },
   ];
 
