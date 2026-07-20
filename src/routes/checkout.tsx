@@ -382,15 +382,16 @@ function CheckoutPage() {
                               <button
                                 type="button"
                                 onClick={copyNumber}
-                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-lg underline decoration-dotted hover:text-brand/80"
+                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-base sm:text-lg underline decoration-dotted hover:text-brand/80 break-all"
                                 dir="ltr"
                                 title="اضغط للنسخ"
                               >
                                 {WHATSAPP_NUMBER}
                               </button>{" "}
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-[11px] sm:text-xs text-muted-foreground block sm:inline">
                                 {copied ? "(تم النسخ ✓)" : "(اضغط على الرقم لنسخه)"}
                               </span>
+
                             </li>
                             <li>ارفع صورة إيصال التحويل واكتب الرقم اللي حولت منه بالأسفل.</li>
                           </ol>
