@@ -112,7 +112,10 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
     <div className={className}>
       {label && <label className="block text-xs font-bold mb-2 text-muted-foreground">{label}</label>}
       <div className="flex flex-col gap-3">
-        <div className="w-full aspect-square rounded-xl border border-border bg-background overflow-hidden grid place-items-center">
+        <div
+          className="w-full rounded-xl border border-border bg-background overflow-hidden grid place-items-center"
+          style={{ aspectRatio: requireAspectRatio ? `${requireAspectRatio.w} / ${requireAspectRatio.h}` : "1 / 1" }}
+        >
           {value ? (
             <img src={value} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -145,14 +148,21 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
           مقاس الصورة لازم يكون {requireExactDimensions.width}×{requireExactDimensions.height} بكسل بالظبط. أي مقاس مختلف مش هيتقبل.
         </p>
       ) : requireAspectRatio ? (
-        <p className="text-[11px] text-muted-foreground mt-1.5">
-          نسبة الصورة لازم تكون 1:1 (أي مقاس بالنسبة دي مقبول، مثال: 1080×1080، 800×800، 1600×1600).
-        </p>
+        (() => {
+          const { w, h } = requireAspectRatio;
+          const ex = [800, 1200, 1600].map((k) => `${w * k}×${h * k}`).join("، ");
+          return (
+            <p className="text-[11px] text-muted-foreground mt-1.5">
+              نسبة الصورة لازم تكون {w}:{h} (أي مقاس بالنسبة دي مقبول، مثال: {ex}).
+            </p>
+          );
+        })()
       ) : size > 0 ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
           هيتم قص وتحويل الصورة تلقائيًا إلى مقاس {size}×{size} بكسل مربع.
         </p>
       ) : null}
+
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );
