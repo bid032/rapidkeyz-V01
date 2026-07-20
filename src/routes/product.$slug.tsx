@@ -530,14 +530,7 @@ function ProductPage() {
             </div>
             <ViewAllButton to="/shop" />
           </div>
-          <div data-gsap="card-pop" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {related.data.slice(0, 8).map((p) => (
-              <div key={p.id} data-gsap="tilt">
-                <ProductCard p={p} />
-              </div>
-            ))}
-          </div>
-
+          <RelatedStrip items={related.data} lang={lang} />
         </section>
       )}
       <Footer />
