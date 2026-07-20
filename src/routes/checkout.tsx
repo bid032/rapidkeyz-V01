@@ -240,9 +240,10 @@ function CheckoutPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="grid md:grid-cols-[1fr_360px] gap-8">
-            <div className="space-y-6">
-              <section className="p-6 bg-card border border-border rounded-2xl">
+          <form onSubmit={handleSubmit} className="grid md:grid-cols-[1fr_360px] gap-6 sm:gap-8">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
+              <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
+
                 <h2 className="font-bold mb-4">{t.checkout.contact}</h2>
                 {!user && requireLogin && (
                   <p className="text-sm text-warning mb-4">
@@ -315,7 +316,7 @@ function CheckoutPage() {
 
 
 
-              <section className="p-6 bg-card border border-border rounded-2xl">
+              <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
                 <h2 className="font-bold mb-4">{t.checkout.payment}</h2>
                 <div className="space-y-2">
                   {(
@@ -366,8 +367,9 @@ function CheckoutPage() {
                 </div>
 
                 {gateway === "wallet_instapay" ? (
-                  <div className="mt-4 space-y-4 p-4 rounded-xl bg-brand/5 border border-brand/30">
-                    <div className="text-sm leading-relaxed">
+                  <div className="mt-4 space-y-4 p-3 sm:p-4 rounded-xl bg-brand/5 border border-brand/30 min-w-0 overflow-hidden">
+
+                    <div className="text-sm leading-relaxed break-words">
                       {lang === "ar" ? (
                         <>
                           <p className="font-bold mb-2">خطوات الدفع:</p>
@@ -380,15 +382,16 @@ function CheckoutPage() {
                               <button
                                 type="button"
                                 onClick={copyNumber}
-                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-lg underline decoration-dotted hover:text-brand/80"
+                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-base sm:text-lg underline decoration-dotted hover:text-brand/80 break-all"
                                 dir="ltr"
                                 title="اضغط للنسخ"
                               >
                                 {WHATSAPP_NUMBER}
                               </button>{" "}
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-[11px] sm:text-xs text-muted-foreground block sm:inline">
                                 {copied ? "(تم النسخ ✓)" : "(اضغط على الرقم لنسخه)"}
                               </span>
+
                             </li>
                             <li>ارفع صورة إيصال التحويل واكتب الرقم اللي حولت منه بالأسفل.</li>
                           </ol>
@@ -405,15 +408,16 @@ function CheckoutPage() {
                               <button
                                 type="button"
                                 onClick={copyNumber}
-                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-lg underline decoration-dotted hover:text-brand/80"
+                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-base sm:text-lg underline decoration-dotted hover:text-brand/80 break-all"
                                 dir="ltr"
                                 title="Click to copy"
                               >
                                 {WHATSAPP_NUMBER}
                               </button>{" "}
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-[11px] sm:text-xs text-muted-foreground block sm:inline">
                                 {copied ? "(Copied ✓)" : "(Click the number to copy)"}
                               </span>
+
                             </li>
                             <li>Upload the receipt screenshot and enter the sending number below.</li>
                           </ol>
@@ -444,8 +448,9 @@ function CheckoutPage() {
                         type="file"
                         accept="image/*"
                         onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
-                        className="px-4 py-3 bg-background border border-border rounded-lg text-sm file:me-3 file:px-3 file:py-1 file:rounded-md file:border-0 file:bg-brand file:text-brand-foreground"
+                        className="w-full max-w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-background border border-border rounded-lg text-xs sm:text-sm file:me-2 sm:file:me-3 file:px-2 sm:file:px-3 file:py-1 file:rounded-md file:border-0 file:bg-brand file:text-brand-foreground file:text-xs"
                       />
+
                       {proofFile && (
                         <p className="text-xs text-muted-foreground truncate">{proofFile.name}</p>
                       )}
@@ -487,7 +492,7 @@ function CheckoutPage() {
               {error && <p className="text-destructive text-sm">{error}</p>}
             </div>
 
-            <aside className="h-fit p-6 bg-card border border-border rounded-2xl">
+            <aside className="h-fit p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
               <h2 className="font-bold mb-4">{t.cart.title}</h2>
               <div className="space-y-3 mb-4">
                 {cart.map((c) => (
