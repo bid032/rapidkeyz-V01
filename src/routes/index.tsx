@@ -276,21 +276,21 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-2.5 sm:space-y-3 w-full text-center lg:text-end">
+              <div className="space-y-2.5 sm:space-y-3 w-full text-center md:text-end">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-center lg:text-end"
+                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-center md:text-end"
                 >
                   {hero.title1}
                 </h1>
                 <h2
-                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight brand-text text-center lg:text-end"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight brand-text text-center md:text-end"
                 >
                   {hero.title2}
                 </h2>
 
                 <p
-                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 lg:ms-auto pt-1 text-center lg:text-end"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto md:mx-0 md:ms-auto pt-1 text-center md:text-end"
                 >
                   {hero.subtitle}
                 </p>
@@ -382,7 +382,7 @@ function HomePage() {
                   { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
                   { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
                 ].map((s) => (
-                  <div key={s.l} className="space-y-1 text-center lg:text-end">
+                  <div key={s.l} className="space-y-1 text-center md:text-end">
                     <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
                   </div>
