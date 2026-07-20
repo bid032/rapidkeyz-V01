@@ -202,7 +202,32 @@ export function QuickBuyDialog({
 
           {/* Plans */}
           <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3">
+            {productVariants.length > 0 && (
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
+                  {isAr ? "نوع الخطة" : "Plan type"}
+                </div>
+                <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-muted/40 border border-border">
+                  {productVariants.map((v) => {
+                    const isSel = effectiveVariant === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => { setVariant(v); setSelectedId(null); }}
+                        className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold transition ${
+                          isSel ? "bg-brand text-brand-foreground shadow" : "text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {hasAcctChoice && (
+
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
                   {isAr ? "نوع الحساب" : "Account type"}
