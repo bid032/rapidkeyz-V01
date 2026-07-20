@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, notFound } from "@tanstack/react-router";
 
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "@tanstack/react-router";
