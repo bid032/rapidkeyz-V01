@@ -526,7 +526,7 @@ function AdminProducts() {
                                       else set.add(o.v as AccountType);
                                       setEditing({ ...editing, account_types: Array.from(set) as AccountType[] });
                                     }}
-                                    className={`px-2 py-2 rounded-lg text-xs font-bold border transition ${
+                                    className={`h-10 px-2 rounded-lg text-xs font-bold border transition ${
                                       active
                                         ? "border-brand bg-brand/10 text-brand"
                                         : "border-border bg-background hover:border-brand/40"
@@ -550,7 +550,7 @@ function AdminProducts() {
                               max={95}
                               value={editing.discount_percent}
                               onChange={(e) => setEditing({ ...editing, discount_percent: Math.max(0, Math.min(95, +e.target.value || 0)) })}
-                              className="w-full px-3 py-2 bg-background border border-border rounded-lg font-bold"
+                              className="w-full h-10 px-3 bg-background border border-border rounded-lg font-bold"
                             />
                           </Field>
                         </div>
