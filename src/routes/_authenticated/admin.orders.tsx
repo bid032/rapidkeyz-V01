@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
@@ -414,9 +415,9 @@ function AdminOrders() {
         )}
       </div>
 
-      {proofPreview && (
+      {proofPreview && typeof document !== "undefined" && createPortal(
         <div
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[10080] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={() => setProofPreview(null)}
         >
           <button
@@ -437,7 +438,8 @@ function AdminOrders() {
               />
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
