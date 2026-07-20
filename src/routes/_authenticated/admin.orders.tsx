@@ -544,3 +544,84 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
   );
 }
 
+
+function ProofLightbox({ src, loading, onClose }: { src: string; loading: boolean; onClose: () => void }) {
+  const [zoom, setZoom] = useState(1);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
+
+  const clampZoom = (z: number) => Math.max(1, Math.min(5, z));
+  const setZ = (z: number) => {
+    const nz = clampZoom(z);
+    setZoom(nz);
+    if (nz === 1) setPos({ x: 0, y: 0 });
+  };
+
+  const onWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    setZ(zoom + (e.deltaY < 0 ? 0.2 : -0.2));
+  };
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (zoom <= 1) return;
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragRef.current = { x: e.clientX, y: e.clientY, ox: pos.x, oy: pos.y };
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    setPos({ x: dragRef.current.ox + (e.clientX - dragRef.current.x), y: dragRef.current.oy + (e.clientY - dragRef.current.y) });
+  };
+  const onPointerUp = () => { dragRef.current = null; };
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchRef.current = { dist: Math.hypot(dx, dy), zoom };
+    }
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const nd = Math.hypot(dx, dy);
+      setZ(pinchRef.current.zoom * (nd / pinchRef.current.dist));
+    }
+  };
+  const onTouchEnd = (e: React.TouchEvent) => { if (e.touches.length < 2) pinchRef.current = null; };
+
+  return (
+    <div className="fixed inset-0 z-[10080] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <button onClick={onClose} aria-label="إغلاق" className="absolute top-4 end-4 grid place-items-center size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl leading-none z-20">×</button>
+      <div className="absolute top-4 start-4 flex gap-2 z-20" onClick={(e) => e.stopPropagation()}>
+        <button onClick={() => setZ(zoom - 0.3)} className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold">−</button>
+        <button onClick={() => setZ(1)} className="h-10 px-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold">{Math.round(zoom * 100)}%</button>
+        <button onClick={() => setZ(zoom + 0.3)} className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold">+</button>
+      </div>
+      <div
+        className="relative flex items-center justify-center overflow-hidden select-none"
+        style={{ width: "min(90vw, 520px)", height: "min(80vh, 640px)", cursor: zoom > 1 ? "grab" : "zoom-in", touchAction: "none" }}
+        onClick={(e) => { e.stopPropagation(); if (zoom === 1) setZ(2); }}
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {loading ? (
+          <div className="text-white text-center py-20">جارٍ التحميل...</div>
+        ) : (
+          <img
+            src={src}
+            alt="إثبات الدفع"
+            draggable={false}
+            className="max-w-full max-h-full object-contain rounded-xl transition-transform"
+            style={{ transform: `translate(${pos.x}px, ${pos.y}px) scale(${zoom})` }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
