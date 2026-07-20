@@ -10,16 +10,35 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  beforeLoad: async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw redirect({ to: "/auth" });
+  beforeLoad: async ({ context }) => {
+    // Reuse the user already fetched by the _authenticated layout gate.
+    const user = (context as { user?: { id: string } } | undefined)?.user;
+    if (!user) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw redirect({ to: "/auth" });
+    }
+    const uid = user?.id ?? (await supabase.auth.getUser()).data.user!.id;
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id)
+      .eq("user_id", uid)
       .in("role", ["admin", "moderator"]);
     if (!roles || roles.length === 0) throw redirect({ to: "/dashboard" });
   },
+  errorComponent: ({ error, reset }) => (
+    <div className="min-h-screen grid place-items-center p-6 text-center">
+      <div className="max-w-md space-y-4">
+        <h2 className="text-xl font-bold text-destructive">حدث خطأ في لوحة التحكم</h2>
+        <p className="text-sm text-muted-foreground break-words">{(error as Error)?.message ?? "Unknown error"}</p>
+        <button
+          onClick={() => reset()}
+          className="px-4 py-2 rounded-lg bg-brand text-brand-foreground hover:opacity-90 transition"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    </div>
+  ),
   component: AdminLayout,
 });
 
