@@ -260,28 +260,28 @@ export function QuickBuyDialog({
         </div>
 
         {/* ============ DESKTOP LAYOUT (redesigned) ============ */}
-        <div className="hidden md:flex flex-col min-h-0 flex-1">
+        <div className="hidden md:flex flex-col min-h-0 flex-1 overflow-hidden">
           {/* Top strip: title + subtitle */}
-          <div className="shrink-0 px-8 pt-7 pb-5 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
-            <DialogHeader className="text-start space-y-1 pe-12">
-              <div className="text-[11px] font-black uppercase tracking-[0.25em] text-brand mb-1">
+          <div className="shrink-0 px-6 pt-4 pb-3 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
+            <DialogHeader className="text-start space-y-0.5 pe-12">
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                 {isAr ? "شراء سريع" : "Quick buy"}
               </div>
-              <DialogTitle className="text-3xl font-black leading-tight break-words">
+              <DialogTitle className="text-xl font-black leading-tight break-words">
                 {name}
               </DialogTitle>
-              <DialogDescription className="text-sm mt-1 leading-relaxed text-muted-foreground">
+              <DialogDescription className="text-xs leading-snug text-muted-foreground line-clamp-2">
                 {desc || (isAr ? "اختر الخطة والكمية وأتمّ شراءك في ثوانٍ" : "Pick a plan and quantity to check out in seconds")}
               </DialogDescription>
             </DialogHeader>
           </div>
 
-          {/* Split body */}
-          <div className="flex-1 overflow-y-auto overscroll-contain">
-            <div className="grid grid-cols-[340px_minmax(0,1fr)] gap-0 min-h-full">
+          {/* Split body — no scroll */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-0 h-full">
               {/* RIGHT column (start in RTL): image + 3 actions */}
-              <aside className="border-e border-border/60 bg-muted/20 p-6 flex flex-col gap-4">
-                <div className="relative aspect-square w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg">
+              <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
+                <div className="relative aspect-square w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink">
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="size-full object-cover" />
                   ) : (
@@ -297,41 +297,41 @@ export function QuickBuyDialog({
                 </div>
 
                 {/* 3 stacked action buttons */}
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => doAdd(true)}
                     disabled={!selected || soldOut}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-brand text-brand-foreground font-black text-sm shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-brand text-brand-foreground font-black text-xs shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Zap className="size-4" />
+                    <Zap className="size-3.5" />
                     {isAr ? "اشترِ الآن" : "Buy now"}
                   </button>
                   <button
                     type="button"
                     onClick={() => doAdd(false)}
                     disabled={!selected || soldOut}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-border bg-background text-foreground font-bold text-sm hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border-2 border-border bg-background text-foreground font-bold text-xs hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
                   >
-                    <ShoppingCart className="size-4" />
+                    <ShoppingCart className="size-3.5" />
                     {isAr ? "أضف للسلة" : "Add to cart"}
                   </button>
                   <Link
                     to="/product/$slug"
                     params={{ slug: product.slug }}
                     onClick={() => onOpenChange(false)}
-                    className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-sm hover:bg-brand/10 hover:border-brand transition-all"
+                    className="group inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-xs hover:bg-brand/10 hover:border-brand transition-all"
                   >
-                    <ExternalLink className="size-4" />
+                    <ExternalLink className="size-3.5" />
                     <span>{isAr ? "التفاصيل الكاملة" : "Full details"}</span>
                   </Link>
                 </div>
               </aside>
 
               {/* LEFT column (end in RTL): plans + total */}
-              <section className="p-6 flex flex-col gap-4 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-black uppercase tracking-[0.25em] text-brand">
+              <section className="p-5 flex flex-col gap-3 min-w-0 min-h-0 overflow-hidden">
+                <div className="flex items-center justify-between shrink-0">
+                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                     {isAr ? "اختر الخطة" : "Choose a plan"}
                   </div>
                   {plans.length > 0 && (
@@ -342,9 +342,9 @@ export function QuickBuyDialog({
                 </div>
 
                 {plansQ.isLoading ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
+                      <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
                     ))}
                   </div>
                 ) : plans.length === 0 ? (
@@ -352,7 +352,8 @@ export function QuickBuyDialog({
                     {isAr ? "لا توجد خطط متاحة" : "No plans available"}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5 overflow-y-auto overscroll-contain pe-1 -me-1 min-h-0">
+
                     {plans.map((pl) => {
                       const isSel = selected?.id === pl.id;
                       const so = Number(pl.stock ?? 0) <= 0;
