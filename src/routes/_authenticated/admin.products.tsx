@@ -551,6 +551,7 @@ function AdminProducts() {
             </div>
           </div>
         </div>
+        </ModalPortal>
       )}
     </div>
   );
@@ -670,7 +671,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur overflow-y-auto">
+    <ModalPortal>
+    <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur overflow-y-auto">
       <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
         <div className="w-full max-w-3xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
         <div className="flex justify-between items-start gap-2 mb-2">
@@ -839,6 +841,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
