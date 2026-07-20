@@ -410,18 +410,12 @@ function AdminProducts() {
                             }}
                             className="w-full h-10 px-3 bg-background border border-border rounded-lg" dir="ltr" />
                         </Field>
-                        <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي.">
-                          <div className="flex gap-2">
-                            <input required placeholder="netflix-premium" value={editing.slug}
-                              onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
-                              className="flex-1 min-w-0 h-10 px-3 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
-                            <button type="button"
-                              onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
-                              className="h-10 px-3 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
-                              تحديث
-                            </button>
-                          </div>
+                        <Field label="الرابط (slug)">
+                          <input required placeholder="netflix-premium" value={editing.slug}
+                            onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
                         </Field>
+
                       </div>
                     </section>
 
