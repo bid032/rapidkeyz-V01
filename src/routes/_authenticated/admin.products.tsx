@@ -674,7 +674,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     <ModalPortal>
     <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur overflow-y-auto">
       <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
-        <div className="w-full max-w-3xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
+        <div className="w-full max-w-3xl md:max-w-[min(96vw,1400px)] min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
         <div className="flex justify-between items-start gap-2 mb-2">
           <div className="min-w-0">
             <h3 className="font-bold text-base sm:text-lg">العروض والأسعار والمخزون</h3>
