@@ -421,10 +421,14 @@ function AdminOverview() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5">
             {(() => {
-              const totRev = chartData.reduce((s, r) => s + r.revenue, 0);
-              const totProf = chartData.reduce((s, r) => s + r.profit, 0);
-              const totRef = chartData.reduce((s, r) => s + r.refunds, 0);
+              // Source of truth: SQL RPC (admin_revenue_stats). It filters by
+              // status IN (paid, delivered, refunded) and subtracts refunds
+              // from profit, so KPIs stay consistent with the daily/monthly chart.
+              const totRev = Math.round(stats.data?.revenue ?? 0);
+              const totProf = Math.round(stats.data?.profit ?? 0);
+              const totRef = Math.round(stats.data?.refunds ?? 0);
               const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
+
 
               const p = prevStats.data;
               const showCompare = compare && !!prevMonthKey && !!p;
