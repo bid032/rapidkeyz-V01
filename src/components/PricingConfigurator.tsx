@@ -75,7 +75,7 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 bg-brand/15 rounded-full blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
-      <div className="relative p-5 sm:p-7 space-y-6">
+      <div className="relative p-3.5 sm:p-4 space-y-3.5">
         {/* Account type , segmented pill with sliding indicator */}
         {normalizedTypes.length > 0 && (
           <div>
