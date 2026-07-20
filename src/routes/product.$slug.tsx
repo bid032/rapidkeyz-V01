@@ -512,16 +512,20 @@ function ProductPage() {
           document.body,
         )}
       </div>
-      <ProductTabs productId={product.id} productName={name} description={desc} deliveryType={product.delivery_type} />
-      <ProductDetails productName={name} accountTypes={accountTypes} />
+      <div className="mt-6 sm:mt-10">
+        <ProductTabs productId={product.id} productName={name} description={desc} deliveryType={product.delivery_type} />
+      </div>
+      <div className="mt-2 sm:mt-4">
+        <ProductDetails productName={name} accountTypes={accountTypes} />
+      </div>
       {related.data && related.data.length > 0 && (
-        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-16 sm:pb-24">
-          <div className="mb-6 sm:mb-10 flex items-end justify-between gap-6">
+        <section className="max-w-6xl mx-auto px-3 sm:px-5 mt-10 sm:mt-16 pb-16 sm:pb-24">
+          <div className="mb-4 sm:mb-6 flex items-end justify-between gap-4">
             <div>
-              <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
+              <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-1.5">
                 {lang === "ar" ? "قد يعجبك أيضاً" : "You may also like"}
               </div>
-              <h2 data-gsap="split-words" className="font-display font-bold text-3xl sm:text-5xl leading-[1.05] tracking-tight">
+              <h2 data-gsap="split-words" className="font-display font-bold text-xl sm:text-2xl md:text-3xl leading-tight tracking-tight">
                 {lang === "ar" ? "منتجات مشابهة" : "Related products"}
               </h2>
             </div>
