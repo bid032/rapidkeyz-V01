@@ -42,6 +42,7 @@ function AdminOverview() {
     return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   });
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [compare, setCompare] = useState(false);
 
   const range = useMemo(() => {
     if (month === "all") return { start: null as string | null, end: null as string | null };
@@ -50,6 +51,21 @@ function AdminOverview() {
     const end = new Date(Date.UTC(y, m, 1)).toISOString();
     return { start, end };
   }, [month]);
+
+  const prevMonthKey = useMemo(() => {
+    if (month === "all") return null;
+    const [y, m] = month.split("-").map(Number);
+    const d = new Date(Date.UTC(y, m - 2, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  }, [month]);
+
+  const prevRange = useMemo(() => {
+    if (!prevMonthKey) return { start: null as string | null, end: null as string | null };
+    const [y, m] = prevMonthKey.split("-").map(Number);
+    const start = new Date(Date.UTC(y, m - 1, 1)).toISOString();
+    const end = new Date(Date.UTC(y, m, 1)).toISOString();
+    return { start, end };
+  }, [prevMonthKey]);
 
   const stats = useQuery({
     queryKey: ["admin-stats", month],
