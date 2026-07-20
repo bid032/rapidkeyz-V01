@@ -421,6 +421,32 @@ export function QuickBuyDialog({
                   )}
                 </div>
 
+                {hasAcctChoice && (
+                  <div
+                    className="grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border shrink-0"
+                    style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
+                  >
+                    {normalizedTypes.map((a) => {
+                      const isSel = effectiveAcct === a;
+                      return (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => setAcct(a)}
+                          className={`px-3 py-2 rounded-lg text-xs font-extrabold transition ${
+                            isSel
+                              ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                              : "text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {acctMeta[a][isAr ? "ar" : "en"]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+
                 {plansQ.isLoading ? (
                   <div className="grid grid-cols-3 gap-2">
                     {[0, 1, 2, 3, 4, 5].map((i) => (
