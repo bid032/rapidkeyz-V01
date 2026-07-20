@@ -396,7 +396,7 @@ function AdminProducts() {
                                 slug: !prev.id && !prev.name_en ? slugify(name_ar) : prev.slug,
                               });
                             }}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg" />
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg" />
                         </Field>
                         <Field label="Name (English)">
                           <input required placeholder="Netflix Premium" value={editing.name_en}
@@ -408,16 +408,16 @@ function AdminProducts() {
                                 slug: !prev.id ? slugify(name_en) : prev.slug,
                               });
                             }}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg" dir="ltr" />
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg" dir="ltr" />
                         </Field>
                         <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي.">
                           <div className="flex gap-2">
                             <input required placeholder="netflix-premium" value={editing.slug}
                               onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
-                              className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
+                              className="flex-1 min-w-0 h-10 px-3 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
                             <button type="button"
                               onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
-                              className="px-3 py-2 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
+                              className="h-10 px-3 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
                               تحديث
                             </button>
                           </div>
@@ -485,7 +485,7 @@ function AdminProducts() {
                           <Field label="الحالة">
                             <select value={editing.status}
                               onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
-                              className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
+                              className="w-full h-10 px-2 bg-background border border-border rounded-lg text-sm">
                               <option value="active">ظاهر</option>
                               <option value="draft">مسودة</option>
                               <option value="archived">مؤرشف</option>
@@ -494,7 +494,7 @@ function AdminProducts() {
                           <Field label="نوع التسليم">
                             <select value={editing.delivery_type}
                               onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
-                              className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
+                              className="w-full h-10 px-2 bg-background border border-border rounded-lg text-sm">
                               <option value="instant">فوري</option>
                               <option value="manual">يدوي</option>
                             </select>
@@ -526,7 +526,7 @@ function AdminProducts() {
                                       else set.add(o.v as AccountType);
                                       setEditing({ ...editing, account_types: Array.from(set) as AccountType[] });
                                     }}
-                                    className={`px-2 py-2 rounded-lg text-xs font-bold border transition ${
+                                    className={`h-10 px-2 rounded-lg text-xs font-bold border transition ${
                                       active
                                         ? "border-brand bg-brand/10 text-brand"
                                         : "border-border bg-background hover:border-brand/40"
@@ -550,7 +550,7 @@ function AdminProducts() {
                               max={95}
                               value={editing.discount_percent}
                               onChange={(e) => setEditing({ ...editing, discount_percent: Math.max(0, Math.min(95, +e.target.value || 0)) })}
-                              className="w-full px-3 py-2 bg-background border border-border rounded-lg font-bold"
+                              className="w-full h-10 px-3 bg-background border border-border rounded-lg font-bold"
                             />
                           </Field>
                         </div>
