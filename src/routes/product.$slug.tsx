@@ -512,10 +512,10 @@ function ProductPage() {
           document.body,
         )}
       </div>
-      <div className="max-w-6xl mx-auto px-3 sm:px-5 mt-6 sm:mt-10">
+      <div className="mt-6 sm:mt-10">
         <ProductTabs productId={product.id} productName={name} description={desc} deliveryType={product.delivery_type} />
       </div>
-      <div className="max-w-6xl mx-auto px-3 sm:px-5 mt-8 sm:mt-12">
+      <div className="mt-2 sm:mt-4">
         <ProductDetails productName={name} accountTypes={accountTypes} />
       </div>
       {related.data && related.data.length > 0 && (
