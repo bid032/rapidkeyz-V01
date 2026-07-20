@@ -53,18 +53,18 @@ export function BrandsStrip() {
         </p>
       </div>
 
-      {/* Edge fade masks , constrained to same width as other home sliders */}
+      {/* True transparency fade via CSS mask , works over any background */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 start-0 w-28 sm:w-40 z-10 bg-gradient-to-r from-background from-30% via-background/80 to-transparent rounded-s-2xl"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 end-0 w-28 sm:w-40 z-10 bg-gradient-to-l from-background from-30% via-background/80 to-transparent rounded-e-2xl"
-        />
-
-        <div className="brands-marquee overflow-hidden rounded-2xl" dir="ltr">
+          className="brands-marquee overflow-hidden rounded-2xl"
+          dir="ltr"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
+            maskImage:
+              "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
+          }}
+        >
           <div className="brands-track">
             {loop.map((p, i) => {
               const name = lang === "ar" ? p.name_ar : p.name_en;
