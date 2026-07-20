@@ -258,9 +258,9 @@ function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center">
             {/* Content Side */}
-            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-end space-y-4 sm:space-y-5">
+            <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-end space-y-4 sm:space-y-5">
 
 
               {/* Live pill */}
@@ -276,21 +276,21 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-2.5 sm:space-y-3 w-full text-center lg:text-end">
+              <div className="space-y-2.5 sm:space-y-3 w-full text-center md:text-end">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-center lg:text-end"
+                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-center md:text-end"
                 >
                   {hero.title1}
                 </h1>
                 <h2
-                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight brand-text text-center lg:text-end"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight brand-text text-center md:text-end"
                 >
                   {hero.title2}
                 </h2>
 
                 <p
-                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 lg:ms-auto pt-1 text-center lg:text-end"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto md:mx-0 md:ms-auto pt-1 text-center md:text-end"
                 >
                   {hero.subtitle}
                 </p>
@@ -382,7 +382,7 @@ function HomePage() {
                   { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
                   { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
                 ].map((s) => (
-                  <div key={s.l} className="space-y-1 text-center lg:text-end">
+                  <div key={s.l} className="space-y-1 text-center md:text-end">
                     <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
                   </div>
@@ -391,7 +391,7 @@ function HomePage() {
             </div>
 
             {/* Visual Side */}
-            <div className="lg:col-span-5 order-1 lg:order-2 relative flex justify-center items-center">
+            <div className="md:col-span-5 order-1 md:order-2 relative flex justify-center items-center">
               <div className="relative w-full max-w-[440px] px-6 py-6 sm:py-12 flex justify-center items-center">
                 {/* Radial glow */}
                 <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
