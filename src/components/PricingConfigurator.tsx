@@ -79,14 +79,12 @@ export function PricingConfigurator({
         {/* Account type , segmented pill with sliding indicator */}
         {normalizedTypes.length > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
                 {isAr ? "١ · نوع الحساب" : "1 · Account Type"}
               </p>
-              <p className="text-[10px] text-muted-foreground">
-                {isAr ? "اختر ما يناسبك" : "Pick a fit"}
-              </p>
             </div>
+
             <div
               className={`grid gap-2 p-1.5 rounded-2xl bg-muted/40 border border-border`}
               style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
