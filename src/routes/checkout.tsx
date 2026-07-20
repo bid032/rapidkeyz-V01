@@ -327,13 +327,10 @@ function CheckoutPage() {
                           ? "دفع فوري وهمي لعرض الشكل ، بيتبعت الإيميل تلقائي لو المنتج instant."
                           : "Instant fake payment for demo , auto-emails credentials when the product is instant.",
                       },
-                      { id: "paymob", label: t.checkout.paymob },
-                      { id: "kashier", label: t.checkout.kashier },
                       {
                         id: "wallet_instapay",
                         label: lang === "ar" ? "محفظة / انستاباي (تحويل يدوي)" : "Wallet / Instapay (manual transfer)",
                       },
-                      { id: "manual", label: t.checkout.manual },
                     ] as { id: Gateway; label: string; hint?: string }[]
                   ).map((g) => (
                     <label
