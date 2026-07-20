@@ -175,20 +175,6 @@ function AdminSettings() {
         </div>
       </Section>
 
-      <Section title={"Payment Gateways"}>
-        <div className="space-y-2">
-          {(["paymob_enabled", "kashier_enabled", "manual_enabled"] as const).map((k) => (
-            <label key={k} className="flex items-center gap-2">
-              <input type="checkbox" checked={!!payments[k]}
-                onChange={(e) => setPayments({ ...payments, [k]: e.target.checked })} />
-              {k.replace("_enabled", "").toUpperCase()}
-            </label>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground mt-3">
-          To fully enable Paymob or Kashier live payments, provide their API keys via the app settings. This admin toggles their visibility on checkout.
-        </p>
-      </Section>
 
       <Section title={"إعدادات الشراء"}>
         <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
