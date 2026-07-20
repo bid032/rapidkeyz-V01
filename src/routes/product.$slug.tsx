@@ -304,67 +304,51 @@ function ProductPage() {
           <div className="pointer-events-none absolute -top-32 -end-32 w-96 h-96 bg-brand/20 rounded-full blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-32 -start-32 w-96 h-96 bg-brand/10 rounded-full blur-[120px]" />
 
-          <div className="relative grid grid-cols-1 md:grid-cols-12 gap-0">
-            {/* Visual side */}
-            <div className="md:col-span-5 relative p-5 sm:p-6 md:p-7 flex flex-col items-center justify-center border-b md:border-b-0 md:border-s border-border/50 bg-gradient-to-br from-card/80 via-card/40 to-transparent">
-              <div className="absolute top-3 end-3 sm:top-4 sm:end-4 flex items-center gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-brand/10 border border-brand/25 backdrop-blur-md z-10">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
-                </span>
-                <span className="text-brand text-[10px] sm:text-xs font-bold tracking-wide whitespace-nowrap">
-                  <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
-                </span>
-              </div>
-              <div className="relative w-full max-w-[260px] sm:max-w-xs md:max-w-none md:w-full aspect-square">
-                <div className="absolute inset-0 bg-brand/25 blur-[90px] rounded-full opacity-60 animate-pulse" />
-                <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
-                  {product.icon_url ? (
-                    <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-6xl font-black text-brand">
-                      {name.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                  {hasDiscount && (
-                    <span
-                      className={`absolute top-3 ${lang === "ar" ? "right-3" : "left-3"} bg-destructive text-destructive-foreground text-sm font-black px-2.5 py-1 rounded-xl shadow-lg`}
-                    >
-                      -{discount}%
-                    </span>
-                  )}
+          <div className="relative p-5 sm:p-6 md:p-8 lg:p-10">
+            {/* Top: image + name/viewers/desc */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 mb-6 md:mb-8">
+              {/* Image */}
+              <div className="md:col-span-5 lg:col-span-4 order-1 flex justify-center md:justify-start">
+                <div className="relative w-full max-w-[240px] sm:max-w-[280px] md:max-w-none aspect-square">
+                  <div className="absolute inset-0 bg-brand/25 blur-[90px] rounded-full opacity-60 animate-pulse" />
+                  <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
+                    {product.icon_url ? (
+                      <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-6xl font-black text-brand">
+                        {name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                    {hasDiscount && (
+                      <span
+                        className={`absolute top-3 ${lang === "ar" ? "right-3" : "left-3"} bg-destructive text-destructive-foreground text-sm font-black px-2.5 py-1 rounded-xl shadow-lg`}
+                      >
+                        -{discount}%
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Trust chips , shown under image */}
-              <div className="mt-5 md:mt-6 grid grid-cols-3 gap-1.5 w-full max-w-sm">
-                {[
-                  { ar: "تسليم فوري", en: "Instant" },
-                  { ar: "ضمان كامل", en: "Warranty" },
-                  { ar: "دعم 24/7", en: "24/7 Support" },
-                ].map((it, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-background/40 border border-border/50 text-[10px] sm:text-[11px] font-bold text-muted-foreground"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
-                    <span className="truncate">{lang === "ar" ? it.ar : it.en}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Purchase side */}
-            <div className="md:col-span-7 p-5 sm:p-6 md:p-8 lg:p-10 flex flex-col min-w-0">
-              <div className="mb-4 sm:mb-5">
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] lg:text-4xl font-extrabold tracking-tight mb-2.5 leading-tight break-words">
+              {/* Name + viewers + description */}
+              <div className="md:col-span-7 lg:col-span-8 order-2 flex flex-col min-w-0">
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] lg:text-4xl font-extrabold tracking-tight leading-tight break-words">
                   {name}
                 </h1>
+                <div className="mt-3 flex items-center gap-2 self-start px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-brand/10 border border-brand/25 backdrop-blur-md">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
+                  </span>
+                  <span className="text-brand text-[10px] sm:text-xs font-bold tracking-wide whitespace-nowrap">
+                    <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
+                  </span>
+                </div>
                 {desc && (
-                  <div>
+                  <div className="mt-4">
                     <p
                       className={`text-muted-foreground text-sm sm:text-[15px] leading-relaxed ${
-                        descExpanded ? "" : "line-clamp-2"
+                        descExpanded ? "" : "line-clamp-3"
                       }`}
                     >
                       {desc}
@@ -381,46 +365,65 @@ function ProductPage() {
                     )}
                   </div>
                 )}
-              </div>
-
-              <div className="mb-5">
-                <PricingConfigurator
-                  accountTypes={accountTypes}
-                  effectiveAcct={effectiveAcct}
-                  onAcctChange={(a) => {
-                    setAccountType(a);
-                    setPlanId(null);
-                  }}
-                  plans={filteredPlans as any}
-                  selectedId={selected?.id}
-                  onSelectPlan={(id) => setPlanId(id)}
-                  discount={discount}
-                  minRawPrice={minPriceAcrossPlans}
-                />
-              </div>
-
-              <div className="hidden md:flex gap-3 mt-auto">
-                <button
-                  onClick={() => setConfirmBuy(true)}
-                  disabled={!selected || selectedSoldOut}
-                  className={`flex-[2] px-6 py-4 rounded-2xl font-black text-base transition disabled:cursor-not-allowed ${
-                    selectedSoldOut
-                      ? "bg-muted text-muted-foreground border border-border"
-                      : "bg-brand text-brand-foreground hover:brightness-110 hover:-translate-y-0.5 shadow-[0_20px_40px_-12px_hsl(var(--brand)/0.5)] disabled:opacity-50"
-                  }`}
-                >
-                  {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
-                </button>
-                <button
-                  onClick={() => handleAdd(false)}
-                  disabled={!selected || selectedSoldOut}
-                  className="flex-1 px-6 py-4 border border-border rounded-2xl font-bold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
-                </button>
+                {/* Trust chips */}
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {[
+                    { ar: "تسليم فوري", en: "Instant" },
+                    { ar: "ضمان كامل", en: "Warranty" },
+                    { ar: "دعم 24/7", en: "24/7 Support" },
+                  ].map((it, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-background/40 border border-border/50 text-[10px] sm:text-[11px] font-bold text-muted-foreground"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
+                      <span>{lang === "ar" ? it.ar : it.en}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {/* Configurator: full width */}
+            <div className="mb-5">
+              <PricingConfigurator
+                accountTypes={accountTypes}
+                effectiveAcct={effectiveAcct}
+                onAcctChange={(a) => {
+                  setAccountType(a);
+                  setPlanId(null);
+                }}
+                plans={filteredPlans as any}
+                selectedId={selected?.id}
+                onSelectPlan={(id) => setPlanId(id)}
+                discount={discount}
+                minRawPrice={minPriceAcrossPlans}
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="hidden md:flex gap-3">
+              <button
+                onClick={() => setConfirmBuy(true)}
+                disabled={!selected || selectedSoldOut}
+                className={`flex-[2] px-6 py-4 rounded-2xl font-black text-base transition disabled:cursor-not-allowed ${
+                  selectedSoldOut
+                    ? "bg-muted text-muted-foreground border border-border"
+                    : "bg-brand text-brand-foreground hover:brightness-110 hover:-translate-y-0.5 shadow-[0_20px_40px_-12px_hsl(var(--brand)/0.5)] disabled:opacity-50"
+                }`}
+              >
+                {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
+              </button>
+              <button
+                onClick={() => handleAdd(false)}
+                disabled={!selected || selectedSoldOut}
+                className="flex-1 px-6 py-4 border border-border rounded-2xl font-bold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
+              </button>
+            </div>
           </div>
+
         </div>
 
 
