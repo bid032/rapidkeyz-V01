@@ -372,6 +372,7 @@ export type Database = {
           is_active: boolean
           label_ar: string
           label_en: string
+          plan_variant: string | null
           price: number
           product_id: string
           sheet_csv_url: string | null
@@ -388,6 +389,7 @@ export type Database = {
           is_active?: boolean
           label_ar: string
           label_en: string
+          plan_variant?: string | null
           price: number
           product_id: string
           sheet_csv_url?: string | null
@@ -404,6 +406,7 @@ export type Database = {
           is_active?: boolean
           label_ar?: string
           label_en?: string
+          plan_variant?: string | null
           price?: number
           product_id?: string
           sheet_csv_url?: string | null
@@ -487,6 +490,7 @@ export type Database = {
           is_featured: boolean
           name_ar: string
           name_en: string
+          plan_variants: string[]
           slug: string
           sort_order: number
           status: Database["public"]["Enums"]["product_status"]
@@ -510,6 +514,7 @@ export type Database = {
           is_featured?: boolean
           name_ar: string
           name_en: string
+          plan_variants?: string[]
           slug: string
           sort_order?: number
           status?: Database["public"]["Enums"]["product_status"]
@@ -533,6 +538,7 @@ export type Database = {
           is_featured?: boolean
           name_ar?: string
           name_en?: string
+          plan_variants?: string[]
           slug?: string
           sort_order?: number
           status?: Database["public"]["Enums"]["product_status"]
