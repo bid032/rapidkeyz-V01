@@ -146,7 +146,7 @@ function ProductPage() {
         .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)")
         .eq("status", "active")
         .neq("id", p.id)
-        .limit(6);
+        .limit(8);
       const cats: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
       if (cats.length > 0) q = q.overlaps("category_ids", cats);
       else if (p.category_id) q = q.eq("category_id", p.category_id);
