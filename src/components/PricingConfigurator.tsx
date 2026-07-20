@@ -170,7 +170,7 @@ export function PricingConfigurator({
                     />
                   )}
                   {soldOut && (
-                    <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-2" : "end-2"} text-[11px] font-black uppercase px-2 py-1 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10`}>
+                    <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "end-2" : "start-2"} text-[11px] font-black uppercase px-2 py-1 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10`}>
                       {t.product.soldOut}
                     </span>
                   )}
