@@ -260,7 +260,7 @@ function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center">
             {/* Content Side */}
-            <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-end space-y-4 sm:space-y-5">
+            <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-start space-y-4 sm:space-y-5" dir={lang === "ar" ? "rtl" : "ltr"}>
 
 
               {/* Live pill */}
@@ -276,21 +276,21 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-2.5 sm:space-y-3">
+              <div className="space-y-2.5 sm:space-y-3 w-full md:max-w-xl">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance"
+                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance text-center md:text-start"
                 >
                   {hero.title1}
                 </h1>
                 <h2
-                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance brand-text"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance brand-text text-center md:text-start"
                 >
                   {hero.title2}
                 </h2>
 
                 <p
-                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto md:mx-0 pt-1"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto md:mx-0 pt-1 text-center md:text-start"
                 >
                   {hero.subtitle}
                 </p>
@@ -353,14 +353,14 @@ function HomePage() {
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto md:self-start md:justify-start">
                 <Link
                   to="/shop"
                   data-gsap="magnetic"
                   data-strength="0.3"
                   className="group inline-flex items-center justify-center gap-3 px-7 sm:px-9 py-3.5 sm:py-4 bg-brand text-brand-foreground font-bold rounded-2xl brand-glow hover:shadow-[0_0_60px_-8px_var(--brand-glow)] transition-shadow font-display"
                 >
-                  <span>{hero.cta}</span>
+                    <span>{hero.cta}</span>
                   <span className="grid place-items-center size-7 rounded-full bg-brand-foreground/15 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180">→</span>
                 </Link>
                 <a
@@ -382,7 +382,7 @@ function HomePage() {
                   { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
                   { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
                 ].map((s) => (
-                  <div key={s.l} className="space-y-1 text-center md:text-end">
+                  <div key={s.l} className="space-y-1 text-center md:text-start">
                     <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
                   </div>
