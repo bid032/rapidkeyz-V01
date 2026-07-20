@@ -84,89 +84,127 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
-        {/* Plan variant (e.g. LinkedIn Premium Career / Sales Navigator / Recruiter Lite) */}
-        {variants && variants.length > 0 && (
+        {/* Combined row: single account type + variant dropdown */}
+        {normalizedTypes.length === 1 && variants && variants.length > 0 ? (
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                {isAr ? "٠ · نوع الخطة" : "0 · Plan Type"}
+                {isAr ? "١ · نوع الحساب والخطة" : "1 · Account & Plan"}
               </p>
             </div>
-            <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border">
-              {variants.map((v) => {
-                const isSel = effectiveVariant === v;
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => onVariantChange?.(v)}
-                    className={`relative px-3 py-2 rounded-lg text-xs font-extrabold transition ${
-                      isSel
-                        ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
-                        : "text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {v}
-                  </button>
-                );
-              })}
+            <div className="grid grid-cols-[auto_1fr] gap-1.5 p-1 rounded-xl bg-muted/40 border border-border items-stretch">
+              {/* Account type pill (display-only, single type) */}
+              <div className="relative px-3 py-2 rounded-lg bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] flex flex-col justify-center">
+                <span className="block text-xs font-extrabold leading-tight">
+                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
+                </span>
+                <span className="block text-[9px] mt-0.5 leading-tight text-brand-foreground/80">
+                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
+                </span>
+              </div>
+              {/* Variant dropdown */}
+              <div className="relative">
+                <select
+                  value={effectiveVariant ?? ""}
+                  onChange={(e) => onVariantChange?.(e.target.value)}
+                  className="w-full h-full px-3 py-2 rounded-lg bg-card border border-border text-sm font-extrabold text-foreground focus:outline-none focus:border-brand appearance-none cursor-pointer pe-8"
+                >
+                  {variants.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+                <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-3" : "end-3"} text-brand text-xs`}>▼</span>
+              </div>
             </div>
           </div>
-        )}
-
-        {/* Account type , segmented pill with sliding indicator */}
-        {normalizedTypes.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                {isAr ? "١ · نوع الحساب" : "1 · Account Type"}
-              </p>
-            </div>
-
-
-            <div
-              className={`grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border`}
-              style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
-            >
-              {normalizedTypes.map((a) => {
-                const isSel = normalizedEffective === a;
-                const meta = acctMeta[a][isAr ? "ar" : "en"];
-                return (
-                  <button
-                    key={a}
-                    onClick={() => onAcctChange(a)}
-                    className="relative px-2.5 py-2 rounded-lg text-start focus:outline-none"
-                  >
-                    {isSel && (
-                      <motion.span
-                        layoutId="acct-pill"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
-                      />
-                    )}
-                    <span className="relative block">
-                      <span
-                        className={`block text-xs font-extrabold ${
-                          isSel ? "text-brand-foreground" : "text-foreground"
+        ) : (
+          <>
+            {/* Plan variant (multiple account types case) */}
+            {variants && variants.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                    {isAr ? "٠ · نوع الخطة" : "0 · Plan Type"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border">
+                  {variants.map((v) => {
+                    const isSel = effectiveVariant === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => onVariantChange?.(v)}
+                        className={`relative px-3 py-2 rounded-lg text-xs font-extrabold transition ${
+                          isSel
+                            ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                            : "text-foreground hover:bg-muted"
                         }`}
                       >
-                        {meta.title}
-                      </span>
-                      <span
-                        className={`block text-[9px] mt-0.5 leading-tight ${
-                          isSel ? "text-brand-foreground/80" : "text-muted-foreground"
-                        }`}
-                      >
-                        {meta.sub}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-          </div>
+            {/* Account type , segmented pill with sliding indicator */}
+            {normalizedTypes.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                    {isAr ? "١ · نوع الحساب" : "1 · Account Type"}
+                  </p>
+                </div>
+
+
+                <div
+                  className={`grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border`}
+                  style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
+                >
+                  {normalizedTypes.map((a) => {
+                    const isSel = normalizedEffective === a;
+                    const meta = acctMeta[a][isAr ? "ar" : "en"];
+                    return (
+                      <button
+                        key={a}
+                        onClick={() => onAcctChange(a)}
+                        className="relative px-2.5 py-2 rounded-lg text-start focus:outline-none"
+                      >
+                        {isSel && (
+                          <motion.span
+                            layoutId="acct-pill"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                          />
+                        )}
+                        <span className="relative block">
+                          <span
+                            className={`block text-xs font-extrabold ${
+                              isSel ? "text-brand-foreground" : "text-foreground"
+                            }`}
+                          >
+                            {meta.title}
+                          </span>
+                          <span
+                            className={`block text-[9px] mt-0.5 leading-tight ${
+                              isSel ? "text-brand-foreground/80" : "text-muted-foreground"
+                            }`}
+                          >
+                            {meta.sub}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+              </div>
+            )}
+          </>
         )}
+
 
         {/* Duration cards */}
         <div>
