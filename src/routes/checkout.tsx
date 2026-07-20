@@ -445,9 +445,8 @@ function CheckoutPage() {
                           className="sr-only"
                         />
                       </label>
-
-                      )}
                     </div>
+
                   </div>
                 ) : gateway === "simulate" ? (
                   <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30 text-sm leading-relaxed">
