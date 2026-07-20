@@ -406,6 +406,57 @@ export function QuickBuyDialog({
                     })}
                   </div>
                 )}
+
+                {/* Total + qty — pinned at the end (left in RTL), aligned with plans column */}
+                {plans.length > 0 && (
+                  <div className="mt-auto pt-3">
+                    <div className="rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/10 via-brand/5 to-transparent p-3 flex items-center justify-between gap-4">
+                      {/* qty */}
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                          {isAr ? "الكمية" : "Qty"}
+                        </span>
+                        <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => setQty((q) => Math.max(1, q - 1))}
+                            className="size-7 rounded-full grid place-items-center hover:bg-muted transition text-sm"
+                            aria-label="decrease"
+                          >
+                            −
+                          </button>
+                          <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => setQty((q) => Math.min(99, q + 1))}
+                            className="size-7 rounded-full grid place-items-center hover:bg-muted transition text-sm"
+                            aria-label="increase"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* total */}
+                      {selected && (
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-brand">
+                            {isAr ? "الإجمالي" : "Total"}
+                          </span>
+                          {hasDiscount && (
+                            <span className="text-[11px] text-muted-foreground line-through tabular-nums">
+                              {Math.round(rawUnit * qty * 100) / 100}
+                            </span>
+                          )}
+                          <span className="text-2xl font-black text-brand tabular-nums leading-none">
+                            {total}
+                          </span>
+                          <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </section>
             </div>
           </div>
