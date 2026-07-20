@@ -75,6 +75,18 @@ export const OrderDeliveredEmail = ({
       })}
 
       <Hr style={styles.hr} />
+      <Section style={{ textAlign: 'center' as const }}>
+        <a
+          href="https://rapidkeyz.lovable.app/dashboard"
+          style={{ ...styles.button, display: 'inline-block' }}
+        >
+          افتح لوحة الحساب لنسخ البيانات
+        </a>
+      </Section>
+      <Text style={{ ...styles.muted, textAlign: 'center' as const, marginTop: '10px' }}>
+        نصيحة: على الموبايل اضغط مطوّلاً على أي قيمة لنسخها فوراً.
+      </Text>
+      <Hr style={styles.hr} />
       <Text style={styles.muted}>
         لو حصل أي مشكلة في الدخول، تواصل معانا على واتساب أو رد على الإيميل ده وهنساعدك فوراً.
       </Text>
