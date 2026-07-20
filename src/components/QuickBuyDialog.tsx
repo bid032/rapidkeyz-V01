@@ -101,7 +101,7 @@ export function QuickBuyDialog({
       <DialogContent
         className="p-0 gap-0 border-border/60 bg-card overflow-hidden
                    w-[calc(100vw-1rem)] sm:w-auto
-                   max-w-[calc(100vw-1rem)] sm:max-w-2xl lg:max-w-[min(96vw,1100px)]
+                   max-w-[calc(100vw-1rem)] sm:max-w-2xl lg:max-w-[min(98vw,1500px)]
                    max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-4rem)]
                    flex flex-col"
       >
@@ -120,7 +120,7 @@ export function QuickBuyDialog({
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-x-reverse divide-border">
             {/* LEFT: product hero + actions */}
-            <aside className="lg:col-span-5 p-4 sm:p-6 lg:p-8 order-1 bg-gradient-to-br from-brand/5 via-transparent to-transparent flex flex-col gap-4 sm:gap-5">
+            <aside className="lg:col-span-3 p-4 sm:p-6 lg:p-8 order-1 bg-gradient-to-br from-brand/5 via-transparent to-transparent flex flex-col gap-4 sm:gap-5">
               <div className="flex lg:flex-col items-center lg:items-stretch gap-3 lg:gap-5">
                 <div className="shrink-0 size-14 sm:size-20 lg:size-auto lg:w-full lg:aspect-square rounded-2xl border border-border bg-background overflow-hidden shadow-md lg:shadow-xl">
                   {product.icon_url ? (
@@ -187,13 +187,14 @@ export function QuickBuyDialog({
             </aside>
 
             {/* RIGHT: plans + qty/total */}
-            <section className="lg:col-span-7 p-4 sm:p-6 lg:p-8 order-2 flex flex-col gap-4 sm:gap-5 min-w-0">
+            <section className="lg:col-span-9 p-4 sm:p-6 lg:p-8 order-2 flex flex-col gap-4 sm:gap-5 min-w-0">
               <div className="flex-1 min-h-0">
                 <div className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-brand mb-2 sm:mb-3">
                   {isAr ? "اختر الخطة" : "Choose a plan"}
                 </div>
                 {plansQ.isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
+
                     {[0, 1, 2, 3].map((i) => (
                       <div key={i} className="h-16 sm:h-24 rounded-xl bg-muted animate-pulse" />
                     ))}
@@ -203,7 +204,7 @@ export function QuickBuyDialog({
                     {isAr ? "لا توجد خطط متاحة" : "No plans available"}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
                     {plans.map((pl) => {
                       const isSel = selected?.id === pl.id;
                       const so = Number(pl.stock ?? 0) <= 0;
