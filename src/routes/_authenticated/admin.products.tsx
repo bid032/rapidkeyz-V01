@@ -1045,6 +1045,21 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 </select>
               </Field>
             )}
+            {showVariantPicker && (
+              <Field label="نوع الخطة لهذا العرض">
+                <select
+                  value={form.plan_variant}
+                  onChange={(e) => setForm({ ...form, plan_variant: e.target.value })}
+                  className="w-full px-3 py-2 bg-background border border-border rounded"
+                >
+                  <option value="">— بدون تحديد —</option>
+                  {variantOptions.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              </Field>
+            )}
+
             <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2 xl:col-span-3">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
