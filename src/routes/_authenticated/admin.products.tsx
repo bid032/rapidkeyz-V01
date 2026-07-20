@@ -485,7 +485,7 @@ function AdminProducts() {
                           <Field label="الحالة">
                             <select value={editing.status}
                               onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
-                              className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
+                              className="w-full h-10 px-2 bg-background border border-border rounded-lg text-sm">
                               <option value="active">ظاهر</option>
                               <option value="draft">مسودة</option>
                               <option value="archived">مؤرشف</option>
@@ -494,7 +494,7 @@ function AdminProducts() {
                           <Field label="نوع التسليم">
                             <select value={editing.delivery_type}
                               onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
-                              className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
+                              className="w-full h-10 px-2 bg-background border border-border rounded-lg text-sm">
                               <option value="instant">فوري</option>
                               <option value="manual">يدوي</option>
                             </select>
