@@ -300,24 +300,24 @@ function ProductPage() {
       <Header />
       <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 pb-28 md:pb-10">
         {/* Glass product panel */}
-        <div className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-card/60 backdrop-blur-xl shadow-2xl">
+        <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] border border-border/60 bg-card/60 backdrop-blur-xl shadow-2xl">
           <div className="pointer-events-none absolute -top-32 -end-32 w-96 h-96 bg-brand/20 rounded-full blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-32 -start-32 w-96 h-96 bg-brand/10 rounded-full blur-[120px]" />
 
-          <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-0">
+          <div className="relative grid grid-cols-1 md:grid-cols-12 gap-0">
             {/* Visual side */}
-            <div className="lg:col-span-5 relative p-5 sm:p-8 flex flex-col items-center justify-center border-b lg:border-b-0 lg:border-s border-border/50 bg-gradient-to-br from-card/80 via-card/40 to-transparent">
-              <div className="absolute top-4 end-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/10 border border-brand/25 backdrop-blur-md">
+            <div className="md:col-span-5 relative p-5 sm:p-6 md:p-7 flex flex-col items-center justify-center border-b md:border-b-0 md:border-s border-border/50 bg-gradient-to-br from-card/80 via-card/40 to-transparent">
+              <div className="absolute top-3 end-3 sm:top-4 sm:end-4 flex items-center gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-brand/10 border border-brand/25 backdrop-blur-md z-10">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
                 </span>
-                <span className="text-brand text-[10px] sm:text-xs font-bold tracking-wide">
+                <span className="text-brand text-[10px] sm:text-xs font-bold tracking-wide whitespace-nowrap">
                   <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
                 </span>
               </div>
-              <div className="relative w-full max-w-xs sm:max-w-sm aspect-square">
-                <div className="absolute inset-0 bg-brand/20 blur-[80px] rounded-full opacity-50 animate-pulse" />
+              <div className="relative w-full max-w-[260px] sm:max-w-xs md:max-w-none md:w-full aspect-square">
+                <div className="absolute inset-0 bg-brand/25 blur-[90px] rounded-full opacity-60 animate-pulse" />
                 <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
@@ -335,24 +335,41 @@ function ProductPage() {
                   )}
                 </div>
               </div>
+
+              {/* Trust chips , shown under image */}
+              <div className="mt-5 md:mt-6 grid grid-cols-3 gap-1.5 w-full max-w-sm">
+                {[
+                  { ar: "تسليم فوري", en: "Instant" },
+                  { ar: "ضمان كامل", en: "Warranty" },
+                  { ar: "دعم 24/7", en: "24/7 Support" },
+                ].map((it, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg bg-background/40 border border-border/50 text-[10px] sm:text-[11px] font-bold text-muted-foreground"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
+                    <span className="truncate">{lang === "ar" ? it.ar : it.en}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Purchase side */}
-            <div className="lg:col-span-7 p-5 sm:p-8 md:p-10 flex flex-col">
-              <div className="mb-5 sm:mb-6">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-3 leading-tight">
+            <div className="md:col-span-7 p-5 sm:p-6 md:p-8 lg:p-10 flex flex-col min-w-0">
+              <div className="mb-4 sm:mb-5">
+                <h1 className="text-2xl sm:text-3xl md:text-[2rem] lg:text-4xl font-extrabold tracking-tight mb-2.5 leading-tight break-words">
                   {name}
                 </h1>
                 {desc && (
                   <div>
                     <p
-                      className={`text-muted-foreground text-sm sm:text-base leading-relaxed ${
+                      className={`text-muted-foreground text-sm sm:text-[15px] leading-relaxed ${
                         descExpanded ? "" : "line-clamp-2"
                       }`}
                     >
                       {desc}
                     </p>
-                    {desc.length > 140 && (
+                    {desc.length > 120 && (
                       <button
                         onClick={() => setDescExpanded((v) => !v)}
                         className="mt-1 text-xs font-bold text-brand hover:underline"
@@ -405,6 +422,7 @@ function ProductPage() {
             </div>
           </div>
         </div>
+
 
         {confirmBuy && typeof document !== "undefined" && createPortal(
           <div
