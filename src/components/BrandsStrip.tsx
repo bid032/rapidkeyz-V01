@@ -57,11 +57,11 @@ export function BrandsStrip() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 start-0 w-24 sm:w-32 z-10 bg-gradient-to-r from-background via-background/90 to-transparent rounded-s-2xl"
+          className="pointer-events-none absolute inset-y-0 start-0 w-28 sm:w-40 z-10 bg-gradient-to-r from-background from-30% via-background/80 to-transparent rounded-s-2xl"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 end-0 w-24 sm:w-32 z-10 bg-gradient-to-l from-background via-background/90 to-transparent rounded-e-2xl"
+          className="pointer-events-none absolute inset-y-0 end-0 w-28 sm:w-40 z-10 bg-gradient-to-l from-background from-30% via-background/80 to-transparent rounded-e-2xl"
         />
 
         <div className="brands-marquee overflow-hidden rounded-2xl" dir="ltr">
