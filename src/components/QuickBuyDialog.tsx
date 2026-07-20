@@ -204,7 +204,7 @@ export function QuickBuyDialog({
                     {isAr ? "لا توجد خطط متاحة" : "No plans available"}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
                     {plans.map((pl) => {
                       const isSel = selected?.id === pl.id;
                       const so = Number(pl.stock ?? 0) <= 0;
