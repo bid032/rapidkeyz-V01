@@ -109,7 +109,7 @@ export function QuickBuyDialog({
         <div className="md:hidden flex flex-col min-h-0 flex-1">
           {/* Header */}
           <div className="shrink-0 px-4 pt-5 pb-3 border-b border-border/60 bg-card">
-            <DialogHeader className="text-start space-y-1 pe-12">
+            <DialogHeader className="!text-start space-y-1 pe-12 sm:!text-start">
               <div className="flex items-center gap-3">
                 <div className="shrink-0 size-10 rounded-xl border border-border bg-background overflow-hidden shadow-md">
                   {product.icon_url ? (
@@ -263,7 +263,7 @@ export function QuickBuyDialog({
         <div className="hidden md:flex flex-col min-h-0">
           {/* Top strip: title + subtitle */}
           <div className="shrink-0 px-6 pt-4 pb-3 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
-            <DialogHeader className="text-start space-y-0.5 pe-12">
+            <DialogHeader className="!text-start space-y-0.5 pe-12 sm:!text-start">
               <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                 {isAr ? "شراء سريع" : "Quick buy"}
               </div>
