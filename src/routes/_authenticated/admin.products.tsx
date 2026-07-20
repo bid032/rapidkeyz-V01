@@ -789,36 +789,38 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
 
-  const savePlan = useMutation({
-    mutationFn: async (id: string) => {
-      const patchData = edits[id];
-      if (!patchData) return;
-      const clean: any = {};
-      if (patchData.price !== undefined) clean.price = patchData.price;
-      if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
-      if (patchData.stock !== undefined) clean.stock = patchData.stock;
-      if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
-      if (patchData.plan_variant !== undefined) clean.plan_variant = patchData.plan_variant;
-
-
-      if (Object.keys(clean).length > 0) {
-        const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
-        if (error) throw error;
-      }
-      if (patchData.cost_price !== undefined) {
-        const { error } = await supabase.from("plan_costs").upsert({ plan_id: id, cost_price: patchData.cost_price });
-        if (error) throw error;
+  const saveAll = useMutation({
+    mutationFn: async () => {
+      const ids = Object.keys(edits);
+      for (const id of ids) {
+        const patchData = edits[id];
+        if (!patchData) continue;
+        const clean: any = {};
+        if (patchData.price !== undefined) clean.price = patchData.price;
+        if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
+        if (patchData.stock !== undefined) clean.stock = patchData.stock;
+        if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
+        if (patchData.plan_variant !== undefined) clean.plan_variant = patchData.plan_variant;
+        if (Object.keys(clean).length > 0) {
+          const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
+          if (error) throw error;
+        }
+        if (patchData.cost_price !== undefined) {
+          const { error } = await supabase.from("plan_costs").upsert({ plan_id: id, cost_price: patchData.cost_price });
+          if (error) throw error;
+        }
       }
     },
-    onSuccess: (_d, id) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setEdits((prev) => { const c = { ...prev }; delete c[id]; return c; });
+      setEdits({});
       notify(lang === "ar" ? "تم حفظ التعديلات" : "Changes saved", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
+
 
   const del = useMutation({
     mutationFn: async (id: string) => {
@@ -833,258 +835,308 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     onError: (e) => showError(e, notify, lang),
   });
 
+  const dirtyCount = Object.keys(edits).length;
+
   return (
     <ModalPortal>
     <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur overflow-y-auto">
       <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
-        <div className="w-full max-w-3xl md:max-w-[min(96vw,1400px)] min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
-        <div className="flex justify-between items-start gap-2 mb-2">
-          <div className="min-w-0">
-            <h3 className="font-bold text-base sm:text-lg">العروض والأسعار والمخزون</h3>
-            <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">
-              كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح ، ومش بيظهر للعميل نهائيًا.
-            </p>
-          </div>
-          <button onClick={onClose} className="shrink-0 text-muted-foreground hover:text-foreground text-xl leading-none">✕</button>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 my-4">
-          {plans.data?.length === 0 && (
-            <div className="p-4 text-center text-sm text-muted-foreground bg-background border border-dashed border-border rounded-lg">
-              مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 
+        <div className="w-full max-w-3xl md:max-w-[min(96vw,1400px)] min-w-0 bg-card border border-border rounded-2xl shadow-2xl my-2 sm:my-8 overflow-hidden flex flex-col max-h-[95vh]">
+          {/* Header */}
+          <div className="flex justify-between items-start gap-3 p-4 sm:p-5 border-b border-border bg-gradient-to-b from-muted/40 to-transparent">
+            <div className="min-w-0">
+              <h3 className="font-black text-base sm:text-lg">العروض والأسعار والمخزون</h3>
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-1 leading-relaxed">
+                كل عرض = مدة اشتراك بسعر ومخزون. <b className="text-warning">سعر الشراء</b> بيظهرلك أنت بس لحساب الأرباح، ومش بيظهر للعميل.
+              </p>
             </div>
-          )}
-          {plans.data?.map((p: any) => {
-            const e = edits[p.id] ?? {};
-            const price = e.price ?? p.price;
-            const compare = e.compare_price !== undefined ? e.compare_price : p.compare_price;
-            const stock = e.stock ?? p.stock;
-            const cost = e.cost_price !== undefined ? e.cost_price : (costs.data?.[p.id] ?? 0);
-            const dirty = !!edits[p.id];
-            const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
-            const margin = Number(price) - Number(cost);
-            const currentAcct = (e.account_type !== undefined ? e.account_type : p.account_type) ?? "";
-            return (
-              <div key={p.id} className="p-4 bg-background border border-border rounded-xl">
-                <div className="flex justify-between items-start mb-3 gap-2">
-                  <div className="text-sm min-w-0">
-                    <div className="font-bold truncate">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
-                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
-                      <span>مدة: {months} شهر</span>
-                      {p.account_type && (
-                        <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">
-                          {acctLabel(p.account_type)}
-                        </span>
-                      )}
-                      {p.plan_variant && (
-                        <span className="px-1.5 py-0.5 rounded bg-warning/10 text-warning font-bold">
-                          {p.plan_variant}
-                        </span>
-                      )}
+            <button onClick={onClose} className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground text-lg leading-none transition">✕</button>
+          </div>
+
+          {/* Scroll area */}
+          <div className="flex-1 overflow-y-auto p-3 sm:p-5">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+              {plans.data?.length === 0 && (
+                <div className="xl:col-span-2 p-8 text-center text-sm text-muted-foreground bg-muted/30 border border-dashed border-border rounded-xl">
+                  مفيش عروض لسه. ضيف عرض جديد من الفورم تحت
+                </div>
+              )}
+              {plans.data?.map((p: any) => {
+                const e = edits[p.id] ?? {};
+                const price = e.price ?? p.price;
+                const compare = e.compare_price !== undefined ? e.compare_price : p.compare_price;
+                const stock = e.stock ?? p.stock;
+                const cost = e.cost_price !== undefined ? e.cost_price : (costs.data?.[p.id] ?? 0);
+                const dirty = !!edits[p.id];
+                const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
+                const margin = Number(price) - Number(cost);
+                const currentAcct = (e.account_type !== undefined ? e.account_type : p.account_type) ?? "";
+                return (
+                  <div
+                    key={p.id}
+                    className={`p-4 bg-background rounded-xl border-2 transition ${
+                      dirty ? "border-brand shadow-[0_0_0_3px_hsl(var(--brand)/0.08)]" : "border-border"
+                    }`}
+                  >
+                    {/* Card header */}
+                    <div className="flex justify-between items-start mb-3 gap-2 pb-3 border-b border-border">
+                      <div className="text-sm min-w-0 flex-1">
+                        <div className="font-black truncate">
+                          {p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
+                          <span className="px-1.5 py-0.5 rounded bg-muted">{months} شهر</span>
+                          {p.account_type && (
+                            <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">
+                              {acctLabel(p.account_type)}
+                            </span>
+                          )}
+                          {p.plan_variant && (
+                            <span className="px-1.5 py-0.5 rounded bg-warning/10 text-warning font-bold">
+                              {p.plan_variant}
+                            </span>
+                          )}
+                          {dirty && (
+                            <span className="px-1.5 py-0.5 rounded bg-brand text-brand-foreground font-bold text-[10px]">
+                              معدّل
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: "حذف العرض",
+                            message: `مسح عرض "${p.label_ar}"؟`,
+                            tone: "danger",
+                            confirmLabel: "احذف",
+                          });
+                          if (ok) del.mutate(p.id);
+                        }}
+                        className="text-destructive text-xs font-bold hover:bg-destructive/10 px-2 py-1 rounded shrink-0"
+                      >
+                        مسح
+                      </button>
                     </div>
 
-                  </div>
-                  <button
-                    onClick={async () => {
-                      const ok = await confirm({
-                        title: "حذف العرض",
-                        message: `مسح عرض "${p.label_ar}"؟`,
-                        tone: "danger",
-                        confirmLabel: "احذف",
-                      });
-                      if (ok) del.mutate(p.id);
-                    }}
-                    className="text-destructive text-xs hover:underline shrink-0"
-                  >مسح</button>
-                </div>
+                    {/* Selectors */}
+                    {(showAcctPicker || showVariantPicker) && (
+                      <div className={`grid gap-2 mb-3 ${showAcctPicker && showVariantPicker ? "grid-cols-2" : "grid-cols-1"}`}>
+                        {showAcctPicker && (
+                          <div>
+                            <label className="text-[10px] font-black text-brand uppercase tracking-wider mb-1 block">نوع الحساب</label>
+                            <select
+                              value={currentAcct}
+                              onChange={(ev) => patch(p.id, "account_type", ev.target.value === "" ? null : ev.target.value)}
+                              className="w-full px-2 py-1.5 bg-card border border-border rounded-md text-sm font-bold focus:outline-none focus:border-brand"
+                            >
+                              <option value="">— لكل الأنواع —</option>
+                              {acctTypes.map((a) => (
+                                <option key={a} value={a}>{acctLabel(a)}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                        {showVariantPicker && (
+                          <div>
+                            <label className="text-[10px] font-black text-warning uppercase tracking-wider mb-1 block">نوع الخطة</label>
+                            <select
+                              value={(e.plan_variant !== undefined ? e.plan_variant : p.plan_variant) ?? ""}
+                              onChange={(ev) => patch(p.id, "plan_variant", ev.target.value === "" ? null : ev.target.value)}
+                              className="w-full px-2 py-1.5 bg-card border border-border rounded-md text-sm font-bold focus:outline-none focus:border-warning"
+                            >
+                              <option value="">— بدون تحديد —</option>
+                              {variantOptions.map((v) => (
+                                <option key={v} value={v}>{v}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
+                    {/* Prices grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1 block">سعر البيع</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={price ?? 0}
+                          onChange={(ev) => patch(p.id, "price", +ev.target.value)}
+                          className="w-full px-2 py-1.5 bg-card border border-border rounded-md text-sm font-bold focus:outline-none focus:border-brand"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1 block">قبل الخصم</label>
+                        <input
+                          type="number"
+                          min={0}
+                          placeholder="اختياري"
+                          value={compare ?? ""}
+                          onChange={(ev) => patch(p.id, "compare_price", ev.target.value === "" ? null : +ev.target.value)}
+                          className="w-full px-2 py-1.5 bg-card border border-border rounded-md text-sm focus:outline-none focus:border-brand"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black text-warning uppercase tracking-wider mb-1 block">سعر الشراء</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={cost ?? 0}
+                          onChange={(ev) => patch(p.id, "cost_price", +ev.target.value)}
+                          className="w-full px-2 py-1.5 bg-warning/5 border border-warning/30 rounded-md text-sm font-bold focus:outline-none focus:border-warning"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1 block">المخزون</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={stock ?? 0}
+                          onChange={(ev) => patch(p.id, "stock", +ev.target.value)}
+                          className="w-full px-2 py-1.5 bg-card border border-border rounded-md text-sm font-bold focus:outline-none focus:border-brand"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Status footer */}
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border text-xs flex-wrap">
+                      {stock === 0 ? (
+                        <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive font-bold">نفذ</span>
+                      ) : stock <= 10 ? (
+                        <span className="px-2 py-0.5 rounded bg-warning/10 text-warning font-bold">قارب على الانتهاء</span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-success/10 text-success font-bold">متاح</span>
+                      )}
+                      <span className={`px-2 py-0.5 rounded font-bold ${margin > 0 ? "bg-success/10 text-success" : margin < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
+                        ربح/وحدة: {margin} EGP
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Add new form */}
+            <form onSubmit={(ev) => { ev.preventDefault(); add.mutate(); }} className="mt-6 pt-5 border-t border-border">
+              <h4 className="font-black text-sm mb-3 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-brand text-brand-foreground flex items-center justify-center text-sm">+</span>
+                إضافة عرض جديد
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
+                <Field label="الاسم بالعربي">
+                  <input required value={form.label_ar}
+                    onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded" />
+                </Field>
+                <Field label="Label (English)">
+                  <input required value={form.label_en}
+                    onChange={(e) => setForm({ ...form, label_en: e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded" />
+                </Field>
+                <Field label="المدة (بالشهور)">
+                  <input type="number" min={1} value={form.duration_months}
+                    onChange={(e) => setForm({ ...form, duration_months: +e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded" />
+                </Field>
+                <Field label="المخزون">
+                  <input type="number" min={0} value={form.stock}
+                    onChange={(e) => setForm({ ...form, stock: +e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded" />
+                </Field>
+                <Field label="سعر البيع (EGP)">
+                  <input type="number" required min={0} value={form.price}
+                    onChange={(e) => setForm({ ...form, price: +e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded" />
+                </Field>
+                <Field label="السعر قبل الخصم (اختياري)">
+                  <input type="number" min={0} value={form.compare_price}
+                    onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
+                    className="w-full px-3 py-2 bg-background border border-border rounded" />
+                </Field>
                 {showAcctPicker && (
-                  <div className="mb-3">
-                    <label className="text-[11px] font-bold text-brand uppercase mb-1 block">نوع الحساب لهذا العرض</label>
+                  <Field label="نوع الحساب لهذا العرض">
                     <select
-                      value={currentAcct}
-                      onChange={(ev) => patch(p.id, "account_type", ev.target.value === "" ? null : ev.target.value)}
-                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                      value={form.account_type}
+                      onChange={(e) => setForm({ ...form, account_type: e.target.value as any })}
+                      className="w-full px-3 py-2 bg-background border border-border rounded"
                     >
                       <option value="">— لكل الأنواع —</option>
                       {acctTypes.map((a) => (
                         <option key={a} value={a}>{acctLabel(a)}</option>
                       ))}
                     </select>
-                  </div>
+                  </Field>
                 )}
-
                 {showVariantPicker && (
-                  <div className="mb-3">
-                    <label className="text-[11px] font-bold text-warning uppercase mb-1 block">نوع الخطة لهذا العرض</label>
+                  <Field label="نوع الخطة لهذا العرض">
                     <select
-                      value={(e.plan_variant !== undefined ? e.plan_variant : p.plan_variant) ?? ""}
-                      onChange={(ev) => patch(p.id, "plan_variant", ev.target.value === "" ? null : ev.target.value)}
-                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                      value={form.plan_variant}
+                      onChange={(e) => setForm({ ...form, plan_variant: e.target.value })}
+                      className="w-full px-3 py-2 bg-background border border-border rounded"
                     >
                       <option value="">— بدون تحديد —</option>
                       {variantOptions.map((v) => (
                         <option key={v} value={v}>{v}</option>
                       ))}
                     </select>
-                  </div>
+                  </Field>
                 )}
-
-
-
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border min-w-0">
-                  <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">سعر البيع</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={price ?? 0}
-                      onChange={(ev) => patch(p.id, "price", +ev.target.value)}
-                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">قبل الخصم</label>
-                    <input
-                      type="number"
-                      min={0}
-                      placeholder="اختياري"
-                      value={compare ?? ""}
-                      onChange={(ev) => patch(p.id, "compare_price", ev.target.value === "" ? null : +ev.target.value)}
-                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-warning uppercase mb-1 block flex items-center gap-1">
-                      سعر الشراء
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={cost ?? 0}
-                      onChange={(ev) => patch(p.id, "cost_price", +ev.target.value)}
-                      className="w-full px-2 py-1.5 bg-warning/5 border border-warning/30 rounded text-sm font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-muted-foreground uppercase mb-1 block">المخزون</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={stock ?? 0}
-                      onChange={(ev) => patch(p.id, "stock", +ev.target.value)}
-                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                  <div className="flex items-center gap-3 text-xs">
-                    <span>
-                      {stock === 0 ? <span className="text-destructive font-bold">نفذ</span> :
-                       stock <= 10 ? <span className="text-warning">قارب على الانتهاء</span> :
-                       <span className="text-success">متاح</span>}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded font-bold ${margin > 0 ? "bg-success/10 text-success" : margin < 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"}`}>
-                      ربح/وحدة: {margin} EGP
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => savePlan.mutate(p.id)}
-                    disabled={!dirty || savePlan.isPending}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${
-                      dirty
-                        ? "bg-brand text-brand-foreground hover:brand-glow"
-                        : "bg-muted text-muted-foreground cursor-not-allowed"
-                    }`}
-                  >
-                    {dirty ? "حفظ" : "محفوظ"}
-                  </button>
-                </div>
+                <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2">
+                  <input type="number" min={0} value={form.cost_price}
+                    onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
+                    className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
+                </Field>
               </div>
-            );
-          })}
-        </div>
-
-        <form onSubmit={(e) => { e.preventDefault(); add.mutate(); }} className="border-t border-border pt-4">
-          <h4 className="font-bold text-sm mb-3">إضافة عرض جديد</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
-            <Field label="الاسم بالعربي">
-              <input required value={form.label_ar}
-                onChange={(e) => setForm({ ...form, label_ar: e.target.value })}
-                className="w-full px-3 py-2 bg-background border border-border rounded" />
-            </Field>
-            <Field label="Label (English)">
-              <input required value={form.label_en}
-                onChange={(e) => setForm({ ...form, label_en: e.target.value })}
-                className="w-full px-3 py-2 bg-background border border-border rounded" />
-            </Field>
-            <Field label="المدة (بالشهور)">
-              <input type="number" min={1} value={form.duration_months}
-                onChange={(e) => setForm({ ...form, duration_months: +e.target.value })}
-                className="w-full px-3 py-2 bg-background border border-border rounded" />
-            </Field>
-            <Field label="المخزون">
-              <input type="number" min={0} value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: +e.target.value })}
-                className="w-full px-3 py-2 bg-background border border-border rounded" />
-            </Field>
-            <Field label="سعر البيع (EGP)">
-              <input type="number" required min={0} value={form.price}
-                onChange={(e) => setForm({ ...form, price: +e.target.value })}
-                className="w-full px-3 py-2 bg-background border border-border rounded" />
-            </Field>
-            <Field label="السعر قبل الخصم (اختياري)">
-              <input type="number" min={0} value={form.compare_price}
-                onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
-                className="w-full px-3 py-2 bg-background border border-border rounded" />
-            </Field>
-            {showAcctPicker && (
-              <Field label="نوع الحساب لهذا العرض">
-                <select
-                  value={form.account_type}
-                  onChange={(e) => setForm({ ...form, account_type: e.target.value as any })}
-                  className="w-full px-3 py-2 bg-background border border-border rounded"
-                >
-                  <option value="">— لكل الأنواع —</option>
-                  {acctTypes.map((a) => (
-                    <option key={a} value={a}>{acctLabel(a)}</option>
-                  ))}
-                </select>
-              </Field>
-            )}
-            {showVariantPicker && (
-              <Field label="نوع الخطة لهذا العرض">
-                <select
-                  value={form.plan_variant}
-                  onChange={(e) => setForm({ ...form, plan_variant: e.target.value })}
-                  className="w-full px-3 py-2 bg-background border border-border rounded"
-                >
-                  <option value="">— بدون تحديد —</option>
-                  {variantOptions.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                </select>
-              </Field>
-            )}
-
-            <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2 xl:col-span-3">
-              <input type="number" min={0} value={form.cost_price}
-                onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
-                className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
-            </Field>
-
+              <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-black hover:brand-glow transition">
+                + إضافة العرض
+              </button>
+            </form>
           </div>
-          <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
-            + إضافة العرض
-          </button>
-        </form>
+
+          {/* Sticky footer: Save all / Cancel all */}
+          <div className="border-t border-border bg-card/95 backdrop-blur p-3 sm:p-4 flex items-center justify-between gap-3">
+            <div className="text-xs sm:text-sm">
+              {dirtyCount > 0 ? (
+                <span className="font-bold text-brand">
+                  {dirtyCount} عرض فيه تعديلات غير محفوظة
+                </span>
+              ) : (
+                <span className="text-muted-foreground">مفيش تعديلات</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setEdits({})}
+                disabled={dirtyCount === 0 || saveAll.isPending}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
+                  dirtyCount === 0
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-muted text-foreground hover:bg-muted/70"
+                }`}
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={() => saveAll.mutate()}
+                disabled={dirtyCount === 0 || saveAll.isPending}
+                className={`px-5 py-2 rounded-lg text-sm font-black transition ${
+                  dirtyCount === 0
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-brand text-brand-foreground hover:brand-glow"
+                }`}
+              >
+                {saveAll.isPending ? "جاري الحفظ..." : `حفظ الكل${dirtyCount ? ` (${dirtyCount})` : ""}`}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     </ModalPortal>
   );
 }
+
 
 
