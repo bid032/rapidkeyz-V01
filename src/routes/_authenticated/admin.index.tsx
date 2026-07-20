@@ -275,13 +275,17 @@ function AdminOverview() {
       profit: 0,
       refunds: 0,
     }));
+    const validStatuses = new Set(["paid", "delivered", "refunded"]);
     (sales.data ?? []).forEach((it: any) => {
+      // Match admin_revenue_stats: only paid/delivered/refunded contribute to revenue/profit.
+      if (!validStatuses.has(it.orders?.status)) return;
       const d = new Date(it.orders?.created_at ?? it.created_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
       rows[idx].revenue += Math.round(Number(it.unit_price) * Number(it.quantity));
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
+
     (refundsAll.data ?? []).forEach((r) => {
       const d = new Date(r.basis_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
