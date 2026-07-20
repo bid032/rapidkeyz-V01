@@ -276,11 +276,11 @@ export function QuickBuyDialog({
             </DialogHeader>
           </div>
 
-          {/* Split body — no scroll */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 h-full items-start">
-              {/* RIGHT column (start in RTL): image + 3 actions + total */}
-              <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
+          {/* Split body — auto height, no scroll */}
+          <div className="min-h-0">
+            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 items-stretch">
+              {/* RIGHT column (start in RTL): image + 3 actions */}
+              <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0">
                 <div className="relative w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink-0" style={{ aspectRatio: "1 / 1", maxHeight: "220px" }}>
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="size-full object-cover" />
