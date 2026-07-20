@@ -27,6 +27,7 @@ type ProductForm = {
   account_types: AccountType[];
   status: "active" | "draft" | "archived";
   is_featured: boolean;
+  is_bestseller: boolean;
   discount_percent: number;
 };
 
@@ -44,6 +45,7 @@ const emptyForm: ProductForm = {
   account_types: ["shared"],
   status: "active",
   is_featured: false,
+  is_bestseller: false,
   discount_percent: 0,
 };
 
@@ -220,7 +222,7 @@ function AdminProducts() {
             category_ids: existingCats,
             delivery_type: p.delivery_type, account_type: p.account_type,
             account_types: initTypes,
-            status: p.status, is_featured: p.is_featured,
+            status: p.status, is_featured: p.is_featured, is_bestseller: (p as any).is_bestseller ?? false,
             discount_percent: p.discount_percent ?? 0,
           });
         };
@@ -515,6 +517,11 @@ function AdminProducts() {
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
                 <span><b>Featured</b> ، ثبّت المنتج في القسم المميز على الرئيسية</span>
+              </label>
+              <label className="md:col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
+                <input type="checkbox" checked={editing.is_bestseller}
+                  onChange={(e) => setEditing({ ...editing, is_bestseller: e.target.checked })} />
+                <span><b>الأكثر مبيعاً</b> ، اعرض هذا المنتج داخل قسم "الأكثر مبيعاً" في الصفحة الرئيسية</span>
               </label>
               <div className="md:col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
