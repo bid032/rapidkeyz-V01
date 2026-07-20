@@ -527,17 +527,17 @@ function AdminProducts() {
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg font-bold"
                 />
               </Field>
-              <label className="md:col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
+              <label className="md:col-span-2 xl:col-span-3 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_featured}
                   onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
                 <span><b>Featured</b> ، ثبّت المنتج في القسم المميز على الرئيسية</span>
               </label>
-              <label className="md:col-span-2 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
+              <label className="md:col-span-2 xl:col-span-3 flex items-center gap-2 text-sm p-3 bg-background border border-border rounded-lg cursor-pointer">
                 <input type="checkbox" checked={editing.is_bestseller}
                   onChange={(e) => setEditing({ ...editing, is_bestseller: e.target.checked })} />
                 <span><b>الأكثر مبيعاً</b> ، اعرض هذا المنتج داخل قسم "الأكثر مبيعاً" في الصفحة الرئيسية</span>
               </label>
-              <div className="md:col-span-2 flex gap-3 justify-end pt-4 border-t border-border">
+              <div className="md:col-span-2 xl:col-span-3 flex gap-3 justify-end pt-4 border-t border-border">
                 <button type="button" onClick={() => setEditing(null)}
                   className="px-4 py-2 border border-border rounded-lg">{t.admin.cancel}</button>
                 <button type="submit" disabled={save.isPending}
@@ -545,7 +545,7 @@ function AdminProducts() {
                   {save.isPending ? t.common.loading : t.admin.save}
                 </button>
               </div>
-              {save.error && <p className="md:col-span-2 text-destructive text-sm">{(save.error as Error).message}</p>}
+              {save.error && <p className="md:col-span-2 xl:col-span-3 text-destructive text-sm">{(save.error as Error).message}</p>}
             </form>
 
             </div>
