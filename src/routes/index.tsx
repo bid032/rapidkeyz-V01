@@ -459,10 +459,8 @@ function HomePage() {
                 <div className="relative z-20 group w-44 h-44 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
                   <Logo3D className="w-32 sm:w-56 lg:w-64" />
 
-                  {/* Premium badge */}
-                  <div className="absolute -top-3 -end-3 bg-brand text-brand-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
-                    Premium
-                  </div>
+
+
                 </div>
 
               </div>
