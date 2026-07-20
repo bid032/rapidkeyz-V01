@@ -240,6 +240,7 @@ function AdminInventory() {
               onChange={() => {
                 qc.invalidateQueries({ queryKey: ["inventory-counts"] });
                 qc.invalidateQueries({ queryKey: ["instant-plans"] });
+                rescanDuplicates();
               }}
             />
             <div className="p-4 space-y-3">
