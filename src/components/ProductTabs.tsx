@@ -22,7 +22,7 @@ export function ProductTabs({ productId, productName, description, deliveryType 
     { key: "description", label: isAr ? "الوصف" : "Description" },
     { key: "reviews", label: isAr ? "التقييمات" : "Reviews" },
     { key: "delivery", label: isAr ? "سياسة التسليم" : "Delivery Policy" },
-    { key: "policy", label: isAr ? "سياسة الاسترداد والخصوصية" : "Refund & Privacy" },
+    { key: "policy", label: isAr ? "الاسترداد والخصوصية" : "Refund & Privacy" },
   ];
 
   return (
