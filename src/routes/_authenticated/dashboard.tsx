@@ -114,7 +114,7 @@ function Dashboard() {
   const fullRefundByOrder = new Map<string, any>();
   const refundByItem = new Map<string, any>();
   (refunds.data ?? []).forEach((r: any) => {
-    if (r.type === "full_refund" && r.order_id && !r.order_item_id) {
+    if (r.type === "full" && r.order_id && !r.order_item_id) {
       fullRefundByOrder.set(r.order_id, r);
     }
     if (r.order_item_id) {
