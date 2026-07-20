@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -564,9 +565,9 @@ function CheckoutPage() {
       </div>
       <Footer />
 
-      {successOrder && (
-        <div className="fixed inset-0 z-[120] bg-background/85 backdrop-blur-md grid place-items-center p-4 animate-in fade-in">
-          <div className="w-full max-w-md bg-card border border-success/40 rounded-2xl p-6 sm:p-8 shadow-2xl text-center">
+      {successOrder && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[200] bg-background/85 backdrop-blur-md grid place-items-center p-4 animate-in fade-in overflow-y-auto">
+          <div className="w-full max-w-md bg-card border border-success/40 rounded-2xl p-6 sm:p-8 shadow-2xl text-center my-auto">
             <div className="mx-auto mb-5 size-16 rounded-full bg-success/15 grid place-items-center">
               <svg viewBox="0 0 24 24" className="size-9 text-success" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
@@ -619,7 +620,8 @@ function CheckoutPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
