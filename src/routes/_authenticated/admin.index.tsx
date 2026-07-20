@@ -42,6 +42,7 @@ function AdminOverview() {
     return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   });
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [compare, setCompare] = useState(false);
 
   const range = useMemo(() => {
     if (month === "all") return { start: null as string | null, end: null as string | null };
@@ -50,6 +51,21 @@ function AdminOverview() {
     const end = new Date(Date.UTC(y, m, 1)).toISOString();
     return { start, end };
   }, [month]);
+
+  const prevMonthKey = useMemo(() => {
+    if (month === "all") return null;
+    const [y, m] = month.split("-").map(Number);
+    const d = new Date(Date.UTC(y, m - 2, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  }, [month]);
+
+  const prevRange = useMemo(() => {
+    if (!prevMonthKey) return { start: null as string | null, end: null as string | null };
+    const [y, m] = prevMonthKey.split("-").map(Number);
+    const start = new Date(Date.UTC(y, m - 1, 1)).toISOString();
+    const end = new Date(Date.UTC(y, m, 1)).toISOString();
+    return { start, end };
+  }, [prevMonthKey]);
 
   const stats = useQuery({
     queryKey: ["admin-stats", month],
@@ -94,6 +110,33 @@ function AdminOverview() {
         products: products.count ?? 0,
         users: users.count ?? 0,
         pending: pending.count ?? 0,
+        refunds: refundsTotal,
+      };
+    },
+  });
+
+  const prevStats = useQuery({
+    queryKey: ["admin-stats-prev", prevMonthKey],
+    enabled: !!prevMonthKey && compare,
+    queryFn: async () => {
+      let refundsQ = supabase
+        .from("refunds")
+        .select("amount, orders!inner(created_at, status)")
+        .in("orders.status", ["paid", "delivered"]);
+      if (prevRange.start) refundsQ = refundsQ.gte("orders.created_at", prevRange.start);
+      if (prevRange.end) refundsQ = refundsQ.lt("orders.created_at", prevRange.end);
+      const [rev, refundsRes] = await Promise.all([
+        supabase.rpc("admin_revenue_stats", {
+          _start: prevRange.start ?? undefined,
+          _end: prevRange.end ?? undefined,
+        }),
+        refundsQ,
+      ]);
+      const row = (rev.data as any[])?.[0] ?? { revenue: 0, profit: 0 };
+      const refundsTotal = (refundsRes.data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+      return {
+        revenue: Number(row.revenue ?? 0),
+        profit: Number(row.profit ?? 0),
         refunds: refundsTotal,
       };
     },
@@ -334,6 +377,17 @@ function AdminOverview() {
               <option key={m} value={m}>{m}</option>
             ))}
           </select>
+          {month !== "all" && (
+            <label className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 bg-card border border-border rounded-lg text-xs sm:text-sm font-bold cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={compare}
+                onChange={(e) => setCompare(e.target.checked)}
+                className="accent-brand size-3.5"
+              />
+              <span className="whitespace-nowrap">قارن مع السابق</span>
+            </label>
+          )}
         </div>
       </div>
 
@@ -358,20 +412,45 @@ function AdminOverview() {
               const totProf = chartData.reduce((s, r) => s + r.profit, 0);
               const totRef = chartData.reduce((s, r) => s + r.refunds, 0);
               const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
-              const chip = (label: string, val: string, tone: string) => (
+
+              const p = prevStats.data;
+              const showCompare = compare && !!prevMonthKey && !!p;
+              const prevMargin = p && p.revenue ? Math.round((p.profit / p.revenue) * 100) : 0;
+
+              const delta = (cur: number, prev: number, isPct = false) => {
+                if (!showCompare) return null;
+                const diff = cur - prev;
+                const pct = prev !== 0 ? Math.round((diff / Math.abs(prev)) * 100) : (cur !== 0 ? 100 : 0);
+                const up = diff >= 0;
+                const arrow = up ? "▲" : "▼";
+                const color = up ? "text-success" : "text-destructive";
+                const suffix = isPct ? "pp" : "%";
+                const val = isPct ? `${diff >= 0 ? "+" : ""}${diff}${suffix}` : `${diff >= 0 ? "+" : ""}${pct}%`;
+                return (
+                  <div className={`mt-1 flex items-center gap-1 text-[10px] sm:text-[11px] font-bold ${color}`}>
+                    <span>{arrow}</span>
+                    <span>{val}</span>
+                    <span className="opacity-60 font-normal">مقابل {prevMonthKey}</span>
+                  </div>
+                );
+              };
+
+              const chip = (label: string, val: string, tone: string, deltaEl: React.ReactNode) => (
                 <div key={label} className={`rounded-2xl p-3 border ${tone}`}>
                   <div className="text-[10px] uppercase tracking-widest opacity-70">{label}</div>
                   <div className="text-base sm:text-xl font-extrabold mt-1">{val}</div>
+                  {deltaEl}
                 </div>
               );
               return [
-                chip("الإيرادات", `${totRev} ${t.common.currency}`, "border-brand/40 bg-brand/10 text-brand"),
-                chip("الأرباح", `${totProf} ${t.common.currency}`, "border-success/40 bg-success/10 text-success"),
-                chip("التعويضات", `${totRef} ${t.common.currency}`, "border-destructive/40 bg-destructive/10 text-destructive"),
-                chip("هامش الربح", `${margin}%`, "border-warning/40 bg-warning/10 text-warning"),
+                chip("الإيرادات", `${totRev} ${t.common.currency}`, "border-brand/40 bg-brand/10 text-brand", delta(totRev, p?.revenue ?? 0)),
+                chip("الأرباح", `${totProf} ${t.common.currency}`, "border-success/40 bg-success/10 text-success", delta(totProf, p?.profit ?? 0)),
+                chip("التعويضات", `${totRef} ${t.common.currency}`, "border-destructive/40 bg-destructive/10 text-destructive", delta(totRef, p?.refunds ?? 0)),
+                chip("هامش الربح", `${margin}%`, "border-warning/40 bg-warning/10 text-warning", delta(margin, prevMargin, true)),
               ];
             })()}
           </div>
+
 
           <div className="w-full h-80 sm:h-[420px]">
             <ResponsiveContainer width="100%" height="100%">
