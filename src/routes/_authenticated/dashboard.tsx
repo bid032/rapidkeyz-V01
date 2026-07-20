@@ -241,7 +241,7 @@ function Dashboard() {
                             </div>
                             <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                           </div>
-                          {itemRefund ? (
+                          {itemRefund && itemRefund.type === "full_refund" ? (
                             <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">
                               <div className="text-xs font-bold text-destructive mb-1">
                                 {lang === "ar" ? "تم استرداد قيمة هذه الخدمة" : "This item has been refunded"}
@@ -252,31 +252,47 @@ function Dashboard() {
                                   : "Account details are no longer available.")}
                               </div>
                             </div>
-                          ) : it.delivered_accounts?.length > 0 ? (
-                            it.delivered_accounts.map((acc: any) => {
-                              const rows = buildCredentialRows(acc, lang);
-                              return (
-                                <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
-                                  <div className="text-[11px] font-bold text-success mb-1">
-                                    {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
+                          ) : (
+                            <>
+                              {itemRefund && itemRefund.type === "partial_refund" && (
+                                <div className="mt-2 p-2.5 bg-warning/5 border border-warning/30 rounded text-center">
+                                  <div className="text-xs font-bold text-warning mb-0.5">
+                                    {lang === "ar"
+                                      ? `تم استرداد جزئي بمبلغ ${itemRefund.amount} ${t.common.currency}`
+                                      : `Partial refund of ${itemRefund.amount} ${t.common.currency}`}
                                   </div>
-                                  {rows.map((r, i) => (
-                                    <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
-                                  ))}
-                                  {acc.extra_notes && (
-                                    <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
-                                      {acc.extra_notes}
-                                    </div>
+                                  {itemRefund.notes?.trim() && (
+                                    <div className="text-[11px] text-muted-foreground">{itemRefund.notes}</div>
                                   )}
                                 </div>
-                              );
-                            })
-                          ) : (
-                            <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
-                              {lang === "ar"
-                                ? "⏳ جاري التواصل عن طريق الواتس اب للأشتراك"
-                                : "⏳ We're contacting you on WhatsApp to complete the subscription"}
-                            </div>
+                              )}
+                              {it.delivered_accounts?.length > 0 ? (
+                                it.delivered_accounts.map((acc: any) => {
+                                  const rows = buildCredentialRows(acc, lang);
+                                  return (
+                                    <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
+                                      <div className="text-[11px] font-bold text-success mb-1">
+                                        {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
+                                      </div>
+                                      {rows.map((r, i) => (
+                                        <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
+                                      ))}
+                                      {acc.extra_notes && (
+                                        <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
+                                          {acc.extra_notes}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
+                                  {lang === "ar"
+                                    ? "⏳ جاري التواصل عن طريق الواتس اب للأشتراك"
+                                    : "⏳ We're contacting you on WhatsApp to complete the subscription"}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                         );
