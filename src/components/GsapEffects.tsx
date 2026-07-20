@@ -293,8 +293,22 @@ export function GsapEffects() {
       scrollTrigger: { start: 0, end: () => document.documentElement.scrollHeight - window.innerHeight, scrub: 0.2 },
     });
 
+    // Safety net: if any [data-gsap] element remains invisible after 2.5s
+    // (e.g. ScrollTrigger didn't fire, or a tween was killed mid-flight during
+    // route transitions), force it back to a visible state.
+    const safety = window.setInterval(() => {
+      document.querySelectorAll<HTMLElement>("[data-gsap]").forEach((el) => {
+        const cs = getComputedStyle(el);
+        if (parseFloat(cs.opacity) < 0.05) {
+          gsap.set(el, { clearProps: "opacity,transform,filter,translate,rotate,scale" });
+          el.style.opacity = "1";
+        }
+      });
+    }, 2500);
+
     return () => {
       clearTimeout(first);
+      clearInterval(safety);
       observer.disconnect();
       window.removeEventListener("load", onLoad);
       cleanups.forEach((fn) => fn());
@@ -302,7 +316,14 @@ export function GsapEffects() {
       progressTween.kill();
       bar.remove();
       ScrollTrigger.getAll().forEach((s) => s.kill());
+      // Clear any leftover inline gsap styles so remounted routes never show
+      // stuck-invisible elements.
+      document.querySelectorAll<HTMLElement>("[data-gsap]").forEach((el) => {
+        gsap.set(el, { clearProps: "all" });
+        el.dataset.gsapInit = "";
+      });
     };
+
   }, []);
 
   return null;
