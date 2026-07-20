@@ -330,7 +330,7 @@ export function QuickBuyDialog({
               </aside>
 
               {/* LEFT column (end in RTL): plans only, fills width, no scroll */}
-              <section className="p-4 flex flex-col gap-2.5 min-w-0 min-h-0 overflow-hidden">
+              <section className="p-4 flex flex-col gap-2.5 min-w-0 min-h-0">
                 <div className="flex items-center justify-between shrink-0">
                   <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                     {isAr ? "اختر الخطة" : "Choose a plan"}
