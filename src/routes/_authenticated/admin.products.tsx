@@ -867,7 +867,13 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                           {acctLabel(p.account_type)}
                         </span>
                       )}
+                      {p.plan_variant && (
+                        <span className="px-1.5 py-0.5 rounded bg-warning/10 text-warning font-bold">
+                          {p.plan_variant}
+                        </span>
+                      )}
                     </div>
+
                   </div>
                   <button
                     onClick={async () => {
