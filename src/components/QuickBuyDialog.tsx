@@ -278,14 +278,14 @@ export function QuickBuyDialog({
 
           {/* Split body — no scroll */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-0 h-full">
-              {/* RIGHT column (start in RTL): image + 3 actions */}
+            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 h-full">
+              {/* RIGHT column (start in RTL): image + 3 actions + total */}
               <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
-                <div className="relative aspect-square w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink">
+                <div className="relative w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink-0" style={{ aspectRatio: "1 / 1", maxHeight: "220px" }}>
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="size-full object-cover" />
                   ) : (
-                    <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-6xl">
+                    <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-5xl">
                       {name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -326,10 +326,62 @@ export function QuickBuyDialog({
                     <span>{isAr ? "التفاصيل الكاملة" : "Full details"}</span>
                   </Link>
                 </div>
+
+                {/* Total + qty — now inside the right aside, under the buttons */}
+                {plans.length > 0 && (
+                  <div className="shrink-0 mt-auto">
+                    <div className="rounded-xl border-2 border-brand/30 bg-gradient-to-br from-brand/15 to-transparent p-3 flex flex-col gap-2.5">
+                      {/* qty */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                          {isAr ? "الكمية" : "Qty"}
+                        </span>
+                        <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => setQty((q) => Math.max(1, q - 1))}
+                            className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
+                            aria-label="decrease"
+                          >
+                            −
+                          </button>
+                          <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => setQty((q) => Math.min(99, q + 1))}
+                            className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
+                            aria-label="increase"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      {/* total */}
+                      {selected && (
+                        <div className="flex items-baseline justify-between gap-2 border-t border-brand/20 pt-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-brand">
+                            {isAr ? "الإجمالي" : "Total"}
+                          </span>
+                          <div className="flex items-baseline gap-1.5">
+                            {hasDiscount && (
+                              <span className="text-[11px] text-muted-foreground line-through tabular-nums">
+                                {Math.round(rawUnit * qty * 100) / 100}
+                              </span>
+                            )}
+                            <span className="text-2xl font-black text-brand tabular-nums leading-none">
+                              {total}
+                            </span>
+                            <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </aside>
 
-              {/* LEFT column (end in RTL): plans + total */}
-              <section className="p-5 flex flex-col gap-3 min-w-0 min-h-0 overflow-hidden">
+              {/* LEFT column (end in RTL): plans only, fills width, no scroll */}
+              <section className="p-4 flex flex-col gap-2.5 min-w-0 min-h-0 overflow-hidden">
                 <div className="flex items-center justify-between shrink-0">
                   <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                     {isAr ? "اختر الخطة" : "Choose a plan"}
@@ -342,9 +394,9 @@ export function QuickBuyDialog({
                 </div>
 
                 {plansQ.isLoading ? (
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
+                  <div className="grid grid-cols-3 gap-2">
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
                     ))}
                   </div>
                 ) : plans.length === 0 ? (
@@ -352,8 +404,11 @@ export function QuickBuyDialog({
                     {isAr ? "لا توجد خطط متاحة" : "No plans available"}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2.5 overflow-y-auto overscroll-contain pe-1 -me-1 min-h-0">
-
+                  <div
+                    className={`grid gap-2 flex-1 min-h-0 content-start auto-rows-min ${
+                      plans.length <= 4 ? "grid-cols-2" : plans.length <= 9 ? "grid-cols-3" : "grid-cols-4"
+                    }`}
+                  >
                     {plans.map((pl) => {
                       const isSel = selected?.id === pl.id;
                       const so = Number(pl.stock ?? 0) <= 0;
@@ -365,39 +420,35 @@ export function QuickBuyDialog({
                           type="button"
                           onClick={() => !so && setSelectedId(pl.id)}
                           disabled={so}
-                          className={`group relative text-start p-3 rounded-xl border-2 transition-all ${
+                          className={`group relative text-start p-2.5 rounded-lg border-2 transition-all ${
                             so
                               ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
                               : isSel
-                                ? "border-brand bg-brand/5 shadow-[0_0_0_3px_color-mix(in_oklab,var(--brand)_15%,transparent)]"
-                                : "border-border bg-background hover:border-brand/50 hover:-translate-y-0.5"
+                                ? "border-brand bg-brand/5 shadow-[0_0_0_2px_color-mix(in_oklab,var(--brand)_15%,transparent)]"
+                                : "border-border bg-background hover:border-brand/50"
                           }`}
                         >
                           {isSel && !so && (
-                            <span className="absolute top-2 end-2 grid place-items-center size-5 rounded-full bg-brand text-brand-foreground shadow">
-                              <Check className="size-3" />
+                            <span className="absolute top-1.5 end-1.5 grid place-items-center size-4 rounded-full bg-brand text-brand-foreground shadow">
+                              <Check className="size-2.5" />
                             </span>
                           )}
-                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                            {isAr ? "المدة" : "Plan"}
-                          </div>
-                          <div className={`text-sm font-extrabold mb-1.5 pe-7 truncate ${so ? "line-through" : ""}`}>
+                          <div className={`text-[11px] font-extrabold mb-1 pe-5 truncate leading-tight ${so ? "line-through" : ""}`}>
                             {(isAr ? pl.label_ar : pl.label_en) || (isAr ? "خطة" : "Plan")}
                           </div>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className={`text-xl font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
+                          <div className="flex items-baseline gap-1 flex-wrap">
+                            <span className={`text-base font-black tabular-nums leading-none ${isSel ? "text-brand" : ""}`}>
                               {price}
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-bold">{t.common.currency}</span>
+                            <span className="text-[9px] text-muted-foreground font-bold">{t.common.currency}</span>
                             {hasDiscount && (
-                              <span className="text-[10px] text-muted-foreground line-through tabular-nums ms-1">
+                              <span className="text-[9px] text-muted-foreground line-through tabular-nums">
                                 {raw}
                               </span>
                             )}
                           </div>
-
                           {so && (
-                            <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-destructive">
+                            <div className="mt-1 text-[9px] font-black uppercase tracking-widest text-destructive">
                               {isAr ? "نفدت" : "Sold out"}
                             </div>
                           )}
@@ -406,60 +457,10 @@ export function QuickBuyDialog({
                     })}
                   </div>
                 )}
-
-                {/* Total + qty inline card */}
-                {plans.length > 0 && (
-                  <div className="shrink-0 pt-1">
-                    <div className="rounded-xl border-2 border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-3">
-                      <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                            {isAr ? "الكمية" : "Qty"}
-                          </span>
-                          <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
-                            <button
-                              type="button"
-                              onClick={() => setQty((q) => Math.max(1, q - 1))}
-                              className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
-                              aria-label="decrease"
-                            >
-                              −
-                            </button>
-                            <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
-                            <button
-                              type="button"
-                              onClick={() => setQty((q) => Math.min(99, q + 1))}
-                              className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
-                              aria-label="increase"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                        {selected && (
-                          <div className="flex items-baseline gap-1.5">
-                            {hasDiscount && (
-                              <span className="text-xs text-muted-foreground line-through tabular-nums">
-                                {Math.round(rawUnit * qty * 100) / 100}
-                              </span>
-                            )}
-                            <span className="text-[10px] font-black uppercase tracking-widest text-brand">
-                              {isAr ? "الإجمالي" : "Total"}
-                            </span>
-                            <span className="text-2xl font-black text-brand tabular-nums leading-none">
-                              {total}
-                            </span>
-                            <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
               </section>
             </div>
           </div>
+
         </div>
       </DialogContent>
     </Dialog>
