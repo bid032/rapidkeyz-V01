@@ -139,7 +139,7 @@ export function PricingConfigurator({
               {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
 
             {plans.map((pl) => {
               const isSel = selected?.id === pl.id;
