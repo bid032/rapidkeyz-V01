@@ -467,7 +467,30 @@ export function QuickBuyDialog({
                   )}
                 </div>
 
+                {productVariants.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border shrink-0">
+                    {productVariants.map((v) => {
+                      const isSel = effectiveVariant === v;
+                      return (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => { setVariant(v); setSelectedId(null); }}
+                          className={`px-3 py-2 rounded-lg text-xs font-extrabold transition ${
+                            isSel
+                              ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                              : "text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {hasAcctChoice && (
+
                   <div
                     className="grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border shrink-0"
                     style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
