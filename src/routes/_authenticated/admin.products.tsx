@@ -905,6 +905,24 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                   </div>
                 )}
 
+                {showVariantPicker && (
+                  <div className="mb-3">
+                    <label className="text-[11px] font-bold text-warning uppercase mb-1 block">نوع الخطة لهذا العرض</label>
+                    <select
+                      value={(e.plan_variant !== undefined ? e.plan_variant : p.plan_variant) ?? ""}
+                      onChange={(ev) => patch(p.id, "plan_variant", ev.target.value === "" ? null : ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                    >
+                      <option value="">— بدون تحديد —</option>
+                      {variantOptions.map((v) => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+
+
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border min-w-0">
                   <div>
