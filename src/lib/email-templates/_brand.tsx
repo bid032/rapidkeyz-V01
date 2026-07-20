@@ -252,6 +252,17 @@ export const BrandLayout = ({ lang = 'ar', children }: LayoutProps) => {
             © {new Date().getFullYear()} RapidKeyz ,{' '}
             {isAr ? 'جميع الحقوق محفوظة' : 'All rights reserved'}
           </Text>
+          <Text style={{ ...styles.footerText, marginTop: '6px' }}>
+            {isAr ? 'تصميم وبرمجة' : 'Designed & Developed by'}{' '}
+            <a
+              href="https://www.facebook.com/bid032"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: brand.glow, fontWeight: 700, textDecoration: 'none' }}
+            >
+              Bido
+            </a>
+          </Text>
         </Section>
       </Container>
     </Body>
