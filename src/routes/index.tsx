@@ -170,8 +170,6 @@ function HomePage() {
 
   const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
   const bestSellers = useQuery({ queryKey: ["best-sellers"], queryFn: fetchBestSellers });
-  const trending = (products.data ?? []).slice(0, 3);
-  const trendingLabels = ["TRENDING", "NEW", "HOT"];
   const priceOf = (p: any) => {
     if (!p || p.minPrice == null) return null;
     const d = Number(p.discount_percent ?? 0);
@@ -197,6 +195,51 @@ function HomePage() {
     ctaSecondary: pick("cta_secondary_ar", "cta_secondary_en", t.home.ctaSecondary),
     trusted: pick("trusted_ar", "trusted_en", t.home.trusted),
   };
+
+  // Resolve trending/new cards: admin-selected slugs take priority, then fall back to featured list
+  const trendingSlug = (h.trending_slug || "").toString().trim();
+  const newSlug = (h.new_slug || "").toString().trim();
+  const heroPicksNeeded = [trendingSlug, newSlug].filter(Boolean);
+  const heroPicks = useQuery({
+    queryKey: ["hero-picks", trendingSlug, newSlug],
+    enabled: heroPicksNeeded.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select(
+          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)",
+        )
+        .in("slug", heroPicksNeeded);
+      return (data ?? []).map((p: any) => {
+        const active = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+        const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        return {
+          id: p.id,
+          slug: p.slug,
+          name_ar: p.name_ar,
+          name_en: p.name_en,
+          description_ar: p.description_ar,
+          description_en: p.description_en,
+          icon_url: p.icon_url,
+          delivery_type: p.delivery_type,
+          account_type: p.account_type,
+          discount_percent: p.discount_percent ?? 0,
+          minPrice: cheapest ? Number(cheapest.price) : null,
+          cheapestPlanId: cheapest?.id ?? null,
+          planLabel_ar: cheapest?.label_ar ?? null,
+          planLabel_en: cheapest?.label_en ?? null,
+        } as ProductCardData;
+      });
+    },
+  });
+  const featured = products.data ?? [];
+  const bySlug = (s: string) =>
+    (heroPicks.data ?? []).find((p) => p.slug === s) ?? featured.find((p) => p.slug === s);
+  const trendingCard = (trendingSlug && bySlug(trendingSlug)) || featured[0];
+  const newCard = (newSlug && bySlug(newSlug)) || featured.find((p) => p.slug !== trendingCard?.slug) || featured[1];
+  const trending = [trendingCard, newCard].filter(Boolean) as ProductCardData[];
+  const trendingLabels = ["TRENDING", "NEW", "HOT"];
+
 
 
   return (
