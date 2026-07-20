@@ -307,26 +307,46 @@ function ProductPage() {
           <div className="relative grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 p-4 sm:p-5 md:p-6">
             {/* LEFT , identity */}
             <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-3 min-w-0">
-              {/* Image */}
-              <div className="relative w-full aspect-square max-w-[220px] sm:max-w-[260px] md:max-w-none mx-auto md:mx-0">
-                <div className="absolute inset-0 bg-brand/25 blur-[80px] rounded-full opacity-60 animate-pulse" />
-                <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
-                  {product.icon_url ? (
-                    <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-5xl font-black text-brand">
-                      {name.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                  {hasDiscount && (
-                    <span
-                      className={`absolute top-2 ${lang === "ar" ? "right-2" : "left-2"} bg-destructive text-destructive-foreground text-xs font-black px-2 py-0.5 rounded-lg shadow-lg`}
-                    >
-                      -{discount}%
-                    </span>
-                  )}
-                  {/* Viewers chip on image */}
-                  <div className={`absolute bottom-2 ${lang === "ar" ? "left-2" : "right-2"} flex items-center gap-1.5 px-2 py-1 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md`}>
+              {/* Mobile: horizontal identity row. Desktop: stacked. */}
+              <div className="flex md:flex-col items-start gap-3 md:gap-3 min-w-0">
+                {/* Image */}
+                <div className="relative shrink-0 w-24 sm:w-32 md:w-full aspect-square md:max-w-none">
+                  <div className="absolute inset-0 bg-brand/25 blur-[80px] rounded-full opacity-60 animate-pulse" />
+                  <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
+                    {product.icon_url ? (
+                      <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl md:text-5xl font-black text-brand">
+                        {name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                    {hasDiscount && (
+                      <span
+                        className={`absolute top-1.5 ${lang === "ar" ? "right-1.5" : "left-1.5"} md:top-2 md:${lang === "ar" ? "right-2" : "left-2"} bg-destructive text-destructive-foreground text-[10px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md md:rounded-lg shadow-lg`}
+                      >
+                        -{discount}%
+                      </span>
+                    )}
+                    {/* Viewers chip , desktop only on image */}
+                    <div className={`hidden md:flex absolute bottom-2 ${lang === "ar" ? "left-2" : "right-2"} items-center gap-1.5 px-2 py-1 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md`}>
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
+                      </span>
+                      <span className="text-brand text-[10px] font-bold whitespace-nowrap">
+                        <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Name + desc */}
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-lg sm:text-xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
+                    {name}
+                  </h1>
+                  {/* Viewers chip , mobile inline */}
+                  <div className="md:hidden mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
@@ -335,35 +355,28 @@ function ProductPage() {
                       <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Name + desc */}
-              <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
-                  {name}
-                </h1>
-                {desc && (
-                  <div className="mt-1.5">
-                    <p
-                      className={`text-muted-foreground text-xs sm:text-[13px] leading-relaxed ${
-                        descExpanded ? "" : "line-clamp-2"
-                      }`}
-                    >
-                      {desc}
-                    </p>
-                    {desc.length > 100 && (
-                      <button
-                        onClick={() => setDescExpanded((v) => !v)}
-                        className="mt-0.5 text-[11px] font-bold text-brand hover:underline"
+                  {desc && (
+                    <div className="mt-1.5">
+                      <p
+                        className={`text-muted-foreground text-xs sm:text-[13px] leading-relaxed ${
+                          descExpanded ? "" : "line-clamp-2"
+                        }`}
                       >
-                        {descExpanded
-                          ? lang === "ar" ? "أقل" : "Less"
-                          : lang === "ar" ? "المزيد" : "More"}
-                      </button>
-                    )}
-                  </div>
-                )}
+                        {desc}
+                      </p>
+                      {desc.length > 100 && (
+                        <button
+                          onClick={() => setDescExpanded((v) => !v)}
+                          className="mt-0.5 text-[11px] font-bold text-brand hover:underline"
+                        >
+                          {descExpanded
+                            ? lang === "ar" ? "أقل" : "Less"
+                            : lang === "ar" ? "المزيد" : "More"}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Trust chips */}
@@ -383,6 +396,7 @@ function ProductPage() {
                 ))}
               </div>
             </div>
+
 
             {/* RIGHT , configurator + actions */}
             <div className="md:col-span-7 lg:col-span-8 flex flex-col min-w-0 gap-3">
