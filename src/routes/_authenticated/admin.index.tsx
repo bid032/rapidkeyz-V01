@@ -70,9 +70,12 @@ function AdminOverview() {
   const stats = useQuery({
     queryKey: ["admin-stats", month],
     queryFn: async () => {
-      // Refunds must be attributed to the ORIGINATING order's date, not refunds.created_at,
-      // so the KPI card matches the profit figure from admin_revenue_stats.
-      let refundsQ = supabase.from("refunds").select("amount, orders!inner(created_at, status)").in("orders.status", ["paid", "delivered"]);
+      // Match SQL RPC exactly: attribute refunds to the ORIGINATING order's date
+      // and include the same statuses the RPC uses (paid, delivered, refunded).
+      let refundsQ = supabase
+        .from("refunds")
+        .select("amount, orders!inner(created_at, status)")
+        .in("orders.status", ["paid", "delivered", "refunded"]);
       if (range.start) refundsQ = refundsQ.gte("orders.created_at", range.start);
       if (range.end) refundsQ = refundsQ.lt("orders.created_at", range.end);
 
@@ -122,7 +125,7 @@ function AdminOverview() {
       let refundsQ = supabase
         .from("refunds")
         .select("amount, orders!inner(created_at, status)")
-        .in("orders.status", ["paid", "delivered"]);
+        .in("orders.status", ["paid", "delivered", "refunded"]);
       if (prevRange.start) refundsQ = refundsQ.gte("orders.created_at", prevRange.start);
       if (prevRange.end) refundsQ = refundsQ.lt("orders.created_at", prevRange.end);
       const [rev, refundsRes] = await Promise.all([
@@ -141,6 +144,7 @@ function AdminOverview() {
       };
     },
   });
+
 
 
 
