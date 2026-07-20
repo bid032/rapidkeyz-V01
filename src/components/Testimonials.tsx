@@ -154,7 +154,7 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
               onClick={() => setIndex(i)}
               aria-hidden={hidden}
               tabIndex={hidden ? -1 : 0}
-              className="absolute top-1/2 left-1/2 -mt-[170px] md:-mt-[230px] -ml-[125px] md:-ml-[176px] w-[250px] md:w-[352px] h-[340px] md:h-[460px] rounded-3xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-[900ms] cursor-pointer"
+              className="absolute top-1/2 left-1/2 -mt-[175px] md:-mt-[230px] -ml-[140px] md:-ml-[184px] w-[280px] md:w-[368px] h-[350px] md:h-[460px] rounded-3xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-[900ms] cursor-pointer"
               style={{
                 transform: `translateX(${translateX}%) scale(${scale}) rotateY(${rotateY}deg)`,
                 opacity,
