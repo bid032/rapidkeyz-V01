@@ -255,9 +255,14 @@ function ProductPage() {
   ) as ("private" | "shared" | "own")[];
   const hasAcctChoice = accountTypes.length > 0;
   const effectiveAcct = (accountType as "private" | "shared" | "own" | undefined) ?? accountTypes[0];
-  const filteredPlans = enriched;
+  // If there are multiple account types, filter plans by the selected one.
+  // Plans marked "any" (no explicit type) are always shown.
+  const filteredPlans = accountTypes.length > 1 && effectiveAcct
+    ? enriched.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
+    : enriched;
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
+
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
