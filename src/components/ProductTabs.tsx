@@ -22,22 +22,22 @@ export function ProductTabs({ productId, productName, description, deliveryType 
     { key: "description", label: isAr ? "الوصف" : "Description" },
     { key: "reviews", label: isAr ? "التقييمات" : "Reviews" },
     { key: "delivery", label: isAr ? "سياسة التسليم" : "Delivery Policy" },
-    { key: "policy", label: isAr ? "سياسة الاسترداد والخصوصية" : "Refund & Privacy" },
+    { key: "policy", label: isAr ? "الاسترداد والخصوصية" : "Refund & Privacy" },
   ];
 
   return (
     <section className="max-w-6xl mx-auto px-3 sm:px-6 pb-6">
       {/* Tabs bar */}
-      <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card via-card to-background p-1.5 overflow-hidden">
+      <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card via-card to-background p-1.5">
         <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 bg-brand/10 rounded-full blur-3xl" />
-        <div className="relative flex overflow-x-auto no-scrollbar gap-1">
+        <div className="relative flex overflow-x-auto no-scrollbar gap-1 snap-x snap-mandatory">
           {tabs.map((tb) => {
             const active = tab === tb.key;
             return (
               <button
                 key={tb.key}
                 onClick={() => setTab(tb.key)}
-                className="relative px-4 sm:px-5 py-3 shrink-0 rounded-xl text-sm font-extrabold focus:outline-none whitespace-nowrap"
+                className="relative px-3 sm:px-5 py-2.5 sm:py-3 shrink-0 snap-start rounded-xl text-xs sm:text-sm font-extrabold focus:outline-none whitespace-nowrap"
               >
                 {active && (
                   <motion.span
