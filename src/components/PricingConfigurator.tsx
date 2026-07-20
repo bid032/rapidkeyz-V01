@@ -75,20 +75,18 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 bg-brand/15 rounded-full blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
-      <div className="relative p-5 sm:p-7 space-y-6">
+      <div className="relative p-3.5 sm:p-4 space-y-3.5">
         {/* Account type , segmented pill with sliding indicator */}
         {normalizedTypes.length > 0 && (
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
                 {isAr ? "١ · نوع الحساب" : "1 · Account Type"}
               </p>
-              <p className="text-[10px] text-muted-foreground">
-                {isAr ? "اختر ما يناسبك" : "Pick a fit"}
-              </p>
             </div>
+
             <div
-              className={`grid gap-2 p-1.5 rounded-2xl bg-muted/40 border border-border`}
+              className={`grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border`}
               style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
             >
               {normalizedTypes.map((a) => {
@@ -98,25 +96,25 @@ export function PricingConfigurator({
                   <button
                     key={a}
                     onClick={() => onAcctChange(a)}
-                    className="relative px-3 py-3 rounded-xl text-start focus:outline-none"
+                    className="relative px-2.5 py-2 rounded-lg text-start focus:outline-none"
                   >
                     {isSel && (
                       <motion.span
                         layoutId="acct-pill"
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                        className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
                       />
                     )}
                     <span className="relative block">
                       <span
-                        className={`block text-sm font-extrabold ${
+                        className={`block text-xs font-extrabold ${
                           isSel ? "text-brand-foreground" : "text-foreground"
                         }`}
                       >
                         {meta.title}
                       </span>
                       <span
-                        className={`block text-[10px] mt-0.5 ${
+                        className={`block text-[9px] mt-0.5 leading-tight ${
                           isSel ? "text-brand-foreground/80" : "text-muted-foreground"
                         }`}
                       >
@@ -127,20 +125,22 @@ export function PricingConfigurator({
                 );
               })}
             </div>
+
           </div>
         )}
 
         {/* Duration cards */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
               {isAr ? "٢ · المدة" : "2 · Duration"}
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              {isAr ? "كل ما زادت المدة، وفرت أكثر" : "Longer plans save more"}
+            <p className="text-[9px] text-muted-foreground">
+              {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
+
             {plans.map((pl) => {
               const isSel = selected?.id === pl.id;
               const stock = Number(pl.stock ?? 0);
@@ -154,56 +154,50 @@ export function PricingConfigurator({
                   key={pl.id}
                   onClick={() => !soldOut && onSelectPlan(pl.id)}
                   disabled={soldOut}
-                  className={`relative text-start p-3 rounded-2xl border-2 transition-all overflow-hidden group ${
+                  className={`relative text-start p-2 rounded-xl border-2 transition-all overflow-hidden group ${
                     soldOut
                       ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
                       : isSel
-                      ? "border-brand bg-brand/5 shadow-[0_0_0_4px_hsl(var(--brand)/0.08)]"
+                      ? "border-brand bg-brand/5 shadow-[0_0_0_3px_hsl(var(--brand)/0.08)]"
                       : "border-border bg-card hover:border-brand/50 hover:-translate-y-0.5"
                   }`}
                 >
                   {isSel && !soldOut && (
                     <motion.span
                       layoutId="plan-glow"
-                      className="pointer-events-none absolute -top-8 -right-8 w-24 h-24 bg-brand/25 rounded-full blur-2xl"
+                      className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 bg-brand/25 rounded-full blur-2xl"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
                   {savePct >= 10 && !soldOut && (
-                    <span className="absolute top-1.5 end-1.5 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30">
-                      {isAr ? `وفر ${savePct}%` : `Save ${savePct}%`}
+                    <span className="absolute top-1 end-1 text-[8px] font-black px-1 py-0.5 rounded bg-success/15 text-success border border-success/30">
+                      {isAr ? `-${savePct}%` : `-${savePct}%`}
                     </span>
                   )}
                   <div className="relative">
-                    <div
-                      className={`text-[10px] font-black uppercase tracking-wider mb-1 ${
-                        isSel ? "text-brand" : "text-muted-foreground"
-                      }`}
-                    >
-                      {isAr ? "المدة" : "Duration"}
-                    </div>
-                    <div className={`text-sm font-extrabold mb-2 ${soldOut ? "line-through" : ""}`}>
+                    <div className={`text-xs font-extrabold mb-1 leading-tight ${soldOut ? "line-through" : ""}`}>
                       {isAr ? pl.durAr : pl.durEn}
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span
-                        className={`text-lg font-black tabular-nums ${
+                        className={`text-base font-black tabular-nums leading-none ${
                           isSel ? "text-brand" : "text-foreground"
                         }`}
                       >
                         {price}
                       </span>
-                      <span className="text-[10px] font-bold text-muted-foreground">
+                      <span className="text-[9px] font-bold text-muted-foreground">
                         {t.common.currency}
                       </span>
                     </div>
                     {soldOut && (
-                      <span className="mt-1 inline-block text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive">
+                      <span className="mt-1 inline-block text-[8px] font-black uppercase px-1 py-0.5 rounded bg-destructive/15 text-destructive">
                         {t.product.soldOut}
                       </span>
                     )}
                   </div>
                 </button>
+
               );
             })}
             {plans.length === 0 && (
@@ -214,52 +208,48 @@ export function PricingConfigurator({
           </div>
         </div>
 
-        {/* Total price display , animated */}
         {selected && (
-          <div className="relative rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-4 sm:p-5 overflow-hidden">
+          <div className="relative rounded-xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-3 overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]" />
-            <div className="relative flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1">
+            <div className="relative flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
                   {isAr ? "٣ · الإجمالي" : "3 · Total"}
                 </div>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${selected.id}-${finalPrice}`}
-                    initial={{ y: 12, opacity: 0, scale: 0.96 }}
+                    initial={{ y: 8, opacity: 0, scale: 0.96 }}
                     animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ y: -12, opacity: 0, scale: 0.96 }}
+                    exit={{ y: -8, opacity: 0, scale: 0.96 }}
                     transition={{ type: "spring", stiffness: 320, damping: 26 }}
                     className="flex items-baseline gap-2 flex-wrap"
                   >
-                    <span className="text-4xl sm:text-5xl font-black text-brand tabular-nums leading-none">
+                    <span className="text-3xl font-black text-brand tabular-nums leading-none">
                       {finalPrice}
                     </span>
-                    <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
+                    <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
                     {hasDiscount && (
-                      <span className="text-sm text-muted-foreground line-through tabular-nums">
-                        {rawPrice} {t.common.currency}
+                      <span className="text-xs text-muted-foreground line-through tabular-nums">
+                        {rawPrice}
                       </span>
                     )}
                   </motion.div>
                 </AnimatePresence>
-                <div className="text-[11px] text-muted-foreground mt-1">
-                  {isAr ? `يبدأ من ${minRawPrice} ${t.common.currency}` : `From ${minRawPrice} ${t.common.currency}`}
-                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex flex-col items-end gap-1 shrink-0">
                 {hasDiscount && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-destructive text-destructive-foreground uppercase tracking-wider">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider">
                     -{discount}%
                   </span>
                 )}
                 {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-warning/15 text-warning border border-warning/30">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30">
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
                 {selectedSoldOut && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-destructive/15 text-destructive border border-destructive/30">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive/15 text-destructive border border-destructive/30">
                     {t.product.soldOut}
                   </span>
                 )}
@@ -267,6 +257,7 @@ export function PricingConfigurator({
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
