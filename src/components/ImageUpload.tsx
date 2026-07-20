@@ -111,16 +111,16 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
   return (
     <div className={className}>
       {label && <label className="block text-xs font-bold mb-2 text-muted-foreground">{label}</label>}
-      <div className="flex items-center gap-3">
-        {value && (
-          <img
-            src={value}
-            alt=""
-            className="w-16 h-16 rounded-lg object-cover border border-border shrink-0"
-          />
-        )}
-        <label className="flex-1 cursor-pointer">
-          <div className="px-4 py-2 border border-dashed border-border rounded-lg text-sm text-center hover:border-brand hover:bg-brand/5 transition">
+      <div className="flex flex-col gap-3">
+        <div className="w-full aspect-square rounded-xl border border-border bg-background overflow-hidden grid place-items-center">
+          {value ? (
+            <img src={value} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs text-muted-foreground">لا توجد صورة</span>
+          )}
+        </div>
+        <label className="w-full cursor-pointer">
+          <div className="h-10 px-4 flex items-center justify-center border border-dashed border-border rounded-lg text-sm text-center hover:border-brand hover:bg-brand/5 transition">
             {uploading
               ? "جاري الرفع... / Uploading…"
               : value
