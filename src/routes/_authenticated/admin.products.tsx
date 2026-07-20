@@ -789,36 +789,38 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
 
-  const savePlan = useMutation({
-    mutationFn: async (id: string) => {
-      const patchData = edits[id];
-      if (!patchData) return;
-      const clean: any = {};
-      if (patchData.price !== undefined) clean.price = patchData.price;
-      if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
-      if (patchData.stock !== undefined) clean.stock = patchData.stock;
-      if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
-      if (patchData.plan_variant !== undefined) clean.plan_variant = patchData.plan_variant;
-
-
-      if (Object.keys(clean).length > 0) {
-        const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
-        if (error) throw error;
-      }
-      if (patchData.cost_price !== undefined) {
-        const { error } = await supabase.from("plan_costs").upsert({ plan_id: id, cost_price: patchData.cost_price });
-        if (error) throw error;
+  const saveAll = useMutation({
+    mutationFn: async () => {
+      const ids = Object.keys(edits);
+      for (const id of ids) {
+        const patchData = edits[id];
+        if (!patchData) continue;
+        const clean: any = {};
+        if (patchData.price !== undefined) clean.price = patchData.price;
+        if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
+        if (patchData.stock !== undefined) clean.stock = patchData.stock;
+        if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
+        if (patchData.plan_variant !== undefined) clean.plan_variant = patchData.plan_variant;
+        if (Object.keys(clean).length > 0) {
+          const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
+          if (error) throw error;
+        }
+        if (patchData.cost_price !== undefined) {
+          const { error } = await supabase.from("plan_costs").upsert({ plan_id: id, cost_price: patchData.cost_price });
+          if (error) throw error;
+        }
       }
     },
-    onSuccess: (_d, id) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setEdits((prev) => { const c = { ...prev }; delete c[id]; return c; });
+      setEdits({});
       notify(lang === "ar" ? "تم حفظ التعديلات" : "Changes saved", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
+
 
   const del = useMutation({
     mutationFn: async (id: string) => {
