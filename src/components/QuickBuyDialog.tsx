@@ -365,7 +365,7 @@ export function QuickBuyDialog({
                           type="button"
                           onClick={() => !so && setSelectedId(pl.id)}
                           disabled={so}
-                          className={`group relative text-start p-4 rounded-xl border-2 transition-all ${
+                          className={`group relative text-start p-3 rounded-xl border-2 transition-all ${
                             so
                               ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
                               : isSel
@@ -374,27 +374,28 @@ export function QuickBuyDialog({
                           }`}
                         >
                           {isSel && !so && (
-                            <span className="absolute top-2.5 end-2.5 grid place-items-center size-6 rounded-full bg-brand text-brand-foreground shadow">
-                              <Check className="size-3.5" />
+                            <span className="absolute top-2 end-2 grid place-items-center size-5 rounded-full bg-brand text-brand-foreground shadow">
+                              <Check className="size-3" />
                             </span>
                           )}
-                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
+                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
                             {isAr ? "المدة" : "Plan"}
                           </div>
-                          <div className={`text-base font-extrabold mb-2 pe-8 truncate ${so ? "line-through" : ""}`}>
+                          <div className={`text-sm font-extrabold mb-1.5 pe-7 truncate ${so ? "line-through" : ""}`}>
                             {(isAr ? pl.label_ar : pl.label_en) || (isAr ? "خطة" : "Plan")}
                           </div>
                           <div className="flex items-baseline gap-1.5">
-                            <span className={`text-2xl font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
+                            <span className={`text-xl font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
                               {price}
                             </span>
-                            <span className="text-xs text-muted-foreground font-bold">{t.common.currency}</span>
+                            <span className="text-[10px] text-muted-foreground font-bold">{t.common.currency}</span>
                             {hasDiscount && (
-                              <span className="text-xs text-muted-foreground line-through tabular-nums ms-1">
+                              <span className="text-[10px] text-muted-foreground line-through tabular-nums ms-1">
                                 {raw}
                               </span>
                             )}
                           </div>
+
                           {so && (
                             <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-destructive">
                               {isAr ? "نفدت" : "Sold out"}
