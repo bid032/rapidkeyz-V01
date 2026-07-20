@@ -180,7 +180,7 @@ function HomePage() {
       <Header />
 
       {/* Hero — Balanced Split */}
-      <header className="relative overflow-hidden pt-6 pb-8 sm:pt-12 sm:pb-14">
+      <header className="relative overflow-hidden pt-4 pb-6 sm:pt-8 sm:pb-10 lg:pt-10 lg:pb-12">
         <HeroCanvas />
         <FloatingLogos />
 
