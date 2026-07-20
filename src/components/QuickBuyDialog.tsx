@@ -119,8 +119,8 @@ export function QuickBuyDialog({
         {/* Scrollable body: split-pane on lg, stacked on mobile */}
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-x-reverse divide-border">
-            {/* LEFT: product hero */}
-            <aside className="lg:col-span-5 p-4 sm:p-6 lg:p-8 order-1 bg-gradient-to-br from-brand/5 via-transparent to-transparent">
+            {/* LEFT: product hero + actions */}
+            <aside className="lg:col-span-5 p-4 sm:p-6 lg:p-8 order-1 bg-gradient-to-br from-brand/5 via-transparent to-transparent flex flex-col gap-4 sm:gap-5">
               <div className="flex lg:flex-col items-center lg:items-stretch gap-3 lg:gap-5">
                 <div className="shrink-0 size-14 sm:size-20 lg:size-auto lg:w-full lg:aspect-square rounded-2xl border border-border bg-background overflow-hidden shadow-md lg:shadow-xl">
                   {product.icon_url ? (
@@ -149,21 +149,46 @@ export function QuickBuyDialog({
                 </div>
               </div>
 
-              {/* Detail link — desktop only, moves to footer on mobile */}
-              <Link
-                to="/product/$slug"
-                params={{ slug: product.slug }}
-                onClick={() => onOpenChange(false)}
-                className="hidden lg:flex group items-center justify-center gap-2 w-full mt-8 px-4 py-3 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-sm hover:bg-brand/10 hover:border-brand transition-all"
-              >
-                <ExternalLink className="size-4" />
-                <span>{isAr ? "عرض التفاصيل الكاملة" : "View full details"}</span>
-              </Link>
+              {/* Spacer pushes actions to bottom on desktop so both columns bottom-align */}
+              <div className="hidden lg:block flex-1" />
+
+              {/* Actions — under the image */}
+              {plans.length > 0 && (
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={() => doAdd(true)}
+                    disabled={!selected || soldOut}
+                    className="inline-flex items-center justify-center gap-2 w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-full bg-brand text-brand-foreground font-black text-sm shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Zap className="size-4" />
+                    {isAr ? "اشترِ الآن" : "Buy now"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => doAdd(false)}
+                    disabled={!selected || soldOut}
+                    className="inline-flex items-center justify-center gap-2 w-full px-4 sm:px-5 py-3 sm:py-3.5 rounded-full border border-border bg-background text-foreground font-bold text-sm hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
+                  >
+                    <ShoppingCart className="size-4" />
+                    {isAr ? "أضف للسلة" : "Add to cart"}
+                  </button>
+                  <Link
+                    to="/product/$slug"
+                    params={{ slug: product.slug }}
+                    onClick={() => onOpenChange(false)}
+                    className="group flex items-center justify-center gap-2 w-full px-4 py-3 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-xs sm:text-sm hover:bg-brand/10 hover:border-brand transition-all"
+                  >
+                    <ExternalLink className="size-3.5 sm:size-4" />
+                    <span>{isAr ? "عرض التفاصيل الكاملة" : "View full details"}</span>
+                  </Link>
+                </div>
+              )}
             </aside>
 
-            {/* RIGHT: plans + qty + actions */}
+            {/* RIGHT: plans + qty/total */}
             <section className="lg:col-span-7 p-4 sm:p-6 lg:p-8 order-2 flex flex-col gap-4 sm:gap-5 min-w-0">
-              <div>
+              <div className="flex-1 min-h-0">
                 <div className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-brand mb-2 sm:mb-3">
                   {isAr ? "اختر الخطة" : "Choose a plan"}
                 </div>
@@ -228,87 +253,52 @@ export function QuickBuyDialog({
               </div>
 
               {plans.length > 0 && (
-                <>
-                  {/* Qty + total */}
-                  <div className="flex items-center justify-between gap-3 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-3 sm:p-4">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                      <span className="hidden sm:inline text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                        {isAr ? "الكمية" : "Qty"}
-                      </span>
-                      <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 sm:p-1">
-                        <button
-                          type="button"
-                          onClick={() => setQty((q) => Math.max(1, q - 1))}
-                          className="size-8 sm:size-9 rounded-full grid place-items-center hover:bg-muted transition"
-                          aria-label="decrease"
-                        >
-                          <Minus className="size-3.5" />
-                        </button>
-                        <span className="min-w-7 sm:min-w-8 text-center font-black tabular-nums text-sm sm:text-base">{qty}</span>
-                        <button
-                          type="button"
-                          onClick={() => setQty((q) => Math.min(99, q + 1))}
-                          className="size-8 sm:size-9 rounded-full grid place-items-center hover:bg-muted transition"
-                          aria-label="increase"
-                        >
-                          <Plus className="size-3.5" />
-                        </button>
-                      </div>
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="hidden sm:inline text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                      {isAr ? "الكمية" : "Qty"}
+                    </span>
+                    <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5 sm:p-1">
+                      <button
+                        type="button"
+                        onClick={() => setQty((q) => Math.max(1, q - 1))}
+                        className="size-8 sm:size-9 rounded-full grid place-items-center hover:bg-muted transition"
+                        aria-label="decrease"
+                      >
+                        <Minus className="size-3.5" />
+                      </button>
+                      <span className="min-w-7 sm:min-w-8 text-center font-black tabular-nums text-sm sm:text-base">{qty}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQty((q) => Math.min(99, q + 1))}
+                        className="size-8 sm:size-9 rounded-full grid place-items-center hover:bg-muted transition"
+                        aria-label="increase"
+                      >
+                        <Plus className="size-3.5" />
+                      </button>
                     </div>
-                    {selected && (
-                      <div className="flex items-baseline gap-1.5 sm:gap-2 min-w-0">
-                        {hasDiscount && (
-                          <span className="text-[10px] sm:text-sm text-muted-foreground line-through tabular-nums">
-                            {Math.round(rawUnit * qty * 100) / 100}
-                          </span>
-                        )}
-                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-brand">
-                          {isAr ? "الإجمالي" : "Total"}
-                        </span>
-                        <span className="text-2xl sm:text-4xl font-black text-brand tabular-nums leading-none">
-                          {total}
-                        </span>
-                        <span className="text-xs sm:text-base font-black text-brand/80">{t.common.currency}</span>
-                      </div>
-                    )}
                   </div>
-
-                  {/* Actions */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                    <button
-                      type="button"
-                      onClick={() => doAdd(true)}
-                      disabled={!selected || soldOut}
-                      className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 rounded-full bg-brand text-brand-foreground font-black text-sm shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Zap className="size-4" />
-                      {isAr ? "اشترِ الآن" : "Buy now"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => doAdd(false)}
-                      disabled={!selected || soldOut}
-                      className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 rounded-full border border-border bg-background text-foreground font-bold text-sm hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
-                    >
-                      <ShoppingCart className="size-4" />
-                      {isAr ? "أضف للسلة" : "Add to cart"}
-                    </button>
-                  </div>
-
-                  {/* Detail link — mobile only */}
-                  <Link
-                    to="/product/$slug"
-                    params={{ slug: product.slug }}
-                    onClick={() => onOpenChange(false)}
-                    className="lg:hidden group flex items-center justify-center gap-2 w-full px-4 py-3 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-xs sm:text-sm hover:bg-brand/10 hover:border-brand transition-all"
-                  >
-                    <ExternalLink className="size-3.5 sm:size-4" />
-                    <span>{isAr ? "عرض التفاصيل الكاملة للخدمة" : "View full service details"}</span>
-                  </Link>
-                </>
+                  {selected && (
+                    <div className="flex items-baseline gap-1.5 sm:gap-2 min-w-0">
+                      {hasDiscount && (
+                        <span className="text-[10px] sm:text-sm text-muted-foreground line-through tabular-nums">
+                          {Math.round(rawUnit * qty * 100) / 100}
+                        </span>
+                      )}
+                      <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-brand">
+                        {isAr ? "الإجمالي" : "Total"}
+                      </span>
+                      <span className="text-2xl sm:text-4xl font-black text-brand tabular-nums leading-none">
+                        {total}
+                      </span>
+                      <span className="text-xs sm:text-base font-black text-brand/80">{t.common.currency}</span>
+                    </div>
+                  )}
+                </div>
               )}
             </section>
           </div>
+
         </div>
       </DialogContent>
     </Dialog>
