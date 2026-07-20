@@ -199,28 +199,54 @@ function RootComponent() {
   const pathname = router.state.location.pathname;
 
   useEffect(() => {
-    // Hide the pre-render splash only after fonts are ready and React actually painted
+    // Hide splash only when: fonts ready + router idle + content painted.
     let cancelled = false;
-    const trigger = () => {
-      if (cancelled) return;
-      // Wait for content route-enter animation (~700ms) to finish so there is no visual gap
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        setTimeout(() => {
+    let hidden = false;
+
+    const doHide = () => {
+      if (cancelled || hidden) return;
+      hidden = true;
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
           try { (window as any).__rkHideSplash?.(); } catch {}
-        }, 750);
-      }));
+        })
+      );
     };
-    const fontsReady = (document as any).fonts?.ready as Promise<unknown> | undefined;
-    if (fontsReady) fontsReady.then(trigger, trigger);
-    else trigger();
+
+    const waitForIdle = () =>
+      new Promise<void>((resolve) => {
+        if (router.state.status === "idle") return resolve();
+        const unsub = router.subscribe("onResolved", () => {
+          if (router.state.status === "idle") {
+            unsub();
+            resolve();
+          }
+        });
+      });
+
+    const fontsReady =
+      (document as any).fonts?.ready as Promise<unknown> | undefined;
+
+    Promise.all([
+      fontsReady ?? Promise.resolve(),
+      waitForIdle(),
+    ]).then(doHide, doHide);
+
+    // Safety fallback
+    const fallback = setTimeout(doHide, 5000);
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => { cancelled = true; sub.subscription.unsubscribe(); };
+    return () => {
+      cancelled = true;
+      clearTimeout(fallback);
+      sub.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
+
 
 
   return (
