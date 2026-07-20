@@ -53,12 +53,17 @@ function AdminOrders() {
   });
 
   const proofUrl = async (path: string) => {
+    // Open a blank tab synchronously so the browser doesn't block it as a popup
+    // (createSignedUrl is async and browsers block window.open() after await).
+    const w = window.open("about:blank", "_blank");
     const { data, error } = await supabase.storage.from("payment-proofs").createSignedUrl(path, 3600);
     if (error || !data?.signedUrl) {
+      if (w) w.close();
       notify(error?.message ?? (lang === "ar" ? "تعذّر فتح إثبات الدفع" : "Failed to open proof"), "error");
       return;
     }
-    window.open(data.signedUrl, "_blank");
+    if (w) w.location.href = data.signedUrl;
+    else window.open(data.signedUrl, "_blank");
   };
 
   // Compute per-order min days-remaining (over items actually delivered to the customer)
