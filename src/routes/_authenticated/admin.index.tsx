@@ -63,7 +63,13 @@ function AdminOverview() {
       let deliveredQ = supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "delivered");
       if (range.start) deliveredQ = deliveredQ.gte("created_at", range.start);
       if (range.end) deliveredQ = deliveredQ.lt("created_at", range.end);
-      const [rev, products, users, pending, refundsRes, allOrders, delivered] = await Promise.all([
+      let processingQ = supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .not("status", "in", "(delivered,refunded,canceled,cancelled)");
+      if (range.start) processingQ = processingQ.gte("created_at", range.start);
+      if (range.end) processingQ = processingQ.lt("created_at", range.end);
+      const [rev, products, users, pending, refundsRes, allOrders, delivered, processing] = await Promise.all([
         supabase.rpc("admin_revenue_stats", { _start: range.start ?? undefined, _end: range.end ?? undefined }),
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -71,6 +77,7 @@ function AdminOverview() {
         refundsQ,
         allOrdersQ,
         deliveredQ,
+        processingQ,
       ]);
       const row = (rev.data as any[])?.[0] ?? { revenue: 0, profit: 0, orders_count: 0, items_count: 0 };
       const refundsTotal = (refundsRes.data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
@@ -79,6 +86,7 @@ function AdminOverview() {
         profit: Number(row.profit ?? 0),
         ordersCount: allOrders.count ?? 0,
         deliveredCount: delivered.count ?? 0,
+        processingCount: processing.count ?? 0,
         products: products.count ?? 0,
         users: users.count ?? 0,
         pending: pending.count ?? 0,
@@ -86,6 +94,7 @@ function AdminOverview() {
       };
     },
   });
+
 
 
 
