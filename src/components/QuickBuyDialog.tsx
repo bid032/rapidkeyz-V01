@@ -104,7 +104,7 @@ export function QuickBuyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg md:max-w-[min(95vw,1200px)] p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)] md:max-h-[calc(100dvh-3rem)]">
+      <DialogContent className="max-w-lg md:max-w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)] md:max-h-[min(96dvh,760px)] md:h-[min(96dvh,760px)]">
         {/* ============ MOBILE LAYOUT (unchanged) ============ */}
         <div className="md:hidden flex flex-col min-h-0 flex-1">
           {/* Header */}
@@ -260,28 +260,28 @@ export function QuickBuyDialog({
         </div>
 
         {/* ============ DESKTOP LAYOUT (redesigned) ============ */}
-        <div className="hidden md:flex flex-col min-h-0 flex-1">
+        <div className="hidden md:flex flex-col min-h-0 flex-1 overflow-hidden">
           {/* Top strip: title + subtitle */}
-          <div className="shrink-0 px-8 pt-7 pb-5 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
-            <DialogHeader className="text-start space-y-1 pe-12">
-              <div className="text-[11px] font-black uppercase tracking-[0.25em] text-brand mb-1">
+          <div className="shrink-0 px-6 pt-4 pb-3 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
+            <DialogHeader className="text-start space-y-0.5 pe-12">
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                 {isAr ? "شراء سريع" : "Quick buy"}
               </div>
-              <DialogTitle className="text-3xl font-black leading-tight break-words">
+              <DialogTitle className="text-xl font-black leading-tight break-words">
                 {name}
               </DialogTitle>
-              <DialogDescription className="text-sm mt-1 leading-relaxed text-muted-foreground">
+              <DialogDescription className="text-xs leading-snug text-muted-foreground line-clamp-2">
                 {desc || (isAr ? "اختر الخطة والكمية وأتمّ شراءك في ثوانٍ" : "Pick a plan and quantity to check out in seconds")}
               </DialogDescription>
             </DialogHeader>
           </div>
 
-          {/* Split body */}
-          <div className="flex-1 overflow-y-auto overscroll-contain">
-            <div className="grid grid-cols-[340px_minmax(0,1fr)] gap-0 min-h-full">
+          {/* Split body — no scroll */}
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-0 h-full">
               {/* RIGHT column (start in RTL): image + 3 actions */}
-              <aside className="border-e border-border/60 bg-muted/20 p-6 flex flex-col gap-4">
-                <div className="relative aspect-square w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg">
+              <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
+                <div className="relative aspect-square w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink">
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="size-full object-cover" />
                   ) : (
@@ -297,41 +297,41 @@ export function QuickBuyDialog({
                 </div>
 
                 {/* 3 stacked action buttons */}
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={() => doAdd(true)}
                     disabled={!selected || soldOut}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-brand text-brand-foreground font-black text-sm shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-brand text-brand-foreground font-black text-xs shadow-lg hover:brand-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Zap className="size-4" />
+                    <Zap className="size-3.5" />
                     {isAr ? "اشترِ الآن" : "Buy now"}
                   </button>
                   <button
                     type="button"
                     onClick={() => doAdd(false)}
                     disabled={!selected || soldOut}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-border bg-background text-foreground font-bold text-sm hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border-2 border-border bg-background text-foreground font-bold text-xs hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
                   >
-                    <ShoppingCart className="size-4" />
+                    <ShoppingCart className="size-3.5" />
                     {isAr ? "أضف للسلة" : "Add to cart"}
                   </button>
                   <Link
                     to="/product/$slug"
                     params={{ slug: product.slug }}
                     onClick={() => onOpenChange(false)}
-                    className="group inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-sm hover:bg-brand/10 hover:border-brand transition-all"
+                    className="group inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-xs hover:bg-brand/10 hover:border-brand transition-all"
                   >
-                    <ExternalLink className="size-4" />
+                    <ExternalLink className="size-3.5" />
                     <span>{isAr ? "التفاصيل الكاملة" : "Full details"}</span>
                   </Link>
                 </div>
               </aside>
 
               {/* LEFT column (end in RTL): plans + total */}
-              <section className="p-6 flex flex-col gap-4 min-w-0">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-black uppercase tracking-[0.25em] text-brand">
+              <section className="p-5 flex flex-col gap-3 min-w-0 min-h-0 overflow-hidden">
+                <div className="flex items-center justify-between shrink-0">
+                  <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                     {isAr ? "اختر الخطة" : "Choose a plan"}
                   </div>
                   {plans.length > 0 && (
@@ -342,9 +342,9 @@ export function QuickBuyDialog({
                 </div>
 
                 {plansQ.isLoading ? (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {[0, 1, 2, 3].map((i) => (
-                      <div key={i} className="h-24 rounded-xl bg-muted animate-pulse" />
+                      <div key={i} className="h-20 rounded-xl bg-muted animate-pulse" />
                     ))}
                   </div>
                 ) : plans.length === 0 ? (
@@ -352,7 +352,8 @@ export function QuickBuyDialog({
                     {isAr ? "لا توجد خطط متاحة" : "No plans available"}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5 overflow-y-auto overscroll-contain pe-1 -me-1 min-h-0">
+
                     {plans.map((pl) => {
                       const isSel = selected?.id === pl.id;
                       const so = Number(pl.stock ?? 0) <= 0;
@@ -364,7 +365,7 @@ export function QuickBuyDialog({
                           type="button"
                           onClick={() => !so && setSelectedId(pl.id)}
                           disabled={so}
-                          className={`group relative text-start p-4 rounded-xl border-2 transition-all ${
+                          className={`group relative text-start p-3 rounded-xl border-2 transition-all ${
                             so
                               ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
                               : isSel
@@ -373,27 +374,28 @@ export function QuickBuyDialog({
                           }`}
                         >
                           {isSel && !so && (
-                            <span className="absolute top-2.5 end-2.5 grid place-items-center size-6 rounded-full bg-brand text-brand-foreground shadow">
-                              <Check className="size-3.5" />
+                            <span className="absolute top-2 end-2 grid place-items-center size-5 rounded-full bg-brand text-brand-foreground shadow">
+                              <Check className="size-3" />
                             </span>
                           )}
-                          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1.5">
+                          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">
                             {isAr ? "المدة" : "Plan"}
                           </div>
-                          <div className={`text-base font-extrabold mb-2 pe-8 truncate ${so ? "line-through" : ""}`}>
+                          <div className={`text-sm font-extrabold mb-1.5 pe-7 truncate ${so ? "line-through" : ""}`}>
                             {(isAr ? pl.label_ar : pl.label_en) || (isAr ? "خطة" : "Plan")}
                           </div>
                           <div className="flex items-baseline gap-1.5">
-                            <span className={`text-2xl font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
+                            <span className={`text-xl font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
                               {price}
                             </span>
-                            <span className="text-xs text-muted-foreground font-bold">{t.common.currency}</span>
+                            <span className="text-[10px] text-muted-foreground font-bold">{t.common.currency}</span>
                             {hasDiscount && (
-                              <span className="text-xs text-muted-foreground line-through tabular-nums ms-1">
+                              <span className="text-[10px] text-muted-foreground line-through tabular-nums ms-1">
                                 {raw}
                               </span>
                             )}
                           </div>
+
                           {so && (
                             <div className="mt-2 text-[10px] font-black uppercase tracking-widest text-destructive">
                               {isAr ? "نفدت" : "Sold out"}
@@ -407,27 +409,27 @@ export function QuickBuyDialog({
 
                 {/* Total + qty inline card */}
                 {plans.length > 0 && (
-                  <div className="mt-auto pt-2">
-                    <div className="rounded-2xl border-2 border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-5">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex items-center gap-3">
+                  <div className="shrink-0 pt-1">
+                    <div className="rounded-xl border-2 border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-3">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
                             {isAr ? "الكمية" : "Qty"}
                           </span>
-                          <div className="flex items-center gap-1 rounded-full border border-border bg-background p-1">
+                          <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
                             <button
                               type="button"
                               onClick={() => setQty((q) => Math.max(1, q - 1))}
-                              className="size-9 rounded-full grid place-items-center hover:bg-muted transition"
+                              className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
                               aria-label="decrease"
                             >
                               −
                             </button>
-                            <span className="min-w-8 text-center font-black tabular-nums">{qty}</span>
+                            <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
                             <button
                               type="button"
                               onClick={() => setQty((q) => Math.min(99, q + 1))}
-                              className="size-9 rounded-full grid place-items-center hover:bg-muted transition"
+                              className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
                               aria-label="increase"
                             >
                               +
@@ -435,25 +437,26 @@ export function QuickBuyDialog({
                           </div>
                         </div>
                         {selected && (
-                          <div className="flex items-baseline gap-2">
+                          <div className="flex items-baseline gap-1.5">
                             {hasDiscount && (
-                              <span className="text-sm text-muted-foreground line-through tabular-nums">
+                              <span className="text-xs text-muted-foreground line-through tabular-nums">
                                 {Math.round(rawUnit * qty * 100) / 100}
                               </span>
                             )}
-                            <span className="text-xs font-black uppercase tracking-widest text-brand">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-brand">
                               {isAr ? "الإجمالي" : "Total"}
                             </span>
-                            <span className="text-4xl font-black text-brand tabular-nums leading-none">
+                            <span className="text-2xl font-black text-brand tabular-nums leading-none">
                               {total}
                             </span>
-                            <span className="text-base font-black text-brand/80">{t.common.currency}</span>
+                            <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
                 )}
+
               </section>
             </div>
           </div>
