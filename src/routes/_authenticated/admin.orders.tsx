@@ -413,6 +413,32 @@ function AdminOrders() {
           </p>
         )}
       </div>
+
+      {proofPreview && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setProofPreview(null)}
+        >
+          <button
+            onClick={() => setProofPreview(null)}
+            aria-label="إغلاق"
+            className="absolute top-4 end-4 grid place-items-center size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl leading-none z-10"
+          >
+            ×
+          </button>
+          <div className="relative max-w-4xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            {proofLoading || proofPreview === "__loading__" ? (
+              <div className="text-white text-center py-20">جارٍ التحميل...</div>
+            ) : (
+              <img
+                src={proofPreview}
+                alt="إثبات الدفع"
+                className="w-full h-auto max-h-[90vh] object-contain rounded-xl"
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
