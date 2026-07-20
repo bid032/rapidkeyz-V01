@@ -131,15 +131,16 @@ export function PricingConfigurator({
 
         {/* Duration cards */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
               {isAr ? "٢ · المدة" : "2 · Duration"}
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              {isAr ? "كل ما زادت المدة، وفرت أكثر" : "Longer plans save more"}
+            <p className="text-[9px] text-muted-foreground">
+              {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
+
             {plans.map((pl) => {
               const isSel = selected?.id === pl.id;
               const stock = Number(pl.stock ?? 0);
