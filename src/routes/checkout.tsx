@@ -492,7 +492,7 @@ function CheckoutPage() {
               {error && <p className="text-destructive text-sm">{error}</p>}
             </div>
 
-            <aside className="h-fit p-6 bg-card border border-border rounded-2xl">
+            <aside className="h-fit p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
               <h2 className="font-bold mb-4">{t.cart.title}</h2>
               <div className="space-y-3 mb-4">
                 {cart.map((c) => (
