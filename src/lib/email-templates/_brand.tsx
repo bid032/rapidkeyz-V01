@@ -240,12 +240,21 @@ export const BrandLayout = ({ lang = 'ar', children }: LayoutProps) => {
     <Body style={{ ...styles.main, ...dirStyle }} dir={dir}>
       <Container style={{ ...styles.container, ...dirStyle }} dir={dir}>
         <Section style={{ ...styles.header, textAlign: 'center' }} dir={dir}>
-          <div style={styles.logoWrap}>
-            <Heading style={styles.logo}>RapidKeyz</Heading>
-          </div>
-          <Text style={styles.tagline}>
-            {isAr ? 'الاشتراكات الرقمية الأسرع' : 'Fastest Digital Subscriptions'}
-          </Text>
+          <table role="presentation" cellPadding={0} cellSpacing={0} border={0} align="center" style={{ margin: '0 auto', borderCollapse: 'collapse' }}>
+            <tbody>
+              <tr>
+                <td style={{ verticalAlign: 'middle', padding: '0 10px' }}>
+                  <Img src={LOGO_URL} width="52" height="52" alt="RapidKeyz" style={{ display: 'block', borderRadius: '12px' }} />
+                </td>
+                <td style={{ verticalAlign: 'middle', padding: '0 10px', textAlign: isAr ? 'right' : 'left' }}>
+                  <Heading style={{ ...styles.logo, display: 'block' }}>RapidKeyz</Heading>
+                  <Text style={{ ...styles.tagline, margin: '4px 0 0' }}>
+                    {isAr ? 'الاشتراكات الرقمية الأسرع' : 'Fastest Digital Subscriptions'}
+                  </Text>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </Section>
         <Section style={{ ...styles.body, ...dirStyle }} dir={dir}>{children}</Section>
         <Section style={{ ...styles.footer, textAlign: 'center' }} dir={dir}>
