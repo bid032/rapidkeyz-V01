@@ -405,23 +405,17 @@ function AdminProducts() {
                               setEditing((prev) => prev && {
                                 ...prev,
                                 name_en,
-                                slug: !prev.id ? slugify(name_en) : prev.slug,
+                                slug: slugify(name_en),
                               });
                             }}
                             className="w-full h-10 px-3 bg-background border border-border rounded-lg" dir="ltr" />
                         </Field>
-                        <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي.">
-                          <div className="flex gap-2">
-                            <input required placeholder="netflix-premium" value={editing.slug}
-                              onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
-                              className="flex-1 min-w-0 h-10 px-3 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
-                            <button type="button"
-                              onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
-                              className="h-10 px-3 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
-                              تحديث
-                            </button>
-                          </div>
+                        <Field label="الرابط (slug)">
+                          <input required placeholder="netflix-premium" value={editing.slug}
+                            onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
                         </Field>
+
                       </div>
                     </section>
 
@@ -446,9 +440,9 @@ function AdminProducts() {
                     <section className="space-y-3">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الأقسام والحالة</h3>
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                        <div className="md:col-span-8">
+                        <div className="md:col-span-6">
                           <Field label="الأقسام">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                               {cats.data?.map((c) => {
                                 const active = editing.category_ids.includes(c.id);
                                 return (
@@ -481,7 +475,7 @@ function AdminProducts() {
                             )}
                           </Field>
                         </div>
-                        <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-1 gap-3 content-start">
+                        <div className="md:col-span-6 grid grid-cols-2 gap-3 content-start">
                           <Field label="الحالة">
                             <select value={editing.status}
                               onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
@@ -501,6 +495,7 @@ function AdminProducts() {
                           </Field>
                         </div>
                       </div>
+
                     </section>
 
                     {/* Account types + Discount */}
