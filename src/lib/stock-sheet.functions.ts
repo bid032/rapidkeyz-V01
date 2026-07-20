@@ -420,8 +420,8 @@ export type DuplicatesResult = {
 let DUPES_CACHE: { at: number; data: DuplicatesResult } | null = null;
 const DUPES_TTL_MS = 5 * 60_000; // 5 minutes — this is a big scan
 
-async function scanDuplicates(): Promise<DuplicatesResult> {
-  if (DUPES_CACHE && Date.now() - DUPES_CACHE.at < DUPES_TTL_MS) {
+async function scanDuplicates(force = false): Promise<DuplicatesResult> {
+  if (!force && DUPES_CACHE && Date.now() - DUPES_CACHE.at < DUPES_TTL_MS) {
     return DUPES_CACHE.data;
   }
 
