@@ -559,7 +559,69 @@ function AdminProducts() {
                         </div>
                       </div>
                     </section>
+
+                    {/* Plan Variants (e.g. LinkedIn: Premium Career / Sales Navigator Core / Recruiter Lite) */}
+                    <section className="space-y-3">
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">أنواع الخطط</h3>
+                      <div className="p-3 bg-background border border-border rounded-xl space-y-3">
+                        <label className="flex items-start gap-2 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5"
+                            checked={editing.plan_variants.length > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEditing({ ...editing, plan_variants: editing.plan_variants.length ? editing.plan_variants : [""] });
+                              } else {
+                                setEditing({ ...editing, plan_variants: [] });
+                              }
+                            }}
+                          />
+                          <span>
+                            <b>الخدمة فيها أنواع خطط؟</b>
+                            <span className="block text-[11px] text-muted-foreground mt-0.5">
+                              زي مثلاً LinkedIn: Premium Career ، Premium Business ، Sales Navigator Core ، Recruiter Lite ، LinkedIn Learning.
+                              كل خطة سعر بتتربط بنوع واحد منهم.
+                            </span>
+                          </span>
+                        </label>
+
+                        {editing.plan_variants.length > 0 && (
+                          <div className="space-y-2">
+                            {editing.plan_variants.map((v, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <input
+                                  value={v}
+                                  placeholder={`نوع ${i + 1} — مثال: Premium Career`}
+                                  onChange={(e) => {
+                                    const next = [...editing.plan_variants];
+                                    next[i] = e.target.value;
+                                    setEditing({ ...editing, plan_variants: next });
+                                  }}
+                                  className="flex-1 h-9 px-3 bg-card border border-border rounded-lg text-sm"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setEditing({ ...editing, plan_variants: editing.plan_variants.filter((_, j) => j !== i) })}
+                                  className="shrink-0 h-9 px-3 border border-destructive/40 text-destructive rounded-lg text-xs font-bold hover:bg-destructive/10"
+                                >
+                                  حذف
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => setEditing({ ...editing, plan_variants: [...editing.plan_variants, ""] })}
+                              className="w-full h-9 border border-dashed border-brand/40 text-brand rounded-lg text-xs font-bold hover:bg-brand/5"
+                            >
+                              + إضافة نوع
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </section>
                   </div>
+
 
                   {/* Sidebar (left in RTL): large image + flags */}
                   <div className="lg:col-span-4 bg-muted/30 p-4 sm:p-6 space-y-5 order-1 lg:order-2">
