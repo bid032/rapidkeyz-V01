@@ -448,8 +448,9 @@ function CheckoutPage() {
                         type="file"
                         accept="image/*"
                         onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
-                        className="px-4 py-3 bg-background border border-border rounded-lg text-sm file:me-3 file:px-3 file:py-1 file:rounded-md file:border-0 file:bg-brand file:text-brand-foreground"
+                        className="w-full max-w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-background border border-border rounded-lg text-xs sm:text-sm file:me-2 sm:file:me-3 file:px-2 sm:file:px-3 file:py-1 file:rounded-md file:border-0 file:bg-brand file:text-brand-foreground file:text-xs"
                       />
+
                       {proofFile && (
                         <p className="text-xs text-muted-foreground truncate">{proofFile.name}</p>
                       )}
