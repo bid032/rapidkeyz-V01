@@ -354,7 +354,7 @@ export function QuickBuyDialog({
                   </p>
                 ) : (
                   <div
-                    className={`grid gap-2 flex-1 min-h-0 content-start auto-rows-min ${
+                    className={`grid gap-2 content-start auto-rows-min ${
                       plans.length <= 4 ? "grid-cols-2" : plans.length <= 9 ? "grid-cols-3" : "grid-cols-4"
                     }`}
                   >
