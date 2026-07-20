@@ -220,7 +220,7 @@ function AdminInventory() {
           isFetching={dupesQ.isFetching}
           isLoading={dupesQ.isLoading}
           error={dupesQ.error as Error | null}
-          onRefresh={() => dupesQ.refetch()}
+          onRefresh={() => rescanDuplicates()}
         />
       </div>
 
