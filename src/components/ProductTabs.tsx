@@ -26,7 +26,7 @@ export function ProductTabs({ productId, productName, description, deliveryType 
   ];
 
   return (
-    <section className="max-w-6xl mx-auto px-3 sm:px-6 pb-6">
+    <section className="max-w-6xl mx-auto px-3 sm:px-5 pb-6">
       {/* Tabs bar */}
       <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card via-card to-background p-1.5 overflow-visible">
         <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 bg-brand/10 rounded-full blur-3xl" />

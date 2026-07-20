@@ -26,7 +26,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
 
 
   return (
-    <section className="max-w-6xl mx-auto px-6 pb-16 space-y-16">
+    <section className="max-w-6xl mx-auto px-3 sm:px-5 pb-12 sm:pb-16 space-y-10 sm:space-y-16">
       {/* Feature strip */}
       <div className="grid sm:grid-cols-2 gap-4">
         {features.map((f) => (
