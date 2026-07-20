@@ -685,7 +685,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
           <button onClick={onClose} className="shrink-0 text-muted-foreground hover:text-foreground text-xl leading-none">✕</button>
         </div>
 
-        <div className="space-y-3 my-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 my-4">
           {plans.data?.length === 0 && (
             <div className="p-4 text-center text-sm text-muted-foreground bg-background border border-dashed border-border rounded-lg">
               مفيش عروض لسه. ضيف عرض جديد من الفورم تحت 
