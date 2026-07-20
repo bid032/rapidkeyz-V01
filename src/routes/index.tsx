@@ -402,7 +402,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="hidden md:block absolute -top-10 -start-24 w-56 p-3 bg-card border border-border rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden md:block absolute -top-10 -start-24 w-56 p-3 bg-card/95 backdrop-blur ring-1 ring-border shadow-2xl rounded-2xl -rotate-3 hover:rotate-0 hover:ring-brand/40 hover:brand-glow transition z-10"
                   >
                     <div className="flex flex-row-reverse items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
@@ -431,7 +431,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="hidden md:block absolute -bottom-10 -end-24 w-64 p-3.5 bg-card border border-border rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden md:block absolute -bottom-10 -end-24 w-64 p-3.5 bg-card/95 backdrop-blur ring-1 ring-border shadow-2xl rounded-2xl rotate-3 hover:rotate-0 hover:ring-brand/40 hover:brand-glow transition z-10"
                   >
                     <div className="flex flex-row-reverse items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
@@ -480,10 +480,7 @@ function HomePage() {
         slugs={["design", "ai-tools", "software", "educational"]}
       />
 
-      {/* AI Tools + Designers rows */}
-      <CategoryRows slugs={["ai-tools", "design"]} />
-
-      {/* Best Sellers , fallback to featured products when no order history yet */}
+      {/* Best Sellers — moved BEFORE AI tools row */}
       {(() => {
         const list = (bestSellers.data && bestSellers.data.length > 0)
           ? bestSellers.data
@@ -515,6 +512,9 @@ function HomePage() {
           </section>
         );
       })()}
+
+      {/* AI Tools + Designers rows */}
+      <CategoryRows slugs={["ai-tools", "design"]} />
 
 
       <TrustSection />

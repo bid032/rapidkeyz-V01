@@ -52,8 +52,9 @@ async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
           account_type: p.account_type,
           discount_percent: p.discount_percent,
           minPrice: cheapest ? Number(cheapest.price) : null,
-          starting_price: cheapest ? Number(cheapest.price) : null,
-          plans: active,
+          cheapestPlanId: cheapest?.id ?? null,
+          planLabel_ar: cheapest?.label_ar ?? null,
+          planLabel_en: cheapest?.label_en ?? null,
         } as ProductCardData;
       });
       return { id: c.id, slug: c.slug, name_ar: c.name_ar, name_en: c.name_en, products: mapped };
