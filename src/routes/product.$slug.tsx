@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, notFound } from "@tanstack/react-router";
 
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "@tanstack/react-router";
@@ -371,7 +372,7 @@ function ProductPage() {
             </button>
           </div>
 
-          {confirmBuy && (
+          {confirmBuy && typeof document !== "undefined" && createPortal(
             <div
               className="fixed inset-0 z-[100] grid place-items-center bg-background/70 backdrop-blur-sm p-4"
               onClick={() => setConfirmBuy(false)}
@@ -406,7 +407,8 @@ function ProductPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body,
           )}
         </div>
       </div>
