@@ -396,3 +396,15 @@ iframe[src*="lovable.dev"][src*="badge"] {
   to   { transform: translateX(-25%); }
 }
 
+/* Ensure all custom fixed overlays sit below the fixed header */
+:root { --app-header-h: 56px; }
+.app-modal-overlay,
+.fixed.inset-0[class*="z-["],
+.fixed.inset-0.z-50 {
+  padding-top: var(--app-header-h, 0px);
+}
+/* Radix Sonner toaster offset already handled via top-center; nudge below header */
+[data-sonner-toaster][data-y-position="top"] {
+  top: calc(var(--app-header-h, 0px) + 12px) !important;
+}
+

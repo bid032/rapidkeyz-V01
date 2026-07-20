@@ -53,6 +53,17 @@ export function Header() {
   }, []);
 
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const apply = () => {
+      const h = shrunk ? (mq.matches ? 56 : 48) : (mq.matches ? 80 : 56);
+      document.documentElement.style.setProperty("--app-header-h", `${h}px`);
+    };
+    apply();
+    mq.addEventListener?.("change", apply);
+    return () => mq.removeEventListener?.("change", apply);
+  }, [shrunk]);
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
