@@ -673,7 +673,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
 
   const add = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const payload: any = {
         product_id: productId,
         label_ar: form.label_ar,
         label_en: form.label_en,
@@ -682,6 +682,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         compare_price: form.compare_price > 0 ? form.compare_price : null,
         stock: form.stock,
         is_active: true,
+        account_type: form.account_type || null,
       };
       const { data: inserted, error } = await supabase.from("product_plans").insert(payload).select().single();
       if (error) throw error;
@@ -693,11 +694,12 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0 });
+      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0, account_type: "" });
       notify(lang === "ar" ? "تم إضافة العرض" : "Plan added", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
+
 
   const savePlan = useMutation({
     mutationFn: async (id: string) => {
