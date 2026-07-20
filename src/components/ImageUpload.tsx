@@ -150,7 +150,7 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
       ) : requireAspectRatio ? (
         (() => {
           const { w, h } = requireAspectRatio;
-          const ex = [800, 1200, 1600].map((k) => `${w * k}×${h * k}`).join("، ");
+          const ex = [800, 1200, 1600].map((W) => `${W}×${Math.round((W * h) / w)}`).join("، ");
           return (
             <p className="text-[11px] text-muted-foreground mt-1.5">
               نسبة الصورة لازم تكون {w}:{h} (أي مقاس بالنسبة دي مقبول، مثال: {ex}).
