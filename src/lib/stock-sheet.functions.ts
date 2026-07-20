@@ -531,17 +531,18 @@ export const getStockDuplicates = createServerFn({ method: "GET" }).handler(
   },
 );
 
-export const getInventoryDuplicatesAdmin = createServerFn({ method: "GET" })
+export const getInventoryDuplicatesAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<DuplicatesResult> => {
-    const { data, error } = await (context as any).supabase
+  .inputValidator((input: { force?: boolean } | undefined) => input ?? {})
+  .handler(async ({ context, data }): Promise<DuplicatesResult> => {
+    const { data: isAdmin, error } = await (context as any).supabase
       .rpc("has_role", { _user_id: (context as any).userId, _role: "admin" });
-    if (error || !data) {
+    if (error || !isAdmin) {
       const err: any = new Error("Forbidden");
       err.statusCode = 403;
       throw err;
     }
-    return scanDuplicates();
+    return scanDuplicates(!!data?.force);
   });
 
 
