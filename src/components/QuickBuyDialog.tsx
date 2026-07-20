@@ -22,7 +22,9 @@ type Plan = {
   sort_order: number | null;
   stock?: number | null;
   account_type?: string | null;
+  plan_variant?: string | null;
 };
+
 
 type AcctType = "private" | "shared" | "own";
 
@@ -65,7 +67,7 @@ export function QuickBuyDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("product_plans")
-        .select("id, price, label_ar, label_en, is_active, sort_order, stock, account_type")
+        .select("id, price, label_ar, label_en, is_active, sort_order, stock, account_type, plan_variant")
         .eq("product_id", product.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
@@ -73,6 +75,18 @@ export function QuickBuyDialog({
     },
     enabled: open,
   });
+
+  const productMetaQ = useQuery({
+    queryKey: ["quickbuy-product-meta", product.id],
+    queryFn: async () => (await supabase.from("products").select("plan_variants").eq("id", product.id).maybeSingle()).data,
+    enabled: open,
+  });
+  const productVariants = ((productMetaQ.data as any)?.plan_variants as string[] | null)?.filter(Boolean) ?? [];
+  const [variant, setVariant] = useState<string | null>(null);
+  const effectiveVariant = productVariants.length > 0
+    ? (variant && productVariants.includes(variant) ? variant : productVariants[0])
+    : null;
+
 
   const allPlans = plansQ.data ?? [];
   const enriched = useMemo(
@@ -93,14 +107,21 @@ export function QuickBuyDialog({
   const effectiveAcct = acct ?? normalizedTypes[0] ?? null;
 
   const plans = useMemo(() => {
-    if (!hasAcctChoice || !effectiveAcct) return enriched;
-    return enriched.filter(
-      (p) =>
-        p.acct === "any" ||
-        (effectiveAcct === "private" && (p.acct === "private" || p.acct === "own")) ||
-        (effectiveAcct === "shared" && p.acct === "shared"),
-    );
-  }, [enriched, hasAcctChoice, effectiveAcct]);
+    let list = enriched;
+    if (effectiveVariant) {
+      list = list.filter((p: any) => !p.plan_variant || p.plan_variant === effectiveVariant);
+    }
+    if (hasAcctChoice && effectiveAcct) {
+      list = list.filter(
+        (p) =>
+          p.acct === "any" ||
+          (effectiveAcct === "private" && (p.acct === "private" || p.acct === "own")) ||
+          (effectiveAcct === "shared" && p.acct === "shared"),
+      );
+    }
+    return list;
+  }, [enriched, hasAcctChoice, effectiveAcct, effectiveVariant]);
+
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
