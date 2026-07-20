@@ -276,21 +276,21 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-2.5 sm:space-y-3">
+              <div className="space-y-2.5 sm:space-y-3 w-full text-center lg:text-end">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance"
+                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-center lg:text-end"
                 >
                   {hero.title1}
                 </h1>
                 <h2
-                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance brand-text"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight brand-text text-center lg:text-end"
                 >
                   {hero.title2}
                 </h2>
 
                 <p
-                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 pt-1"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 lg:ms-auto pt-1 text-center lg:text-end"
                 >
                   {hero.subtitle}
                 </p>
