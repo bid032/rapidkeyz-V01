@@ -115,6 +115,33 @@ function AdminOverview() {
     },
   });
 
+  const prevStats = useQuery({
+    queryKey: ["admin-stats-prev", prevMonthKey],
+    enabled: !!prevMonthKey && compare,
+    queryFn: async () => {
+      let refundsQ = supabase
+        .from("refunds")
+        .select("amount, orders!inner(created_at, status)")
+        .in("orders.status", ["paid", "delivered"]);
+      if (prevRange.start) refundsQ = refundsQ.gte("orders.created_at", prevRange.start);
+      if (prevRange.end) refundsQ = refundsQ.lt("orders.created_at", prevRange.end);
+      const [rev, refundsRes] = await Promise.all([
+        supabase.rpc("admin_revenue_stats", {
+          _start: prevRange.start ?? undefined,
+          _end: prevRange.end ?? undefined,
+        }),
+        refundsQ,
+      ]);
+      const row = (rev.data as any[])?.[0] ?? { revenue: 0, profit: 0 };
+      const refundsTotal = (refundsRes.data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+      return {
+        revenue: Number(row.revenue ?? 0),
+        profit: Number(row.profit ?? 0),
+        refunds: refundsTotal,
+      };
+    },
+  });
+
 
 
 
