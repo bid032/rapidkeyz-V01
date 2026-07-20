@@ -260,7 +260,7 @@ export function QuickBuyDialog({
         </div>
 
         {/* ============ DESKTOP LAYOUT (redesigned) ============ */}
-        <div className="hidden md:flex flex-col min-h-0 flex-1 overflow-hidden">
+        <div className="hidden md:flex flex-col min-h-0">
           {/* Top strip: title + subtitle */}
           <div className="shrink-0 px-6 pt-4 pb-3 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
             <DialogHeader className="text-start space-y-0.5 pe-12">
