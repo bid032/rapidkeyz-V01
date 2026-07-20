@@ -37,7 +37,10 @@ type MonthKey = string; // YYYY-MM or "all"
 
 function AdminOverview() {
   const { t, lang } = useApp();
-  const [month, setMonth] = useState<MonthKey>("all");
+  const [month, setMonth] = useState<MonthKey>(() => {
+    const now = new Date();
+    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  });
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const range = useMemo(() => {
@@ -306,17 +309,12 @@ function AdminOverview() {
   }, [monthly.data]);
 
   const cards = [
-    { label: t.admin.revenue, value: `${Math.round(stats.data?.revenue ?? 0)} ${t.common.currency}`, tone: "brand" },
-    { label: "الأرباح (بيع − شراء)", value: `${Math.round(stats.data?.profit ?? 0)} ${t.common.currency}`, tone: "success" },
-    { label: "التعويضات", value: `-${Math.round(stats.data?.refunds ?? 0)} ${t.common.currency}`, tone: "danger" },
     { label: "عدد الطلبات", value: stats.data?.ordersCount ?? 0, tone: "default" },
     { label: "الطلبات الناجحة", value: stats.data?.deliveredCount ?? 0, tone: "success" },
     { label: "طلبات قيد التجهيز", value: stats.data?.processingCount ?? 0, tone: "warning" },
     { label: t.admin.pendingOrders, value: stats.data?.pending ?? 0, tone: "warning" },
     { label: t.admin.totalProducts, value: stats.data?.products ?? 0, tone: "default" },
     { label: t.admin.totalUsers, value: stats.data?.users ?? 0, tone: "default" },
-
-
   ];
 
 
