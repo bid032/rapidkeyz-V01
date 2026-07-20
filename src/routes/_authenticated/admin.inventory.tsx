@@ -134,11 +134,22 @@ function AdminInventory() {
   const dupesFn = useServerFn(getInventoryDuplicatesAdmin);
   const dupesQ = useQuery({
     queryKey: ["inventory-duplicates-admin"],
-    queryFn: () => dupesFn(),
+    queryFn: () => dupesFn({ data: {} }),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
     retry: false,
   });
+
+  // Force a fresh scan (bypasses the 5-min server cache) and updates the query.
+  const rescanDuplicates = async () => {
+    try {
+      const fresh = await dupesFn({ data: { force: true } });
+      qc.setQueryData(["inventory-duplicates-admin"], fresh);
+    } catch (e) {
+      console.error("rescan duplicates failed", e);
+      qc.invalidateQueries({ queryKey: ["inventory-duplicates-admin"] });
+    }
+  };
 
   const refreshAllSheets = async () => {
     const linked = (plans.data ?? []).filter((p: any) => p.google_spreadsheet_id);
