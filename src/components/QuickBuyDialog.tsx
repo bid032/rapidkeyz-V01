@@ -297,7 +297,7 @@ export function QuickBuyDialog({
                 </div>
 
                 {/* 3 stacked action buttons */}
-                <div className="flex flex-col gap-2 shrink-0">
+                <div className="flex flex-col gap-2 shrink-0 mt-auto">
                   <button
                     type="button"
                     onClick={() => doAdd(true)}
