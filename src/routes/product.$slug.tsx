@@ -336,7 +336,7 @@ function ProductPage() {
                     )}
                     {hasDiscount && (
                       <span
-                        className={`absolute top-1.5 ${lang === "ar" ? "end-1.5" : "start-1.5"} md:top-2 md:${lang === "ar" ? "end-2" : "start-2"} bg-destructive text-destructive-foreground text-[10px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md md:rounded-lg shadow-lg`}
+                        className={`absolute top-1.5 ${lang === "ar" ? "start-1.5" : "end-1.5"} md:top-2 md:${lang === "ar" ? "start-2" : "end-2"} bg-destructive text-destructive-foreground text-[10px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md md:rounded-lg shadow-lg`}
                       >
                         -{discount}%
                       </span>
