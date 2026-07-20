@@ -369,7 +369,7 @@ function CheckoutPage() {
                 {gateway === "wallet_instapay" ? (
                   <div className="mt-4 space-y-4 p-3 sm:p-4 rounded-xl bg-brand/5 border border-brand/30 min-w-0 overflow-hidden">
 
-                    <div className="text-sm leading-relaxed">
+                    <div className="text-sm leading-relaxed break-words">
                       {lang === "ar" ? (
                         <>
                           <p className="font-bold mb-2">خطوات الدفع:</p>
