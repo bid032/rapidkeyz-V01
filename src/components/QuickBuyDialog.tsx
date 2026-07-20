@@ -407,9 +407,9 @@ export function QuickBuyDialog({
                   </div>
                 )}
 
-                {/* Total + qty — pinned at the end (left in RTL), aligned with plans column */}
+                {/* Total + qty — sits right after plans, aligned with the details button */}
                 {plans.length > 0 && (
-                  <div className="mt-auto pt-3">
+                  <div className="pt-2">
                     <div className="rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/10 via-brand/5 to-transparent p-3 flex items-center justify-between gap-4">
                       {/* qty */}
                       <div className="flex items-center gap-2.5">
