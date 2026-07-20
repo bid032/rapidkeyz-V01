@@ -694,7 +694,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   const { lang, confirm, notify } = useApp();
   const productMeta = useQuery({
     queryKey: ["plan-editor-product", productId],
-    queryFn: async () => (await supabase.from("products").select("account_types, account_type").eq("id", productId).maybeSingle()).data,
+    queryFn: async () => (await supabase.from("products").select("account_types, account_type, plan_variants").eq("id", productId).maybeSingle()).data,
   });
   const acctTypes: ("private" | "shared" | "own")[] = (() => {
     const arr = (productMeta.data as any)?.account_types as string[] | null;
@@ -705,12 +705,17 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     return types.filter((a) => a === "private" || a === "shared" || a === "own") as any;
   })();
   const showAcctPicker = acctTypes.length > 1;
+  const variantOptions: string[] = Array.isArray((productMeta.data as any)?.plan_variants)
+    ? ((productMeta.data as any).plan_variants as string[]).filter(Boolean)
+    : [];
+  const showVariantPicker = variantOptions.length > 0;
   const acctLabel = (a: string) =>
     a === "private" ? "خاص" : a === "shared" ? "مشترك" : a === "own" ? "من عندك" : "الكل";
   const plans = useQuery({
     queryKey: ["plans", productId],
-    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url, account_type").eq("product_id", productId).order("duration_days")).data ?? [],
+    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url, account_type, plan_variant").eq("product_id", productId).order("duration_days")).data ?? [],
   });
+
   const costs = useQuery({
     queryKey: ["plan-costs", productId],
     enabled: !!plans.data,
@@ -733,10 +738,12 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     cost_price: 0,
     stock: 0,
     account_type: "" as "" | "private" | "shared" | "own",
+    plan_variant: "" as string,
   });
 
   // Local edits map keyed by plan id , apply on save
-  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null }>>({});
+  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null; plan_variant?: string | null }>>({});
+
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
 
@@ -753,6 +760,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         stock: form.stock,
         is_active: true,
         account_type: form.account_type || null,
+        plan_variant: form.plan_variant || null,
       };
       const { data: inserted, error } = await supabase.from("product_plans").insert(payload).select().single();
       if (error) throw error;
@@ -764,9 +772,10 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0, account_type: "" });
+      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0, account_type: "", plan_variant: "" });
       notify(lang === "ar" ? "تم إضافة العرض" : "Plan added", "success");
     },
+
     onError: (e) => showError(e, notify, lang),
   });
 
@@ -780,6 +789,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
       if (patchData.stock !== undefined) clean.stock = patchData.stock;
       if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
+      if (patchData.plan_variant !== undefined) clean.plan_variant = patchData.plan_variant;
+
 
       if (Object.keys(clean).length > 0) {
         const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
