@@ -53,18 +53,18 @@ export function BrandsStrip() {
         </p>
       </div>
 
-      {/* Edge fade masks */}
-      <div className="relative">
+      {/* Edge fade masks , constrained to same width as other home sliders */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 z-10 bg-gradient-to-r from-background to-transparent"
+          className="pointer-events-none absolute inset-y-0 left-4 sm:left-6 w-16 sm:w-24 z-10 bg-gradient-to-r from-background to-transparent"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 z-10 bg-gradient-to-l from-background to-transparent"
+          className="pointer-events-none absolute inset-y-0 right-4 sm:right-6 w-16 sm:w-24 z-10 bg-gradient-to-l from-background to-transparent"
         />
 
-        <div className="brands-marquee" dir="ltr">
+        <div className="brands-marquee overflow-hidden rounded-2xl" dir="ltr">
           <div className="brands-track">
             {loop.map((p, i) => {
               const name = lang === "ar" ? p.name_ar : p.name_en;
@@ -100,6 +100,7 @@ export function BrandsStrip() {
           </div>
         </div>
       </div>
+
     </section>
   );
 }
