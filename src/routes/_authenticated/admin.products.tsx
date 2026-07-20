@@ -926,11 +926,26 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
+            {showAcctPicker && (
+              <Field label="نوع الحساب لهذا العرض">
+                <select
+                  value={form.account_type}
+                  onChange={(e) => setForm({ ...form, account_type: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-background border border-border rounded"
+                >
+                  <option value="">— لكل الأنواع —</option>
+                  {acctTypes.map((a) => (
+                    <option key={a} value={a}>{acctLabel(a)}</option>
+                  ))}
+                </select>
+              </Field>
+            )}
             <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2 xl:col-span-3">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
             </Field>
+
           </div>
           <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
             + إضافة العرض
