@@ -773,12 +773,20 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
             const dirty = !!edits[p.id];
             const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
             const margin = Number(price) - Number(cost);
+            const currentAcct = (e.account_type !== undefined ? e.account_type : p.account_type) ?? "";
             return (
               <div key={p.id} className="p-4 bg-background border border-border rounded-xl">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="text-sm">
-                    <div className="font-bold">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
-                    <div className="text-xs text-muted-foreground mt-0.5">مدة: {months} شهر</div>
+                <div className="flex justify-between items-start mb-3 gap-2">
+                  <div className="text-sm min-w-0">
+                    <div className="font-bold truncate">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
+                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>مدة: {months} شهر</span>
+                      {p.account_type && (
+                        <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">
+                          {acctLabel(p.account_type)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={async () => {
@@ -790,9 +798,26 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                       });
                       if (ok) del.mutate(p.id);
                     }}
-                    className="text-destructive text-xs hover:underline"
+                    className="text-destructive text-xs hover:underline shrink-0"
                   >مسح</button>
                 </div>
+
+                {showAcctPicker && (
+                  <div className="mb-3">
+                    <label className="text-[11px] font-bold text-brand uppercase mb-1 block">نوع الحساب لهذا العرض</label>
+                    <select
+                      value={currentAcct}
+                      onChange={(ev) => patch(p.id, "account_type", ev.target.value === "" ? null : ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                    >
+                      <option value="">— لكل الأنواع —</option>
+                      {acctTypes.map((a) => (
+                        <option key={a} value={a}>{acctLabel(a)}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border min-w-0">
                   <div>
