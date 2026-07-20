@@ -187,7 +187,7 @@ export function QuickBuyDialog({
             </aside>
 
             {/* RIGHT: plans + qty/total */}
-            <section className="lg:col-span-7 p-4 sm:p-6 lg:p-8 order-2 flex flex-col gap-4 sm:gap-5 min-w-0">
+            <section className="lg:col-span-9 p-4 sm:p-6 lg:p-8 order-2 flex flex-col gap-4 sm:gap-5 min-w-0">
               <div className="flex-1 min-h-0">
                 <div className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-brand mb-2 sm:mb-3">
                   {isAr ? "اختر الخطة" : "Choose a plan"}
