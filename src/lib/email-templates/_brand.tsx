@@ -1,7 +1,9 @@
 import * as React from 'react'
 import {
-  Body, Container, Head, Heading, Section, Text, Hr,
+  Body, Container, Head, Heading, Section, Text, Hr, Img,
 } from '@react-email/components'
+
+const LOGO_URL = 'https://rapidkeyz.lovable.app/__l5e/assets-v1/134f4e47-429f-4758-835b-1319e6b6ea20/white_logo_rapid.png'
 
 /**
  * RapidKeyz email brand — Modern Tech Noir.
