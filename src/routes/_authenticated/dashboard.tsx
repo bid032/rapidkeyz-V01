@@ -254,7 +254,7 @@ function Dashboard() {
                             </div>
                           ) : (
                             <>
-                              {itemRefund && itemRefund.type === "partial_refund" && (
+                              {itemRefund && itemRefund.type === "partial" && (
                                 <div className="mt-2 p-2.5 bg-warning/5 border border-warning/30 rounded text-center">
                                   <div className="text-xs font-bold text-warning mb-0.5">
                                     {lang === "ar"
