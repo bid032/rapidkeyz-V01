@@ -89,7 +89,7 @@ export function Header() {
   const closeMobile = () => setMobileOpen(false);
 
   const nav = (
-    <nav className={`fixed top-0 left-0 right-0 z-[10000] border-b border-border bg-background/90 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
+    <nav className={`fixed top-0 start-0 end-0 z-[10000] border-b border-border bg-background/90 backdrop-blur-md transition-all duration-300 ${shrunk ? "shadow-[0_6px_24px_-12px_hsl(var(--brand)/0.35)]" : ""}`}>
       <div className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`}>
         <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
@@ -163,7 +163,7 @@ export function Header() {
             <ShoppingCart className={`size-4 ${bumping ? "text-brand" : ""}`} />
             {cartCount > 0 && (
               <span
-                className={`absolute -top-1 -right-1 size-4 sm:size-5 rounded-full bg-brand text-brand-foreground text-[9px] sm:text-[10px] font-bold grid place-items-center ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
+                className={`absolute -top-1 -end-1 size-4 sm:size-5 rounded-full bg-brand text-brand-foreground text-[9px] sm:text-[10px] font-bold grid place-items-center ${bumping ? "animate-[cartBump_0.5s_ease-out]" : ""}`}
               >
                 {cartCount}
               </span>

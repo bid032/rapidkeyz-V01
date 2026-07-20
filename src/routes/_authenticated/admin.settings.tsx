@@ -129,7 +129,7 @@ function AdminSettings() {
                     placeholder={defAr || phAr}
                     value={valAr}
                     onChange={(e: any) => setHero({ ...hero, [kAr]: e.target.value })}
-                    className="px-3 py-2 bg-background border border-border rounded text-right"
+                    className="px-3 py-2 bg-background border border-border rounded text-end"
                     dir="rtl"
                     rows={isLong ? 3 : undefined}
                   />
@@ -311,7 +311,7 @@ function AdminSettings() {
               key={val}
               type="button"
               onClick={() => setThemeMode(val)}
-              className={`text-right p-4 rounded-xl border-2 transition ${
+              className={`text-end p-4 rounded-xl border-2 transition ${
                 themeMode === val
                   ? "border-brand bg-brand/10"
                   : "border-border hover:border-brand/50"

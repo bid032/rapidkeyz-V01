@@ -23,13 +23,13 @@ function NotFoundComponent() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[620px] h-[420px] rounded-full bg-brand/20 blur-[140px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-brand/10 blur-[120px]" />
+        <div className="absolute top-1/4 start-1/2 -translate-x-1/2 w-[620px] h-[420px] rounded-full bg-brand/20 blur-[140px]" />
+        <div className="absolute bottom-0 end-0 w-[400px] h-[400px] rounded-full bg-brand/10 blur-[120px]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
       </div>
       <div className="relative max-w-lg text-center">
         <div className="relative mx-auto mb-6 grid h-32 w-32 place-items-center">
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "3s" }} />
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-brand border-e-brand/40 animate-spin" style={{ animationDuration: "3s" }} />
           <div className="absolute inset-2 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "4s", animationDirection: "reverse" }} />
           <span className="relative text-5xl font-black text-brand drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]">4·4</span>
         </div>

@@ -340,7 +340,7 @@ function AdminOrders() {
                       <a
                         href={`https://wa.me/${String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "20")}`}
                         target="_blank" rel="noreferrer"
-                        className="ml-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
+                        className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
                       >واتساب</a>
                     )}
                   </div>
@@ -435,10 +435,10 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
         <div className="text-sm min-w-0">
           <span className="font-bold">{item.product_name}</span>{" "}
           <span className="text-muted-foreground">, {item.plan_label} × {item.quantity}</span>
-          <span className={`ml-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+          <span className={`ms-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
           </span>
-          <span className={`ml-2 text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
+          <span className={`ms-2 text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
             {delivered ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered") : (lang === "ar" ? "⏳ لسه" : "⏳ Pending")}
           </span>
         </div>
@@ -487,7 +487,7 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
                         <span className={`font-bold ${daysLeft !== null && daysLeft < 0 ? "text-destructive" : daysLeft !== null && daysLeft <= 7 ? "text-destructive" : daysLeft !== null && daysLeft <= 30 ? "text-warning" : ""}`}>
                           {fmt(endAt)}
                           {daysLeft !== null && (
-                            <span className="ml-1 text-[10px]">
+                            <span className="ms-1 text-[10px]">
                               ({daysLeft < 0 ? (lang === "ar" ? `انتهت من ${Math.abs(daysLeft)} يوم` : `expired ${Math.abs(daysLeft)}d ago`) : (lang === "ar" ? `باقي ${daysLeft} يوم` : `${daysLeft}d left`)})
                             </span>
                           )}

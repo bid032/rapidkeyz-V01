@@ -55,14 +55,14 @@ export function SplashLoader() {
       }`}
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[260px] bg-brand/20 blur-[120px] rounded-full opacity-70" />
+        <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[260px] bg-brand/20 blur-[120px] rounded-full opacity-70" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
       </div>
 
       <div className="relative flex flex-col items-center">
         <div className="relative size-48 sm:size-56 flex items-center justify-center">
           {/* Rotating ring */}
-          <div className="absolute -inset-6 rounded-full border-2 border-transparent border-t-brand border-r-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
+          <div className="absolute -inset-6 rounded-full border-2 border-transparent border-t-brand border-e-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
           {/* Reverse ring */}
           <div className="absolute -inset-3 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "1.8s", animationDirection: "reverse" }} />
           {/* Logo */}

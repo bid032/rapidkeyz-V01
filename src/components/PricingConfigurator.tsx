@@ -72,8 +72,8 @@ export function PricingConfigurator({
   return (
     <div className="relative rounded-3xl border border-border bg-gradient-to-br from-card via-card to-background overflow-hidden">
       {/* Ambient glow */}
-      <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 bg-brand/15 rounded-full blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -left-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute -top-24 -end-24 w-64 h-64 bg-brand/15 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
         {/* Account type , segmented pill with sliding indicator */}
@@ -165,12 +165,12 @@ export function PricingConfigurator({
                   {isSel && !soldOut && (
                     <motion.span
                       layoutId="plan-glow"
-                      className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 bg-brand/25 rounded-full blur-2xl"
+                      className="pointer-events-none absolute -top-6 -end-6 w-20 h-20 bg-brand/25 rounded-full blur-2xl"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
                   {soldOut && (
-                    <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "left-2" : "right-2"} text-[11px] font-black uppercase px-2 py-1 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10`}>
+                    <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "end-2" : "start-2"} text-[11px] font-black uppercase px-2 py-1 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10`}>
                       {t.product.soldOut}
                     </span>
                   )}

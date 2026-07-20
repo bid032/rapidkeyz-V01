@@ -121,7 +121,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
           )}
           {hasDiscount && (
             <span
-              className={`absolute top-2 sm:top-3 ${lang === "ar" ? "right-2 sm:right-3" : "left-2 sm:left-3"} bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-full shadow-lg`}
+              className={`absolute top-2 sm:top-3 ${lang === "ar" ? "end-2 sm:end-3" : "start-2 sm:start-3"} bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-full shadow-lg`}
             >
               -{discount}%
             </span>

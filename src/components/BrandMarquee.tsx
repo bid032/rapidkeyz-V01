@@ -48,11 +48,11 @@ export function BrandMarquee() {
   return (
     <div className="relative overflow-hidden py-6 border-y border-border/60 bg-gradient-to-r from-transparent via-brand/5 to-transparent">
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 w-24 z-10 bg-gradient-to-r from-background to-transparent"
+        className="pointer-events-none absolute inset-y-0 start-0 w-24 z-10 bg-gradient-to-r from-background to-transparent"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-24 z-10 bg-gradient-to-l from-background to-transparent"
+        className="pointer-events-none absolute inset-y-0 end-0 w-24 z-10 bg-gradient-to-l from-background to-transparent"
         aria-hidden="true"
       />
       <div ref={trackRef} className="flex gap-10 whitespace-nowrap w-max">
