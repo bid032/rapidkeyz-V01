@@ -390,26 +390,26 @@ function CheckoutPage() {
                     </div>
 
                     {/* Copy-number pill */}
-                    <button
-                      type="button"
-                      onClick={copyNumber}
-                      className="w-full flex items-center justify-between gap-2 p-3 rounded-xl bg-background border border-brand/40 hover:border-brand transition text-start"
-                      title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
-                          {lang === "ar" ? "رقم التحويل" : "Transfer number"}
-                        </div>
-                        <div dir="ltr" className="font-mono font-extrabold text-brand text-base sm:text-lg tracking-wide truncate">
+                    <div className="rounded-xl bg-background border border-brand/40 p-3 space-y-2">
+                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center">
+                        {lang === "ar" ? "رقم التحويل" : "Transfer number"}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div dir="ltr" className="flex-1 min-w-0 text-center font-mono font-extrabold text-brand text-lg sm:text-xl tracking-widest truncate">
                           {WHATSAPP_NUMBER}
                         </div>
+                        <button
+                          type="button"
+                          onClick={copyNumber}
+                          className={`shrink-0 text-xs px-3 py-2 rounded-lg font-bold transition ${copied ? "bg-success/20 text-success" : "bg-brand/15 text-brand hover:bg-brand/25"}`}
+                          title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
+                        >
+                          {copied
+                            ? (lang === "ar" ? "تم ✓" : "Copied ✓")
+                            : (lang === "ar" ? "نسخ" : "Copy")}
+                        </button>
                       </div>
-                      <span className={`shrink-0 text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition ${copied ? "bg-success/20 text-success" : "bg-brand/15 text-brand"}`}>
-                        {copied
-                          ? (lang === "ar" ? "تم النسخ ✓" : "Copied ✓")
-                          : (lang === "ar" ? "نسخ" : "Copy")}
-                      </span>
-                    </button>
+                    </div>
 
                     <div className="grid gap-2">
                       <label className="text-xs font-bold text-muted-foreground">
