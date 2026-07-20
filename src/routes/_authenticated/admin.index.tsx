@@ -66,7 +66,8 @@ function AdminOverview() {
       let processingQ = supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
-        .not("status", "in", "(delivered,refunded,canceled,cancelled)");
+        .in("status", ["pending", "paid", "processing"]);
+
       if (range.start) processingQ = processingQ.gte("created_at", range.start);
       if (range.end) processingQ = processingQ.lt("created_at", range.end);
       const [rev, products, users, pending, refundsRes, allOrders, delivered, processing] = await Promise.all([
