@@ -315,9 +315,9 @@ function Dashboard() {
                 <div key={r.id} className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between gap-3 flex-wrap">
                   <div className="min-w-0">
                     <div className="font-bold text-sm">
-                      {r.type === "full_refund"
+                      {r.type === "full"
                         ? (lang === "ar" ? "ريفاند كامل" : "Full refund")
-                        : r.type === "partial_refund"
+                        : r.type === "partial"
                         ? (lang === "ar" ? "ريفاند جزئي" : "Partial refund")
                         : (lang === "ar" ? "حساب بديل" : "Replacement account")}
                     </div>
