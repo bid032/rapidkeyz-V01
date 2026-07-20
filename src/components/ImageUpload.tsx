@@ -146,7 +146,7 @@ export function ImageUpload({ bucket, value, onChange, label, className, size = 
         </p>
       ) : requireAspectRatio ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
-          نسبة الصورة لازم تكون {requireAspectRatio.w}:{requireAspectRatio.h} (أي مقاس بالنسبة دي مقبول، مثال: {requireAspectRatio.w === requireAspectRatio.h ? "1080×1080، 800×800، 1600×1600" : `${requireAspectRatio.w*270}×${requireAspectRatio.h*270}، ${requireAspectRatio.w*200}×${requireAspectRatio.h*200}، ${requireAspectRatio.w*400}×${requireAspectRatio.h*400}`}).
+          نسبة الصورة لازم تكون 1:1 (أي مقاس بالنسبة دي مقبول، مثال: 1080×1080، 800×800، 1600×1600).
         </p>
       ) : size > 0 ? (
         <p className="text-[11px] text-muted-foreground mt-1.5">
