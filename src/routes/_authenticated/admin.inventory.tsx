@@ -134,11 +134,22 @@ function AdminInventory() {
   const dupesFn = useServerFn(getInventoryDuplicatesAdmin);
   const dupesQ = useQuery({
     queryKey: ["inventory-duplicates-admin"],
-    queryFn: () => dupesFn(),
+    queryFn: () => dupesFn({ data: {} }),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
     retry: false,
   });
+
+  // Force a fresh scan (bypasses the 5-min server cache) and updates the query.
+  const rescanDuplicates = async () => {
+    try {
+      const fresh = await dupesFn({ data: { force: true } });
+      qc.setQueryData(["inventory-duplicates-admin"], fresh);
+    } catch (e) {
+      console.error("rescan duplicates failed", e);
+      qc.invalidateQueries({ queryKey: ["inventory-duplicates-admin"] });
+    }
+  };
 
   const refreshAllSheets = async () => {
     const linked = (plans.data ?? []).filter((p: any) => p.google_spreadsheet_id);
@@ -167,6 +178,7 @@ function AdminInventory() {
     qc.invalidateQueries({ queryKey: ["instant-plans"] });
     qc.invalidateQueries({ queryKey: ["inventory-rows"] });
     qc.invalidateQueries({ queryKey: ["inventory-batches"] });
+    await rescanDuplicates();
     notify(
       `تم التحديث: ${totalInserted} حساب جديد من ${linked.length - failed}/${linked.length} منتج${failed ? ` (فشل ${failed})` : ""}`,
       failed ? "info" : "success",
@@ -208,7 +220,7 @@ function AdminInventory() {
           isFetching={dupesQ.isFetching}
           isLoading={dupesQ.isLoading}
           error={dupesQ.error as Error | null}
-          onRefresh={() => dupesQ.refetch()}
+          onRefresh={() => rescanDuplicates()}
         />
       </div>
 
@@ -228,6 +240,7 @@ function AdminInventory() {
               onChange={() => {
                 qc.invalidateQueries({ queryKey: ["inventory-counts"] });
                 qc.invalidateQueries({ queryKey: ["instant-plans"] });
+                rescanDuplicates();
               }}
             />
             <div className="p-4 space-y-3">
