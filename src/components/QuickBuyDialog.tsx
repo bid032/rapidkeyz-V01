@@ -106,24 +106,15 @@ export function QuickBuyDialog({
                    flex flex-col"
       >
         {/* Sticky header */}
-        <div className="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-border/60 bg-card">
-          <div className="min-w-0">
-            <DialogTitle className="text-base sm:text-lg font-black leading-tight truncate">
-              {isAr ? "الشراء السريع" : "Quick Buy"}
-            </DialogTitle>
-            <DialogDescription className="text-[11px] sm:text-xs mt-0.5 text-muted-foreground leading-tight">
-              {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
-            </DialogDescription>
-          </div>
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            aria-label="close"
-            className="p-2 rounded-full hover:bg-muted text-muted-foreground shrink-0"
-          >
-            <X className="size-4" />
-          </button>
+        <div className="shrink-0 px-4 sm:px-6 py-3 sm:py-4 pe-14 border-b border-border/60 bg-card">
+          <DialogTitle className="text-base sm:text-lg font-black leading-tight truncate">
+            {isAr ? "الشراء السريع" : "Quick Buy"}
+          </DialogTitle>
+          <DialogDescription className="text-[11px] sm:text-xs mt-0.5 text-muted-foreground leading-tight">
+            {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity to buy fast"}
+          </DialogDescription>
         </div>
+
 
         {/* Scrollable body: split-pane on lg, stacked on mobile */}
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
