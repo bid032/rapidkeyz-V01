@@ -399,7 +399,7 @@ function AdminProducts() {
                   }}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg" />
               </Field>
-              <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="md:col-span-2">
+              <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي. تقدر تعدّله لو حبيت (بالإنجليزي وبدون مسافات)." className="md:col-span-2 xl:col-span-3">
                 <div className="flex gap-2">
                   <input required placeholder="netflix-premium" value={editing.slug}
                     onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
@@ -422,7 +422,7 @@ function AdminProducts() {
                   onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
                   className="w-full px-4 py-2 bg-background border border-border rounded-lg min-h-[80px]" />
               </Field>
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 xl:col-span-3">
                 <ImageUpload
                   bucket="product-images"
                   label="صورة/أيقونة المنتج (اختياري ، لو مفيش هيظهر أول حرفين من الاسم)"
@@ -432,7 +432,7 @@ function AdminProducts() {
                   requireAspectRatio={{ w: 1, h: 1 }}
                 />
               </div>
-              <Field label="الأقسام" hint="اختر قسم واحد أو أكثر ، الخدمة هتظهر في كل قسم اخترته." className="md:col-span-2">
+              <Field label="الأقسام" hint="اختر قسم واحد أو أكثر ، الخدمة هتظهر في كل قسم اخترته." className="md:col-span-2 xl:col-span-3">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {cats.data?.map((c) => {
                     const active = editing.category_ids.includes(c.id);
@@ -483,7 +483,7 @@ function AdminProducts() {
                   <option value="manual">Manual ، تسليم يدوي</option>
                 </select>
               </Field>
-              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر ، العميل هيقدر يختار من بينهم على صفحة المنتج." className="md:col-span-2">
+              <Field label="أنواع الحساب" hint="اختر نوع واحد أو أكثر ، العميل هيقدر يختار من بينهم على صفحة المنتج." className="md:col-span-2 xl:col-span-3">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {([
                     { v: "shared", label: "شير (مشترك)" },
@@ -517,7 +517,7 @@ function AdminProducts() {
                   <p className="text-[11px] text-destructive mt-2">اختر نوع واحد على الأقل.</p>
                 )}
               </Field>
-              <Field label="نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="md:col-span-2">
+              <Field label="نسبة الخصم (%)" hint="لو حددت رقم أكبر من 0 هيبان شارة خصم على صورة المنتج وهيتخصم تلقائيًا من كل الأسعار." className="md:col-span-2 xl:col-span-3">
                 <input
                   type="number"
                   min={0}
@@ -828,7 +828,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
-            <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2">
+            <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2 xl:col-span-3">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
