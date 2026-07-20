@@ -14,16 +14,16 @@ async function fetchLogos(): Promise<string[]> {
 
 type Pos = { top: string; left: string; size: number; delay: number; duration: number; factor: number };
 
+// Positions restricted to outer edges only — never overlap hero content/logo card
 const POSITIONS: Pos[] = [
-  { top: "8%", left: "6%", size: 52, delay: 0, duration: 7, factor: 1.6 },
-  { top: "18%", left: "88%", size: 60, delay: 1.2, duration: 8, factor: -1.2 },
-  { top: "62%", left: "4%", size: 48, delay: 0.6, duration: 9, factor: 1.9 },
-  { top: "72%", left: "82%", size: 56, delay: 2, duration: 7.5, factor: -1.7 },
-  { top: "32%", left: "92%", size: 44, delay: 1.8, duration: 8.5, factor: 2.2 },
-  { top: "48%", left: "2%", size: 50, delay: 0.9, duration: 9.5, factor: -2 },
-  { top: "12%", left: "45%", size: 42, delay: 2.4, duration: 8, factor: 1.4 },
-  { top: "82%", left: "48%", size: 46, delay: 1.5, duration: 9, factor: -1.5 },
+  { top: "10%", left: "3%", size: 44, delay: 0, duration: 7, factor: 1.6 },
+  { top: "6%", left: "94%", size: 40, delay: 1.2, duration: 8, factor: -1.2 },
+  { top: "78%", left: "2%", size: 42, delay: 0.6, duration: 9, factor: 1.9 },
+  { top: "82%", left: "95%", size: 46, delay: 2, duration: 7.5, factor: -1.7 },
+  { top: "40%", left: "96%", size: 38, delay: 1.8, duration: 8.5, factor: 2.2 },
+  { top: "48%", left: "1%", size: 40, delay: 0.9, duration: 9.5, factor: -2 },
 ];
+
 
 export function FloatingLogos() {
   const { data } = useQuery({ queryKey: ["floating-logos"], queryFn: fetchLogos });
