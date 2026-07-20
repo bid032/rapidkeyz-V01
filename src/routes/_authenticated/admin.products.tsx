@@ -362,7 +362,7 @@ function AdminProducts() {
         <ModalPortal>
         <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur overflow-y-auto">
           <div className="min-h-full flex items-start sm:items-center justify-center p-2 sm:p-6">
-            <div className="w-full max-w-2xl min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
+            <div className="w-full max-w-2xl md:max-w-[min(96vw,1400px)] min-w-0 bg-card border border-border rounded-2xl p-3 sm:p-6 my-2 sm:my-8 overflow-x-hidden">
             <h2 className="text-lg sm:text-xl font-bold mb-3">
               {editing.id ? t.admin.edit : t.admin.addProduct}
             </h2>
@@ -373,7 +373,7 @@ function AdminProducts() {
             </p>
             <form
               onSubmit={(e) => { e.preventDefault(); save.mutate(editing); }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 min-w-0"
+              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 min-w-0"
             >
               <Field label="الاسم بالعربي">
                 <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
