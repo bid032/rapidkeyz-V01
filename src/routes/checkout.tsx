@@ -103,6 +103,16 @@ function CheckoutPage() {
         setError(lang === "ar" ? "يرجى رفع صورة إثبات الدفع" : "Please upload the payment screenshot");
         return;
       }
+      const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+      const MAX_BYTES = 5 * 1024 * 1024;
+      if (!ALLOWED_MIME.includes(proofFile.type)) {
+        setError(lang === "ar" ? "نوع الملف غير مدعوم. استخدم JPG أو PNG أو PDF" : "Unsupported file type. Use JPG, PNG, or PDF");
+        return;
+      }
+      if (proofFile.size > MAX_BYTES) {
+        setError(lang === "ar" ? "حجم الملف كبير جدًا (الحد 5MB)" : "File too large (max 5MB)");
+        return;
+      }
       if (!/^[0-9+\s-]{6,20}$/.test(senderPhone.trim())) {
         setError(
           lang === "ar"
