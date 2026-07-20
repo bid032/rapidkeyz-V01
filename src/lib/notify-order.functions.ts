@@ -116,6 +116,8 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
     }
     if (accounts.length === 0) return { ok: false, reason: 'no_delivered_accounts' }
 
+    const lang = await resolveCustomerLang(supabaseAdmin, order.customer_email)
+
     await sendTemplateEmail('order-delivered', order.customer_email, {
       idempotencyKey: `order-delivered-${order.id}`,
       templateData: {
@@ -123,6 +125,7 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
         total: order.total,
         currency: order.currency || 'EGP',
         accounts,
+        lang,
       },
     })
     return { ok: true, count: accounts.length }
