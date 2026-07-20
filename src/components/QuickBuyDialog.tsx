@@ -101,7 +101,7 @@ export function QuickBuyDialog({
       <DialogContent
         className="p-0 gap-0 border-border/60 bg-card overflow-hidden
                    w-[calc(100vw-1rem)] sm:w-auto
-                   max-w-[calc(100vw-1rem)] sm:max-w-2xl lg:max-w-[min(96vw,1100px)]
+                   max-w-[calc(100vw-1rem)] sm:max-w-2xl lg:max-w-[min(98vw,1500px)]
                    max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-4rem)]
                    flex flex-col"
       >
