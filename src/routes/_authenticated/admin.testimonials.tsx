@@ -78,7 +78,7 @@ function AdminTestimonials() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {list.data?.map((t) => (
           <div key={t.id} className="relative group bg-card border border-border rounded-2xl overflow-hidden">
-            <img src={t.image_url} alt="" className="w-full aspect-square object-cover" />
+            <img src={t.image_url} alt="" className="w-full aspect-[4/5] object-cover" />
             <div className="p-3 flex items-center justify-between gap-2">
               <button
                 onClick={() => toggleActive.mutate({ id: t.id, is_active: !t.is_active })}
