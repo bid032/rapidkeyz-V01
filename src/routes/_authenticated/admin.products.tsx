@@ -405,7 +405,7 @@ function AdminProducts() {
                               setEditing((prev) => prev && {
                                 ...prev,
                                 name_en,
-                                slug: !prev.id ? slugify(name_en) : prev.slug,
+                                slug: slugify(name_en),
                               });
                             }}
                             className="w-full h-10 px-3 bg-background border border-border rounded-lg" dir="ltr" />
