@@ -425,7 +425,6 @@ function ProductPage() {
         </div>
 
 
-        </div>
 
 
         {confirmBuy && typeof document !== "undefined" && createPortal(
