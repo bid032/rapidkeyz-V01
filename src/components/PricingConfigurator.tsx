@@ -86,38 +86,45 @@ export function PricingConfigurator({
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
         {/* Combined row: single account type + variant dropdown */}
         {normalizedTypes.length === 1 && variants && variants.length > 0 ? (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                {isAr ? "١ · نوع الحساب والخطة" : "1 · Account & Plan"}
+          <div className="grid grid-cols-2 gap-2.5">
+            {/* Account type card */}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
+                {isAr ? "١ · نوع الحساب" : "1 · Account"}
               </p>
-            </div>
-            <div className="grid grid-cols-[auto_1fr] gap-1.5 p-1 rounded-xl bg-muted/40 border border-border items-stretch">
-              {/* Account type pill (display-only, single type) */}
-              <div className="relative px-3 py-2 rounded-lg bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] flex flex-col justify-center">
-                <span className="block text-xs font-extrabold leading-tight">
+              <div className="relative rounded-xl px-3 py-2.5 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[58px] flex flex-col justify-center">
+                <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
+                <span className="relative block text-sm font-black leading-tight">
                   {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
                 </span>
-                <span className="block text-[9px] mt-0.5 leading-tight text-brand-foreground/80">
+                <span className="relative block text-[10px] mt-0.5 leading-tight text-brand-foreground/85">
                   {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
                 </span>
               </div>
-              {/* Variant dropdown */}
-              <div className="relative">
+            </div>
+            {/* Variant dropdown */}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
+                {isAr ? "٢ · نوع الخطة" : "2 · Plan"}
+              </p>
+              <div className="relative h-[58px]">
                 <select
                   value={effectiveVariant ?? ""}
                   onChange={(e) => onVariantChange?.(e.target.value)}
-                  className="w-full h-full px-3 py-2 rounded-lg bg-card border border-border text-sm font-extrabold text-foreground focus:outline-none focus:border-brand appearance-none cursor-pointer pe-8"
+                  className={`peer w-full h-full rounded-xl bg-card border-2 border-border hover:border-brand/60 focus:border-brand text-sm font-black text-foreground focus:outline-none appearance-none cursor-pointer transition ${isAr ? "ps-9 pe-3 text-start" : "ps-3 pe-9 text-start"}`}
                 >
                   {variants.map((v) => (
                     <option key={v} value={v}>{v}</option>
                   ))}
                 </select>
-                <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-3" : "end-3"} text-brand text-xs`}>▼</span>
+                <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-3" : "end-3"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[10px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
+                  ▼
+                </span>
               </div>
             </div>
           </div>
         ) : (
+
           <>
             {/* Plan variant (multiple account types case) */}
             {variants && variants.length > 0 && (
