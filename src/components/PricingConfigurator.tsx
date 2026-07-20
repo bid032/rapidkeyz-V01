@@ -208,52 +208,48 @@ export function PricingConfigurator({
           </div>
         </div>
 
-        {/* Total price display , animated */}
         {selected && (
-          <div className="relative rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-4 sm:p-5 overflow-hidden">
+          <div className="relative rounded-xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-3 overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]" />
-            <div className="relative flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1">
+            <div className="relative flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
                   {isAr ? "٣ · الإجمالي" : "3 · Total"}
                 </div>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${selected.id}-${finalPrice}`}
-                    initial={{ y: 12, opacity: 0, scale: 0.96 }}
+                    initial={{ y: 8, opacity: 0, scale: 0.96 }}
                     animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ y: -12, opacity: 0, scale: 0.96 }}
+                    exit={{ y: -8, opacity: 0, scale: 0.96 }}
                     transition={{ type: "spring", stiffness: 320, damping: 26 }}
                     className="flex items-baseline gap-2 flex-wrap"
                   >
-                    <span className="text-4xl sm:text-5xl font-black text-brand tabular-nums leading-none">
+                    <span className="text-3xl font-black text-brand tabular-nums leading-none">
                       {finalPrice}
                     </span>
-                    <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
+                    <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
                     {hasDiscount && (
-                      <span className="text-sm text-muted-foreground line-through tabular-nums">
-                        {rawPrice} {t.common.currency}
+                      <span className="text-xs text-muted-foreground line-through tabular-nums">
+                        {rawPrice}
                       </span>
                     )}
                   </motion.div>
                 </AnimatePresence>
-                <div className="text-[11px] text-muted-foreground mt-1">
-                  {isAr ? `يبدأ من ${minRawPrice} ${t.common.currency}` : `From ${minRawPrice} ${t.common.currency}`}
-                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex flex-col items-end gap-1 shrink-0">
                 {hasDiscount && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-destructive text-destructive-foreground uppercase tracking-wider">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider">
                     -{discount}%
                   </span>
                 )}
                 {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-warning/15 text-warning border border-warning/30">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30">
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
                 {selectedSoldOut && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-lg bg-destructive/15 text-destructive border border-destructive/30">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive/15 text-destructive border border-destructive/30">
                     {t.product.soldOut}
                   </span>
                 )}
@@ -261,6 +257,7 @@ export function PricingConfigurator({
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
