@@ -622,9 +622,24 @@ function Field({ label, hint, className, children }: { label: string; hint?: str
 function PlanEditor({ productId, onClose }: { productId: string; onClose: () => void }) {
   const qc = useQueryClient();
   const { lang, confirm, notify } = useApp();
+  const productMeta = useQuery({
+    queryKey: ["plan-editor-product", productId],
+    queryFn: async () => (await supabase.from("products").select("account_types, account_type").eq("id", productId).maybeSingle()).data,
+  });
+  const acctTypes: ("private" | "shared" | "own")[] = (() => {
+    const arr = (productMeta.data as any)?.account_types as string[] | null;
+    const legacy = (productMeta.data as any)?.account_type as string | null;
+    let types: string[] = Array.isArray(arr) && arr.length > 0
+      ? arr
+      : legacy === "both" ? ["private", "shared"] : legacy ? [legacy] : [];
+    return types.filter((a) => a === "private" || a === "shared" || a === "own") as any;
+  })();
+  const showAcctPicker = acctTypes.length > 1;
+  const acctLabel = (a: string) =>
+    a === "private" ? "خاص" : a === "shared" ? "مشترك" : a === "own" ? "من عندك" : "الكل";
   const plans = useQuery({
     queryKey: ["plans", productId],
-    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url").eq("product_id", productId).order("duration_days")).data ?? [],
+    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url, account_type").eq("product_id", productId).order("duration_days")).data ?? [],
   });
   const costs = useQuery({
     queryKey: ["plan-costs", productId],
@@ -647,12 +662,14 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     compare_price: 0,
     cost_price: 0,
     stock: 0,
+    account_type: "" as "" | "private" | "shared" | "own",
   });
 
   // Local edits map keyed by plan id , apply on save
-  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number }>>({});
+  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null }>>({});
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
+
 
   const add = useMutation({
     mutationFn: async () => {
