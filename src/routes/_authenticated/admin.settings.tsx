@@ -32,7 +32,21 @@ function AdminSettings() {
     cta_ar: "", cta_en: "",
     cta_secondary_ar: "", cta_secondary_en: "",
     trusted_ar: "", trusted_en: "",
+    trending_slug: "", new_slug: "",
   });
+
+  const heroProducts = useQuery({
+    queryKey: ["admin-hero-products"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("slug, name_ar, name_en")
+        .eq("status", "active")
+        .order("sort_order", { ascending: true });
+      return (data ?? []) as { slug: string; name_ar: string; name_en: string }[];
+    },
+  });
+
   
 
   const settings = useQuery({
@@ -140,6 +154,41 @@ function AdminSettings() {
               </div>
             );
           })}
+        </div>
+
+        <div className="mt-6 pt-5 border-t border-border">
+          <h3 className="font-bold text-sm mb-1">كروت الخدمات في الهيرو</h3>
+          <p className="text-xs text-muted-foreground mb-3">
+            اختار الخدمة اللي تظهر في كارت "الأكثر مبيعاً" وكارت "جديد" في الهيرو. لو سبتها فاضية هيتم اختيار خدمة تلقائياً.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-bold text-muted-foreground">كارت "الأكثر مبيعاً" (Trending)</label>
+              <select
+                value={hero.trending_slug ?? ""}
+                onChange={(e) => setHero({ ...hero, trending_slug: e.target.value })}
+                className="px-3 py-2 bg-background border border-border rounded"
+              >
+                <option value="">— اختيار تلقائي —</option>
+                {(heroProducts.data ?? []).map((p) => (
+                  <option key={p.slug} value={p.slug}>{p.name_ar} / {p.name_en}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-bold text-muted-foreground">كارت "جديد" (New)</label>
+              <select
+                value={hero.new_slug ?? ""}
+                onChange={(e) => setHero({ ...hero, new_slug: e.target.value })}
+                className="px-3 py-2 bg-background border border-border rounded"
+              >
+                <option value="">— اختيار تلقائي —</option>
+                {(heroProducts.data ?? []).map((p) => (
+                  <option key={p.slug} value={p.slug}>{p.name_ar} / {p.name_en}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </Section>
 
