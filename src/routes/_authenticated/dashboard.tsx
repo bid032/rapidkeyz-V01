@@ -114,7 +114,7 @@ function Dashboard() {
   const fullRefundByOrder = new Map<string, any>();
   const refundByItem = new Map<string, any>();
   (refunds.data ?? []).forEach((r: any) => {
-    if (r.type === "full_refund" && r.order_id && !r.order_item_id) {
+    if (r.type === "full" && r.order_id && !r.order_item_id) {
       fullRefundByOrder.set(r.order_id, r);
     }
     if (r.order_item_id) {
@@ -241,7 +241,7 @@ function Dashboard() {
                             </div>
                             <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                           </div>
-                          {itemRefund && itemRefund.type === "full_refund" ? (
+                          {itemRefund && itemRefund.type === "full" ? (
                             <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">
                               <div className="text-xs font-bold text-destructive mb-1">
                                 {lang === "ar" ? "تم استرداد قيمة هذه الخدمة" : "This item has been refunded"}
@@ -254,7 +254,7 @@ function Dashboard() {
                             </div>
                           ) : (
                             <>
-                              {itemRefund && itemRefund.type === "partial_refund" && (
+                              {itemRefund && itemRefund.type === "partial" && (
                                 <div className="mt-2 p-2.5 bg-warning/5 border border-warning/30 rounded text-center">
                                   <div className="text-xs font-bold text-warning mb-0.5">
                                     {lang === "ar"
@@ -315,9 +315,9 @@ function Dashboard() {
                 <div key={r.id} className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between gap-3 flex-wrap">
                   <div className="min-w-0">
                     <div className="font-bold text-sm">
-                      {r.type === "full_refund"
+                      {r.type === "full"
                         ? (lang === "ar" ? "ريفاند كامل" : "Full refund")
-                        : r.type === "partial_refund"
+                        : r.type === "partial"
                         ? (lang === "ar" ? "ريفاند جزئي" : "Partial refund")
                         : (lang === "ar" ? "حساب بديل" : "Replacement account")}
                     </div>
