@@ -154,56 +154,50 @@ export function PricingConfigurator({
                   key={pl.id}
                   onClick={() => !soldOut && onSelectPlan(pl.id)}
                   disabled={soldOut}
-                  className={`relative text-start p-3 rounded-2xl border-2 transition-all overflow-hidden group ${
+                  className={`relative text-start p-2 rounded-xl border-2 transition-all overflow-hidden group ${
                     soldOut
                       ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
                       : isSel
-                      ? "border-brand bg-brand/5 shadow-[0_0_0_4px_hsl(var(--brand)/0.08)]"
+                      ? "border-brand bg-brand/5 shadow-[0_0_0_3px_hsl(var(--brand)/0.08)]"
                       : "border-border bg-card hover:border-brand/50 hover:-translate-y-0.5"
                   }`}
                 >
                   {isSel && !soldOut && (
                     <motion.span
                       layoutId="plan-glow"
-                      className="pointer-events-none absolute -top-8 -right-8 w-24 h-24 bg-brand/25 rounded-full blur-2xl"
+                      className="pointer-events-none absolute -top-6 -right-6 w-20 h-20 bg-brand/25 rounded-full blur-2xl"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
                   {savePct >= 10 && !soldOut && (
-                    <span className="absolute top-1.5 end-1.5 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30">
-                      {isAr ? `وفر ${savePct}%` : `Save ${savePct}%`}
+                    <span className="absolute top-1 end-1 text-[8px] font-black px-1 py-0.5 rounded bg-success/15 text-success border border-success/30">
+                      {isAr ? `-${savePct}%` : `-${savePct}%`}
                     </span>
                   )}
                   <div className="relative">
-                    <div
-                      className={`text-[10px] font-black uppercase tracking-wider mb-1 ${
-                        isSel ? "text-brand" : "text-muted-foreground"
-                      }`}
-                    >
-                      {isAr ? "المدة" : "Duration"}
-                    </div>
-                    <div className={`text-sm font-extrabold mb-2 ${soldOut ? "line-through" : ""}`}>
+                    <div className={`text-xs font-extrabold mb-1 leading-tight ${soldOut ? "line-through" : ""}`}>
                       {isAr ? pl.durAr : pl.durEn}
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span
-                        className={`text-lg font-black tabular-nums ${
+                        className={`text-base font-black tabular-nums leading-none ${
                           isSel ? "text-brand" : "text-foreground"
                         }`}
                       >
                         {price}
                       </span>
-                      <span className="text-[10px] font-bold text-muted-foreground">
+                      <span className="text-[9px] font-bold text-muted-foreground">
                         {t.common.currency}
                       </span>
                     </div>
                     {soldOut && (
-                      <span className="mt-1 inline-block text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-destructive/15 text-destructive">
+                      <span className="mt-1 inline-block text-[8px] font-black uppercase px-1 py-0.5 rounded bg-destructive/15 text-destructive">
                         {t.product.soldOut}
                       </span>
                     )}
                   </div>
                 </button>
+
               );
             })}
             {plans.length === 0 && (
