@@ -226,20 +226,52 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       const statusColLetter = statusColIdx >= 0 ? colIdxToLetter(statusColIdx) : null;
       const canSync = !!statusColLetter;
 
-      // De-dup against already-imported rows for this plan+spreadsheet+tab
+      // Build a content-key for each sheet row so add/remove reflects the file
+      // regardless of row-index shifts when the user inserts/deletes rows.
+      const rowKey = (r: {
+        account_email: string | null;
+        account_username: string | null;
+        account_password: string | null;
+        extra_notes: string | null;
+      }) =>
+        [
+          (r.account_email ?? "").trim().toLowerCase(),
+          (r.account_username ?? "").trim().toLowerCase(),
+          (r.account_password ?? "").trim(),
+          (r.extra_notes ?? "").trim().toLowerCase(),
+        ].join("|");
+
+      const sheetKeys = new Set(availableRecords.map(rowKey));
+
+      // Load existing DB rows for this plan+spreadsheet+tab
       const { data: existing } = await context.supabase
         .from("account_inventory")
-        .select("sheet_row_index")
+        .select("id, status, account_email, account_username, account_password, extra_notes")
         .eq("plan_id", pl.id)
         .eq("spreadsheet_id", data.spreadsheetId)
         .eq("sheet_title", tabTitle);
-      const existingRows = new Set((existing ?? []).map((e: any) => e.sheet_row_index));
+
+      const existingKeys = new Set((existing ?? []).map((e: any) => rowKey(e)));
+
+      // Delete AVAILABLE DB rows that no longer exist in the sheet.
+      // (Delivered/issued rows are kept — they represent a fulfilled order.)
+      const toDeleteIds = (existing ?? [])
+        .filter((e: any) => e.status === "available" && !sheetKeys.has(rowKey(e)))
+        .map((e: any) => e.id);
+      let removed = 0;
+      if (toDeleteIds.length > 0) {
+        const { error: delErr } = await context.supabase
+          .from("account_inventory")
+          .delete()
+          .in("id", toDeleteIds);
+        if (!delErr) removed = toDeleteIds.length;
+      }
 
       const batchId =
         (globalThis.crypto as any)?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
       const toInsert = availableRecords
-        .filter((r) => !existingRows.has(r._srcRowIndex))
+        .filter((r) => !existingKeys.has(rowKey(r)))
         .map((r) => ({
           plan_id: pl.id,
           account_email: r.account_email,
@@ -265,7 +297,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
             plan_label: pl.label_ar ?? pl.label_en ?? "",
             tab_title: tabTitle,
             inserted: 0,
-            skipped_existing: existingRows.size,
+            skipped_existing: existingKeys.size,
             note: `insert_failed: ${insErr.message}`,
           });
           continue;
@@ -290,7 +322,11 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
         tab_title: tabTitle,
         inserted,
         skipped_existing: availableRecords.length - toInsert.length,
-        note: canSync ? undefined : "no_status_column_no_autosync",
+        note: canSync
+          ? removed > 0
+            ? `removed_${removed}`
+            : undefined
+          : "no_status_column_no_autosync",
       });
     }
 
