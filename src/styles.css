@@ -354,6 +354,37 @@ a[class*="size-10"]:hover {
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
 
+/* Arabic-aware overrides: Space Grotesk has no Arabic glyphs, so tiny
+   uppercase eyebrows fall back to a thin system font and look broken.
+   Force display font + heavier weight + larger min-size in RTL. */
+[dir="rtl"] .font-mono {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+[dir="rtl"] .font-mono.uppercase,
+[dir="rtl"] .uppercase.font-mono {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+/* Bump the too-small eyebrow labels so Arabic is legible */
+[dir="rtl"] .text-\[9px\],
+[dir="rtl"] .text-\[10px\] {
+  font-size: 12px;
+  line-height: 1.5;
+}
+[dir="rtl"] .text-\[11px\] {
+  font-size: 13px;
+  line-height: 1.5;
+}
+/* Anything explicitly light should read as regular in Arabic */
+[dir="rtl"] .font-light,
+[dir="rtl"] .font-thin,
+[dir="rtl"] .font-extralight {
+  font-weight: 500;
+}
+
 
 /* Hide Lovable badge on published site */
 #lovable-badge,
