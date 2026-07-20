@@ -86,44 +86,45 @@ export function PricingConfigurator({
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
         {/* Combined row: single account type + variant dropdown */}
         {normalizedTypes.length === 1 && variants && variants.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 gap-2">
             {/* Account type card */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
                 {isAr ? "١ · نوع الحساب" : "1 · Account"}
               </p>
-              <div className="relative rounded-xl px-3 py-2.5 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[58px] flex flex-col justify-center">
+              <div className="relative rounded-xl px-2.5 py-2 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[54px] flex flex-col justify-center">
                 <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
-                <span className="relative block text-sm font-black leading-tight">
+                <span className="relative block text-sm font-black leading-tight truncate">
                   {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
                 </span>
-                <span className="relative block text-[10px] mt-0.5 leading-tight text-brand-foreground/85">
+                <span className="relative block text-[9px] mt-0.5 leading-tight text-brand-foreground/85 truncate">
                   {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
                 </span>
               </div>
             </div>
             {/* Variant dropdown */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
                 {isAr ? "٢ · نوع الخطة" : "2 · Plan"}
               </p>
-              <div className="relative h-[58px]">
+              <div className="relative h-[54px]">
                 <select
                   value={effectiveVariant ?? ""}
                   onChange={(e) => onVariantChange?.(e.target.value)}
-                  className={`peer w-full h-full rounded-xl bg-card border-2 border-border hover:border-brand/60 focus:border-brand text-sm font-black text-foreground focus:outline-none appearance-none cursor-pointer transition ${isAr ? "ps-9 pe-3 text-start" : "ps-3 pe-9 text-start"}`}
+                  className={`peer w-full h-full rounded-xl bg-card border-2 border-border hover:border-brand/60 focus:border-brand text-xs sm:text-sm font-black text-foreground focus:outline-none appearance-none cursor-pointer transition truncate ${isAr ? "ps-8 pe-2" : "ps-2 pe-8"} text-start`}
                 >
                   {variants.map((v) => (
                     <option key={v} value={v}>{v}</option>
                   ))}
                 </select>
-                <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-3" : "end-3"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[10px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
+                <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-2" : "end-2"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[9px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
                   ▼
                 </span>
               </div>
             </div>
           </div>
         ) : (
+
 
           <>
             {/* Plan variant (multiple account types case) */}
@@ -298,7 +299,7 @@ export function PricingConfigurator({
         {selected && (
           <div className="relative rounded-xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-3 overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]" />
-            <div className="relative flex items-center justify-between gap-3">
+            <div className="relative flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
                   {isAr ? "٣ · الإجمالي" : "3 · Total"}
@@ -312,7 +313,7 @@ export function PricingConfigurator({
                     transition={{ type: "spring", stiffness: 320, damping: 26 }}
                     className="flex items-baseline gap-2 flex-wrap"
                   >
-                    <span className="text-3xl font-black text-brand tabular-nums leading-none">
+                    <span className="text-2xl sm:text-3xl font-black text-brand tabular-nums leading-none">
                       {finalPrice}
                     </span>
                     <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
@@ -324,14 +325,14 @@ export function PricingConfigurator({
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
+              <div className="flex flex-wrap items-center gap-1 shrink-0 justify-end max-w-[55%]">
                 {hasDiscount && (
                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider">
                     -{discount}%
                   </span>
                 )}
                 {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30 whitespace-nowrap">
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
@@ -342,6 +343,7 @@ export function PricingConfigurator({
                 )}
               </div>
             </div>
+
           </div>
         )}
 
