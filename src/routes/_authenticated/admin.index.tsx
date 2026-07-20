@@ -290,10 +290,14 @@ function AdminOverview() {
       const d = new Date(r.basis_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
-      rows[idx].refunds += Math.round(Number(r.amount ?? 0));
+      const amt = Math.round(Number(r.amount ?? 0));
+      rows[idx].refunds += amt;
+      // Keep profit NET of refunds (consistent with admin_revenue_by_month used in "all" view).
+      rows[idx].profit -= amt;
     });
     return rows;
   }, [monthly.data, refundsAll.data, sales.data, month]);
+
 
 
 
