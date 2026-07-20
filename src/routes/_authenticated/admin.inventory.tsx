@@ -203,7 +203,13 @@ function AdminInventory() {
       )}
 
       <div className="mb-4">
-        <DuplicatesAlert data={dupesQ.data} isFetching={dupesQ.isFetching} onRefresh={() => dupesQ.refetch()} />
+        <DuplicatesAlert
+          data={dupesQ.data}
+          isFetching={dupesQ.isFetching}
+          isLoading={dupesQ.isLoading}
+          error={dupesQ.error as Error | null}
+          onRefresh={() => dupesQ.refetch()}
+        />
       </div>
 
 
@@ -780,10 +786,85 @@ function ProductSheetPanel({
 }
 
 function DuplicatesAlert({
-  data, isFetching, onRefresh,
-}: { data: DuplicatesResult | undefined; isFetching: boolean; onRefresh: () => void }) {
+  data, isFetching, isLoading, error, onRefresh,
+}: {
+  data: DuplicatesResult | undefined;
+  isFetching: boolean;
+  isLoading?: boolean;
+  error?: Error | null;
+  onRefresh: () => void;
+}) {
   const [open, setOpen] = useState(false);
-  if (!data || data.duplicateCount === 0) return null;
+
+  // Error state
+  if (error) {
+    return (
+      <div className="rounded-3xl border border-destructive/40 bg-destructive/5 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-destructive/15 text-destructive shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-extrabold text-destructive">فحص التكرار فشل</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">{friendlyErrorMessage(error)}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-destructive/40 text-destructive text-xs font-bold hover:bg-destructive/10"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
+            إعادة الفحص
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading || (!data && isFetching)) {
+    return (
+      <div className="rounded-3xl border border-border bg-card p-4 sm:p-5">
+        <div className="flex items-center gap-3">
+          <RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">جاري فحص التكرار في كل الشيتات المربوطة…</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Clean state (no duplicates)
+  if (data && data.duplicateCount === 0) {
+    return (
+      <div className="rounded-3xl border border-brand/30 bg-brand/5 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-xl bg-brand/15 text-brand shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-extrabold text-brand">مفيش تكرار — كل حاجه نضيفة</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                اتفحص <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b> فايل — <b>{data.totalCodes}</b> كود، مفيش أي تكرار.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-brand/40 text-brand text-xs font-bold hover:bg-brand/10"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
+            إعادة الفحص
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
   const shown = open ? data.groups : data.groups.slice(0, 3);
   return (
     <div className="rounded-3xl border border-amber-500/40 bg-amber-500/5 p-4 sm:p-5">
