@@ -24,7 +24,7 @@ const handler = createAuthEmailHandler({
   sendUrl: process.env.LOVABLE_SEND_URL,
   emails: {
     signup: {
-      subject: (data: any) => pickLang(data) === 'en' ? 'Confirm your email' : 'أكد بريدك الإلكتروني',
+      subject: "أكد بريدك الإلكتروني",
       render: (data) => {
         const lang = pickLang(data)
         return React.createElement(SignupEmail, {
@@ -37,7 +37,7 @@ const handler = createAuthEmailHandler({
       },
     },
     invite: {
-      subject: (data: any) => pickLang(data) === 'en' ? "You've been invited" : 'تمت دعوتك',
+      subject: "تمت دعوتك",
       render: (data) => {
         const lang = pickLang(data)
         return React.createElement(InviteEmail, {
@@ -49,7 +49,7 @@ const handler = createAuthEmailHandler({
       },
     },
     magiclink: {
-      subject: (data: any) => pickLang(data) === 'en' ? 'Your login link' : 'رابط الدخول',
+      subject: "رابط الدخول",
       render: (data) => {
         const lang = pickLang(data)
         return React.createElement(MagicLinkEmail, {
@@ -60,7 +60,7 @@ const handler = createAuthEmailHandler({
       },
     },
     recovery: {
-      subject: (data: any) => pickLang(data) === 'en' ? 'Reset your password' : 'إعادة تعيين كلمة السر',
+      subject: "إعادة تعيين كلمة السر",
       render: (data) => {
         const lang = pickLang(data)
         return React.createElement(RecoveryEmail, {
@@ -71,7 +71,7 @@ const handler = createAuthEmailHandler({
       },
     },
     email_change: {
-      subject: (data: any) => pickLang(data) === 'en' ? 'Confirm your new email' : 'تأكيد البريد الجديد',
+      subject: "تأكيد البريد الجديد",
       render: (data) => {
         const lang = pickLang(data)
         return React.createElement(EmailChangeEmail, {
@@ -85,7 +85,7 @@ const handler = createAuthEmailHandler({
       },
     },
     reauthentication: {
-      subject: (data: any) => pickLang(data) === 'en' ? 'Your verification code' : 'رمز التحقق',
+      subject: "رمز التحقق",
       render: (data) => {
         const lang = pickLang(data)
         return React.createElement(ReauthenticationEmail, { token: data.token ?? '', lang })
