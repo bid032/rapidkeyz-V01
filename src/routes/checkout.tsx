@@ -240,9 +240,10 @@ function CheckoutPage() {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="grid md:grid-cols-[1fr_360px] gap-8">
-            <div className="space-y-6">
-              <section className="p-6 bg-card border border-border rounded-2xl">
+          <form onSubmit={handleSubmit} className="grid md:grid-cols-[1fr_360px] gap-6 sm:gap-8">
+            <div className="space-y-4 sm:space-y-6 min-w-0">
+              <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
+
                 <h2 className="font-bold mb-4">{t.checkout.contact}</h2>
                 {!user && requireLogin && (
                   <p className="text-sm text-warning mb-4">
