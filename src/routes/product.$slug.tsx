@@ -372,7 +372,7 @@ function ProductPage() {
             </button>
           </div>
 
-          {confirmBuy && (
+          {confirmBuy && typeof document !== "undefined" && createPortal(
             <div
               className="fixed inset-0 z-[100] grid place-items-center bg-background/70 backdrop-blur-sm p-4"
               onClick={() => setConfirmBuy(false)}
@@ -407,7 +407,8 @@ function ProductPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body,
           )}
         </div>
       </div>
