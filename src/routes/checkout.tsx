@@ -35,7 +35,7 @@ function CheckoutPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
-  const [gateway, setGateway] = useState<Gateway>("paymob");
+  const [gateway, setGateway] = useState<Gateway>("simulate");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
