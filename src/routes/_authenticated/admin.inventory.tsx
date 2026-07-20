@@ -203,7 +203,13 @@ function AdminInventory() {
       )}
 
       <div className="mb-4">
-        <DuplicatesAlert data={dupesQ.data} isFetching={dupesQ.isFetching} onRefresh={() => dupesQ.refetch()} />
+        <DuplicatesAlert
+          data={dupesQ.data}
+          isFetching={dupesQ.isFetching}
+          isLoading={dupesQ.isLoading}
+          error={dupesQ.error as Error | null}
+          onRefresh={() => dupesQ.refetch()}
+        />
       </div>
 
 
