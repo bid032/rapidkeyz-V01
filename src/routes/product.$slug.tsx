@@ -333,13 +333,13 @@ function ProductPage() {
           <div className="pointer-events-none absolute -top-32 -end-32 w-96 h-96 bg-brand/20 rounded-full blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-32 -start-32 w-96 h-96 bg-brand/10 rounded-full blur-[120px]" />
 
-          <div className="relative grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 p-4 sm:p-5 md:p-6">
+          <div className="relative grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 p-3.5 sm:p-5 md:p-6">
             {/* LEFT , identity */}
             <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-3 min-w-0">
               {/* Mobile: horizontal identity row. Desktop: stacked. */}
               <div className="flex md:flex-col items-start gap-3 md:gap-3 min-w-0">
                 {/* Image */}
-                <div className="relative shrink-0 w-24 sm:w-32 md:w-full aspect-square md:max-w-none">
+                <div className="relative shrink-0 w-20 sm:w-28 md:w-full aspect-square md:max-w-none">
                   <div className="absolute inset-0 bg-brand/25 blur-[80px] rounded-full opacity-60 animate-pulse" />
                   <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
                     {product.icon_url ? (
@@ -351,7 +351,7 @@ function ProductPage() {
                     )}
                     {hasDiscount && (
                       <span
-                        className={`absolute top-1.5 ${lang === "ar" ? "start-1.5" : "end-1.5"} md:top-2 md:${lang === "ar" ? "start-2" : "end-2"} bg-destructive text-destructive-foreground text-[10px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md md:rounded-lg shadow-lg`}
+                        className={`absolute top-1.5 ${lang === "ar" ? "start-1.5" : "end-1.5"} bg-destructive text-destructive-foreground text-[10px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md md:rounded-lg shadow-lg`}
                       >
                         -{discount}%
                       </span>
@@ -363,13 +363,13 @@ function ProductPage() {
 
                 {/* Name + desc */}
                 <div className="min-w-0 flex-1">
-                  <h1 className="text-lg sm:text-xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
+                  <h1 className="text-base sm:text-xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
                     {name}
                   </h1>
                   {desc && (
-                    <div className="mt-1.5">
+                    <div className="mt-1">
                       <p
-                        className={`text-muted-foreground text-xs sm:text-[13px] leading-relaxed ${
+                        className={`text-muted-foreground text-[11px] sm:text-[13px] leading-relaxed ${
                           descExpanded ? "" : "line-clamp-2"
                         }`}
                       >
@@ -388,7 +388,7 @@ function ProductPage() {
                     </div>
                   )}
                   {/* Viewers chip , under description */}
-                  <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md">
+                  <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
@@ -401,7 +401,7 @@ function ProductPage() {
               </div>
 
               {/* Trust chips */}
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
                 {[
                   { ar: "تسليم فوري", en: "Instant" },
                   { ar: "ضمان كامل", en: "Warranty" },
@@ -409,10 +409,11 @@ function ProductPage() {
                 ].map((it, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/40 border border-border/50 text-[10px] font-bold text-muted-foreground"
+                    className="flex items-center justify-center gap-1 px-1.5 py-1 rounded-md bg-background/40 border border-border/50 text-[10px] font-bold text-muted-foreground min-w-0"
                   >
                     <span className="w-1 h-1 rounded-full bg-brand shrink-0" />
-                    <span>{lang === "ar" ? it.ar : it.en}</span>
+                    <span className="truncate">{lang === "ar" ? it.ar : it.en}</span>
+
                   </div>
                 ))}
               </div>
