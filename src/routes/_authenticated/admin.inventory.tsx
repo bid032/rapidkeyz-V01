@@ -178,6 +178,7 @@ function AdminInventory() {
     qc.invalidateQueries({ queryKey: ["instant-plans"] });
     qc.invalidateQueries({ queryKey: ["inventory-rows"] });
     qc.invalidateQueries({ queryKey: ["inventory-batches"] });
+    await rescanDuplicates();
     notify(
       `تم التحديث: ${totalInserted} حساب جديد من ${linked.length - failed}/${linked.length} منتج${failed ? ` (فشل ${failed})` : ""}`,
       failed ? "info" : "success",
