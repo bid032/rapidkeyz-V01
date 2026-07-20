@@ -129,13 +129,22 @@ function AdminProducts() {
         plan_variants: cleanVariants,
       };
       if (f.id) {
-
-        const { error } = await supabase.from("products").update(payload).eq("id", f.id);
+        const { data, error } = await supabase.from("products").update(payload).eq("id", f.id).select("id");
         if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error(lang === "ar"
+            ? "التعديل ما اتحفظش — حسابك مش أدمن. سجل دخول بحساب الأدمن."
+            : "Update did not persist — your account is not admin. Sign in as admin.");
+        }
       } else {
         delete payload.id;
-        const { error } = await supabase.from("products").insert(payload);
+        const { data, error } = await supabase.from("products").insert(payload).select("id");
         if (error) throw error;
+        if (!data || data.length === 0) {
+          throw new Error(lang === "ar"
+            ? "الإضافة ما اتحفظتش — حسابك مش أدمن."
+            : "Insert did not persist — your account is not admin.");
+        }
       }
     },
     onSuccess: () => {
