@@ -545,9 +545,11 @@ export const getInventoryDuplicatesAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { force?: boolean } | undefined) => input ?? {})
   .handler(async ({ context, data }): Promise<DuplicatesResult> => {
-    const { data: isAdmin, error } = await (context as any).supabase
-      .rpc("has_role", { _user_id: (context as any).userId, _role: "admin" });
-    if (error || !isAdmin) {
+    const [{ data: isAdmin }, { data: isMod }] = await Promise.all([
+      (context as any).supabase.rpc("has_role", { _user_id: (context as any).userId, _role: "admin" }),
+      (context as any).supabase.rpc("has_role", { _user_id: (context as any).userId, _role: "moderator" }),
+    ]);
+    if (!isAdmin && !isMod) {
       const err: any = new Error("Forbidden");
       err.statusCode = 403;
       throw err;
