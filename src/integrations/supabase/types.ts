@@ -480,6 +480,7 @@ export type Database = {
           google_spreadsheet_id: string | null
           icon_url: string | null
           id: string
+          is_bestseller: boolean
           is_featured: boolean
           name_ar: string
           name_en: string
@@ -502,6 +503,7 @@ export type Database = {
           google_spreadsheet_id?: string | null
           icon_url?: string | null
           id?: string
+          is_bestseller?: boolean
           is_featured?: boolean
           name_ar: string
           name_en: string
@@ -524,6 +526,7 @@ export type Database = {
           google_spreadsheet_id?: string | null
           icon_url?: string | null
           id?: string
+          is_bestseller?: boolean
           is_featured?: boolean
           name_ar?: string
           name_en?: string
