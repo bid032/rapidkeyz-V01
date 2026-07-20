@@ -458,17 +458,28 @@ async function scanDuplicates(): Promise<DuplicatesResult> {
       scannedTabs += 1;
 
       const header = (rows[0] ?? []).map((h) => (h ?? "").trim().toLowerCase());
+      // Only scan columns that clearly hold delivery credentials — activation
+      // keys / codes / licenses / emails / usernames / passwords. Skip any
+      // other columns (product name, notes, status, dates, staff, order id,
+      // customer info, etc.) so unrelated repeats don't get flagged.
       const KEY_HEADERS = [
-        "code", "key", "license", "licence", "serial", "product",
-        "email", "mail", "username", "user", "login", "account",
-        "كود", "مفتاح", "ايميل", "بريد", "يوزر",
+        "code", "codes", "activation", "activation code", "activation key",
+        "key", "keys", "license", "licence", "license key", "serial", "serial number",
+        "email", "e-mail", "mail", "gmail",
+        "username", "user name", "user", "login", "account",
+        "password", "pass", "pwd",
+        "كود", "الكود", "مفتاح", "مفتاح التفعيل", "التفعيل", "سيريال",
+        "ايميل", "إيميل", "البريد", "بريد", "بريد الكتروني",
+        "يوزر", "يوزرنيم", "اسم المستخدم", "المستخدم",
+        "باسورد", "الباسورد", "كلمة السر", "كلمة المرور",
       ];
-      let keyCols: number[] = [];
+      const keyCols: number[] = [];
       header.forEach((h, idx) => {
         if (!h) return;
-        if (KEY_HEADERS.some((k) => h === k || h.includes(k))) keyCols.push(idx);
+        if (KEY_HEADERS.includes(h)) keyCols.push(idx);
       });
-      if (keyCols.length === 0) keyCols = [2];
+      if (keyCols.length === 0) continue;
+
 
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i] ?? [];
