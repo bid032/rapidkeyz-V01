@@ -380,11 +380,12 @@ function AdminProducts() {
                 className="flex-1 min-h-0 overflow-y-auto"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-x-reverse divide-border">
-                  {/* Main: names + descriptions + categories */}
-                  <div className="lg:col-span-8 p-4 sm:p-6 space-y-5 min-w-0">
+                  {/* Main: names + descriptions + categories + settings */}
+                  <div className="lg:col-span-8 p-4 sm:p-6 space-y-5 min-w-0 order-2 lg:order-1">
+                    {/* Names + slug in one row */}
                     <section className="space-y-3">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">معلومات المنتج</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <Field label="الاسم بالعربي">
                           <input required placeholder="نتفليكس بريميوم" value={editing.name_ar}
                             onChange={(e) => {
@@ -407,23 +408,24 @@ function AdminProducts() {
                                 slug: !prev.id ? slugify(name_en) : prev.slug,
                               });
                             }}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg" />
+                            className="w-full px-3 py-2 bg-background border border-border rounded-lg" dir="ltr" />
+                        </Field>
+                        <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي.">
+                          <div className="flex gap-2">
+                            <input required placeholder="netflix-premium" value={editing.slug}
+                              onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
+                              className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm" dir="ltr" />
+                            <button type="button"
+                              onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
+                              className="px-3 py-2 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
+                              تحديث
+                            </button>
+                          </div>
                         </Field>
                       </div>
-                      <Field label="الرابط (slug)" hint="بيتولّد تلقائيًا من الاسم الإنجليزي.">
-                        <div className="flex gap-2">
-                          <input required placeholder="netflix-premium" value={editing.slug}
-                            onChange={(e) => setEditing({ ...editing, slug: slugify(e.target.value) })}
-                            className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm" />
-                          <button type="button"
-                            onClick={() => setEditing({ ...editing, slug: slugify(editing.name_en || editing.name_ar) })}
-                            className="px-3 py-2 text-xs font-bold border border-border rounded-lg hover:bg-muted shrink-0">
-                            تحديث
-                          </button>
-                        </div>
-                      </Field>
                     </section>
 
+                    {/* Descriptions side-by-side */}
                     <section className="space-y-3">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الوصف والتفاصيل</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -440,44 +442,124 @@ function AdminProducts() {
                       </div>
                     </section>
 
+                    {/* Categories + Status + Delivery */}
                     <section className="space-y-3">
-                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الأقسام</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {cats.data?.map((c) => {
-                          const active = editing.category_ids.includes(c.id);
-                          return (
-                            <button
-                              key={c.id}
-                              type="button"
-                              onClick={() => {
-                                const set = new Set(editing.category_ids);
-                                if (set.has(c.id)) set.delete(c.id);
-                                else set.add(c.id);
-                                const next = Array.from(set);
-                                setEditing({
-                                  ...editing,
-                                  category_ids: next,
-                                  category_id: editing.category_id && next.includes(editing.category_id) ? editing.category_id : next[0] ?? null,
-                                });
-                              }}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition text-start ${
-                                active ? "border-brand bg-brand/10 text-brand" : "border-border bg-background hover:border-brand/40"
-                              }`}
-                            >
-                              <span className="inline-block me-1">{active ? "☑" : "☐"}</span>
-                              {c.name_ar}
-                            </button>
-                          );
-                        })}
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الأقسام والحالة</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div className="md:col-span-8">
+                          <Field label="الأقسام">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {cats.data?.map((c) => {
+                                const active = editing.category_ids.includes(c.id);
+                                return (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    onClick={() => {
+                                      const set = new Set(editing.category_ids);
+                                      if (set.has(c.id)) set.delete(c.id);
+                                      else set.add(c.id);
+                                      const next = Array.from(set);
+                                      setEditing({
+                                        ...editing,
+                                        category_ids: next,
+                                        category_id: editing.category_id && next.includes(editing.category_id) ? editing.category_id : next[0] ?? null,
+                                      });
+                                    }}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition text-start ${
+                                      active ? "border-brand bg-brand/10 text-brand" : "border-border bg-background hover:border-brand/40"
+                                    }`}
+                                  >
+                                    <span className="inline-block me-1">{active ? "☑" : "☐"}</span>
+                                    {c.name_ar}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {editing.category_ids.length === 0 && (
+                              <p className="text-[11px] text-muted-foreground mt-1">اختر قسم واحد على الأقل.</p>
+                            )}
+                          </Field>
+                        </div>
+                        <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-1 gap-3 content-start">
+                          <Field label="الحالة">
+                            <select value={editing.status}
+                              onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
+                              className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
+                              <option value="active">ظاهر</option>
+                              <option value="draft">مسودة</option>
+                              <option value="archived">مؤرشف</option>
+                            </select>
+                          </Field>
+                          <Field label="نوع التسليم">
+                            <select value={editing.delivery_type}
+                              onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
+                              className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
+                              <option value="instant">فوري</option>
+                              <option value="manual">يدوي</option>
+                            </select>
+                          </Field>
+                        </div>
                       </div>
-                      {editing.category_ids.length === 0 && (
-                        <p className="text-[11px] text-muted-foreground">اختر قسم واحد على الأقل علشان الخدمة تبان في المتجر.</p>
-                      )}
+                    </section>
+
+                    {/* Account types + Discount */}
+                    <section className="space-y-3">
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الحساب والخصم</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div className="md:col-span-8">
+                          <Field label="أنواع الحساب">
+                            <div className="grid grid-cols-3 gap-2">
+                              {([
+                                { v: "shared", label: "شير" },
+                                { v: "private", label: "برايفت" },
+                                { v: "own", label: "من عندنا" },
+                              ] as const).map((o) => {
+                                const active = editing.account_types.includes(o.v as AccountType);
+                                return (
+                                  <button
+                                    key={o.v}
+                                    type="button"
+                                    onClick={() => {
+                                      const set = new Set(editing.account_types);
+                                      if (set.has(o.v as AccountType)) set.delete(o.v as AccountType);
+                                      else set.add(o.v as AccountType);
+                                      setEditing({ ...editing, account_types: Array.from(set) as AccountType[] });
+                                    }}
+                                    className={`px-2 py-2 rounded-lg text-xs font-bold border transition ${
+                                      active
+                                        ? "border-brand bg-brand/10 text-brand"
+                                        : "border-border bg-background hover:border-brand/40"
+                                    }`}
+                                  >
+                                    {o.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {editing.account_types.length === 0 && (
+                              <p className="text-[11px] text-destructive mt-1">اختر نوع واحد على الأقل.</p>
+                            )}
+                          </Field>
+                        </div>
+                        <div className="md:col-span-4">
+                          <Field label="نسبة الخصم (%)">
+                            <input
+                              type="number"
+                              min={0}
+                              max={95}
+                              value={editing.discount_percent}
+                              onChange={(e) => setEditing({ ...editing, discount_percent: Math.max(0, Math.min(95, +e.target.value || 0)) })}
+                              className="w-full px-3 py-2 bg-background border border-border rounded-lg font-bold"
+                            />
+                          </Field>
+                        </div>
+                      </div>
                     </section>
                   </div>
 
-                  {/* Sidebar: image + config */}
-                  <div className="lg:col-span-4 bg-muted/30 p-4 sm:p-6 space-y-5">
+                  {/* Sidebar (left in RTL): large image + flags */}
+                  <div className="lg:col-span-4 bg-muted/30 p-4 sm:p-6 space-y-5 order-1 lg:order-2">
                     <section className="space-y-2">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">صورة المنتج</h3>
                       <ImageUpload
@@ -488,88 +570,21 @@ function AdminProducts() {
                         size={0}
                         requireAspectRatio={{ w: 1, h: 1 }}
                       />
-                      <p className="text-[11px] text-muted-foreground">اختياري. لو مفيش صورة هيظهر أول حرفين من الاسم.</p>
+                      <p className="text-[11px] text-muted-foreground">نسبة 1:1 مطلوبة. اختياري — لو مفيش صورة هيظهر أول حرفين من الاسم.</p>
                     </section>
 
-                    <section className="space-y-3">
-                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الإعدادات</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        <Field label="الحالة">
-                          <select value={editing.status}
-                            onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
-                            className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
-                            <option value="active">ظاهر</option>
-                            <option value="draft">مسودة</option>
-                            <option value="archived">مؤرشف</option>
-                          </select>
-                        </Field>
-                        <Field label="نوع التسليم">
-                          <select value={editing.delivery_type}
-                            onChange={(e) => setEditing({ ...editing, delivery_type: e.target.value as any })}
-                            className="w-full px-2 py-2 bg-background border border-border rounded-lg text-sm">
-                            <option value="instant">فوري</option>
-                            <option value="manual">يدوي</option>
-                          </select>
-                        </Field>
-                      </div>
-
-                      <Field label="أنواع الحساب">
-                        <div className="grid grid-cols-3 gap-2">
-                          {([
-                            { v: "shared", label: "شير" },
-                            { v: "private", label: "برايفت" },
-                            { v: "own", label: "من عندنا" },
-                          ] as const).map((o) => {
-                            const active = editing.account_types.includes(o.v as AccountType);
-                            return (
-                              <button
-                                key={o.v}
-                                type="button"
-                                onClick={() => {
-                                  const set = new Set(editing.account_types);
-                                  if (set.has(o.v as AccountType)) set.delete(o.v as AccountType);
-                                  else set.add(o.v as AccountType);
-                                  setEditing({ ...editing, account_types: Array.from(set) as AccountType[] });
-                                }}
-                                className={`px-2 py-1.5 rounded-lg text-[11px] font-bold border transition ${
-                                  active
-                                    ? "border-brand bg-brand/10 text-brand"
-                                    : "border-border bg-background hover:border-brand/40"
-                                }`}
-                              >
-                                {o.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {editing.account_types.length === 0 && (
-                          <p className="text-[11px] text-destructive mt-1">اختر نوع واحد على الأقل.</p>
-                        )}
-                      </Field>
-
-                      <Field label="نسبة الخصم (%)">
-                        <input
-                          type="number"
-                          min={0}
-                          max={95}
-                          value={editing.discount_percent}
-                          onChange={(e) => setEditing({ ...editing, discount_percent: Math.max(0, Math.min(95, +e.target.value || 0)) })}
-                          className="w-full px-3 py-2 bg-background border border-border rounded-lg font-bold"
-                        />
-                      </Field>
-
-                      <div className="space-y-2 pt-1">
-                        <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
-                          <span><b>Featured</b> ، مثبّت في القسم المميز</span>
-                          <input type="checkbox" checked={editing.is_featured}
-                            onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
-                        </label>
-                        <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
-                          <span><b>الأكثر مبيعاً</b></span>
-                          <input type="checkbox" checked={editing.is_bestseller}
-                            onChange={(e) => setEditing({ ...editing, is_bestseller: e.target.checked })} />
-                        </label>
-                      </div>
+                    <section className="space-y-2">
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">التمييز</h3>
+                      <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
+                        <span><b>Featured</b> ، مثبّت في القسم المميز</span>
+                        <input type="checkbox" checked={editing.is_featured}
+                          onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
+                      </label>
+                      <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
+                        <span><b>الأكثر مبيعاً</b></span>
+                        <input type="checkbox" checked={editing.is_bestseller}
+                          onChange={(e) => setEditing({ ...editing, is_bestseller: e.target.checked })} />
+                      </label>
                     </section>
                   </div>
                 </div>
