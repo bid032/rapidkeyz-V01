@@ -104,7 +104,7 @@ export function QuickBuyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg md:max-w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)] md:max-h-[min(96dvh,760px)] md:h-[min(96dvh,760px)]">
+      <DialogContent className="max-w-lg md:max-w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)] md:max-h-[min(96dvh,760px)]">
         {/* ============ MOBILE LAYOUT (unchanged) ============ */}
         <div className="md:hidden flex flex-col min-h-0 flex-1">
           {/* Header */}
@@ -260,7 +260,7 @@ export function QuickBuyDialog({
         </div>
 
         {/* ============ DESKTOP LAYOUT (redesigned) ============ */}
-        <div className="hidden md:flex flex-col min-h-0 flex-1 overflow-hidden">
+        <div className="hidden md:flex flex-col min-h-0">
           {/* Top strip: title + subtitle */}
           <div className="shrink-0 px-6 pt-4 pb-3 border-b border-border/60 bg-gradient-to-b from-brand/5 to-transparent">
             <DialogHeader className="text-start space-y-0.5 pe-12">
@@ -276,11 +276,11 @@ export function QuickBuyDialog({
             </DialogHeader>
           </div>
 
-          {/* Split body — no scroll */}
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 h-full items-start">
-              {/* RIGHT column (start in RTL): image + 3 actions + total */}
-              <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
+          {/* Split body — auto height, no scroll */}
+          <div className="min-h-0">
+            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 items-stretch">
+              {/* RIGHT column (start in RTL): image + 3 actions */}
+              <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0">
                 <div className="relative w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink-0" style={{ aspectRatio: "1 / 1", maxHeight: "220px" }}>
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="size-full object-cover" />
@@ -330,7 +330,7 @@ export function QuickBuyDialog({
               </aside>
 
               {/* LEFT column (end in RTL): plans only, fills width, no scroll */}
-              <section className="p-4 flex flex-col gap-2.5 min-w-0 min-h-0 overflow-hidden">
+              <section className="p-4 flex flex-col gap-2.5 min-w-0 min-h-0">
                 <div className="flex items-center justify-between shrink-0">
                   <div className="text-[10px] font-black uppercase tracking-[0.25em] text-brand">
                     {isAr ? "اختر الخطة" : "Choose a plan"}
