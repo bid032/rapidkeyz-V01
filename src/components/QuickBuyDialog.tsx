@@ -22,7 +22,9 @@ type Plan = {
   sort_order: number | null;
   stock?: number | null;
   account_type?: string | null;
+  plan_variant?: string | null;
 };
+
 
 type AcctType = "private" | "shared" | "own";
 
@@ -65,7 +67,7 @@ export function QuickBuyDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("product_plans")
-        .select("id, price, label_ar, label_en, is_active, sort_order, stock, account_type")
+        .select("id, price, label_ar, label_en, is_active, sort_order, stock, account_type, plan_variant")
         .eq("product_id", product.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
@@ -73,6 +75,18 @@ export function QuickBuyDialog({
     },
     enabled: open,
   });
+
+  const productMetaQ = useQuery({
+    queryKey: ["quickbuy-product-meta", product.id],
+    queryFn: async () => (await supabase.from("products").select("plan_variants").eq("id", product.id).maybeSingle()).data,
+    enabled: open,
+  });
+  const productVariants = ((productMetaQ.data as any)?.plan_variants as string[] | null)?.filter(Boolean) ?? [];
+  const [variant, setVariant] = useState<string | null>(null);
+  const effectiveVariant = productVariants.length > 0
+    ? (variant && productVariants.includes(variant) ? variant : productVariants[0])
+    : null;
+
 
   const allPlans = plansQ.data ?? [];
   const enriched = useMemo(
@@ -93,14 +107,21 @@ export function QuickBuyDialog({
   const effectiveAcct = acct ?? normalizedTypes[0] ?? null;
 
   const plans = useMemo(() => {
-    if (!hasAcctChoice || !effectiveAcct) return enriched;
-    return enriched.filter(
-      (p) =>
-        p.acct === "any" ||
-        (effectiveAcct === "private" && (p.acct === "private" || p.acct === "own")) ||
-        (effectiveAcct === "shared" && p.acct === "shared"),
-    );
-  }, [enriched, hasAcctChoice, effectiveAcct]);
+    let list = enriched;
+    if (effectiveVariant) {
+      list = list.filter((p: any) => !p.plan_variant || p.plan_variant === effectiveVariant);
+    }
+    if (hasAcctChoice && effectiveAcct) {
+      list = list.filter(
+        (p) =>
+          p.acct === "any" ||
+          (effectiveAcct === "private" && (p.acct === "private" || p.acct === "own")) ||
+          (effectiveAcct === "shared" && p.acct === "shared"),
+      );
+    }
+    return list;
+  }, [enriched, hasAcctChoice, effectiveAcct, effectiveVariant]);
+
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
@@ -181,7 +202,32 @@ export function QuickBuyDialog({
 
           {/* Plans */}
           <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3">
+            {productVariants.length > 0 && (
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
+                  {isAr ? "نوع الخطة" : "Plan type"}
+                </div>
+                <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-muted/40 border border-border">
+                  {productVariants.map((v) => {
+                    const isSel = effectiveVariant === v;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => { setVariant(v); setSelectedId(null); }}
+                        className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold transition ${
+                          isSel ? "bg-brand text-brand-foreground shadow" : "text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {hasAcctChoice && (
+
               <div>
                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
                   {isAr ? "نوع الحساب" : "Account type"}
@@ -421,7 +467,30 @@ export function QuickBuyDialog({
                   )}
                 </div>
 
+                {productVariants.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border shrink-0">
+                    {productVariants.map((v) => {
+                      const isSel = effectiveVariant === v;
+                      return (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => { setVariant(v); setSelectedId(null); }}
+                          className={`px-3 py-2 rounded-lg text-xs font-extrabold transition ${
+                            isSel
+                              ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                              : "text-foreground hover:bg-muted"
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {hasAcctChoice && (
+
                   <div
                     className="grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border shrink-0"
                     style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}

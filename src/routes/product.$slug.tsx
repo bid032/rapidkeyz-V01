@@ -170,9 +170,11 @@ function ProductPage() {
   });
 
   const [accountType, setAccountType] = useState<string | null>(null);
+  const [planVariant, setPlanVariant] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
   const [confirmBuy, setConfirmBuy] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+
 
 
   // Live viewers counter , seeded per-slug for stability, drifts every few seconds.
@@ -244,10 +246,22 @@ function ProductPage() {
     .sort((a: any, b: any) => parseDays(a) - parseDays(b));
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
 
+  // Plan variants (LinkedIn: Premium Career / Sales Navigator / …)
+  const productVariants = Array.isArray((product as any).plan_variants)
+    ? ((product as any).plan_variants as string[]).filter(Boolean)
+    : [];
+  const effectiveVariant =
+    productVariants.length > 0
+      ? (planVariant && productVariants.includes(planVariant) ? planVariant : productVariants[0])
+      : null;
+  const variantFiltered = effectiveVariant
+    ? enriched.filter((p: any) => !p.plan_variant || p.plan_variant === effectiveVariant)
+    : enriched;
+
   const productAcctTypes = (Array.isArray((product as any).account_types)
     ? ((product as any).account_types as string[]).filter((a) => a === "private" || a === "shared" || a === "own")
     : []) as ("private" | "shared" | "own")[];
-  const derivedFromPlans = Array.from(new Set(enriched.map((p: any) => p.acct))).filter(
+  const derivedFromPlans = Array.from(new Set(variantFiltered.map((p: any) => p.acct))).filter(
     (a) => a === "private" || a === "shared" || a === "own",
   ) as ("private" | "shared" | "own")[];
   const accountTypes = (
@@ -258,10 +272,11 @@ function ProductPage() {
   // If there are multiple account types, filter plans by the selected one.
   // Plans marked "any" (no explicit type) are always shown.
   const filteredPlans = accountTypes.length > 1 && effectiveAcct
-    ? enriched.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
-    : enriched;
+    ? variantFiltered.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
+    : variantFiltered;
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
+
 
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
@@ -418,7 +433,14 @@ function ProductPage() {
                 onSelectPlan={(id) => setPlanId(id)}
                 discount={discount}
                 minRawPrice={minPriceAcrossPlans}
+                variants={productVariants}
+                effectiveVariant={effectiveVariant}
+                onVariantChange={(v) => {
+                  setPlanVariant(v);
+                  setPlanId(null);
+                }}
               />
+
 
               <div className="hidden md:flex gap-2.5">
                 <button

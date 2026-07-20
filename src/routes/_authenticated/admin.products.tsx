@@ -42,6 +42,7 @@ type ProductForm = {
   is_featured: boolean;
   is_bestseller: boolean;
   discount_percent: number;
+  plan_variants: string[];
 };
 
 const emptyForm: ProductForm = {
@@ -60,7 +61,9 @@ const emptyForm: ProductForm = {
   is_featured: false,
   is_bestseller: false,
   discount_percent: 0,
+  plan_variants: [],
 };
+
 
 /** Reduce a multi-select array into the legacy single account_type enum for backward compat. */
 function deriveLegacyAccountType(types: AccountType[]): AccountType {
@@ -116,14 +119,17 @@ function AdminProducts() {
       const types = f.account_types.length > 0 ? f.account_types : ["shared" as const];
       const catIds = Array.from(new Set(f.category_ids.filter(Boolean)));
       const primary = f.category_id && catIds.includes(f.category_id) ? f.category_id : catIds[0] ?? null;
+      const cleanVariants = Array.from(new Set(f.plan_variants.map((v) => v.trim()).filter(Boolean)));
       const payload: any = {
         ...f,
         category_id: primary,
         category_ids: catIds,
         account_types: types,
         account_type: deriveLegacyAccountType(types),
+        plan_variants: cleanVariants,
       };
       if (f.id) {
+
         const { error } = await supabase.from("products").update(payload).eq("id", f.id);
         if (error) throw error;
       } else {
@@ -237,7 +243,9 @@ function AdminProducts() {
             account_types: initTypes,
             status: p.status, is_featured: p.is_featured, is_bestseller: (p as any).is_bestseller ?? false,
             discount_percent: p.discount_percent ?? 0,
+            plan_variants: Array.isArray((p as any).plan_variants) ? ((p as any).plan_variants as string[]) : [],
           });
+
         };
 
         const askDelete = async (p: any) => {
@@ -551,7 +559,69 @@ function AdminProducts() {
                         </div>
                       </div>
                     </section>
+
+                    {/* Plan Variants (e.g. LinkedIn: Premium Career / Sales Navigator Core / Recruiter Lite) */}
+                    <section className="space-y-3">
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">أنواع الخطط</h3>
+                      <div className="p-3 bg-background border border-border rounded-xl space-y-3">
+                        <label className="flex items-start gap-2 text-xs cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5"
+                            checked={editing.plan_variants.length > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEditing({ ...editing, plan_variants: editing.plan_variants.length ? editing.plan_variants : [""] });
+                              } else {
+                                setEditing({ ...editing, plan_variants: [] });
+                              }
+                            }}
+                          />
+                          <span>
+                            <b>الخدمة فيها أنواع خطط؟</b>
+                            <span className="block text-[11px] text-muted-foreground mt-0.5">
+                              زي مثلاً LinkedIn: Premium Career ، Premium Business ، Sales Navigator Core ، Recruiter Lite ، LinkedIn Learning.
+                              كل خطة سعر بتتربط بنوع واحد منهم.
+                            </span>
+                          </span>
+                        </label>
+
+                        {editing.plan_variants.length > 0 && (
+                          <div className="space-y-2">
+                            {editing.plan_variants.map((v, i) => (
+                              <div key={i} className="flex items-center gap-2">
+                                <input
+                                  value={v}
+                                  placeholder={`نوع ${i + 1} — مثال: Premium Career`}
+                                  onChange={(e) => {
+                                    const next = [...editing.plan_variants];
+                                    next[i] = e.target.value;
+                                    setEditing({ ...editing, plan_variants: next });
+                                  }}
+                                  className="flex-1 h-9 px-3 bg-card border border-border rounded-lg text-sm"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setEditing({ ...editing, plan_variants: editing.plan_variants.filter((_, j) => j !== i) })}
+                                  className="shrink-0 h-9 px-3 border border-destructive/40 text-destructive rounded-lg text-xs font-bold hover:bg-destructive/10"
+                                >
+                                  حذف
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() => setEditing({ ...editing, plan_variants: [...editing.plan_variants, ""] })}
+                              className="w-full h-9 border border-dashed border-brand/40 text-brand rounded-lg text-xs font-bold hover:bg-brand/5"
+                            >
+                              + إضافة نوع
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </section>
                   </div>
+
 
                   {/* Sidebar (left in RTL): large image + flags */}
                   <div className="lg:col-span-4 bg-muted/30 p-4 sm:p-6 space-y-5 order-1 lg:order-2">
@@ -624,7 +694,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   const { lang, confirm, notify } = useApp();
   const productMeta = useQuery({
     queryKey: ["plan-editor-product", productId],
-    queryFn: async () => (await supabase.from("products").select("account_types, account_type").eq("id", productId).maybeSingle()).data,
+    queryFn: async () => (await supabase.from("products").select("account_types, account_type, plan_variants").eq("id", productId).maybeSingle()).data,
   });
   const acctTypes: ("private" | "shared" | "own")[] = (() => {
     const arr = (productMeta.data as any)?.account_types as string[] | null;
@@ -635,12 +705,17 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     return types.filter((a) => a === "private" || a === "shared" || a === "own") as any;
   })();
   const showAcctPicker = acctTypes.length > 1;
+  const variantOptions: string[] = Array.isArray((productMeta.data as any)?.plan_variants)
+    ? ((productMeta.data as any).plan_variants as string[]).filter(Boolean)
+    : [];
+  const showVariantPicker = variantOptions.length > 0;
   const acctLabel = (a: string) =>
     a === "private" ? "خاص" : a === "shared" ? "مشترك" : a === "own" ? "من عندك" : "الكل";
   const plans = useQuery({
     queryKey: ["plans", productId],
-    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url, account_type").eq("product_id", productId).order("duration_days")).data ?? [],
+    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url, account_type, plan_variant").eq("product_id", productId).order("duration_days")).data ?? [],
   });
+
   const costs = useQuery({
     queryKey: ["plan-costs", productId],
     enabled: !!plans.data,
@@ -663,10 +738,12 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     cost_price: 0,
     stock: 0,
     account_type: "" as "" | "private" | "shared" | "own",
+    plan_variant: "" as string,
   });
 
   // Local edits map keyed by plan id , apply on save
-  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null }>>({});
+  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null; plan_variant?: string | null }>>({});
+
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
 
@@ -683,6 +760,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         stock: form.stock,
         is_active: true,
         account_type: form.account_type || null,
+        plan_variant: form.plan_variant || null,
       };
       const { data: inserted, error } = await supabase.from("product_plans").insert(payload).select().single();
       if (error) throw error;
@@ -694,9 +772,10 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0, account_type: "" });
+      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0, account_type: "", plan_variant: "" });
       notify(lang === "ar" ? "تم إضافة العرض" : "Plan added", "success");
     },
+
     onError: (e) => showError(e, notify, lang),
   });
 
@@ -710,6 +789,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
       if (patchData.stock !== undefined) clean.stock = patchData.stock;
       if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
+      if (patchData.plan_variant !== undefined) clean.plan_variant = patchData.plan_variant;
+
 
       if (Object.keys(clean).length > 0) {
         const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
@@ -786,7 +867,13 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                           {acctLabel(p.account_type)}
                         </span>
                       )}
+                      {p.plan_variant && (
+                        <span className="px-1.5 py-0.5 rounded bg-warning/10 text-warning font-bold">
+                          {p.plan_variant}
+                        </span>
+                      )}
                     </div>
+
                   </div>
                   <button
                     onClick={async () => {
@@ -817,6 +904,24 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                     </select>
                   </div>
                 )}
+
+                {showVariantPicker && (
+                  <div className="mb-3">
+                    <label className="text-[11px] font-bold text-warning uppercase mb-1 block">نوع الخطة لهذا العرض</label>
+                    <select
+                      value={(e.plan_variant !== undefined ? e.plan_variant : p.plan_variant) ?? ""}
+                      onChange={(ev) => patch(p.id, "plan_variant", ev.target.value === "" ? null : ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                    >
+                      <option value="">— بدون تحديد —</option>
+                      {variantOptions.map((v) => (
+                        <option key={v} value={v}>{v}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+
 
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border min-w-0">
@@ -940,6 +1045,21 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 </select>
               </Field>
             )}
+            {showVariantPicker && (
+              <Field label="نوع الخطة لهذا العرض">
+                <select
+                  value={form.plan_variant}
+                  onChange={(e) => setForm({ ...form, plan_variant: e.target.value })}
+                  className="w-full px-3 py-2 bg-background border border-border rounded"
+                >
+                  <option value="">— بدون تحديد —</option>
+                  {variantOptions.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              </Field>
+            )}
+
             <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2 xl:col-span-3">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}

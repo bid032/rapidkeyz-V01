@@ -20,7 +20,11 @@ type Props = {
   onSelectPlan: (id: string) => void;
   discount: number;
   minRawPrice: number;
+  variants?: string[];
+  effectiveVariant?: string | null;
+  onVariantChange?: (v: string) => void;
 };
+
 
 const acctMeta = {
   private: {
@@ -46,7 +50,11 @@ export function PricingConfigurator({
   onSelectPlan,
   discount,
   minRawPrice,
+  variants,
+  effectiveVariant,
+  onVariantChange,
 }: Props) {
+
   const { lang, t } = useApp();
   const isAr = lang === "ar";
   const hasDiscount = discount > 0;
@@ -76,6 +84,36 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
+        {/* Plan variant (e.g. LinkedIn Premium Career / Sales Navigator / Recruiter Lite) */}
+        {variants && variants.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                {isAr ? "٠ · نوع الخطة" : "0 · Plan Type"}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border">
+              {variants.map((v) => {
+                const isSel = effectiveVariant === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => onVariantChange?.(v)}
+                    className={`relative px-3 py-2 rounded-lg text-xs font-extrabold transition ${
+                      isSel
+                        ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                        : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Account type , segmented pill with sliding indicator */}
         {normalizedTypes.length > 0 && (
           <div>
@@ -84,6 +122,7 @@ export function PricingConfigurator({
                 {isAr ? "١ · نوع الحساب" : "1 · Account Type"}
               </p>
             </div>
+
 
             <div
               className={`grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border`}
