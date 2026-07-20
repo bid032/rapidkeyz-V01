@@ -21,7 +21,28 @@ type Plan = {
   is_active: boolean;
   sort_order: number | null;
   stock?: number | null;
+  account_type?: string | null;
 };
+
+type AcctType = "private" | "shared" | "own";
+
+function parseAcct(pl: Plan): AcctType | "any" {
+  const en = String(pl.label_en ?? "");
+  const ar = String(pl.label_ar ?? "");
+  if (pl.account_type === "private" || pl.account_type === "shared" || pl.account_type === "own") {
+    return pl.account_type;
+  }
+  if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) return "private";
+  if (/shared/i.test(en) || /مشترك|شير/i.test(ar)) return "shared";
+  if (/\bown\b|our own/i.test(en) || /من عندنا|من عندك|بحسابك|حسابك/i.test(ar)) return "own";
+  return "any";
+}
+
+const acctMeta = {
+  private: { ar: "خاص", en: "Private" },
+  shared: { ar: "مشترك", en: "Shared" },
+  own: { ar: "خاص", en: "Private" },
+} as const;
 
 export function QuickBuyDialog({
   open,
@@ -44,7 +65,7 @@ export function QuickBuyDialog({
     queryFn: async () => {
       const { data } = await supabase
         .from("product_plans")
-        .select("id, price, label_ar, label_en, is_active, sort_order, stock")
+        .select("id, price, label_ar, label_en, is_active, sort_order, stock, account_type")
         .eq("product_id", product.id)
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
@@ -53,7 +74,34 @@ export function QuickBuyDialog({
     enabled: open,
   });
 
-  const plans = plansQ.data ?? [];
+  const allPlans = plansQ.data ?? [];
+  const enriched = useMemo(
+    () => allPlans.map((p) => ({ ...p, acct: parseAcct(p) })),
+    [allPlans],
+  );
+
+  // Normalize "own" → "private" for the user-facing selector
+  const rawTypes = Array.from(
+    new Set(enriched.map((p) => p.acct).filter((a) => a !== "any")),
+  ) as AcctType[];
+  const normalizedTypes = Array.from(
+    new Set(rawTypes.map((a) => (a === "own" ? "private" : a))),
+  ) as ("private" | "shared")[];
+  const hasAcctChoice = normalizedTypes.length > 1;
+
+  const [acct, setAcct] = useState<"private" | "shared" | null>(null);
+  const effectiveAcct = acct ?? normalizedTypes[0] ?? null;
+
+  const plans = useMemo(() => {
+    if (!hasAcctChoice || !effectiveAcct) return enriched;
+    return enriched.filter(
+      (p) =>
+        p.acct === "any" ||
+        (effectiveAcct === "private" && (p.acct === "private" || p.acct === "own")) ||
+        (effectiveAcct === "shared" && p.acct === "shared"),
+    );
+  }, [enriched, hasAcctChoice, effectiveAcct]);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
 
@@ -75,6 +123,7 @@ export function QuickBuyDialog({
   const total = Math.round(unit * qty * 100) / 100;
   const stock = Number(selected?.stock ?? 0);
   const soldOut = !!selected && stock <= 0;
+
 
   const doAdd = (goCheckout: boolean) => {
     if (!selected) return;
