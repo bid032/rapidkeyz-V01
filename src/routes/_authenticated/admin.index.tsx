@@ -70,9 +70,12 @@ function AdminOverview() {
   const stats = useQuery({
     queryKey: ["admin-stats", month],
     queryFn: async () => {
-      // Refunds must be attributed to the ORIGINATING order's date, not refunds.created_at,
-      // so the KPI card matches the profit figure from admin_revenue_stats.
-      let refundsQ = supabase.from("refunds").select("amount, orders!inner(created_at, status)").in("orders.status", ["paid", "delivered"]);
+      // Match SQL RPC exactly: attribute refunds to the ORIGINATING order's date
+      // and include the same statuses the RPC uses (paid, delivered, refunded).
+      let refundsQ = supabase
+        .from("refunds")
+        .select("amount, orders!inner(created_at, status)")
+        .in("orders.status", ["paid", "delivered", "refunded"]);
       if (range.start) refundsQ = refundsQ.gte("orders.created_at", range.start);
       if (range.end) refundsQ = refundsQ.lt("orders.created_at", range.end);
 
@@ -122,7 +125,7 @@ function AdminOverview() {
       let refundsQ = supabase
         .from("refunds")
         .select("amount, orders!inner(created_at, status)")
-        .in("orders.status", ["paid", "delivered"]);
+        .in("orders.status", ["paid", "delivered", "refunded"]);
       if (prevRange.start) refundsQ = refundsQ.gte("orders.created_at", prevRange.start);
       if (prevRange.end) refundsQ = refundsQ.lt("orders.created_at", prevRange.end);
       const [rev, refundsRes] = await Promise.all([
@@ -145,6 +148,7 @@ function AdminOverview() {
 
 
 
+
   const monthly = useQuery({
     queryKey: ["admin-revenue-monthly"],
     queryFn: async () => {
@@ -161,7 +165,7 @@ function AdminOverview() {
       const { data } = await supabase
         .from("refunds")
         .select("amount, created_at, orders!inner(created_at, status)")
-        .in("orders.status", ["paid", "delivered"]);
+        .in("orders.status", ["paid", "delivered", "refunded"]);
       return (data ?? []).map((r: any) => ({
         amount: Number(r.amount ?? 0),
         // basis_at = order's created_at; fall back to refund's own date if missing
@@ -169,6 +173,7 @@ function AdminOverview() {
       })) as { amount: number; basis_at: string }[];
     },
   });
+
 
 
 
@@ -270,21 +275,29 @@ function AdminOverview() {
       profit: 0,
       refunds: 0,
     }));
+    const validStatuses = new Set(["paid", "delivered", "refunded"]);
     (sales.data ?? []).forEach((it: any) => {
+      // Match admin_revenue_stats: only paid/delivered/refunded contribute to revenue/profit.
+      if (!validStatuses.has(it.orders?.status)) return;
       const d = new Date(it.orders?.created_at ?? it.created_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
       rows[idx].revenue += Math.round(Number(it.unit_price) * Number(it.quantity));
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
+
     (refundsAll.data ?? []).forEach((r) => {
       const d = new Date(r.basis_at);
       if (d.getUTCFullYear() !== y || d.getUTCMonth() + 1 !== m) return;
       const idx = d.getUTCDate() - 1;
-      rows[idx].refunds += Math.round(Number(r.amount ?? 0));
+      const amt = Math.round(Number(r.amount ?? 0));
+      rows[idx].refunds += amt;
+      // Keep profit NET of refunds (consistent with admin_revenue_by_month used in "all" view).
+      rows[idx].profit -= amt;
     });
     return rows;
   }, [monthly.data, refundsAll.data, sales.data, month]);
+
 
 
 
@@ -408,10 +421,14 @@ function AdminOverview() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5">
             {(() => {
-              const totRev = chartData.reduce((s, r) => s + r.revenue, 0);
-              const totProf = chartData.reduce((s, r) => s + r.profit, 0);
-              const totRef = chartData.reduce((s, r) => s + r.refunds, 0);
+              // Source of truth: SQL RPC (admin_revenue_stats). It filters by
+              // status IN (paid, delivered, refunded) and subtracts refunds
+              // from profit, so KPIs stay consistent with the daily/monthly chart.
+              const totRev = Math.round(stats.data?.revenue ?? 0);
+              const totProf = Math.round(stats.data?.profit ?? 0);
+              const totRef = Math.round(stats.data?.refunds ?? 0);
               const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
+
 
               const p = prevStats.data;
               const showCompare = compare && !!prevMonthKey && !!p;
