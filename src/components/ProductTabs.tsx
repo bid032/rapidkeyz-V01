@@ -20,9 +20,9 @@ export function ProductTabs({ productId, productName, description, deliveryType 
 
   const tabs: { key: TabKey; label: string; mobileLabel: string }[] = [
     { key: "description", label: isAr ? "الوصف" : "Description", mobileLabel: isAr ? "الوصف" : "Info" },
-    { key: "reviews", label: isAr ? "التقييمات" : "Reviews", mobileLabel: isAr ? "تقييمات" : "Reviews" },
+    { key: "reviews", label: isAr ? "التقييمات" : "Reviews", mobileLabel: isAr ? "تقييم" : "Reviews" },
     { key: "delivery", label: isAr ? "سياسة التسليم" : "Delivery Policy", mobileLabel: isAr ? "التسليم" : "Delivery" },
-    { key: "policy", label: isAr ? "الاسترداد والخصوصية" : "Refund & Privacy", mobileLabel: isAr ? "الاسترداد" : "Refund" },
+    { key: "policy", label: isAr ? "الاسترداد والخصوصية" : "Refund & Privacy", mobileLabel: isAr ? "استرداد" : "Refund" },
   ];
 
   return (
@@ -30,20 +30,22 @@ export function ProductTabs({ productId, productName, description, deliveryType 
       {/* Tabs bar */}
       <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card via-card to-background p-1.5 overflow-visible">
         <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 bg-brand/10 rounded-full blur-3xl" />
-        <div className="relative grid grid-cols-2 sm:flex gap-1 sm:overflow-x-auto sm:no-scrollbar sm:snap-x sm:snap-mandatory">
+        <div className="relative grid grid-cols-4 gap-1 sm:flex sm:overflow-x-auto sm:no-scrollbar sm:snap-x sm:snap-mandatory">
           {tabs.map((tb) => {
             const active = tab === tb.key;
             return (
               <button
                 key={tb.key}
                 onClick={() => setTab(tb.key)}
-                className="relative min-w-0 h-10 sm:h-auto px-2 sm:px-5 py-2 sm:py-3 sm:shrink-0 sm:snap-start rounded-xl text-[11px] sm:text-sm font-extrabold focus:outline-none whitespace-nowrap"
+                className={`relative min-w-0 h-9 sm:h-auto px-1 sm:px-5 py-1.5 sm:py-3 sm:shrink-0 sm:snap-start rounded-xl text-[10px] sm:text-sm font-extrabold focus:outline-none whitespace-nowrap transition-colors ${
+                  active ? "bg-brand text-brand-foreground shadow-[0_10px_30px_-12px_hsl(var(--brand)/0.65)]" : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 {active && (
                   <motion.span
                     layoutId="product-tab-active"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.55)]"
+                    className="absolute inset-0 hidden sm:block rounded-xl bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.55)]"
                   />
                 )}
                 <span
