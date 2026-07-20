@@ -241,7 +241,7 @@ function Dashboard() {
                             </div>
                             <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
                           </div>
-                          {itemRefund && itemRefund.type === "full_refund" ? (
+                          {itemRefund && itemRefund.type === "full" ? (
                             <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">
                               <div className="text-xs font-bold text-destructive mb-1">
                                 {lang === "ar" ? "تم استرداد قيمة هذه الخدمة" : "This item has been refunded"}
