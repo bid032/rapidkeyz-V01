@@ -316,7 +316,7 @@ function CheckoutPage() {
 
 
 
-              <section className="p-6 bg-card border border-border rounded-2xl">
+              <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
                 <h2 className="font-bold mb-4">{t.checkout.payment}</h2>
                 <div className="space-y-2">
                   {(
