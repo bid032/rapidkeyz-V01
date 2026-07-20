@@ -364,6 +364,7 @@ export type Database = {
       }
       product_plans: {
         Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
           compare_price: number | null
           created_at: string
           duration_days: number | null
@@ -379,6 +380,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           compare_price?: number | null
           created_at?: string
           duration_days?: number | null
@@ -394,6 +396,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
           compare_price?: number | null
           created_at?: string
           duration_days?: number | null

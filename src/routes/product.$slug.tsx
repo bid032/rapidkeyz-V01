@@ -196,7 +196,10 @@ function ProductPage() {
     const en = String(pl.label_en ?? "");
     const ar = String(pl.label_ar ?? "");
     let acct: "private" | "shared" | "own" | "any" = "any";
-    if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) acct = "private";
+    // Prefer explicit account_type set by admin on the plan
+    if (pl.account_type === "private" || pl.account_type === "shared" || pl.account_type === "own") {
+      acct = pl.account_type;
+    } else if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) acct = "private";
     else if (/shared/i.test(en) || /مشترك|شير/i.test(ar)) acct = "shared";
     else if (/\bown\b|our own/i.test(en) || /من عندنا|من عندك|بحسابك|حسابك/i.test(ar)) acct = "own";
     const durEn = en
@@ -207,6 +210,7 @@ function ProductPage() {
       .trim() || ar;
     return { acct, durEn, durAr };
   };
+
 
   if (isLoading) {
     return (
@@ -251,9 +255,14 @@ function ProductPage() {
   ) as ("private" | "shared" | "own")[];
   const hasAcctChoice = accountTypes.length > 0;
   const effectiveAcct = (accountType as "private" | "shared" | "own" | undefined) ?? accountTypes[0];
-  const filteredPlans = enriched;
+  // If there are multiple account types, filter plans by the selected one.
+  // Plans marked "any" (no explicit type) are always shown.
+  const filteredPlans = accountTypes.length > 1 && effectiveAcct
+    ? enriched.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
+    : enriched;
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
+
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;

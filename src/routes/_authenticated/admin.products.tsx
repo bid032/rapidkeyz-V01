@@ -622,9 +622,24 @@ function Field({ label, hint, className, children }: { label: string; hint?: str
 function PlanEditor({ productId, onClose }: { productId: string; onClose: () => void }) {
   const qc = useQueryClient();
   const { lang, confirm, notify } = useApp();
+  const productMeta = useQuery({
+    queryKey: ["plan-editor-product", productId],
+    queryFn: async () => (await supabase.from("products").select("account_types, account_type").eq("id", productId).maybeSingle()).data,
+  });
+  const acctTypes: ("private" | "shared" | "own")[] = (() => {
+    const arr = (productMeta.data as any)?.account_types as string[] | null;
+    const legacy = (productMeta.data as any)?.account_type as string | null;
+    let types: string[] = Array.isArray(arr) && arr.length > 0
+      ? arr
+      : legacy === "both" ? ["private", "shared"] : legacy ? [legacy] : [];
+    return types.filter((a) => a === "private" || a === "shared" || a === "own") as any;
+  })();
+  const showAcctPicker = acctTypes.length > 1;
+  const acctLabel = (a: string) =>
+    a === "private" ? "خاص" : a === "shared" ? "مشترك" : a === "own" ? "من عندك" : "الكل";
   const plans = useQuery({
     queryKey: ["plans", productId],
-    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url").eq("product_id", productId).order("duration_days")).data ?? [],
+    queryFn: async () => (await supabase.from("product_plans").select("id, product_id, label_ar, label_en, duration_days, price, compare_price, stock, is_active, sort_order, sheet_csv_url, account_type").eq("product_id", productId).order("duration_days")).data ?? [],
   });
   const costs = useQuery({
     queryKey: ["plan-costs", productId],
@@ -647,16 +662,18 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
     compare_price: 0,
     cost_price: 0,
     stock: 0,
+    account_type: "" as "" | "private" | "shared" | "own",
   });
 
   // Local edits map keyed by plan id , apply on save
-  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number }>>({});
+  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null }>>({});
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
 
+
   const add = useMutation({
     mutationFn: async () => {
-      const payload = {
+      const payload: any = {
         product_id: productId,
         label_ar: form.label_ar,
         label_en: form.label_en,
@@ -665,6 +682,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         compare_price: form.compare_price > 0 ? form.compare_price : null,
         stock: form.stock,
         is_active: true,
+        account_type: form.account_type || null,
       };
       const { data: inserted, error } = await supabase.from("product_plans").insert(payload).select().single();
       if (error) throw error;
@@ -676,11 +694,12 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       qc.invalidateQueries({ queryKey: ["plans", productId] });
       qc.invalidateQueries({ queryKey: ["plan-costs", productId] });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
-      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0 });
+      setForm({ label_ar: "", label_en: "", duration_months: 1, price: 0, compare_price: 0, cost_price: 0, stock: 0, account_type: "" });
       notify(lang === "ar" ? "تم إضافة العرض" : "Plan added", "success");
     },
     onError: (e) => showError(e, notify, lang),
   });
+
 
   const savePlan = useMutation({
     mutationFn: async (id: string) => {
@@ -690,6 +709,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       if (patchData.price !== undefined) clean.price = patchData.price;
       if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
       if (patchData.stock !== undefined) clean.stock = patchData.stock;
+      if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
+
       if (Object.keys(clean).length > 0) {
         const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
         if (error) throw error;
@@ -752,12 +773,20 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
             const dirty = !!edits[p.id];
             const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
             const margin = Number(price) - Number(cost);
+            const currentAcct = (e.account_type !== undefined ? e.account_type : p.account_type) ?? "";
             return (
               <div key={p.id} className="p-4 bg-background border border-border rounded-xl">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="text-sm">
-                    <div className="font-bold">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
-                    <div className="text-xs text-muted-foreground mt-0.5">مدة: {months} شهر</div>
+                <div className="flex justify-between items-start mb-3 gap-2">
+                  <div className="text-sm min-w-0">
+                    <div className="font-bold truncate">{p.label_ar} <span className="text-muted-foreground font-normal">/ {p.label_en}</span></div>
+                    <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2 flex-wrap">
+                      <span>مدة: {months} شهر</span>
+                      {p.account_type && (
+                        <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">
+                          {acctLabel(p.account_type)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={async () => {
@@ -769,9 +798,26 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                       });
                       if (ok) del.mutate(p.id);
                     }}
-                    className="text-destructive text-xs hover:underline"
+                    className="text-destructive text-xs hover:underline shrink-0"
                   >مسح</button>
                 </div>
+
+                {showAcctPicker && (
+                  <div className="mb-3">
+                    <label className="text-[11px] font-bold text-brand uppercase mb-1 block">نوع الحساب لهذا العرض</label>
+                    <select
+                      value={currentAcct}
+                      onChange={(ev) => patch(p.id, "account_type", ev.target.value === "" ? null : ev.target.value)}
+                      className="w-full px-2 py-1.5 bg-card border border-border rounded text-sm font-bold"
+                    >
+                      <option value="">— لكل الأنواع —</option>
+                      {acctTypes.map((a) => (
+                        <option key={a} value={a}>{acctLabel(a)}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-border min-w-0">
                   <div>
@@ -880,11 +926,26 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 onChange={(e) => setForm({ ...form, compare_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-background border border-border rounded" />
             </Field>
+            {showAcctPicker && (
+              <Field label="نوع الحساب لهذا العرض">
+                <select
+                  value={form.account_type}
+                  onChange={(e) => setForm({ ...form, account_type: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-background border border-border rounded"
+                >
+                  <option value="">— لكل الأنواع —</option>
+                  {acctTypes.map((a) => (
+                    <option key={a} value={a}>{acctLabel(a)}</option>
+                  ))}
+                </select>
+              </Field>
+            )}
             <Field label="سعر الشراء (خاص بيك فقط)" className="md:col-span-2 xl:col-span-3">
               <input type="number" min={0} value={form.cost_price}
                 onChange={(e) => setForm({ ...form, cost_price: +e.target.value })}
                 className="w-full px-3 py-2 bg-warning/5 border border-warning/30 rounded" />
             </Field>
+
           </div>
           <button type="submit" className="w-full mt-4 px-4 py-2 bg-brand text-brand-foreground rounded-lg font-bold">
             + إضافة العرض
