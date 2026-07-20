@@ -42,6 +42,7 @@ type ProductForm = {
   is_featured: boolean;
   is_bestseller: boolean;
   discount_percent: number;
+  plan_variants: string[];
 };
 
 const emptyForm: ProductForm = {
@@ -60,7 +61,9 @@ const emptyForm: ProductForm = {
   is_featured: false,
   is_bestseller: false,
   discount_percent: 0,
+  plan_variants: [],
 };
+
 
 /** Reduce a multi-select array into the legacy single account_type enum for backward compat. */
 function deriveLegacyAccountType(types: AccountType[]): AccountType {
@@ -116,14 +119,17 @@ function AdminProducts() {
       const types = f.account_types.length > 0 ? f.account_types : ["shared" as const];
       const catIds = Array.from(new Set(f.category_ids.filter(Boolean)));
       const primary = f.category_id && catIds.includes(f.category_id) ? f.category_id : catIds[0] ?? null;
+      const cleanVariants = Array.from(new Set(f.plan_variants.map((v) => v.trim()).filter(Boolean)));
       const payload: any = {
         ...f,
         category_id: primary,
         category_ids: catIds,
         account_types: types,
         account_type: deriveLegacyAccountType(types),
+        plan_variants: cleanVariants,
       };
       if (f.id) {
+
         const { error } = await supabase.from("products").update(payload).eq("id", f.id);
         if (error) throw error;
       } else {
@@ -237,7 +243,9 @@ function AdminProducts() {
             account_types: initTypes,
             status: p.status, is_featured: p.is_featured, is_bestseller: (p as any).is_bestseller ?? false,
             discount_percent: p.discount_percent ?? 0,
+            plan_variants: Array.isArray((p as any).plan_variants) ? ((p as any).plan_variants as string[]) : [],
           });
+
         };
 
         const askDelete = async (p: any) => {
