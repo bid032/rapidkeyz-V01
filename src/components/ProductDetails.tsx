@@ -8,9 +8,7 @@ type Props = {
 export function ProductDetails({ productName, accountTypes }: Props) {
   const { lang } = useApp();
   const isAr = lang === "ar";
-  const hasShared = accountTypes.includes("shared");
-  const hasPrivate = accountTypes.includes("private");
-  const hasOwn = accountTypes.includes("own");
+  void accountTypes;
 
   const features = isAr
     ? [
