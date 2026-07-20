@@ -96,30 +96,10 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
 }
 
 async function fetchBestSellers(): Promise<ProductCardData[]> {
-  // Sum quantities per product across paid/delivered orders
-  const { data: items } = await supabase
-    .from("order_items")
-    .select("product_id, quantity, orders!inner(status)")
-    .in("orders.status", ["paid", "delivered"]);
-  const counts = new Map<string, number>();
-  for (const it of (items ?? []) as any[]) {
-    if (!it.product_id) continue;
-    counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
-  }
-  const topIds = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([id]) => id);
-  if (topIds.length === 0) return [];
-  const { data } = await supabase
-    .from("products")
-    .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)")
-    .in("id", topIds)
-    .eq("status", "active");
-  const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
-  return topIds.flatMap((id) => {
-    const p: any = byId.get(id);
-    if (!p) return [];
+  const mapRow = (p: any): ProductCardData => {
     const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
     const cheapest = activePlans.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-    return [{
+    return {
       id: p.id,
       slug: p.slug,
       name_ar: p.name_ar,
@@ -134,9 +114,53 @@ async function fetchBestSellers(): Promise<ProductCardData[]> {
       cheapestPlanId: cheapest?.id ?? null,
       planLabel_ar: cheapest?.label_ar ?? null,
       planLabel_en: cheapest?.label_en ?? null,
-    }];
+    };
+  };
+
+  const productSelect =
+    "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, is_bestseller, product_plans(id, price, label_ar, label_en, is_active, sort_order)";
+
+  // 1) Manually flagged products by admin
+  const { data: manual } = await supabase
+    .from("products")
+    .select(productSelect)
+    .eq("status", "active")
+    .eq("is_bestseller", true)
+    .order("sort_order", { ascending: true })
+    .limit(12);
+  const manualList = (manual ?? []).map(mapRow);
+  if (manualList.length >= 4) return manualList.slice(0, 8);
+
+  // 2) Fallback: auto-compute from paid/delivered order items
+  const { data: items } = await supabase
+    .from("order_items")
+    .select("product_id, quantity, orders!inner(status)")
+    .in("orders.status", ["paid", "delivered"]);
+  const counts = new Map<string, number>();
+  for (const it of (items ?? []) as any[]) {
+    if (!it.product_id) continue;
+    counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
+  }
+  const excludeIds = new Set(manualList.map((p) => p.id));
+  const topIds = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([id]) => id)
+    .filter((id) => !excludeIds.has(id))
+    .slice(0, 8 - manualList.length);
+  if (topIds.length === 0) return manualList;
+  const { data } = await supabase
+    .from("products")
+    .select(productSelect)
+    .in("id", topIds)
+    .eq("status", "active");
+  const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
+  const autoList = topIds.flatMap((id) => {
+    const p: any = byId.get(id);
+    return p ? [mapRow(p)] : [];
   });
+  return [...manualList, ...autoList];
 }
+
 
 
 function HomePage() {
