@@ -25,84 +25,112 @@ export interface OrderDeliveredEmailProps {
   total: number
   currency: string
   accounts: DeliveredAccount[]
+  lang?: 'ar' | 'en'
 }
 
 export const OrderDeliveredEmail = ({
-  orderNumber, total, currency, accounts,
-}: OrderDeliveredEmailProps) => (
-  <Html lang="ar" dir="rtl">
-    <Head />
-    <Preview>{`طلبك #${orderNumber} جاهز ، بيانات الحساب في الإيميل`}</Preview>
-    <BrandLayout preview={`طلبك #${orderNumber} جاهز`} lang="ar">
-      <Heading style={styles.h1}>✓ تم تسليم طلبك</Heading>
-      <Text style={styles.text}>
-        شكراً لشرائك من <b style={{ color: '#fff' }}>RapidKeyz</b> <br />
-        رقم الطلب: <span style={styles.mono}>#{orderNumber}</span> ، المبلغ: <span style={styles.mono}>{total} {currency}</span>
-      </Text>
+  orderNumber, total, currency, accounts, lang = 'ar',
+}: OrderDeliveredEmailProps) => {
+  const isAr = lang === 'ar'
+  const t = {
+    preview: isAr
+      ? `طلبك #${orderNumber} جاهز ، بيانات الحساب في الإيميل`
+      : `Your order #${orderNumber} is ready — account details inside`,
+    heading: isAr ? '✓ تم تسليم طلبك' : '✓ Your order has been delivered',
+    thanks: isAr ? 'شكراً لشرائك من' : 'Thank you for your purchase from',
+    orderNo: isAr ? 'رقم الطلب' : 'Order number',
+    amount: isAr ? 'المبلغ' : 'Amount',
+    accountsHeading: isAr ? 'بيانات الحسابات' : 'Account credentials',
+    activationKey: isAr ? 'مفتاح التفعيل' : 'Activation key',
+    email: isAr ? 'البريد' : 'Email',
+    username: isAr ? 'اسم المستخدم' : 'Username',
+    password: isAr ? 'كلمة السر' : 'Password',
+    notes: isAr ? 'ملاحظات' : 'Notes',
+    openPanel: isAr ? 'افتح لوحة الحساب لنسخ البيانات' : 'Open your dashboard to copy credentials',
+    tip: isAr
+      ? 'نصيحة: على الموبايل اضغط مطوّلاً على أي قيمة لنسخها فوراً.'
+      : 'Tip: on mobile, long-press any value to copy it instantly.',
+    support: isAr
+      ? 'لو حصل أي مشكلة في الدخول، تواصل معانا على واتساب أو رد على الإيميل ده وهنساعدك فوراً.'
+      : "If you run into any login issues, reach out on WhatsApp or reply to this email and we'll help right away.",
+  }
+  return (
+    <Html lang={lang} dir={isAr ? 'rtl' : 'ltr'}>
+      <Head />
+      <Preview>{t.preview}</Preview>
+      <BrandLayout preview={t.preview} lang={lang}>
+        <Heading style={styles.h1}>{t.heading}</Heading>
+        <Text style={styles.text}>
+          {t.thanks} <b style={{ color: '#fff' }}>RapidKeyz</b> <br />
+          {t.orderNo}: <span style={styles.mono}>#{orderNumber}</span> , {t.amount}: <span style={styles.mono}>{total} {currency}</span>
+        </Text>
 
-      <Heading as="h2" style={styles.h2}>بيانات الحسابات</Heading>
-      {accounts.map((a, i) => {
-        const email = a.account_email?.trim()
-        const username = a.account_username?.trim()
-        const password = a.account_password?.trim()
-        const rows: { label: string; value: string }[] = []
+        <Heading as="h2" style={styles.h2}>{t.accountsHeading}</Heading>
+        {accounts.map((a, i) => {
+          const email = a.account_email?.trim()
+          const username = a.account_username?.trim()
+          const password = a.account_password?.trim()
+          const rows: { label: string; value: string }[] = []
 
-        if (!email && username && !password && looksLikeActivationKey(username)) {
-          rows.push({ label: 'مفتاح التفعيل', value: username })
-        } else if (!email && !username && password && looksLikeActivationKey(password)) {
-          rows.push({ label: 'مفتاح التفعيل', value: password })
-        } else {
-          if (email) rows.push({ label: 'البريد', value: email })
-          if (username) rows.push({ label: 'اسم المستخدم', value: username })
-          if (password) rows.push({ label: 'كلمة السر', value: password })
-        }
+          if (!email && username && !password && looksLikeActivationKey(username)) {
+            rows.push({ label: t.activationKey, value: username })
+          } else if (!email && !username && password && looksLikeActivationKey(password)) {
+            rows.push({ label: t.activationKey, value: password })
+          } else {
+            if (email) rows.push({ label: t.email, value: email })
+            if (username) rows.push({ label: t.username, value: username })
+            if (password) rows.push({ label: t.password, value: password })
+          }
 
-        return (
-          <Section key={i} style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>, {a.plan_label}</span>
-            </Text>
-            {rows.map((r, ri) => (
-              <Text key={ri} style={styles.line}>
-                <b style={{ color: '#fff' }}>{r.label}:</b> <span style={styles.mono}>{r.value}</span>
+          return (
+            <Section key={i} style={styles.card}>
+              <Text style={styles.cardTitle}>
+                {a.product_name} <span style={{ color: styles.muted.color, fontWeight: 400 }}>, {a.plan_label}</span>
               </Text>
-            ))}
-            {a.extra_notes && (
-              <Text style={styles.line}><b style={{ color: '#fff' }}>ملاحظات:</b> {a.extra_notes}</Text>
-            )}
-          </Section>
-        )
-      })}
+              {rows.map((r, ri) => (
+                <Text key={ri} style={styles.line}>
+                  <b style={{ color: '#fff' }}>{r.label}:</b> <span style={styles.mono}>{r.value}</span>
+                </Text>
+              ))}
+              {a.extra_notes && (
+                <Text style={styles.line}><b style={{ color: '#fff' }}>{t.notes}:</b> {a.extra_notes}</Text>
+              )}
+            </Section>
+          )
+        })}
 
-      <Hr style={styles.hr} />
-      <Section style={{ textAlign: 'center' as const }}>
-        <a
-          href="https://rapidkeyz.lovable.app/dashboard"
-          style={{ ...styles.button, display: 'inline-block' }}
-        >
-          افتح لوحة الحساب لنسخ البيانات
-        </a>
-      </Section>
-      <Text style={{ ...styles.muted, textAlign: 'center' as const, marginTop: '10px' }}>
-        نصيحة: على الموبايل اضغط مطوّلاً على أي قيمة لنسخها فوراً.
-      </Text>
-      <Hr style={styles.hr} />
-      <Text style={styles.muted}>
-        لو حصل أي مشكلة في الدخول، تواصل معانا على واتساب أو رد على الإيميل ده وهنساعدك فوراً.
-      </Text>
-    </BrandLayout>
-  </Html>
-)
+        <Hr style={styles.hr} />
+        <Section style={{ textAlign: 'center' as const }}>
+          <a
+            href="https://rapidkeyz.lovable.app/dashboard"
+            style={{ ...styles.button, display: 'inline-block' }}
+          >
+            {t.openPanel}
+          </a>
+        </Section>
+        <Text style={{ ...styles.muted, textAlign: 'center' as const, marginTop: '10px' }}>
+          {t.tip}
+        </Text>
+        <Hr style={styles.hr} />
+        <Text style={styles.muted}>{t.support}</Text>
+      </BrandLayout>
+    </Html>
+  )
+}
 
 export default OrderDeliveredEmail
 
 export const template = {
   component: OrderDeliveredEmail,
-  subject: (d: Record<string, any>) => `طلبك #${d.orderNumber} جاهز ، بيانات الحساب`,
+  subject: (d: Record<string, any>) =>
+    d.lang === 'en'
+      ? `Your order #${d.orderNumber} is ready — account details`
+      : `طلبك #${d.orderNumber} جاهز ، بيانات الحساب`,
   previewData: {
     orderNumber: 'ABC12345',
     total: 1500,
     currency: 'EGP',
+    lang: 'ar',
     accounts: [
       { product_name: 'Netflix Premium', plan_label: '1 Month', account_email: 'shared@rk.com', account_password: 'secret123', extra_notes: 'استخدم البروفايل الأول فقط' },
     ],
