@@ -766,6 +766,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
       recalc_order_totals: { Args: { _order_id: string }; Returns: undefined }
       sync_plan_stock_from_inventory: {
         Args: { _plan_id: string }
