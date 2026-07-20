@@ -116,6 +116,8 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
     }
     if (accounts.length === 0) return { ok: false, reason: 'no_delivered_accounts' }
 
+    const lang = await resolveCustomerLang(supabaseAdmin, order.customer_email)
+
     await sendTemplateEmail('order-delivered', order.customer_email, {
       idempotencyKey: `order-delivered-${order.id}`,
       templateData: {
@@ -123,6 +125,7 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
         total: order.total,
         currency: order.currency || 'EGP',
         accounts,
+        lang,
       },
     })
     return { ok: true, count: accounts.length }
@@ -172,6 +175,8 @@ export const notifyItemDelivered = createServerFn({ method: 'POST' })
       extra_notes: acc.extra_notes,
     }))
 
+    const lang = await resolveCustomerLang(supabaseAdmin, order.customer_email)
+
     await sendTemplateEmail('order-delivered', order.customer_email, {
       idempotencyKey: `item-delivered-${data.orderItemId}`,
       templateData: {
@@ -179,9 +184,30 @@ export const notifyItemDelivered = createServerFn({ method: 'POST' })
         total: order.total,
         currency: order.currency || 'EGP',
         accounts,
+        lang,
       },
     })
     return { ok: true }
   })
+
+// Look up customer's preferred language from their profile (by email).
+// Defaults to Arabic when no matching profile or preference is stored.
+async function resolveCustomerLang(supabaseAdmin: any, email: string): Promise<'ar' | 'en'> {
+  try {
+    const { data: authUser } = await supabaseAdmin.auth.admin.listUsers()
+    const match = authUser?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase())
+    if (!match) return 'ar'
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('preferred_language')
+      .eq('id', match.id)
+      .maybeSingle()
+    const raw = profile?.preferred_language
+    if (typeof raw === 'string' && raw.toLowerCase().startsWith('en')) return 'en'
+    return 'ar'
+  } catch {
+    return 'ar'
+  }
+}
 
 

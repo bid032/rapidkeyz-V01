@@ -5,26 +5,36 @@ import { BrandLayout, styles, Head, Heading, Text } from './_brand'
 interface RecoveryEmailProps {
   siteName: string
   confirmationUrl: string
+  lang?: 'ar' | 'en'
 }
 
-export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Reset your password for {siteName}</Preview>
-    <BrandLayout preview={`Reset your password for ${siteName}`} lang="en">
-      <Heading style={styles.h1}>Reset your password</Heading>
-      <Text style={styles.text}>
-        We received a request to reset your password for <b style={{ color: '#fff' }}>{siteName}</b>.
-        Click the button below to choose a new password.
-      </Text>
-      <Section style={{ textAlign: 'center', margin: '18px 0 8px' }}>
-        <Button style={styles.button} href={confirmationUrl}>Reset Password</Button>
-      </Section>
-      <Text style={styles.muted}>
-        If you didn't request a password reset, you can safely ignore this email.
-      </Text>
-    </BrandLayout>
-  </Html>
-)
+export const RecoveryEmail = ({ siteName, confirmationUrl, lang = 'ar' }: RecoveryEmailProps) => {
+  const isAr = lang === 'ar'
+  const t = {
+    preview: isAr ? `إعادة تعيين كلمة السر لـ ${siteName}` : `Reset your password for ${siteName}`,
+    heading: isAr ? 'إعادة تعيين كلمة السر' : 'Reset your password',
+    body: isAr
+      ? 'استلمنا طلب لإعادة تعيين كلمة السر الخاصة بك. اضغط على الزر بالأسفل لاختيار كلمة سر جديدة.'
+      : `We received a request to reset your password for ${siteName}. Click the button below to choose a new password.`,
+    button: isAr ? 'إعادة تعيين كلمة السر' : 'Reset Password',
+    ignore: isAr
+      ? 'إذا لم تطلب إعادة التعيين، تجاهل هذا الإيميل.'
+      : "If you didn't request a password reset, you can safely ignore this email.",
+  }
+  return (
+    <Html lang={lang} dir={isAr ? 'rtl' : 'ltr'}>
+      <Head />
+      <Preview>{t.preview}</Preview>
+      <BrandLayout preview={t.preview} lang={lang}>
+        <Heading style={styles.h1}>{t.heading}</Heading>
+        <Text style={styles.text}>{t.body}</Text>
+        <Section style={{ textAlign: 'center', margin: '18px 0 8px' }}>
+          <Button style={styles.button} href={confirmationUrl}>{t.button}</Button>
+        </Section>
+        <Text style={styles.muted}>{t.ignore}</Text>
+      </BrandLayout>
+    </Html>
+  )
+}
 
 export default RecoveryEmail
