@@ -342,16 +342,6 @@ function ProductPage() {
                   <h1 className="text-lg sm:text-xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
                     {name}
                   </h1>
-                  {/* Viewers chip , mobile inline */}
-                  <div className="md:hidden mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md">
-                    <span className="relative flex h-1.5 w-1.5">
-                      <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
-                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
-                    </span>
-                    <span className="text-brand text-[10px] font-bold whitespace-nowrap">
-                      <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
-                    </span>
-                  </div>
                   {desc && (
                     <div className="mt-1.5">
                       <p
@@ -373,6 +363,16 @@ function ProductPage() {
                       )}
                     </div>
                   )}
+                  {/* Viewers chip , under description */}
+                  <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
+                    </span>
+                    <span className="text-brand text-[10px] font-bold whitespace-nowrap">
+                      <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
+                    </span>
+                  </div>
                 </div>
               </div>
 
