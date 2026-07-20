@@ -104,7 +104,7 @@ export function QuickBuyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg md:max-w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)] md:max-h-[min(96dvh,760px)] md:h-[min(96dvh,760px)]">
+      <DialogContent className="max-w-lg md:max-w-[min(95vw,1100px)] p-0 overflow-hidden gap-0 border-border/60 bg-card flex flex-col max-h-[calc(100dvh-1rem)] md:max-h-[min(96dvh,760px)]">
         {/* ============ MOBILE LAYOUT (unchanged) ============ */}
         <div className="md:hidden flex flex-col min-h-0 flex-1">
           {/* Header */}
