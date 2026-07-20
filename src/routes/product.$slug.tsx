@@ -245,9 +245,7 @@ function ProductPage() {
   ) as ("private" | "shared" | "own")[];
   const hasAcctChoice = accountTypes.length > 0;
   const effectiveAcct = (accountType as "private" | "shared" | "own" | undefined) ?? accountTypes[0];
-  const filteredPlans = hasAcctChoice
-    ? enriched.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
-    : enriched;
+  const filteredPlans = enriched;
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
   const selectedStock = Number(selected?.stock ?? 0);
