@@ -408,15 +408,16 @@ function CheckoutPage() {
                               <button
                                 type="button"
                                 onClick={copyNumber}
-                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-lg underline decoration-dotted hover:text-brand/80"
+                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-base sm:text-lg underline decoration-dotted hover:text-brand/80 break-all"
                                 dir="ltr"
                                 title="Click to copy"
                               >
                                 {WHATSAPP_NUMBER}
                               </button>{" "}
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-[11px] sm:text-xs text-muted-foreground block sm:inline">
                                 {copied ? "(Copied ✓)" : "(Click the number to copy)"}
                               </span>
+
                             </li>
                             <li>Upload the receipt screenshot and enter the sending number below.</li>
                           </ol>
