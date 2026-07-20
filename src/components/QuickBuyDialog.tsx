@@ -290,7 +290,7 @@ export function QuickBuyDialog({
                     </div>
                   )}
                   {hasDiscount && (
-                    <div className="absolute top-3 end-3 bg-destructive text-destructive-foreground px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase font-mono shadow-lg">
+                    <div className={`absolute top-3 ${isAr ? "start-3" : "end-3"} bg-destructive text-destructive-foreground px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase font-mono shadow-lg`}>
                       -{discount}%
                     </div>
                   )}
