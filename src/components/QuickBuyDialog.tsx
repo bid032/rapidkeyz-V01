@@ -120,7 +120,7 @@ export function QuickBuyDialog({
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-x-reverse divide-border">
             {/* LEFT: product hero + actions */}
-            <aside className="lg:col-span-5 p-4 sm:p-6 lg:p-8 order-1 bg-gradient-to-br from-brand/5 via-transparent to-transparent flex flex-col gap-4 sm:gap-5">
+            <aside className="lg:col-span-3 p-4 sm:p-6 lg:p-8 order-1 bg-gradient-to-br from-brand/5 via-transparent to-transparent flex flex-col gap-4 sm:gap-5">
               <div className="flex lg:flex-col items-center lg:items-stretch gap-3 lg:gap-5">
                 <div className="shrink-0 size-14 sm:size-20 lg:size-auto lg:w-full lg:aspect-square rounded-2xl border border-border bg-background overflow-hidden shadow-md lg:shadow-xl">
                   {product.icon_url ? (
