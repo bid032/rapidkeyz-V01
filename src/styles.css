@@ -370,13 +370,17 @@ a[class*="size-10"]:hover {
 }
 /* Bump the too-small eyebrow labels so Arabic is legible */
 [dir="rtl"] .text-\[9px\],
-[dir="rtl"] .text-\[10px\] {
-  font-size: 12px;
-  line-height: 1.5;
-}
+[dir="rtl"] .text-\[10px\],
 [dir="rtl"] .text-\[11px\] {
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
+}
+[dir="rtl"] .text-xs {
+  font-size: 15px;
+  line-height: 1.6;
+}
+[dir="rtl"] .sm\:text-xs {
+  font-size: 15px;
 }
 /* Anything explicitly light should read as regular in Arabic */
 [dir="rtl"] .font-light,
