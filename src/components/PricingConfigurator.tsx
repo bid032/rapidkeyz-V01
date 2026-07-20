@@ -86,7 +86,7 @@ export function PricingConfigurator({
             </div>
 
             <div
-              className={`grid gap-2 p-1.5 rounded-2xl bg-muted/40 border border-border`}
+              className={`grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border`}
               style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
             >
               {normalizedTypes.map((a) => {
@@ -96,25 +96,25 @@ export function PricingConfigurator({
                   <button
                     key={a}
                     onClick={() => onAcctChange(a)}
-                    className="relative px-3 py-3 rounded-xl text-start focus:outline-none"
+                    className="relative px-2.5 py-2 rounded-lg text-start focus:outline-none"
                   >
                     {isSel && (
                       <motion.span
                         layoutId="acct-pill"
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                        className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                        className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
                       />
                     )}
                     <span className="relative block">
                       <span
-                        className={`block text-sm font-extrabold ${
+                        className={`block text-xs font-extrabold ${
                           isSel ? "text-brand-foreground" : "text-foreground"
                         }`}
                       >
                         {meta.title}
                       </span>
                       <span
-                        className={`block text-[10px] mt-0.5 ${
+                        className={`block text-[9px] mt-0.5 leading-tight ${
                           isSel ? "text-brand-foreground/80" : "text-muted-foreground"
                         }`}
                       >
@@ -125,6 +125,7 @@ export function PricingConfigurator({
                 );
               })}
             </div>
+
           </div>
         )}
 
