@@ -298,94 +298,94 @@ function ProductPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-6 sm:py-10 pb-28 md:pb-10">
-        {/* Glass product panel */}
-        <div className="relative overflow-hidden rounded-[1.75rem] sm:rounded-[2rem] border border-border/60 bg-card/60 backdrop-blur-xl shadow-2xl">
+      <div className="max-w-6xl mx-auto px-3 sm:px-5 py-4 sm:py-6 pb-28 md:pb-6">
+        {/* Glass product panel , viewport-fit hero */}
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/60 bg-card/60 backdrop-blur-xl shadow-2xl">
           <div className="pointer-events-none absolute -top-32 -end-32 w-96 h-96 bg-brand/20 rounded-full blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-32 -start-32 w-96 h-96 bg-brand/10 rounded-full blur-[120px]" />
 
-          <div className="relative p-5 sm:p-6 md:p-8 lg:p-10">
-            {/* Top: image + name/viewers/desc */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-8 mb-6 md:mb-8">
+          <div className="relative grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 p-4 sm:p-5 md:p-6">
+            {/* LEFT , identity */}
+            <div className="md:col-span-5 lg:col-span-4 flex flex-col gap-3 min-w-0">
               {/* Image */}
-              <div className="md:col-span-5 lg:col-span-4 order-1 flex justify-center md:justify-start">
-                <div className="relative w-full max-w-[240px] sm:max-w-[280px] md:max-w-none aspect-square">
-                  <div className="absolute inset-0 bg-brand/25 blur-[90px] rounded-full opacity-60 animate-pulse" />
-                  <div className="relative z-10 w-full h-full rounded-3xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
-                    {product.icon_url ? (
-                      <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-6xl font-black text-brand">
-                        {name.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                    {hasDiscount && (
-                      <span
-                        className={`absolute top-3 ${lang === "ar" ? "right-3" : "left-3"} bg-destructive text-destructive-foreground text-sm font-black px-2.5 py-1 rounded-xl shadow-lg`}
-                      >
-                        -{discount}%
-                      </span>
-                    )}
+              <div className="relative w-full aspect-square max-w-[220px] sm:max-w-[260px] md:max-w-none mx-auto md:mx-0">
+                <div className="absolute inset-0 bg-brand/25 blur-[80px] rounded-full opacity-60 animate-pulse" />
+                <div className="relative z-10 w-full h-full rounded-2xl overflow-hidden border border-border/60 bg-card grid place-items-center shadow-2xl">
+                  {product.icon_url ? (
+                    <img src={product.icon_url} alt={name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-5xl font-black text-brand">
+                      {name.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                  {hasDiscount && (
+                    <span
+                      className={`absolute top-2 ${lang === "ar" ? "right-2" : "left-2"} bg-destructive text-destructive-foreground text-xs font-black px-2 py-0.5 rounded-lg shadow-lg`}
+                    >
+                      -{discount}%
+                    </span>
+                  )}
+                  {/* Viewers chip on image */}
+                  <div className={`absolute bottom-2 ${lang === "ar" ? "left-2" : "right-2"} flex items-center gap-1.5 px-2 py-1 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md`}>
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
+                    </span>
+                    <span className="text-brand text-[10px] font-bold whitespace-nowrap">
+                      <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Name + viewers + description */}
-              <div className="md:col-span-7 lg:col-span-8 order-2 flex flex-col min-w-0">
-                <h1 className="text-2xl sm:text-3xl md:text-[2rem] lg:text-4xl font-extrabold tracking-tight leading-tight break-words">
+              {/* Name + desc */}
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
                   {name}
                 </h1>
-                <div className="mt-3 flex items-center gap-2 self-start px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full bg-brand/10 border border-brand/25 backdrop-blur-md">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
-                  </span>
-                  <span className="text-brand text-[10px] sm:text-xs font-bold tracking-wide whitespace-nowrap">
-                    <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
-                  </span>
-                </div>
                 {desc && (
-                  <div className="mt-4">
+                  <div className="mt-1.5">
                     <p
-                      className={`text-muted-foreground text-sm sm:text-[15px] leading-relaxed ${
-                        descExpanded ? "" : "line-clamp-3"
+                      className={`text-muted-foreground text-xs sm:text-[13px] leading-relaxed ${
+                        descExpanded ? "" : "line-clamp-2"
                       }`}
                     >
                       {desc}
                     </p>
-                    {desc.length > 120 && (
+                    {desc.length > 100 && (
                       <button
                         onClick={() => setDescExpanded((v) => !v)}
-                        className="mt-1 text-xs font-bold text-brand hover:underline"
+                        className="mt-0.5 text-[11px] font-bold text-brand hover:underline"
                       >
                         {descExpanded
-                          ? lang === "ar" ? "عرض أقل" : "Show less"
-                          : lang === "ar" ? "قراءة المزيد" : "Read more"}
+                          ? lang === "ar" ? "أقل" : "Less"
+                          : lang === "ar" ? "المزيد" : "More"}
                       </button>
                     )}
                   </div>
                 )}
-                {/* Trust chips */}
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {[
-                    { ar: "تسليم فوري", en: "Instant" },
-                    { ar: "ضمان كامل", en: "Warranty" },
-                    { ar: "دعم 24/7", en: "24/7 Support" },
-                  ].map((it, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-background/40 border border-border/50 text-[10px] sm:text-[11px] font-bold text-muted-foreground"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0" />
-                      <span>{lang === "ar" ? it.ar : it.en}</span>
-                    </div>
-                  ))}
-                </div>
+              </div>
+
+              {/* Trust chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { ar: "تسليم فوري", en: "Instant" },
+                  { ar: "ضمان كامل", en: "Warranty" },
+                  { ar: "دعم 24/7", en: "24/7" },
+                ].map((it, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/40 border border-border/50 text-[10px] font-bold text-muted-foreground"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-brand shrink-0" />
+                    <span>{lang === "ar" ? it.ar : it.en}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Configurator: full width */}
-            <div className="mb-5">
+            {/* RIGHT , configurator + actions */}
+            <div className="md:col-span-7 lg:col-span-8 flex flex-col min-w-0 gap-3">
               <PricingConfigurator
                 accountTypes={accountTypes}
                 effectiveAcct={effectiveAcct}
@@ -399,30 +399,31 @@ function ProductPage() {
                 discount={discount}
                 minRawPrice={minPriceAcrossPlans}
               />
-            </div>
 
-            {/* Buttons */}
-            <div className="hidden md:flex gap-3">
-              <button
-                onClick={() => setConfirmBuy(true)}
-                disabled={!selected || selectedSoldOut}
-                className={`flex-[2] px-6 py-4 rounded-2xl font-black text-base transition disabled:cursor-not-allowed ${
-                  selectedSoldOut
-                    ? "bg-muted text-muted-foreground border border-border"
-                    : "bg-brand text-brand-foreground hover:brightness-110 hover:-translate-y-0.5 shadow-[0_20px_40px_-12px_hsl(var(--brand)/0.5)] disabled:opacity-50"
-                }`}
-              >
-                {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
-              </button>
-              <button
-                onClick={() => handleAdd(false)}
-                disabled={!selected || selectedSoldOut}
-                className="flex-1 px-6 py-4 border border-border rounded-2xl font-bold hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
-              >
-                {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
-              </button>
+              <div className="hidden md:flex gap-2.5">
+                <button
+                  onClick={() => setConfirmBuy(true)}
+                  disabled={!selected || selectedSoldOut}
+                  className={`flex-[2] px-5 py-3 rounded-xl font-black text-sm transition disabled:cursor-not-allowed ${
+                    selectedSoldOut
+                      ? "bg-muted text-muted-foreground border border-border"
+                      : "bg-brand text-brand-foreground hover:brightness-110 hover:-translate-y-0.5 shadow-[0_20px_40px_-12px_hsl(var(--brand)/0.5)] disabled:opacity-50"
+                  }`}
+                >
+                  {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
+                </button>
+                <button
+                  onClick={() => handleAdd(false)}
+                  disabled={!selected || selectedSoldOut}
+                  className="flex-1 px-5 py-3 border border-border rounded-xl font-bold text-sm hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+
 
         </div>
 
