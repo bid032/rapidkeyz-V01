@@ -709,6 +709,8 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
       if (patchData.price !== undefined) clean.price = patchData.price;
       if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
       if (patchData.stock !== undefined) clean.stock = patchData.stock;
+      if (patchData.account_type !== undefined) clean.account_type = patchData.account_type;
+
       if (Object.keys(clean).length > 0) {
         const { error } = await supabase.from("product_plans").update(clean).eq("id", id);
         if (error) throw error;
