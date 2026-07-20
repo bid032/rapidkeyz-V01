@@ -377,6 +377,17 @@ function AdminOverview() {
               <option key={m} value={m}>{m}</option>
             ))}
           </select>
+          {month !== "all" && (
+            <label className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 bg-card border border-border rounded-lg text-xs sm:text-sm font-bold cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={compare}
+                onChange={(e) => setCompare(e.target.checked)}
+                className="accent-brand size-3.5"
+              />
+              <span className="whitespace-nowrap">قارن مع السابق</span>
+            </label>
+          )}
         </div>
       </div>
 
