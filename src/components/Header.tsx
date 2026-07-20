@@ -96,7 +96,7 @@ export function Header() {
             <img src={theme === "dark" ? logoDark.url : logoLight.url} alt="RapidKeyz" className={`object-contain shrink-0 transition-all duration-300 ${shrunk ? "h-7 w-7 sm:h-8 sm:w-8" : "h-8 w-8 sm:h-10 sm:w-10"}`} />
             <BrandName className={`truncate transition-all duration-300 ${shrunk ? "text-sm sm:text-lg" : "text-base sm:text-xl"}`} />
           </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground whitespace-nowrap">
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             <Link to="/" className="hover:text-foreground transition-colors" activeProps={{ className: "text-foreground" }}>
               {t.nav.home}
             </Link>
@@ -116,7 +116,7 @@ export function Header() {
               </Link>
             )}
             {isAdmin && (
-              <Link to="/admin" className="text-brand font-bold hover:underline whitespace-nowrap">
+              <Link to="/admin" className="text-brand font-bold hover:underline">
                 {t.nav.admin}
               </Link>
             )}

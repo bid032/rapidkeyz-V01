@@ -258,9 +258,9 @@ function HomePage() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             {/* Content Side */}
-            <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-end space-y-4 sm:space-y-5">
+            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-end space-y-4 sm:space-y-5">
 
 
               {/* Live pill */}
@@ -276,21 +276,21 @@ function HomePage() {
               </div>
 
               {/* Headline + sub-headline + subtitle */}
-              <div className="space-y-2.5 sm:space-y-3 w-full text-center md:text-end">
+              <div className="space-y-2.5 sm:space-y-3">
                 <h1
                   data-gsap="split-words"
-                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-center md:text-end"
+                  className="font-display font-bold text-[clamp(2rem,5.5vw,4rem)] leading-[1.1] tracking-tight text-foreground text-balance"
                 >
                   {hero.title1}
                 </h1>
                 <h2
-                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight brand-text text-center md:text-end"
+                  className="font-display font-semibold text-[clamp(1.1rem,2.6vw,1.75rem)] leading-snug tracking-tight text-balance brand-text"
                 >
                   {hero.title2}
                 </h2>
 
                 <p
-                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto md:mx-0 md:ms-auto pt-1 text-center md:text-end"
+                  className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed mx-auto lg:mx-0 pt-1"
                 >
                   {hero.subtitle}
                 </p>
@@ -382,7 +382,7 @@ function HomePage() {
                   { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
                   { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
                 ].map((s) => (
-                  <div key={s.l} className="space-y-1 text-center md:text-end">
+                  <div key={s.l} className="space-y-1 text-center lg:text-end">
                     <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
                   </div>
@@ -391,82 +391,81 @@ function HomePage() {
             </div>
 
             {/* Visual Side */}
-            <div className="md:col-span-5 order-1 md:order-2 relative flex justify-center items-center">
-              <div className="relative w-full max-w-[440px] px-6 py-6 sm:py-12 flex justify-center items-center">
+            <div className="lg:col-span-5 order-1 lg:order-2 relative flex justify-center items-center">
+              <div className="relative w-full max-w-[420px] px-2 py-3 sm:py-12 flex justify-center items-center">
                 {/* Radial glow */}
                 <div aria-hidden className="absolute inset-0 bg-brand/15 blur-[100px] -z-10 rounded-full" />
 
-                {/* NEW Card — top overlay */}
+                {/* NEW Card — top-right overlay (behind logo) */}
                 {trending[1] && (
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -top-4 -start-16 w-52 p-3 bg-card border border-border rounded-2xl shadow-2xl -rotate-[4deg] hover:rotate-0 hover:brand-glow transition z-30"
+                    className="hidden lg:block absolute -top-10 -end-24 w-56 p-3 bg-card border border-border rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
-                        <img src={trending[1].icon_url} alt="" loading="lazy" className="w-10 h-10 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                        <img src={trending[1].icon_url} alt="" loading="lazy" className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-accent/20 shrink-0" />
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-end">
-                        <div className="text-[9px] font-mono uppercase tracking-widest text-brand">
+                        <div className="text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
-                        <div className="text-foreground text-xs font-bold truncate">
+                        <div className="text-foreground text-[11px] sm:text-xs font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
                         {priceOf(trending[1]) && (
-                          <div className="text-brand text-xs font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                          <div className="text-brand text-[11px] sm:text-xs font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
                         )}
                       </div>
                     </div>
                   </Link>
                 )}
 
-                {/* TRENDING Card — bottom overlay */}
+                {/* TRENDING Card — bottom-left overlay (behind logo) */}
                 {trending[0] && (
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -bottom-4 -end-16 w-56 p-3.5 bg-card border border-border rounded-2xl shadow-2xl rotate-[4deg] hover:rotate-0 hover:brand-glow transition z-30"
+                    className="hidden lg:block absolute -bottom-10 -start-24 w-64 p-3.5 bg-card border border-border rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
-                        <img src={trending[0].icon_url} alt="" loading="lazy" className="w-10 h-10 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
+                        <img src={trending[0].icon_url} alt="" loading="lazy" className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover ring-1 ring-border/60 shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-brand/20 shrink-0" />
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-end">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-brand">
+                        <div className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "الأكثر مبيعاً" : "Trending"}
                         </div>
-                        <div className="text-foreground text-sm font-bold truncate">
+                        <div className="text-foreground text-[12px] sm:text-sm font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
                         {priceOf(trending[0]) && (
-                          <div className="text-brand text-sm font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
+                          <div className="text-brand text-[12px] sm:text-sm font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
                         )}
                       </div>
                     </div>
                   </Link>
                 )}
 
-                {/* 3D R Monolith card */}
-                <div className="relative z-20 group w-52 h-52 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <Logo3D className="w-40 sm:w-56 lg:w-64" />
+                {/* 3D R Monolith card — on top */}
+                <div className="relative z-20 group w-44 h-44 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
+                  <Logo3D className="w-32 sm:w-56 lg:w-64" />
 
                   {/* Premium badge */}
-                  <div className="absolute -top-3 -end-3 bg-brand text-brand-foreground px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
+                  <div className="absolute -top-3 -end-3 bg-brand text-brand-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
                     Premium
                   </div>
                 </div>
 
               </div>
             </div>
-
 
           </div>
         </div>
