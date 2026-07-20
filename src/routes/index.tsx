@@ -18,6 +18,7 @@ const HeroCanvas = lazyClient(() => import("@/components/HeroCanvas").then((m) =
 const Logo3D = lazyClient(() => import("@/components/Logo3D").then((m) => ({ default: m.Logo3D })));
 const FloatingLogos = lazyClient(() => import("@/components/FloatingLogos").then((m) => ({ default: m.FloatingLogos })));
 import { CategoryRows } from "@/components/CategoryRows";
+import { ProductSlider } from "@/components/ProductSlider";
 import { ViewAllButton } from "@/components/ViewAllButton";
 
 import { useApp } from "@/contexts/AppContext";
