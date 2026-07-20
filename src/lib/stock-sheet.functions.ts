@@ -508,9 +508,8 @@ async function scanDuplicates(force = false): Promise<DuplicatesResult> {
   }
 
   const groups: DuplicateGroup[] = [];
-  for (const [key, locations] of map) {
+  for (const [code, locations] of map) {
     if (locations.length < 2) continue;
-    const code = key.split("::").slice(1).join("::");
     const tabs = new Set(locations.map((l) => `${l.spreadsheetId}::${l.tab}`));
     const files = new Set(locations.map((l) => l.spreadsheetId));
     groups.push({
