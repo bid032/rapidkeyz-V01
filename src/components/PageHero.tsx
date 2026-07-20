@@ -5,7 +5,7 @@ export function PageHero({ title, eyebrow, subtitle }: { title: string; eyebrow?
   return (
     <section className="relative overflow-hidden py-10 sm:py-20">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[260px] bg-brand/20 blur-[120px] rounded-full opacity-60" />
+        <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[260px] bg-brand/20 blur-[120px] rounded-full opacity-60" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
       </div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">

@@ -282,7 +282,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       {/* Centered toasts: confirmations / approvals / errors */}
       {toasts.filter((t) => t.type !== "info").length > 0 && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
+        <div className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
           {toasts
             .filter((t) => t.type !== "info")
             .map((tt) => (
@@ -302,7 +302,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       {/* Top notifications (info) */}
       {toasts.filter((t) => t.type === "info").length > 0 && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
+        <div className="fixed top-4 start-1/2 -translate-x-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
           {toasts
             .filter((t) => t.type === "info")
             .map((tt) => (

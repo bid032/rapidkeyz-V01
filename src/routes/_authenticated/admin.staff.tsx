@@ -155,11 +155,11 @@ function AdminStaff() {
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="p-3 text-right">الاسم</th>
-                  <th className="p-3 text-right">Username</th>
-                  <th className="p-3 text-right">Password</th>
-                  <th className="p-3 text-right">مفعّل</th>
-                  <th className="p-3 text-right w-16">حذف</th>
+                  <th className="p-3 text-end">الاسم</th>
+                  <th className="p-3 text-end">Username</th>
+                  <th className="p-3 text-end">Password</th>
+                  <th className="p-3 text-end">مفعّل</th>
+                  <th className="p-3 text-end w-16">حذف</th>
                 </tr>
               </thead>
               <tbody>

@@ -95,8 +95,8 @@ function LoginGate({ onLoggedIn }: { onLoggedIn: (staffName: string) => void }) 
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative overflow-hidden bg-card border border-border rounded-3xl p-7 sm:p-9 shadow-2xl"
       >
-        <div aria-hidden className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 bg-brand/20 blur-3xl rounded-full" />
-        <div aria-hidden className="pointer-events-none absolute -bottom-16 -left-16 w-48 h-48 bg-blue-500/15 blur-3xl rounded-full" />
+        <div aria-hidden className="pointer-events-none absolute -top-16 -end-16 w-48 h-48 bg-brand/20 blur-3xl rounded-full" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-16 -start-16 w-48 h-48 bg-blue-500/15 blur-3xl rounded-full" />
 
         <div className="relative flex flex-col items-center text-center gap-2 mb-6">
           <div className="w-14 h-14 rounded-2xl grid place-items-center bg-brand/10 text-brand ring-1 ring-brand/20">
@@ -275,12 +275,12 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-7"
       >
-        <div aria-hidden className="pointer-events-none absolute -top-12 -left-12 w-56 h-56 rounded-full bg-brand/15 blur-3xl" />
+        <div aria-hidden className="pointer-events-none absolute -top-12 -start-12 w-56 h-56 rounded-full bg-brand/15 blur-3xl" />
         <div className="relative flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 text-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest mb-2">
               <Sparkles className="w-3 h-3" /> Live
-              <span className="relative flex h-1.5 w-1.5 ml-1">
+              <span className="relative flex h-1.5 w-1.5 ms-1">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
               </span>
@@ -357,7 +357,7 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
                 value={customerWhatsapp}
                 onChange={(e) => setCustomerWhatsapp(filterPhone(e.target.value, 20))}
                 placeholder="+20…"
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand text-left"
+                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand text-start"
               />
             </StepField>
 

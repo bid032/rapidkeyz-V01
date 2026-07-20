@@ -253,14 +253,14 @@ function HomePage() {
 
         {/* Ambient radial glows */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
-          <div className="absolute top-10 -right-24 w-[420px] h-[420px] rounded-full bg-brand/10 blur-[120px]" />
-          <div className="absolute -bottom-20 -left-16 w-[380px] h-[380px] rounded-full bg-accent/10 blur-[120px]" />
+          <div className="absolute top-10 -end-24 w-[420px] h-[420px] rounded-full bg-brand/10 blur-[120px]" />
+          <div className="absolute -bottom-20 -start-16 w-[380px] h-[380px] rounded-full bg-accent/10 blur-[120px]" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
             {/* Content Side */}
-            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-right space-y-4 sm:space-y-5">
+            <div className="lg:col-span-7 order-2 lg:order-1 flex flex-col items-center lg:items-start text-center lg:text-end space-y-4 sm:space-y-5">
 
 
               {/* Live pill */}
@@ -310,7 +310,7 @@ function HomePage() {
                       ) : (
                         <div className="w-9 h-9 rounded-lg bg-brand/20 shrink-0" />
                       )}
-                      <div className="flex-1 min-w-0 text-right">
+                      <div className="flex-1 min-w-0 text-end">
                         <div className="text-[9px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "الأكثر مبيعاً" : "Trending"}
                         </div>
@@ -336,7 +336,7 @@ function HomePage() {
                       ) : (
                         <div className="w-9 h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
-                      <div className="flex-1 min-w-0 text-right">
+                      <div className="flex-1 min-w-0 text-end">
                         <div className="text-[9px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
@@ -382,7 +382,7 @@ function HomePage() {
                   { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
                   { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
                 ].map((s) => (
-                  <div key={s.l} className="space-y-1 text-center lg:text-right">
+                  <div key={s.l} className="space-y-1 text-center lg:text-end">
                     <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
                   </div>
@@ -402,7 +402,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -top-10 -right-24 w-56 p-3 bg-card border border-border rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden lg:block absolute -top-10 -end-24 w-56 p-3 bg-card border border-border rounded-2xl shadow-2xl rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
@@ -410,7 +410,7 @@ function HomePage() {
                       ) : (
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
-                      <div className="flex-1 min-w-0 text-right">
+                      <div className="flex-1 min-w-0 text-end">
                         <div className="text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
@@ -431,7 +431,7 @@ function HomePage() {
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
                     data-gsap="tilt"
-                    className="hidden lg:block absolute -bottom-10 -left-24 w-64 p-3.5 bg-card border border-border rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
+                    className="hidden lg:block absolute -bottom-10 -start-24 w-64 p-3.5 bg-card border border-border rounded-2xl shadow-2xl -rotate-3 hover:rotate-0 hover:brand-glow transition z-10"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
@@ -439,7 +439,7 @@ function HomePage() {
                       ) : (
                         <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand/20 shrink-0" />
                       )}
-                      <div className="flex-1 min-w-0 text-right">
+                      <div className="flex-1 min-w-0 text-end">
                         <div className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "الأكثر مبيعاً" : "Trending"}
                         </div>
@@ -459,7 +459,7 @@ function HomePage() {
                   <Logo3D className="w-32 sm:w-56 lg:w-64" />
 
                   {/* Premium badge */}
-                  <div className="absolute -top-3 -right-3 bg-brand text-brand-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
+                  <div className="absolute -top-3 -end-3 bg-brand text-brand-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-widest uppercase font-mono shadow-lg">
                     Premium
                   </div>
                 </div>

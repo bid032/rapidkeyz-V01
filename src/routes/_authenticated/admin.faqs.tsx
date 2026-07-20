@@ -208,7 +208,7 @@ function FaqRow({
         </label>
         <button
           onClick={() => onSave(local)}
-          className="ml-auto inline-flex items-center gap-1 px-4 py-2 bg-brand text-brand-foreground rounded-lg text-sm font-bold hover:brand-glow"
+          className="ms-auto inline-flex items-center gap-1 px-4 py-2 bg-brand text-brand-foreground rounded-lg text-sm font-bold hover:brand-glow"
         >
           <Save className="size-4" /> حفظ
         </button>

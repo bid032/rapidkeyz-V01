@@ -28,7 +28,7 @@ export function Testimonials() {
       {/* Blue glow at bottom, rising upward and fading out , only inside testimonials */}
       {/* Gradient glow disabled , uncomment to restore
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[420px] bg-gradient-to-t from-brand/35 via-cyan-300/15 to-transparent" />
-      <div className="pointer-events-none absolute left-1/2 bottom-0 -translate-x-1/2 w-[1200px] h-[380px] bg-brand/25 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute start-1/2 bottom-0 -translate-x-1/2 w-[1200px] h-[380px] bg-brand/25 rounded-full blur-3xl" />
       */}
 
 
@@ -154,7 +154,7 @@ function TestimonialsSlider({ images }: { images: { id: string; image_url: strin
               onClick={() => setIndex(i)}
               aria-hidden={hidden}
               tabIndex={hidden ? -1 : 0}
-              className="absolute top-1/2 left-1/2 -mt-[175px] md:-mt-[230px] -ml-[140px] md:-ml-[184px] w-[280px] md:w-[368px] h-[350px] md:h-[460px] rounded-3xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-[900ms] cursor-pointer"
+              className="absolute top-1/2 start-1/2 -mt-[175px] md:-mt-[230px] -ms-[140px] md:-ms-[184px] w-[280px] md:w-[368px] h-[350px] md:h-[460px] rounded-3xl overflow-hidden border border-border bg-card shadow-2xl transition-all duration-[900ms] cursor-pointer"
               style={{
                 transform: `translateX(${translateX}%) scale(${scale}) rotateY(${rotateY}deg)`,
                 opacity,

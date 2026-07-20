@@ -93,8 +93,8 @@ export function TrustSection() {
     <section className="relative py-10 sm:py-14 px-3 sm:px-6 overflow-hidden">
       {/* soft ambient bg */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[520px] h-[260px] bg-brand/15 blur-[130px] rounded-full" />
-        <div className="absolute bottom-0 right-1/4 w-[380px] h-[220px] bg-[--brand-deep]/20 blur-[120px] rounded-full" />
+        <div className="absolute top-10 start-1/2 -translate-x-1/2 w-[520px] h-[260px] bg-brand/15 blur-[130px] rounded-full" />
+        <div className="absolute bottom-0 end-1/4 w-[380px] h-[220px] bg-[--brand-deep]/20 blur-[120px] rounded-full" />
       </div>
 
       <div className="max-w-7xl mx-auto">
@@ -126,7 +126,7 @@ export function TrustSection() {
               data-gsap="tilt"
               className="group relative p-4 sm:p-5 rounded-2xl bg-card border border-border overflow-hidden hover:border-brand/50 transition-colors"
             >
-              <div className="absolute -top-10 -right-10 size-28 rounded-full bg-brand/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -top-10 -end-10 size-28 rounded-full bg-brand/15 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-brand/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
                 <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 mb-3 sm:mb-0 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
@@ -178,7 +178,7 @@ export function TrustSection() {
               className="group relative p-5 sm:p-6 rounded-2xl bg-card/60 border border-border hover:border-brand/50 transition-all overflow-hidden"
             >
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-brand/8 via-transparent to-[--brand-deep]/10" />
-              <div className="absolute -bottom-16 -left-16 size-32 rounded-full bg-brand/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute -bottom-16 -start-16 size-32 rounded-full bg-brand/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               <div className="relative flex flex-col items-center text-center sm:flex-row sm:items-center sm:gap-4 sm:text-start">
                 <div className="size-14 sm:size-16 shrink-0 grid place-items-center rounded-2xl bg-brand/10 text-brand border border-brand/20 group-hover:brand-glow group-hover:scale-110 transition-all duration-500 mb-3 sm:mb-0">
                   {f.icon}

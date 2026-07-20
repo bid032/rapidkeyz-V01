@@ -92,7 +92,7 @@ function AdminLayout() {
           initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: "easeOut" }}
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[520px] h-[140px] sm:h-[220px] bg-brand/25 blur-[110px] rounded-full"
+          className="pointer-events-none absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] sm:w-[520px] h-[140px] sm:h-[220px] bg-brand/25 blur-[110px] rounded-full"
         />
         <motion.div
           initial={{ opacity: 0, y: -14 }}

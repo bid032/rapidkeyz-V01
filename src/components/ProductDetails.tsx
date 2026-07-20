@@ -45,7 +45,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
 
       {/* Why us */}
       <div className="relative p-8 md:p-12 rounded-3xl border border-border bg-gradient-to-br from-card via-background to-card overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-64 h-64 bg-brand/10 rounded-full blur-3xl" />
+        <div className="absolute -top-24 -start-24 w-64 h-64 bg-brand/10 rounded-full blur-3xl" />
         <div className="relative">
           <p className="text-xs font-black uppercase tracking-[0.2em] text-brand mb-2">
             {isAr ? "ليه تختارنا" : "Why us"}

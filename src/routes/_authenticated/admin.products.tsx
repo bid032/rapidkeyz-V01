@@ -292,10 +292,10 @@ function AdminProducts() {
                           </button>
                         </td>
                         <td className="p-4 text-end">
-                          <button onClick={() => openEdit(p)} className="text-brand text-sm hover:underline ml-3">
+                          <button onClick={() => openEdit(p)} className="text-brand text-sm hover:underline ms-3">
                             {t.admin.edit}
                           </button>
-                          <button onClick={() => askDelete(p)} className="text-destructive text-sm hover:underline ml-3">
+                          <button onClick={() => askDelete(p)} className="text-destructive text-sm hover:underline ms-3">
                             {t.admin.delete}
                           </button>
                         </td>
