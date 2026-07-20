@@ -278,7 +278,7 @@ export function QuickBuyDialog({
 
           {/* Split body — no scroll */}
           <div className="flex-1 min-h-0 overflow-hidden">
-            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 h-full">
+            <div className="grid grid-cols-[260px_minmax(0,1fr)] gap-0 h-full items-start">
               {/* RIGHT column (start in RTL): image + 3 actions + total */}
               <aside className="border-e border-border/60 bg-muted/20 p-4 flex flex-col gap-3 min-h-0 overflow-hidden">
                 <div className="relative w-full rounded-2xl border border-border bg-background overflow-hidden shadow-lg shrink-0" style={{ aspectRatio: "1 / 1", maxHeight: "220px" }}>
@@ -407,9 +407,9 @@ export function QuickBuyDialog({
                   </div>
                 )}
 
-                {/* Total + qty — pinned at the end (left in RTL), aligned with plans column */}
+                {/* Total + qty — sits right after plans, aligned with the details button */}
                 {plans.length > 0 && (
-                  <div className="mt-auto pt-3">
+                  <div className="pt-2">
                     <div className="rounded-2xl border border-brand/25 bg-gradient-to-br from-brand/10 via-brand/5 to-transparent p-3 flex items-center justify-between gap-4">
                       {/* qty */}
                       <div className="flex items-center gap-2.5">
