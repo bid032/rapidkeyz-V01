@@ -180,10 +180,40 @@ export function QuickBuyDialog({
           </div>
 
           {/* Plans */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3">
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3">
+            {hasAcctChoice && (
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
+                  {isAr ? "نوع الحساب" : "Account type"}
+                </div>
+                <div
+                  className="grid gap-1 p-1 rounded-lg bg-muted/40 border border-border"
+                  style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
+                >
+                  {normalizedTypes.map((a) => {
+                    const isSel = effectiveAcct === a;
+                    return (
+                      <button
+                        key={a}
+                        type="button"
+                        onClick={() => setAcct(a)}
+                        className={`px-2 py-1.5 rounded-md text-xs font-extrabold transition ${
+                          isSel
+                            ? "bg-brand text-brand-foreground shadow"
+                            : "text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {acctMeta[a][isAr ? "ar" : "en"]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
               {isAr ? "اختر الخطة" : "Choose a plan"}
             </div>
+
             {plansQ.isLoading ? (
               <div className="grid grid-cols-1 gap-1.5">
                 {[0, 1, 2, 3].map((i) => (
