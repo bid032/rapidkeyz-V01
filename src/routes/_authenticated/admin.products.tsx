@@ -440,9 +440,9 @@ function AdminProducts() {
                     <section className="space-y-3">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الأقسام والحالة</h3>
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-                        <div className="md:col-span-8">
+                        <div className="md:col-span-6">
                           <Field label="الأقسام">
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                               {cats.data?.map((c) => {
                                 const active = editing.category_ids.includes(c.id);
                                 return (
@@ -475,7 +475,7 @@ function AdminProducts() {
                             )}
                           </Field>
                         </div>
-                        <div className="md:col-span-4 grid grid-cols-2 md:grid-cols-1 gap-3 content-start">
+                        <div className="md:col-span-6 grid grid-cols-2 gap-3 content-start">
                           <Field label="الحالة">
                             <select value={editing.status}
                               onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
@@ -495,6 +495,7 @@ function AdminProducts() {
                           </Field>
                         </div>
                       </div>
+
                     </section>
 
                     {/* Account types + Discount */}
