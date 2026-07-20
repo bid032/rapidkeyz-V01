@@ -8,9 +8,7 @@ type Props = {
 export function ProductDetails({ productName, accountTypes }: Props) {
   const { lang } = useApp();
   const isAr = lang === "ar";
-  const hasShared = accountTypes.includes("shared");
-  const hasPrivate = accountTypes.includes("private");
-  const hasOwn = accountTypes.includes("own");
+  void accountTypes;
 
   const features = isAr
     ? [
@@ -43,146 +41,7 @@ export function ProductDetails({ productName, accountTypes }: Props) {
         ))}
       </div>
 
-      {/* Account comparison */}
-      {(hasShared || hasPrivate || hasOwn) && (
-        <div>
-          <div className="flex items-end justify-between mb-6 flex-wrap gap-3">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-brand mb-2">
-                {isAr ? "قارن بين الأنواع" : "Compare Types"}
-              </p>
-              <h3 className="text-2xl md:text-3xl font-extrabold">
-                {isAr ? "اختر نوع الحساب المناسب لك" : "Pick the account type that fits you"}
-              </h3>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {hasShared && (
-              <div className="relative p-6 rounded-2xl border border-border bg-card overflow-hidden">
-                <div className="absolute -top-16 -right-16 w-40 h-40 bg-brand/5 rounded-full blur-2xl" />
-                <div className="relative">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">
-                    {isAr ? "اقتصادي ومستقر" : "Economical & Stable"}
-                  </div>
-                  <div className="text-xl font-extrabold mb-4">
-                    {isAr ? "حساب مشترك" : "Shared Account"}
-                  </div>
-                  <ul className="space-y-2.5 text-sm">
-                    {(isAr
-                      ? [
-                          "الاستخدام على جهاز واحد فقط",
-                          "جميع مميزات الخدمة بدون نقص",
-                          "تحديثات دورية للأداء والأمان",
-                          "الخيار الأمثل للفريلانسرز والهواة",
-                        ]
-                      : [
-                          "Use on a single device only",
-                          "All service features included",
-                          "Regular performance and security updates",
-                          "Best fit for freelancers and hobbyists",
-                        ]
-                    ).map((li) => (
-                      <li key={li} className="flex gap-2">
-                        <span className="text-brand mt-0.5">✓</span>
-                        <span className="text-muted-foreground">{li}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-5 p-3 rounded-lg bg-muted/50 text-xs leading-relaxed">
-                    {" "}
-                    {isAr
-                      ? "مثالي لمن يعمل على جهاز واحد ويريد الاستفادة الكاملة بأقل تكلفة."
-                      : "Ideal for anyone working on a single device who wants full value at the lowest cost."}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {hasPrivate && (
-              <div className="relative p-6 rounded-2xl border-2 border-brand/50 bg-gradient-to-br from-brand/10 via-card to-card overflow-hidden">
-                <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3 text-[10px] font-black px-2 py-1 rounded-full bg-brand text-brand-foreground uppercase tracking-wider">
-                  {isAr ? "الأكثر طلباً" : "Most Popular"}
-                </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">
-                  {isAr ? "تحكم ومرونة كاملة" : "Full Control & Flexibility"}
-                </div>
-                <div className="text-xl font-extrabold mb-4">
-                  {isAr ? "حساب خاص" : "Private Account"}
-                </div>
-                <ul className="space-y-2.5 text-sm">
-                  {(isAr
-                    ? [
-                        "استخدام على أكثر من جهاز في نفس الوقت",
-                        "تحكم كامل في الحساب والإعدادات",
-                        "تفعيل على البريد الإلكتروني الخاص بك",
-                        "دعم أولوية طوال فترة الاشتراك",
-                      ]
-                    : [
-                        "Use on multiple devices at the same time",
-                        "Full control over the account and settings",
-                        "Activated on your own email address",
-                        "Priority support throughout the plan",
-                      ]
-                  ).map((li) => (
-                    <li key={li} className="flex gap-2">
-                      <span className="text-brand mt-0.5">✓</span>
-                      <span>{li}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-5 p-3 rounded-lg bg-brand/10 border border-brand/20 text-xs leading-relaxed">
-                  {" "}
-                  {isAr
-                    ? "مثالي للمحترفين والوكالات التي تحتاج مرونة بين أجهزة متعددة."
-                    : "Ideal for professionals and agencies needing flexibility across multiple devices."}
-                </div>
-              </div>
-            )}
-
-            {hasOwn && (
-              <div className="relative p-6 rounded-2xl border border-success/40 bg-gradient-to-br from-success/5 via-card to-card overflow-hidden">
-                <div className="absolute -top-16 -right-16 w-40 h-40 bg-success/10 rounded-full blur-2xl" />
-                <div className="relative">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-success mb-2">
-                    {isAr ? "تفعيل على حسابك" : "Activated on your account"}
-                  </div>
-                  <div className="text-xl font-extrabold mb-4">
-                    {isAr ? "حساب من عندنا" : "Our Own Account"}
-                  </div>
-                  <ul className="space-y-2.5 text-sm">
-                    {(isAr
-                      ? [
-                          "نوفر لك الحساب جاهز بالكامل",
-                          "بيانات دخول جديدة ومخصصة",
-                          "بدون الحاجة لحساب سابق منك",
-                          "استلام فوري بعد إتمام الطلب",
-                        ]
-                      : [
-                          "We provide a ready-made account",
-                          "Fresh, dedicated login credentials",
-                          "No prior account needed from you",
-                          "Instant delivery after checkout",
-                        ]
-                    ).map((li) => (
-                      <li key={li} className="flex gap-2">
-                        <span className="text-success mt-0.5">✓</span>
-                        <span className="text-muted-foreground">{li}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-5 p-3 rounded-lg bg-success/10 border border-success/20 text-xs leading-relaxed">
-                    {" "}
-                    {isAr
-                      ? "مثالي لمن يريد حساب جديد جاهز للاستخدام فوراً بدون أي إعداد."
-                      : "Ideal for anyone who wants a fresh, ready-to-use account with zero setup."}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Account comparison removed to keep the page compact */}
 
       {/* Why us */}
       <div className="relative p-8 md:p-12 rounded-3xl border border-border bg-gradient-to-br from-card via-background to-card overflow-hidden">

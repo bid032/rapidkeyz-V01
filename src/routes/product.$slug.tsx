@@ -199,8 +199,12 @@ function ProductPage() {
     if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) acct = "private";
     else if (/shared/i.test(en) || /مشترك|شير/i.test(ar)) acct = "shared";
     else if (/\bown\b|our own/i.test(en) || /من عندنا|من عندك|بحسابك|حسابك/i.test(ar)) acct = "own";
-    const durEn = en.replace(/^(private|shared|own|our own)\s*account\s*-\s*/i, "").trim() || en;
-    const durAr = ar.replace(/^(Private|Shared|Own|من عندنا)\s*(Account\s*-\s*)?/i, "").trim() || ar;
+    const durEn = en
+      .replace(/^(private|shared|own|our own)\s*(account)?\s*[-–—:]?\s*/i, "")
+      .trim() || en;
+    const durAr = ar
+      .replace(/^(حساب\s+)?(خاص|مشترك|من\s*عندنا|من\s*عندك|Private|Shared|Own)\s*(Account)?\s*[-–—:]?\s*/i, "")
+      .trim() || ar;
     return { acct, durEn, durAr };
   };
 

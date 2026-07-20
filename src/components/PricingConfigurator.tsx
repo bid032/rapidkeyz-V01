@@ -139,7 +139,7 @@ export function PricingConfigurator({
               {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
 
             {plans.map((pl) => {
               const isSel = selected?.id === pl.id;
@@ -154,7 +154,7 @@ export function PricingConfigurator({
                   key={pl.id}
                   onClick={() => !soldOut && onSelectPlan(pl.id)}
                   disabled={soldOut}
-                  className={`relative text-start p-2 rounded-xl border-2 transition-all overflow-hidden group ${
+                  className={`relative text-start p-2.5 rounded-xl border-2 transition-all overflow-hidden group ${
                     soldOut
                       ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
                       : isSel
@@ -169,30 +169,32 @@ export function PricingConfigurator({
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
-                  {savePct >= 10 && !soldOut && (
-                    <span className="absolute top-1 end-1 text-[8px] font-black px-1 py-0.5 rounded bg-success/15 text-success border border-success/30">
-                      {isAr ? `-${savePct}%` : `-${savePct}%`}
-                    </span>
-                  )}
-                  <div className="relative">
-                    <div className={`text-xs font-extrabold mb-1 leading-tight ${soldOut ? "line-through" : ""}`}>
-                      {isAr ? pl.durAr : pl.durEn}
+                  <div className="relative flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className={`text-xs font-extrabold mb-1 leading-tight truncate ${soldOut ? "line-through" : ""}`}>
+                        {isAr ? pl.durAr : pl.durEn}
+                      </div>
+                      <div className="flex items-baseline gap-1">
+                        <span
+                          className={`text-base font-black tabular-nums leading-none ${
+                            isSel ? "text-brand" : "text-foreground"
+                          }`}
+                        >
+                          {price}
+                        </span>
+                        <span className="text-[9px] font-bold text-muted-foreground">
+                          {t.common.currency}
+                        </span>
+                      </div>
+                      {soldOut && (
+                        <span className="mt-1 inline-block text-[8px] font-black uppercase px-1 py-0.5 rounded bg-destructive/15 text-destructive">
+                          {t.product.soldOut}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-baseline gap-1">
-                      <span
-                        className={`text-base font-black tabular-nums leading-none ${
-                          isSel ? "text-brand" : "text-foreground"
-                        }`}
-                      >
-                        {price}
-                      </span>
-                      <span className="text-[9px] font-bold text-muted-foreground">
-                        {t.common.currency}
-                      </span>
-                    </div>
-                    {soldOut && (
-                      <span className="mt-1 inline-block text-[8px] font-black uppercase px-1 py-0.5 rounded bg-destructive/15 text-destructive">
-                        {t.product.soldOut}
+                    {savePct >= 10 && !soldOut && (
+                      <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums">
+                        -{savePct}%
                       </span>
                     )}
                   </div>
