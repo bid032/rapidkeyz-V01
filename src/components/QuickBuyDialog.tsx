@@ -409,27 +409,27 @@ export function QuickBuyDialog({
 
                 {/* Total + qty inline card */}
                 {plans.length > 0 && (
-                  <div className="mt-auto pt-2">
-                    <div className="rounded-2xl border-2 border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-5">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex items-center gap-3">
+                  <div className="shrink-0 pt-1">
+                    <div className="rounded-xl border-2 border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-3">
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
                             {isAr ? "الكمية" : "Qty"}
                           </span>
-                          <div className="flex items-center gap-1 rounded-full border border-border bg-background p-1">
+                          <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
                             <button
                               type="button"
                               onClick={() => setQty((q) => Math.max(1, q - 1))}
-                              className="size-9 rounded-full grid place-items-center hover:bg-muted transition"
+                              className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
                               aria-label="decrease"
                             >
                               −
                             </button>
-                            <span className="min-w-8 text-center font-black tabular-nums">{qty}</span>
+                            <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
                             <button
                               type="button"
                               onClick={() => setQty((q) => Math.min(99, q + 1))}
-                              className="size-9 rounded-full grid place-items-center hover:bg-muted transition"
+                              className="size-7 rounded-full grid place-items-center hover:bg-muted transition"
                               aria-label="increase"
                             >
                               +
@@ -437,25 +437,26 @@ export function QuickBuyDialog({
                           </div>
                         </div>
                         {selected && (
-                          <div className="flex items-baseline gap-2">
+                          <div className="flex items-baseline gap-1.5">
                             {hasDiscount && (
-                              <span className="text-sm text-muted-foreground line-through tabular-nums">
+                              <span className="text-xs text-muted-foreground line-through tabular-nums">
                                 {Math.round(rawUnit * qty * 100) / 100}
                               </span>
                             )}
-                            <span className="text-xs font-black uppercase tracking-widest text-brand">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-brand">
                               {isAr ? "الإجمالي" : "Total"}
                             </span>
-                            <span className="text-4xl font-black text-brand tabular-nums leading-none">
+                            <span className="text-2xl font-black text-brand tabular-nums leading-none">
                               {total}
                             </span>
-                            <span className="text-base font-black text-brand/80">{t.common.currency}</span>
+                            <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
                 )}
+
               </section>
             </div>
           </div>
