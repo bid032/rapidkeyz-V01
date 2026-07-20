@@ -480,10 +480,7 @@ function HomePage() {
         slugs={["design", "ai-tools", "software", "educational"]}
       />
 
-      {/* AI Tools + Designers rows */}
-      <CategoryRows slugs={["ai-tools", "design"]} />
-
-      {/* Best Sellers , fallback to featured products when no order history yet */}
+      {/* Best Sellers — moved BEFORE AI tools row */}
       {(() => {
         const list = (bestSellers.data && bestSellers.data.length > 0)
           ? bestSellers.data
@@ -515,6 +512,9 @@ function HomePage() {
           </section>
         );
       })()}
+
+      {/* AI Tools + Designers rows */}
+      <CategoryRows slugs={["ai-tools", "design"]} />
 
 
       <TrustSection />

@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { ImageUpload } from "@/components/ImageUpload";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
 
@@ -59,6 +60,41 @@ function AdminTestimonials() {
     onError: (e) => showError(e, notify, lang),
   });
 
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleFile = async (file: File) => {
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const dims = await new Promise<{ w: number; h: number }>((res, rej) => {
+        const url = URL.createObjectURL(file);
+        const i = new Image();
+        i.onload = () => { res({ w: i.naturalWidth, h: i.naturalHeight }); URL.revokeObjectURL(url); };
+        i.onerror = () => { URL.revokeObjectURL(url); rej(new Error("Invalid image")); };
+        i.src = url;
+      });
+      const actual = dims.w / dims.h;
+      const target = 4 / 5;
+      if (Math.abs(actual - target) / target > 0.02) {
+        throw new Error(`نسبة الصورة لازم تكون 4:5. الصورة اللي رفعتها ${dims.w}×${dims.h}.`);
+      }
+      const ext = file.name.split(".").pop() ?? "png";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("testimonial-images").upload(path, file, {
+        cacheControl: "3600", upsert: false, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("testimonial-images").getPublicUrl(path);
+      add.mutate(data.publicUrl);
+    } catch (e: any) {
+      setUploadError(e?.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div>
       <h1 className="text-2xl sm:text-3xl font-extrabold mb-2">آراء العملاء / Testimonials</h1>
@@ -66,13 +102,32 @@ function AdminTestimonials() {
         ارفع صور آراء العملاء وهتظهر في السلايدر في الصفحة الرئيسية.
       </p>
 
-      <div className="bg-card border border-border rounded-2xl p-5 mb-6">
-        <ImageUpload
-          bucket="testimonial-images"
-          label="+ إضافة صورة رأي عميل (نسبة 4:5 ، أي مقاس)"
-          requireAspectRatio={{ w: 4, h: 5 }}
-          onChange={(url) => add.mutate(url)}
+      <div className="bg-card border border-border rounded-2xl p-4 mb-6">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={uploading}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleFile(f);
+            e.target.value = "";
+          }}
         />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-brand text-brand-foreground font-bold hover:brand-glow disabled:opacity-60 transition"
+        >
+          <Upload className="size-4" />
+          {uploading ? "جاري الرفع..." : "+ إضافة صورة رأي عميل (نسبة 4:5)"}
+        </button>
+        {uploadError && <p className="text-xs text-destructive mt-2">{uploadError}</p>}
+        <p className="text-[11px] text-muted-foreground mt-2 text-center">
+          نسبة الصورة لازم تكون 4:5 (مثال: 800×1000 ، 1200×1500).
+        </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

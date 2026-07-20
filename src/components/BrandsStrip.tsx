@@ -56,9 +56,11 @@ export function BrandsStrip() {
       {/* True transparency fade via CSS mask , works over any background */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div
-          className="brands-marquee overflow-hidden rounded-2xl"
+          className="brands-marquee rounded-2xl py-4 sm:py-6"
           dir="ltr"
           style={{
+            overflowX: "hidden",
+            overflowY: "visible",
             WebkitMaskImage:
               "linear-gradient(to right, transparent 0, #000 8%, #000 92%, transparent 100%)",
             maskImage:
