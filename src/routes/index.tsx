@@ -412,7 +412,7 @@ function HomePage() {
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent/20 shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 text-start">
-                        <div className="text-[8px] sm:text-[9px] font-mono uppercase tracking-widest text-brand">
+                        <div className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-brand">
                           {lang === "ar" ? "جديد" : "New"}
                         </div>
                         <div className="text-foreground text-[11px] sm:text-xs font-bold truncate">
