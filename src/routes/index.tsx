@@ -502,12 +502,8 @@ function HomePage() {
               </div>
               <ViewAllButton to="/shop" />
             </div>
-            <div data-gsap="card-pop" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-              {list.slice(0, 8).map((p) => (
-                <div key={p.id} data-gsap="tilt">
-                  <ProductCard p={p} />
-                </div>
-              ))}
+            <div data-gsap="card-pop">
+              <ProductSlider products={list.slice(0, 12)} />
             </div>
           </section>
         );
