@@ -20,7 +20,11 @@ type Props = {
   onSelectPlan: (id: string) => void;
   discount: number;
   minRawPrice: number;
+  variants?: string[];
+  effectiveVariant?: string | null;
+  onVariantChange?: (v: string) => void;
 };
+
 
 const acctMeta = {
   private: {
@@ -46,7 +50,11 @@ export function PricingConfigurator({
   onSelectPlan,
   discount,
   minRawPrice,
+  variants,
+  effectiveVariant,
+  onVariantChange,
 }: Props) {
+
   const { lang, t } = useApp();
   const isAr = lang === "ar";
   const hasDiscount = discount > 0;
