@@ -512,7 +512,8 @@ function ProductPage() {
           document.body,
         )}
       </div>
-      <div className="mt-2 sm:mt-4">
+      <div className="-mt-2 sm:-mt-1">
+
         <ProductTabs productId={product.id} productName={name} description={desc} deliveryType={product.delivery_type} />
       </div>
       <div className="mt-2 sm:mt-4">
