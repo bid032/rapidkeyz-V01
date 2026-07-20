@@ -370,60 +370,46 @@ function CheckoutPage() {
                   <div className="mt-4 space-y-4 p-3 sm:p-4 rounded-xl bg-brand/5 border border-brand/30 min-w-0 overflow-hidden">
 
                     <div className="text-sm leading-relaxed break-words">
-                      {lang === "ar" ? (
-                        <>
-                          <p className="font-bold mb-2">خطوات الدفع:</p>
-                          <ol className="list-decimal ps-5 space-y-1">
-                            <li>
-                              حوّل مبلغ <span className="font-bold">{cartTotal} ج.م</span> عبر
-                              انستاباي أو أي محفظة إلكترونية على الرقم:
-                            </li>
-                            <li>
-                              <button
-                                type="button"
-                                onClick={copyNumber}
-                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-base sm:text-lg underline decoration-dotted hover:text-brand/80 break-all"
-                                dir="ltr"
-                                title="اضغط للنسخ"
-                              >
-                                {WHATSAPP_NUMBER}
-                              </button>{" "}
-                              <span className="text-[11px] sm:text-xs text-muted-foreground block sm:inline">
-                                {copied ? "(تم النسخ ✓)" : "(اضغط على الرقم لنسخه)"}
-                              </span>
-
-                            </li>
-                            <li>ارفع صورة إيصال التحويل واكتب الرقم اللي حولت منه بالأسفل.</li>
-                          </ol>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-bold mb-2">Payment steps:</p>
-                          <ol className="list-decimal ps-5 space-y-1">
-                            <li>
-                              Transfer <span className="font-bold">{cartTotal} EGP</span> via
-                              Instapay or any e-wallet to:
-                            </li>
-                            <li>
-                              <button
-                                type="button"
-                                onClick={copyNumber}
-                                className="inline-flex items-center gap-2 font-mono font-bold text-brand text-base sm:text-lg underline decoration-dotted hover:text-brand/80 break-all"
-                                dir="ltr"
-                                title="Click to copy"
-                              >
-                                {WHATSAPP_NUMBER}
-                              </button>{" "}
-                              <span className="text-[11px] sm:text-xs text-muted-foreground block sm:inline">
-                                {copied ? "(Copied ✓)" : "(Click the number to copy)"}
-                              </span>
-
-                            </li>
-                            <li>Upload the receipt screenshot and enter the sending number below.</li>
-                          </ol>
-                        </>
-                      )}
+                      <p className="font-bold mb-2">
+                        {lang === "ar" ? "خطوات الدفع:" : "Payment steps:"}
+                      </p>
+                      <ol className="list-decimal ps-5 space-y-1.5">
+                        <li>
+                          {lang === "ar" ? (
+                            <>حوّل مبلغ <span className="font-bold">{cartTotal} ج.م</span> عبر انستاباي أو أي محفظة إلكترونية على الرقم بالأسفل.</>
+                          ) : (
+                            <>Transfer <span className="font-bold">{cartTotal} EGP</span> via Instapay or any e-wallet to the number below.</>
+                          )}
+                        </li>
+                        <li>
+                          {lang === "ar"
+                            ? "ارفع صورة إيصال التحويل واكتب الرقم اللي حولت منه."
+                            : "Upload the receipt screenshot and enter the sending number."}
+                        </li>
+                      </ol>
                     </div>
+
+                    {/* Copy-number pill */}
+                    <button
+                      type="button"
+                      onClick={copyNumber}
+                      className="w-full flex items-center justify-between gap-2 p-3 rounded-xl bg-background border border-brand/40 hover:border-brand transition text-start"
+                      title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">
+                          {lang === "ar" ? "رقم التحويل" : "Transfer number"}
+                        </div>
+                        <div dir="ltr" className="font-mono font-extrabold text-brand text-base sm:text-lg tracking-wide truncate">
+                          {WHATSAPP_NUMBER}
+                        </div>
+                      </div>
+                      <span className={`shrink-0 text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition ${copied ? "bg-success/20 text-success" : "bg-brand/15 text-brand"}`}>
+                        {copied
+                          ? (lang === "ar" ? "تم النسخ ✓" : "Copied ✓")
+                          : (lang === "ar" ? "نسخ" : "Copy")}
+                      </span>
+                    </button>
 
                     <div className="grid gap-2">
                       <label className="text-xs font-bold text-muted-foreground">
@@ -435,7 +421,8 @@ function CheckoutPage() {
                         value={senderPhone}
                         onChange={(e) => setSenderPhone(filterDigits(e.target.value, 15))}
                         placeholder={lang === "ar" ? "01xxxxxxxxx" : "01xxxxxxxxx"}
-                        className="px-4 py-3 bg-background border border-border rounded-lg"
+                        className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                        dir="ltr"
                       />
                     </div>
 
@@ -443,18 +430,23 @@ function CheckoutPage() {
                       <label className="text-xs font-bold text-muted-foreground">
                         {lang === "ar" ? "صورة إيصال الدفع" : "Payment receipt screenshot"}
                       </label>
-                      <input
-                        required
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
-                        className="w-full max-w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-background border border-border rounded-lg text-xs sm:text-sm file:me-2 sm:file:me-3 file:px-2 sm:file:px-3 file:py-1 file:rounded-md file:border-0 file:bg-brand file:text-brand-foreground file:text-xs"
-                      />
-
-                      {proofFile && (
-                        <p className="text-xs text-muted-foreground truncate">{proofFile.name}</p>
-                      )}
+                      <label className="w-full flex items-center gap-3 px-3 py-2.5 bg-background border border-border rounded-lg cursor-pointer hover:border-brand/60 transition min-w-0">
+                        <span className="shrink-0 px-3 py-1.5 rounded-md bg-brand text-brand-foreground text-xs font-bold">
+                          {lang === "ar" ? "اختر صورة" : "Choose file"}
+                        </span>
+                        <span className="text-xs text-muted-foreground truncate min-w-0 flex-1">
+                          {proofFile?.name || (lang === "ar" ? "لم يتم اختيار ملف" : "No file selected")}
+                        </span>
+                        <input
+                          required
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+                          className="sr-only"
+                        />
+                      </label>
                     </div>
+
                   </div>
                 ) : gateway === "simulate" ? (
                   <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30 text-sm leading-relaxed">
