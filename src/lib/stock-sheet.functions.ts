@@ -476,17 +476,28 @@ async function scanDuplicates(force = false): Promise<DuplicatesResult> {
       const keyCols: number[] = [];
       header.forEach((h, idx) => {
         if (!h) return;
-        if (KEY_HEADERS.includes(h)) keyCols.push(idx);
+        // Substring match so headers like "activation_key", "Email Address",
+        // "user password", "كود التفعيل"… all get picked up.
+        if (KEY_HEADERS.some((k) => h.includes(k))) keyCols.push(idx);
       });
       if (keyCols.length === 0) continue;
 
 
+      // Track duplicates within the same tab+column (row indices) so we
+      // don't double-count when the same code repeats in the same cell path.
+      const seenInTab = new Set<string>();
       for (let i = 1; i < rows.length; i++) {
         const row = rows[i] ?? [];
         for (const c of keyCols) {
           const raw = (row[c] ?? "").trim();
           if (!raw) continue;
-          const key = `${c}::${raw.toUpperCase()}`;
+          // Key by the VALUE only (not by column) so the same code counts as
+          // a duplicate even if it appears under different header names or
+          // in a different tab / spreadsheet.
+          const key = raw.toUpperCase();
+          const dedupKey = `${spreadsheetId}::${tab}::${c}::${i}`;
+          if (seenInTab.has(dedupKey)) continue;
+          seenInTab.add(dedupKey);
           totalCodes += 1;
           const arr = map.get(key) ?? [];
           arr.push({ spreadsheetId, spreadsheetTitle: bookTitle, tab, row: i + 1 });
