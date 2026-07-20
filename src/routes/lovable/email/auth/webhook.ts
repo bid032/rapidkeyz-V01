@@ -24,58 +24,86 @@ const handler = createAuthEmailHandler({
   sendUrl: process.env.LOVABLE_SEND_URL,
   emails: {
     signup: {
-      subject: 'Confirm your email',
-      render: (data) =>
-        React.createElement(SignupEmail, {
+      subject: (data: any) => pickLang(data) === 'en' ? 'Confirm your email' : 'أكد بريدك الإلكتروني',
+      render: (data) => {
+        const lang = pickLang(data)
+        return React.createElement(SignupEmail, {
           siteName: SITE_NAME,
           siteUrl: SITE_URL,
           recipient: data.email,
           confirmationUrl: data.url,
-        }),
+          lang,
+        })
+      },
     },
     invite: {
-      subject: "You've been invited",
-      render: (data) =>
-        React.createElement(InviteEmail, {
+      subject: (data: any) => pickLang(data) === 'en' ? "You've been invited" : 'تمت دعوتك',
+      render: (data) => {
+        const lang = pickLang(data)
+        return React.createElement(InviteEmail, {
           siteName: SITE_NAME,
           siteUrl: SITE_URL,
           confirmationUrl: data.url,
-        }),
+          lang,
+        })
+      },
     },
     magiclink: {
-      subject: 'Your login link',
-      render: (data) =>
-        React.createElement(MagicLinkEmail, {
+      subject: (data: any) => pickLang(data) === 'en' ? 'Your login link' : 'رابط الدخول',
+      render: (data) => {
+        const lang = pickLang(data)
+        return React.createElement(MagicLinkEmail, {
           siteName: SITE_NAME,
           confirmationUrl: data.url,
-        }),
+          lang,
+        })
+      },
     },
     recovery: {
-      subject: 'Reset your password',
-      render: (data) =>
-        React.createElement(RecoveryEmail, {
+      subject: (data: any) => pickLang(data) === 'en' ? 'Reset your password' : 'إعادة تعيين كلمة السر',
+      render: (data) => {
+        const lang = pickLang(data)
+        return React.createElement(RecoveryEmail, {
           siteName: SITE_NAME,
           confirmationUrl: data.url,
-        }),
+          lang,
+        })
+      },
     },
     email_change: {
-      subject: 'Confirm your new email',
-      render: (data) =>
-        React.createElement(EmailChangeEmail, {
+      subject: (data: any) => pickLang(data) === 'en' ? 'Confirm your new email' : 'تأكيد البريد الجديد',
+      render: (data) => {
+        const lang = pickLang(data)
+        return React.createElement(EmailChangeEmail, {
           siteName: SITE_NAME,
           oldEmail: data.old_email ?? '',
           email: data.email,
           newEmail: data.new_email ?? '',
           confirmationUrl: data.url,
-        }),
+          lang,
+        })
+      },
     },
     reauthentication: {
-      subject: 'Your verification code',
-      render: (data) =>
-        React.createElement(ReauthenticationEmail, { token: data.token ?? '' }),
+      subject: (data: any) => pickLang(data) === 'en' ? 'Your verification code' : 'رمز التحقق',
+      render: (data) => {
+        const lang = pickLang(data)
+        return React.createElement(ReauthenticationEmail, { token: data.token ?? '', lang })
+      },
     },
   },
 })
+
+// Extract preferred language from Supabase user metadata; default to Arabic.
+function pickLang(data: any): 'ar' | 'en' {
+  const raw =
+    data?.user?.user_metadata?.language ??
+    data?.user?.user_metadata?.locale ??
+    data?.user_metadata?.language ??
+    data?.metadata?.language
+  if (typeof raw === 'string' && raw.toLowerCase().startsWith('en')) return 'en'
+  return 'ar'
+}
 
 export const Route = createFileRoute("/lovable/email/auth/webhook")({
   server: {
