@@ -299,7 +299,7 @@ export function PricingConfigurator({
         {selected && (
           <div className="relative rounded-xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-3 overflow-hidden">
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]" />
-            <div className="relative flex items-center justify-between gap-3">
+            <div className="relative flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
                   {isAr ? "٣ · الإجمالي" : "3 · Total"}
@@ -313,7 +313,7 @@ export function PricingConfigurator({
                     transition={{ type: "spring", stiffness: 320, damping: 26 }}
                     className="flex items-baseline gap-2 flex-wrap"
                   >
-                    <span className="text-3xl font-black text-brand tabular-nums leading-none">
+                    <span className="text-2xl sm:text-3xl font-black text-brand tabular-nums leading-none">
                       {finalPrice}
                     </span>
                     <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
@@ -325,14 +325,14 @@ export function PricingConfigurator({
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
+              <div className="flex flex-wrap items-center gap-1 shrink-0 justify-end max-w-[55%]">
                 {hasDiscount && (
                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider">
                     -{discount}%
                   </span>
                 )}
                 {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30">
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30 whitespace-nowrap">
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
@@ -343,6 +343,7 @@ export function PricingConfigurator({
                 )}
               </div>
             </div>
+
           </div>
         )}
 
