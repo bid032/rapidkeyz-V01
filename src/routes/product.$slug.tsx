@@ -332,16 +332,8 @@ function ProductPage() {
                         -{discount}%
                       </span>
                     )}
-                    {/* Viewers chip , desktop only on image */}
-                    <div className={`hidden md:flex absolute bottom-2 ${lang === "ar" ? "left-2" : "right-2"} items-center gap-1.5 px-2 py-1 rounded-full bg-background/80 border border-brand/25 backdrop-blur-md`}>
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-brand opacity-60 animate-ping" />
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
-                      </span>
-                      <span className="text-brand text-[10px] font-bold whitespace-nowrap">
-                        <span className="tabular-nums">{viewers}</span> {t.product.viewersNow}
-                      </span>
-                    </div>
+
+
                   </div>
                 </div>
 
