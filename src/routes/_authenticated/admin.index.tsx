@@ -165,7 +165,7 @@ function AdminOverview() {
       const { data } = await supabase
         .from("refunds")
         .select("amount, created_at, orders!inner(created_at, status)")
-        .in("orders.status", ["paid", "delivered"]);
+        .in("orders.status", ["paid", "delivered", "refunded"]);
       return (data ?? []).map((r: any) => ({
         amount: Number(r.amount ?? 0),
         // basis_at = order's created_at; fall back to refund's own date if missing
@@ -173,6 +173,7 @@ function AdminOverview() {
       })) as { amount: number; basis_at: string }[];
     },
   });
+
 
 
 
