@@ -54,7 +54,7 @@ function AdminLayout() {
       const { count } = await supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
-        .eq("status", "pending");
+        .in("status", ["pending", "paid"]);
       return count ?? 0;
     },
     refetchInterval: 30_000,
