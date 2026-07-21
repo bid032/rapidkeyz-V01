@@ -75,7 +75,12 @@ function AdminSettings() {
         const m = (s.value as any)?.mode;
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
-      
+      if (["shop_intro", "page_about", "page_terms", "page_privacy", "page_refund"].includes(s.key)) {
+        setPageContent((prev) => ({
+          ...prev,
+          [s.key]: { ar: (s.value as any)?.ar ?? "", en: (s.value as any)?.en ?? "" },
+        }));
+      }
     }
   }, [settings.data]);
 
@@ -90,6 +95,7 @@ function AdminSettings() {
         { key: "socials", value: socials },
         { key: "stats", value: stats },
         { key: "theme_mode", value: { mode: themeMode } },
+        ...Object.entries(pageContent).map(([key, value]) => ({ key, value })),
       ]);
       if (error) throw error;
     },
