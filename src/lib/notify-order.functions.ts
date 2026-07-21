@@ -128,6 +128,9 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
       templateData: {
         orderNumber: order.order_number,
         total: order.total,
+        subtotal: (order as any).subtotal,
+        discountAmount: Number((order as any).discount_amount ?? 0),
+        couponCode: (order as any).coupons?.code ?? null,
         currency: order.currency || 'EGP',
         accounts,
         lang,
