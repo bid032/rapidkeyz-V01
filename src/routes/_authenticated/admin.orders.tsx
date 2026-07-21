@@ -153,7 +153,7 @@ function AdminOrders() {
           "الكمية": "",
           "سعر الوحدة": "",
           "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
-          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB"),
+          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
           "ملاحظات": o.notes ?? "",
         });
         return;
@@ -174,7 +174,7 @@ function AdminOrders() {
           "الكمية": it.quantity,
           "سعر الوحدة": Number(it.unit_price ?? 0),
           "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
-          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB"),
+          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
           "ملاحظات": o.notes ?? "",
         });
       });
@@ -353,7 +353,7 @@ function AdminOrders() {
                   })()}
                 </div>
                 <div className="text-xs text-muted-foreground break-all">
-                  {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")} · {o.customer_email}
+                  {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true })} · {o.customer_email}
                 </div>
                 {minDays !== null && (
                   <div className={`text-xs font-bold mt-1 ${
@@ -609,7 +609,7 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
             const dur = Number(item.product_plans?.duration_days ?? 0);
             const startAt = a.delivered_at ? new Date(a.delivered_at) : null;
             const endAt = startAt && dur > 0 ? new Date(startAt.getTime() + dur * 86400_000) : null;
-            const fmt = (d: Date) => d.toLocaleString(lang === "ar" ? "ar-EG" : "en-US");
+            const fmt = (d: Date) => d.toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true });
             const daysLeft = endAt ? Math.ceil((endAt.getTime() - Date.now()) / 86400_000) : null;
             return (
               <div key={a.id} className="mt-1">

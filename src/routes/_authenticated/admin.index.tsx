@@ -327,7 +327,7 @@ function AdminOverview() {
         "سعر الشراء": r._cost ?? 0,
         "الربح": r._profit ?? 0,
         "تم التسليم؟": delivered ? "نعم" : "لا",
-        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB") : "",
+        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true }) : "",
         "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
         "تم عمل استرداد؟": refundAmount > 0 ? "نعم" : "لا",
         "قيمة الاسترداد": refundAmount,
@@ -336,7 +336,8 @@ function AdminOverview() {
         "ملاحظات الاسترداد": refundNotes,
         "صافي الربح بعد الاسترداد": netProfit,
         "التاريخ": d.toLocaleDateString("en-GB"),
-        "الوقت": d.toLocaleTimeString("en-GB"),
+        "الوقت": d.toLocaleTimeString("en-GB", { hour12: true }),
+
         "الحالة": r.orders?.status,
         "ملاحظات": r.orders?.notes ?? "",
       };
@@ -625,7 +626,7 @@ function AdminOverview() {
                       </td>
                       <td className="p-2 font-mono text-[11px] whitespace-nowrap">
                         {d.toLocaleDateString("en-GB")}<br />
-                        <span className="text-muted-foreground">{d.toLocaleTimeString("en-GB")}</span>
+                        <span className="text-muted-foreground">{d.toLocaleTimeString("en-GB", { hour12: true })}</span>
                       </td>
                     </tr>
                     {isExpanded && (
@@ -660,7 +661,7 @@ function AdminOverview() {
                                   <div className="text-success">✓ تم التسليم</div>
                                   <div>الحساب: {delivered.account_email ?? delivered.account_username ?? "—"}</div>
                                   {delivered.delivered_at && (
-                                    <div>التاريخ: {new Date(delivered.delivered_at).toLocaleString("en-GB")}</div>
+                                    <div>التاريخ: {new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true })}</div>
                                   )}
                                 </>
                               ) : (
@@ -674,7 +675,7 @@ function AdminOverview() {
                                   {r._refunds.map((rf: any, i: number) => (
                                     <div key={i} className="border-s-2 border-destructive ps-2">
                                       <div className="text-destructive font-bold">-{Math.round(Number(rf.amount))} {t.common.currency} • {rf.type ?? "—"}</div>
-                                      <div className="text-muted-foreground">{new Date(rf.created_at).toLocaleString("en-GB")}</div>
+                                      <div className="text-muted-foreground">{new Date(rf.created_at).toLocaleString("en-GB", { hour12: true })}</div>
                                       {rf.notes && <div className="italic">{rf.notes}</div>}
                                     </div>
                                   ))}
