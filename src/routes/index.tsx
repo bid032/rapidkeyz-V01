@@ -523,35 +523,16 @@ function HomePage() {
       <CategoryRows slugs={["ai-tools", "design"]} />
 
 
-      {/* CTA: Browse all subscriptions */}
-      <section className="max-w-7xl mx-auto px-3 sm:px-6 pt-2 sm:pt-6">
+      {/* CTA: Browse all subscriptions — hero-style button */}
+      <section className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 flex justify-center">
         <Link
           to="/shop"
-          className="group relative block overflow-hidden rounded-3xl border border-brand/30 bg-gradient-to-br from-brand/15 via-brand/5 to-transparent p-6 sm:p-10 text-center hover:border-brand/60 transition-all"
+          data-gsap="magnetic"
+          data-strength="0.3"
+          className="group inline-flex items-center justify-center gap-3 px-7 sm:px-9 py-3.5 sm:py-4 bg-brand text-brand-foreground font-bold rounded-2xl brand-glow hover:shadow-[0_0_60px_-8px_var(--brand-glow)] transition-shadow font-display"
         >
-          <div aria-hidden className="pointer-events-none absolute -top-16 -end-16 w-64 h-64 rounded-full bg-brand/25 blur-3xl group-hover:scale-110 transition-transform duration-700" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-16 -start-16 w-56 h-56 rounded-full bg-brand/15 blur-3xl" />
-          <div className="relative">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/15 text-brand text-[11px] font-extrabold tracking-widest uppercase mb-3">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
-              </span>
-              {lang === "ar" ? "المتجر" : "Shop"}
-            </span>
-            <h3 className="font-display font-black text-2xl sm:text-4xl mb-2">
-              {lang === "ar" ? "تصفّح كل الاشتراكات" : "Browse all subscriptions"}
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto mb-5">
-              {lang === "ar"
-                ? "أدوات الـ Ai، اشتراكات ترفيه، تصميم وتعليم ، كلها في مكان واحد بتسليم فوري."
-                : "AI tools, entertainment, design and learning subscriptions ، all in one place with instant delivery."}
-            </p>
-            <span className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-brand text-brand-foreground font-extrabold text-sm sm:text-base shadow-lg group-hover:shadow-brand/40 group-hover:scale-[1.03] transition-all">
-              {lang === "ar" ? "تصفّح المتجر الآن" : "Explore the shop"}
-              <span aria-hidden className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1">→</span>
-            </span>
-          </div>
+          <span>{lang === "ar" ? "تصفّح كل الاشتراكات" : "Browse all subscriptions"}</span>
+          <span className="grid place-items-center size-7 rounded-full bg-brand-foreground/15 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform rtl:rotate-180">→</span>
         </Link>
       </section>
 
