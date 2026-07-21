@@ -421,7 +421,7 @@ function GroupCard({
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-              <Activity className="w-3 h-3" /> {group.events.length} حركة
+              <Activity className="w-3 h-3" /> {visibleEvents.length} حركة
             </span>
           </>
         ) : (
