@@ -16,7 +16,8 @@ type OrderRow = {
   status: string | null;
 };
 
-const STORAGE_KEY = "admin_notifications_seen_at";
+const STORAGE_KEY = "admin_notifications_seen_ids";
+const MAX_SEEN = 200;
 
 function playBeep() {
   try {
@@ -46,12 +47,38 @@ export function AdminNotifications() {
   const { lang } = useApp();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [open, setOpen] = useState(false);
-  const [seenAt, setSeenAt] = useState<number>(() => {
-    if (typeof window === "undefined") return Date.now();
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? Number(raw) || Date.now() : Date.now();
+  const [seenIds, setSeenIds] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw);
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch {
+      return new Set();
+    }
   });
   const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  const persistSeen = (next: Set<string>) => {
+    setSeenIds(new Set(next));
+    if (typeof window !== "undefined") {
+      const arr = Array.from(next).slice(-MAX_SEEN);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+  };
+
+  const markSeen = (ids: string[]) => {
+    const next = new Set(seenIds);
+    let changed = false;
+    for (const id of ids) {
+      if (!next.has(id)) {
+        next.add(id);
+        changed = true;
+      }
+    }
+    if (changed) persistSeen(next);
+  };
 
   // Load recent orders
   useEffect(() => {
@@ -61,7 +88,15 @@ export function AdminNotifications() {
       .select("id, order_number, total, currency, customer_email, created_at, status")
       .order("created_at", { ascending: false })
       .limit(15)
-      .then(({ data }) => setOrders((data as OrderRow[] | null) ?? []));
+      .then(({ data }) => {
+        const rows = (data as OrderRow[] | null) ?? [];
+        setOrders(rows);
+        // On first load, mark everything already-existing as seen so the badge
+        // only starts counting truly new orders from now on.
+        if (typeof window !== "undefined" && !localStorage.getItem(STORAGE_KEY)) {
+          persistSeen(new Set(rows.map((r) => r.id)));
+        }
+      });
   }, [canModerate]);
 
   // Realtime subscribe
