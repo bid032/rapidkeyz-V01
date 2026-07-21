@@ -661,7 +661,7 @@ function AdminOverview() {
                                   <div className="text-success">✓ تم التسليم</div>
                                   <div>الحساب: {delivered.account_email ?? delivered.account_username ?? "—"}</div>
                                   {delivered.delivered_at && (
-                                    <div>التاريخ: {new Date(delivered.delivered_at).toLocaleString("en-GB")}</div>
+                                    <div>التاريخ: {new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true })}</div>
                                   )}
                                 </>
                               ) : (
