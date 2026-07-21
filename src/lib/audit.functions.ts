@@ -136,6 +136,21 @@ export const getAuditLog = createServerFn({ method: "GET" })
         .in("id", Array.from(orderIds));
       (orders ?? []).forEach((o: any) => ordersMap.set(o.id, o));
 
+      const couponIds = Array.from(
+        new Set((orders ?? []).map((o: any) => o.coupon_id).filter(Boolean)),
+      ) as string[];
+      const couponCodeMap = new Map<string, string>();
+      if (couponIds.length) {
+        const { data: cps } = await supabaseAdmin
+          .from("coupons")
+          .select("id, code")
+          .in("id", couponIds);
+        (cps ?? []).forEach((c: any) => couponCodeMap.set(c.id, c.code));
+      }
+      (orders ?? []).forEach((o: any) => {
+        if (o.coupon_id) o.coupon_code = couponCodeMap.get(o.coupon_id) ?? null;
+      });
+
       const { data: allItems } = await supabaseAdmin
         .from("order_items")
         .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
