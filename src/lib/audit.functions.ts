@@ -245,6 +245,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
         target_id: r.target_id,
         meta,
         created_at: r.created_at,
+        order_id: orderId,
         order_number: order?.order_number ?? meta.order_number ?? null,
         order_status: order?.status ?? null,
         order_total: order?.total ?? null,
