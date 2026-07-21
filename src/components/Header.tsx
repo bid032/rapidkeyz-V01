@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
+import { ShoppingCart, Sun, Moon, Menu, X, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
@@ -32,6 +32,19 @@ export function Header() {
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
+  const [searchQ, setSearchQ] = useState("");
+  const [mobileSearchQ, setMobileSearchQ] = useState("");
+  const navigate = useNavigate();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const submitSearch = (q: string) => {
+    const term = q.trim();
+    if (!term) return;
+    navigate({ to: "/shop", search: { q: term } as any });
+    setSearchQ("");
+    setMobileSearchQ("");
+    setMobileOpen(false);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -125,6 +138,20 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <form
+            onSubmit={(e) => { e.preventDefault(); submitSearch(searchQ); }}
+            className="hidden lg:flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-1.5 focus-within:border-brand transition-colors"
+          >
+            <Search className="size-4 text-muted-foreground shrink-0" />
+            <input
+              ref={searchRef}
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+              placeholder={lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
+              className="bg-transparent outline-none text-sm w-40 xl:w-52 placeholder:text-muted-foreground"
+              dir={lang === "ar" ? "rtl" : "ltr"}
+            />
+          </form>
           <div className="hidden sm:flex bg-muted rounded-full p-1">
             <button
               onClick={() => setLang("en")}
@@ -208,6 +235,21 @@ export function Header() {
                 </div>
                 <span className="w-6" />
               </div>
+              <form
+                onSubmit={(e) => { e.preventDefault(); submitSearch(mobileSearchQ); }}
+                className="px-4 pt-3"
+              >
+                <div className="flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-2 focus-within:border-brand transition-colors">
+                  <Search className="size-4 text-muted-foreground shrink-0" />
+                  <input
+                    value={mobileSearchQ}
+                    onChange={(e) => setMobileSearchQ(e.target.value)}
+                    placeholder={lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
+                    className="bg-transparent outline-none text-sm flex-1 placeholder:text-muted-foreground"
+                    dir={lang === "ar" ? "rtl" : "ltr"}
+                  />
+                </div>
+              </form>
               <nav className="flex flex-col px-2 py-3">
                 {/* الأقسام */}
                 <div className="px-3 pt-2 pb-1">

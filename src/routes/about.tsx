@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { useApp } from "@/contexts/AppContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Phone, Wrench, ShieldCheck, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/about")({
@@ -51,12 +53,27 @@ function FeaturesStrip() {
 }
 
 function AboutPage() {
-  const { t } = useApp();
+  const { t, lang } = useApp();
+  const custom = useQuery({
+    queryKey: ["site-setting", "page_about"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "page_about").maybeSingle();
+      return (data?.value ?? null) as { ar?: string; en?: string } | null;
+    },
+  });
+  const customText = (lang === "ar" ? custom.data?.ar : custom.data?.en)?.trim();
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <PageHero title={t.about.title} eyebrow="RapidKeyz" />
       <main className="max-w-4xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
+        {customText && (
+          <div className="mb-10 rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
+            <p data-gsap="scroll-fade" className="leading-loose text-foreground whitespace-pre-line">
+              {customText}
+            </p>
+          </div>
+        )}
 
         <Section title={t.about.moreTitle}>
           <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.moreBody}</p>

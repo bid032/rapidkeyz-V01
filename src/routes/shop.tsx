@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 const searchSchema = z.object({
   category: z.string().optional(),
   account: z.enum(["private", "shared"]).optional(),
+  q: z.string().optional(),
 });
 
 export const Route = createFileRoute("/shop")({
@@ -57,6 +58,12 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
   if (categoryId) q = q.or(`category_id.eq.${categoryId},category_ids.cs.{${categoryId}}`);
 
   if (filters.account) q = q.eq("account_type", filters.account);
+  if (filters.q && filters.q.trim()) {
+    const term = filters.q.trim().replace(/[%,()]/g, " ");
+    q = q.or(
+      `name_ar.ilike.%${term}%,name_en.ilike.%${term}%,description_ar.ilike.%${term}%,description_en.ilike.%${term}%,slug.ilike.%${term}%`,
+    );
+  }
   const { data, error } = await q.order("sort_order");
   if (error) throw error;
   return (data ?? []).map((p: any) => {
@@ -93,6 +100,18 @@ function ShopPage() {
     queryFn: () => fetchProducts(search),
   });
 
+  const shopIntro = useQuery({
+    queryKey: ["site-setting", "shop_intro"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "shop_intro")
+        .maybeSingle();
+      return (data?.value ?? null) as { ar?: string; en?: string } | null;
+    },
+  });
+
   const category = useQuery({
     queryKey: ["category-by-slug", search.category],
     enabled: !!search.category,
@@ -108,6 +127,11 @@ function ShopPage() {
 
   const inCategory = !!search.category;
   const catName = category.data ? (lang === "ar" ? category.data.name_ar : category.data.name_en) : search.category;
+  const introText =
+    (lang === "ar" ? shopIntro.data?.ar : shopIntro.data?.en)?.trim() ||
+    (lang === "ar"
+      ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
+      : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration.");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -126,10 +150,8 @@ function ShopPage() {
           />
 
           <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-4 mb-2 text-center">
-            <p className="text-sm sm:text-base text-muted-foreground leading-loose">
-              {lang === "ar"
-                ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
-                : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration."}
+            <p className="text-sm sm:text-base text-muted-foreground leading-loose whitespace-pre-line">
+              {introText}
             </p>
           </div>
 
@@ -143,6 +165,26 @@ function ShopPage() {
       )}
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-12 pt-6">
+        {search.q && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand/5 border border-brand/20 px-4 py-3">
+            <p className="text-sm">
+              {lang === "ar" ? "نتائج البحث عن: " : "Search results for: "}
+              <span className="font-extrabold text-brand">"{search.q}"</span>
+              {products.data && (
+                <span className="text-muted-foreground ms-2">
+                  ({products.data.length} {lang === "ar" ? "نتيجة" : "results"})
+                </span>
+              )}
+            </p>
+            <Link
+              to="/shop"
+              search={{}}
+              className="text-xs font-bold text-muted-foreground hover:text-brand"
+            >
+              {lang === "ar" ? "مسح البحث ✕" : "Clear ✕"}
+            </Link>
+          </div>
+        )}
         {products.isLoading && <p className="text-muted-foreground">{t.common.loading}</p>}
         {products.data && products.data.length === 0 && (
           <p className="text-center text-muted-foreground py-16">
