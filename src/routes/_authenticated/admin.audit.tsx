@@ -540,10 +540,10 @@ function GroupCard({
           <div className="rounded-xl border border-border bg-card p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold">
               <Activity className="w-3.5 h-3.5 text-brand" />
-              ماذا حدث ({group.events.length})
+              ماذا حدث ({visibleEvents.length})
             </div>
             <ol className="relative border-s border-border ms-2 ps-4 space-y-3">
-              {group.events.map((r) => (
+              {visibleEvents.map((r) => (
                 <li key={r.id} className="relative">
                   <span className="absolute -start-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-brand ring-2 ring-background" />
                   <div className="flex flex-wrap items-center gap-2 text-xs">
