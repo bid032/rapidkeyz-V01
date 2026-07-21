@@ -131,7 +131,7 @@ export function PricingConfigurator({
                     key={a}
                     type="button"
                     onClick={() => onAcctChange(a)}
-                    className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all focus:outline-none overflow-hidden sm:flex-row sm:justify-between sm:text-start sm:p-4 ${
+                    className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all focus:outline-none overflow-hidden h-full sm:flex-row sm:justify-between sm:text-start sm:p-4 ${
                       isSel
                         ? "border-brand/50 bg-brand/5"
                         : "border-white/5 bg-white/5 hover:border-white/10"
