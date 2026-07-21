@@ -46,7 +46,7 @@ function AdminRefunds() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, order_number, customer_email, customer_phone, total, status, user_id, created_at, order_items(id, product_name, plan_label, quantity, unit_price)")
+        .select("id, order_number, customer_email, customer_phone, subtotal, total, discount_amount, coupon_id, status, user_id, created_at, order_items(id, product_name, plan_label, quantity, unit_price)")
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
