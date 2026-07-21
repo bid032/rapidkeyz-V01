@@ -309,7 +309,7 @@ function ProductPage() {
       productId: product.id,
       planId: selected.id,
       productName: name,
-      planLabel: lang === "ar" ? selected.label_ar : selected.label_en,
+      planLabel: `${lang === "ar" ? selected.label_ar : selected.label_en}${effectiveVariant ? ` — ${effectiveVariant}` : ""}`,
       price: finalPrice,
       quantity: 1,
       iconUrl: product.icon_url,
