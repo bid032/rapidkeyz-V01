@@ -266,7 +266,7 @@ function Dashboard() {
                                   )}
                                 </div>
                               )}
-                              {it.delivered_accounts?.length > 0 ? (
+                              {it.status === "delivered" && it.delivered_accounts?.length > 0 ? (
                                 it.delivered_accounts.map((acc: any) => {
                                   const rows = buildCredentialRows(acc, lang);
                                   return (
@@ -288,8 +288,8 @@ function Dashboard() {
                               ) : (
                                 <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
                                   {lang === "ar"
-                                    ? "⏳ جاري التواصل عن طريق الواتس اب للأشتراك"
-                                    : "⏳ We're contacting you on WhatsApp to complete the subscription"}
+                                    ? "⏳ طلبك قيد المراجعة، سيتم عرض بيانات الحساب هنا فور اعتماد التسليم"
+                                    : "⏳ Your order is under review. Credentials will appear here once delivered."}
                                 </div>
                               )}
                             </>

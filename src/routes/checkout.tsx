@@ -7,8 +7,8 @@ import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
-import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
+import { notifyNewOrder } from "@/lib/notify-order.functions";
+
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 import { filterName, filterDigits, filterEmail, filterPhone } from "@/lib/input-filters";
@@ -149,7 +149,7 @@ function CheckoutPage() {
         .from("orders")
         .insert({
           user_id: user?.id ?? null,
-          status: gateway === "simulate" ? "paid" : "pending",
+          status: "pending",
           payment_gateway: (gateway === "simulate" ? "manual" : gateway) as any,
           subtotal: cartTotal,
           total: cartTotal,
@@ -182,41 +182,13 @@ function CheckoutPage() {
         .select();
       if (iErr) throw iErr;
 
-      // Auto-claim inventory for instant items
-      let allInstantDelivered = true;
-      let hasInstant = false;
-      const itemStatuses: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[] = [];
-      for (const it of insertedItems ?? []) {
-        if (it.delivery_type === "instant" && it.plan_id) {
-          hasInstant = true;
-          const { data: claimedId } = await supabase.rpc("claim_inventory_for_item", {
-            _order_item_id: it.id,
-            _plan_id: it.plan_id,
-          });
-          if (!claimedId) {
-            allInstantDelivered = false;
-            itemStatuses.push({ name: it.product_name, mode: "instant_pending" });
-          } else {
-            itemStatuses.push({ name: it.product_name, mode: "instant_delivered" });
-            // Best-effort: mark the row as 'sold' in the source Google Sheet.
-            markInventorySoldOnSheet({ data: { inventoryId: claimedId as string } }).catch((e) =>
-              console.error("sheet sync failed", e),
-            );
-          }
-        } else {
-          itemStatuses.push({ name: it.product_name, mode: "manual" });
-        }
-      }
-      // Auto-flip status when everything was auto-delivered (admins may still adjust).
-      if (hasInstant && allInstantDelivered) {
-        await supabase.from("orders").update({ status: "delivered" }).eq("id", order.id);
-        // Send credentials to the customer (best-effort)
-        try {
-          await notifyCustomerDelivery({ data: { orderId: order.id } });
-        } catch (e) {
-          console.error("notifyCustomerDelivery failed", e);
-        }
-      }
+      // Every order starts as pending. Admin reviews and delivers each item manually
+      // (either by claiming instant inventory or entering credentials for manual items).
+      const itemStatuses: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[] =
+        (insertedItems ?? []).map((it: any) => ({
+          name: it.product_name,
+          mode: it.delivery_type === "instant" ? "instant_pending" : "manual",
+        }));
 
       // Notify admin by email (non-blocking, best-effort)
       try {
@@ -224,6 +196,7 @@ function CheckoutPage() {
       } catch (e) {
         console.error("notifyNewOrder failed", e);
       }
+
 
       clearCart();
       setSuccessOrder({

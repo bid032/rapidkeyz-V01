@@ -209,11 +209,16 @@ function AdminOrders() {
         ...creds,
       });
       if (error) throw error;
+      // Flip the per-item status. Order-level status auto-flips via DB trigger.
+      const { error: sErr } = await supabase
+        .from("order_items")
+        .update({ status: "delivered" as any })
+        .eq("id", orderItemId);
+      if (sErr) throw sErr;
       // Fire-and-await customer email with the delivered credentials.
       try {
         await notifyItemDelivered({ data: { orderItemId } });
       } catch (e) {
-        // Non-fatal for delivery, but surface to admin.
         console.error("notifyItemDelivered failed", e);
         notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
       }
@@ -224,6 +229,36 @@ function AdminOrders() {
     },
     onError: (e) => showError(e, notify, lang),
   });
+
+  const deliverInstant = useMutation({
+    mutationFn: async ({ orderItemId, planId }: { orderItemId: string; planId: string }) => {
+      const { data: claimedId, error } = await supabase.rpc("claim_inventory_for_item", {
+        _order_item_id: orderItemId,
+        _plan_id: planId,
+      });
+      if (error) throw error;
+      if (!claimedId) {
+        throw new Error(lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually");
+      }
+      const { error: sErr } = await supabase
+        .from("order_items")
+        .update({ status: "delivered" as any })
+        .eq("id", orderItemId);
+      if (sErr) throw sErr;
+      try {
+        await notifyItemDelivered({ data: { orderItemId } });
+      } catch (e) {
+        console.error("notifyItemDelivered failed", e);
+        notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم التسليم الفوري من المخزون" : "Delivered from inventory", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
+  });
+
 
 
   const deleteOrder = useMutation({
@@ -415,7 +450,16 @@ function AdminOrders() {
                 {/* Items */}
                 <div className="space-y-3 pt-2 border-t border-border">
                   {o.order_items?.map((it: any) => (
-                    <ItemRow key={it.id} item={it} onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })} />
+                    <ItemRow
+                      key={it.id}
+                      item={it}
+                      onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })}
+                      onDeliverInstant={
+                        it.delivery_type === "instant" && it.plan_id
+                          ? () => deliverInstant.mutate({ orderItemId: it.id, planId: it.plan_id })
+                          : undefined
+                      }
+                    />
                   ))}
                 </div>
               </div>
@@ -444,11 +488,13 @@ function AdminOrders() {
 }
 
 
-function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => void }) {
+function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: (creds: any) => void; onDeliverInstant?: () => void }) {
   const { lang, notify } = useApp();
   const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
   const [resending, setResending] = useState(false);
-  const delivered = item.delivered_accounts?.length > 0;
+  const itemStatus: "pending" | "delivered" | "refunded" = item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
+  const delivered = itemStatus === "delivered";
+  const refunded = itemStatus === "refunded";
 
   const resend = async () => {
     setResending(true);
@@ -511,8 +557,12 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
               <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
                 {lang === "ar" ? "التسليم:" : "Delivery:"} {item.delivery_type === "instant" ? (lang === "ar" ? "فوري" : "Instant") : (lang === "ar" ? "يدوي" : "Manual")}
               </span>
-              <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
-                {delivered ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered") : (lang === "ar" ? "⏳ في الانتظار" : "⏳ Pending")}
+              <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : refunded ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
+                {delivered
+                  ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered")
+                  : refunded
+                  ? (lang === "ar" ? "↺ تم الاسترداد" : "↺ Refunded")
+                  : (lang === "ar" ? "⏳ قيد المراجعة" : "⏳ Pending review")}
               </span>
             </div>
           </div>
@@ -589,27 +639,39 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
         </div>
 
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-          <input placeholder="Account email" value={creds.account_email}
-            onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <input placeholder="Username" value={creds.account_username}
-            onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <input placeholder="Password" value={creds.account_password}
-            onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <input placeholder="Notes" value={creds.extra_notes}
-            onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
-            {lang === "ar" ? "تسليم البيانات وإرسال إيميل" : "Deliver credentials & email"}
-          </button>
-        </form>
+        <div className="mt-2 space-y-2">
+          {onDeliverInstant && (
+            <button
+              type="button"
+              onClick={onDeliverInstant}
+              className="w-full px-3 py-2 rounded bg-success/15 text-success border border-success/30 font-bold text-sm hover:bg-success hover:text-success-foreground transition"
+            >
+              {lang === "ar" ? "⚡ تسليم فوري من المخزون" : "⚡ Deliver from inventory"}
+            </button>
+          )}
+          <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input placeholder="Account email" value={creds.account_email}
+              onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <input placeholder="Username" value={creds.account_username}
+              onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <input placeholder="Password" value={creds.account_password}
+              onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <input placeholder="Notes" value={creds.extra_notes}
+              onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
+              {lang === "ar" ? "تسليم يدوي وإرسال إيميل" : "Deliver manually & email"}
+            </button>
+          </form>
+        </div>
       )}
     </div>
   );
 }
+
 
 
 function ProofLightbox({ src, loading, onClose }: { src: string; loading: boolean; onClose: () => void }) {
