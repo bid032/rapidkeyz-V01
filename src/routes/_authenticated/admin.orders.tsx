@@ -351,6 +351,11 @@ function AdminOrders() {
                       </span>
                     );
                   })()}
+                  {Number(o.discount_amount ?? 0) > 0 && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-success/15 text-success font-bold">
+                      كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""} −{o.discount_amount} EGP
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground break-all">
                   {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true })} · {o.customer_email}
