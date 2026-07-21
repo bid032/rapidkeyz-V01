@@ -1,41 +1,69 @@
-## الفكرة
 
-- كل طلب جديد يدخل بحالة `pending` بغض النظر عن بوابة الدفع أو نوع التسليم.
-- كل عنصر (order_item) يبقى له حالة مستقلة: `pending` / `delivered` / `refunded`.
-- الأدمن من صفحة الطلبات يعمل "تسليم" لكل عنصر:
-  - لو العنصر تسليمه فوري وله مخزون → يضغط "تسليم فوري" فيسحب من المخزون ويسلم للعميل تلقائيًا مع إيميل بيانات الحساب.
-  - لو يدوي → يضغط "تسليم يدوي" ويدخل بيانات الحساب (نفس الفلو الحالي في مخزون التسليم/التسليم اليدوي).
-- عند تحول كل العناصر إلى `delivered` → حالة الطلب الرئيسية تتحول تلقائيًا إلى `delivered` (تريجر في قاعدة البيانات).
-- العميل في `/dashboard` لا يشوف بيانات الحساب إلا للعناصر اللي حالتها `delivered` فقط.
+## نظام أكواد الخصم (Coupons)
 
-## التغييرات
+### 1. قاعدة البيانات
+جدول `coupons` جديد بالحقول:
+- `code` (نص فريد، uppercase)
+- `discount_type` (`percent` أو `fixed`)
+- `discount_value` (رقم)
+- `max_uses` (رقم، nullable = لا نهائي)
+- `used_count` (رقم، افتراضي 0)
+- `expires_at` (تاريخ، nullable)
+- `is_active` (بوليان)
+- `applies_to` (`all` أو `specific`)
+- `product_ids` (uuid[])
+- `min_order_amount` (nullable)
 
-### 1) قاعدة البيانات (migration)
-- إنشاء enum `order_item_status` بقيم: `pending`, `delivered`, `refunded`.
-- إضافة عمود `order_items.status` افتراضي `pending`.
-- تعيين كل الصفوف الحالية اللي عندها `delivered_accounts` كـ `delivered`، والباقي `pending`.
-- تريجر `AFTER UPDATE OF status ON order_items`: لو كل العناصر في نفس الطلب أصبحت `delivered` → حدّث `orders.status = 'delivered'`.
-- بدون تغيير enum الطلب الرئيسي.
+جدول `coupon_redemptions` لتسجيل الاستخدامات (coupon_id, order_id, user_id, amount_discounted).
 
-### 2) `src/routes/checkout.tsx`
-- إزالة الـ auto-claim للمخزون عند الشراء.
-- إزالة تحديث حالة الطلب لـ `delivered` وإزالة `notifyCustomerDelivery`.
-- كل طلب يُنشأ بحالة `pending` (حتى لو `simulate`) مع إبقاء بوابة الدفع كما هي.
-- بوب-أب النجاح يعرض "تم إرسال الطلب بنجاح وقيد المراجعة".
+**RLS:**
+- قراءة/تعديل: admin + moderator
+- استعلام التحقق (RPC `validate_coupon`) متاح للجميع (guests included)
+- تريجرات audit_log للإنشاء/التعديل/الحذف/الاستخدام
 
-### 3) `src/routes/_authenticated/admin.orders.tsx`
-- لكل عنصر في تفاصيل الطلب: عرض شارة الحالة (`pending`/`delivered`/`refunded`) + أزرار:
-  - "تسليم فوري من المخزون" (لو delivery_type=instant وفيه plan_id ومخزون متاح) → استدعاء `claim_inventory_for_item` ثم `notifyItemDelivered` ثم تحديث `status=delivered`.
-  - "تسليم يدوي" (يفتح مودال إدخال بيانات الحساب) → يعمل insert في `delivered_accounts` ثم `notifyItemDelivered` ثم `status=delivered`.
-  - "استرداد العنصر" (لاحقًا، نفس زر الاسترداد الحالي).
-- الطلب الكلي لا يعود يتغير يدويًا لـ delivered، التريجر يتكفل بذلك تلقائيًا.
+**RPC:** 
+- `validate_coupon(code, order_items[])` — يرجع الخصم المحسوب أو خطأ
+- `redeem_coupon(coupon_id, order_id)` — يزيد used_count ذرياً بعد نجاح الطلب
 
-### 4) `src/routes/_authenticated/dashboard.tsx`
-- في تفاصيل طلب العميل: تظهر بيانات الحساب فقط للعناصر اللي `status = 'delivered'`. الباقي يظهر "قيد المراجعة/التسليم".
+### 2. صفحة الإدارة `/admin/coupons`
+- صلاحية: admin + moderator
+- جدول بكل الأكواد + حالة (نشط/منتهي/مستنفد) + بحث بالكود
+- زرار "إضافة كوبون" → مودال يحوي:
+  - الكود (auto-uppercase)
+  - نوع الخصم (نسبة/مبلغ ثابت) + القيمة
+  - عدد الاستخدامات (فارغ = لا نهائي)
+  - تاريخ الانتهاء (اختياري)
+  - يطبق على: كل الخدمات / خدمة معينة (multi-select مع بحث)
+  - حد أدنى للطلب (اختياري)
+  - تفعيل/إيقاف
+- تعديل/حذف مع تأكيد
+- عرض عدد مرات الاستخدام والمستخدمين
 
-### 5) `src/lib/notify-order.functions.ts`
-- `notifyItemDelivered` موجود ويعمل، لا يحتاج تعديل جوهري.
+### 3. تكامل في الـ Checkout
+- حقل "كود خصم" في `checkout.tsx`
+- زر "تطبيق" ينادي `validate_coupon` ويعرض:
+  - قيمة الخصم مطبقة على الـ subtotal
+  - الإجمالي الجديد
+- عند التأكيد: تخزين `coupon_id` + `discount_amount` في `orders`
+- إضافة عمودين للجدول `orders`: `coupon_id`, `discount_amount`
+- استدعاء `redeem_coupon` بعد إنشاء الطلب
 
-## ملاحظات
-- تسلسل UI البسيط للأدمن: لو الأدمن ضغط "تسليم فوري" ولم يوجد مخزون، تظهر رسالة "لا يوجد مخزون متاح - سلّم يدويًا".
-- الإجمالي/إعادة الحساب وسياسات الـ RLS لا تتأثر.
+### 4. عرض في تفاصيل الطلب
+- في `admin.orders.tsx`: عرض الكوبون المستخدم وقيمة الخصم
+- في `dashboard.tsx` (تفاصيل العميل): عرض قيمة الخصم
+- في إيميلات الطلب
+
+### 5. سجل العمليات
+تريجرات audit لجدولي `coupons` و `coupon_redemptions`.
+
+### الملفات الجديدة/المعدّلة
+- migration: `coupons`, `coupon_redemptions`, RPCs, triggers, alter `orders`
+- جديد: `src/routes/_authenticated/admin.coupons.tsx`
+- جديد: `src/lib/coupons.ts` (helpers للفاليدشن الأمامي)
+- تعديل: `src/routes/checkout.tsx` (حقل الكود + منطق التطبيق)
+- تعديل: `src/routes/_authenticated/admin.tsx` (إضافة رابط التابة)
+- تعديل: `src/routes/_authenticated/dashboard.tsx` (عرض الخصم)
+- تعديل: `src/routes/_authenticated/admin.orders.tsx` (عرض الكوبون)
+- تعديل: `src/lib/email-templates/new-order.tsx` + `order-delivered.tsx` (سطر الخصم)
+
+هل أبدأ التنفيذ؟
