@@ -173,7 +173,7 @@ function Dashboard() {
                   <div className="min-w-0">
                     <div className="font-bold">{t.dashboard.order} #{o.order_number}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US")}
+                      {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true })}
                     </div>
                   </div>
                   <div className="text-end shrink-0">
