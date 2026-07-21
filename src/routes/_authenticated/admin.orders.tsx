@@ -488,7 +488,7 @@ function AdminOrders() {
 }
 
 
-function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => void }) {
+function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: (creds: any) => void; onDeliverInstant?: () => void }) {
   const { lang, notify } = useApp();
   const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
   const [resending, setResending] = useState(false);
