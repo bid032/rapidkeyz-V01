@@ -12,6 +12,7 @@ import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
 import { CartDrawer } from "@/components/CartDrawer";
 import { AdminNotifications } from "@/components/AdminNotifications";
+import { SearchOverlay } from "@/components/SearchOverlay";
 
 type MobileCat = { id: string; slug: string; name_ar: string; name_en: string };
 
