@@ -118,11 +118,11 @@ export function PricingConfigurator({
           </section>
         )}
 
-        {/* Account type selector — stacked radio cards */}
+        {/* Account type selector — side-by-side on mobile, stacked on desktop */}
         {normalizedTypes.length > 0 && (
           <section>
             {sectionLabel(isAr ? "نوع الحساب" : "Account")}
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-2 sm:block sm:space-y-2">
               {normalizedTypes.map((a) => {
                 const isSel = normalizedEffective === a || normalizedTypes.length === 1;
                 const meta = acctMeta[a][isAr ? "ar" : "en"];
@@ -131,22 +131,21 @@ export function PricingConfigurator({
                     key={a}
                     type="button"
                     onClick={() => onAcctChange(a)}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl border text-start transition-all focus:outline-none ${
+                    className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all focus:outline-none overflow-hidden sm:flex-row sm:justify-between sm:text-start sm:p-4 ${
                       isSel
                         ? "border-brand/50 bg-brand/5"
                         : "border-white/5 bg-white/5 hover:border-white/10"
                     }`}
                   >
-                    <div className="min-w-0">
-                      <div className={`font-bold ${isSel ? "text-foreground" : "text-foreground/70"}`}>
-                        {meta.title}
-                      </div>
-                      <div className={`text-xs mt-1 leading-relaxed ${isSel ? "text-brand/80" : "text-muted-foreground"}`}>
-                        {meta.sub}
-                      </div>
-                    </div>
+                    {isSel && (
+                      <motion.span
+                        layoutId="acct-glow"
+                        className="pointer-events-none absolute -top-6 -end-6 w-16 h-16 bg-brand/20 rounded-full blur-2xl"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
                     <div
-                      className={`shrink-0 ms-3 size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      className={`shrink-0 size-5 rounded-full border-2 flex items-center justify-center transition-colors mb-2 sm:order-2 sm:mb-0 sm:ms-3 ${
                         isSel ? "border-brand" : "border-white/20"
                       }`}
                     >
@@ -157,6 +156,14 @@ export function PricingConfigurator({
                           className="size-2.5 rounded-full bg-brand"
                         />
                       )}
+                    </div>
+                    <div className="min-w-0 relative z-10 sm:order-1">
+                      <div className={`text-sm font-bold ${isSel ? "text-foreground" : "text-foreground/70"}`}>
+                        {meta.title}
+                      </div>
+                      <div className={`text-[10px] sm:text-xs mt-1 leading-relaxed ${isSel ? "text-brand/80" : "text-muted-foreground"}`}>
+                        {meta.sub}
+                      </div>
                     </div>
                   </button>
                 );
