@@ -67,7 +67,7 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)",
+      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, stock, label_ar, label_en, is_active, sort_order)",
     )
     .eq("status", "active")
     .order("is_featured", { ascending: false })
@@ -119,7 +119,7 @@ async function fetchBestSellers(): Promise<ProductCardData[]> {
   };
 
   const productSelect =
-    "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, is_bestseller, product_plans(id, price, label_ar, label_en, is_active, sort_order)";
+    "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, is_bestseller, product_plans(id, price, stock, label_ar, label_en, is_active, sort_order)";
 
   // 1) Manually flagged products by admin
   const { data: manual } = await supabase
@@ -208,7 +208,7 @@ function HomePage() {
       const { data } = await supabase
         .from("products")
         .select(
-          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)",
+          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, stock, label_ar, label_en, is_active, sort_order)",
         )
         .in("slug", heroPicksNeeded);
       return (data ?? []).map((p: any) => {
