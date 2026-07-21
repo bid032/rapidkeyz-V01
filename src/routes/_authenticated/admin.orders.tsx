@@ -492,7 +492,9 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
   const { lang, notify } = useApp();
   const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
   const [resending, setResending] = useState(false);
-  const delivered = item.delivered_accounts?.length > 0;
+  const itemStatus: "pending" | "delivered" | "refunded" = item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
+  const delivered = itemStatus === "delivered";
+  const refunded = itemStatus === "refunded";
 
   const resend = async () => {
     setResending(true);
