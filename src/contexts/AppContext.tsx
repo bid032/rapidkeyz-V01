@@ -280,39 +280,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      {/* Centered toasts: confirmations / approvals / errors */}
-      {toasts.filter((t) => t.type !== "info").length > 0 && (
-        <div className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
-          {toasts
-            .filter((t) => t.type !== "info")
-            .map((tt) => (
-              <div
-                key={tt.id}
-                className={`px-4 py-3 rounded-xl border shadow-2xl text-center text-sm font-bold pointer-events-auto backdrop-blur animate-in fade-in zoom-in-95 ${
-                  tt.type === "success"
-                    ? "bg-success/15 border-success/30 text-success"
-                    : "bg-destructive/15 border-destructive/30 text-destructive"
-                }`}
-              >
-                {tt.message}
-              </div>
-            ))}
-        </div>
-      )}
-
-      {/* Top notifications (info) */}
-      {toasts.filter((t) => t.type === "info").length > 0 && (
-        <div className="fixed top-4 start-1/2 -translate-x-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
-          {toasts
-            .filter((t) => t.type === "info")
-            .map((tt) => (
-              <div
-                key={tt.id}
-                className="px-4 py-3 rounded-xl border shadow-lg text-center text-sm font-bold pointer-events-auto backdrop-blur bg-card border-border text-foreground animate-in fade-in slide-in-from-top-4"
-              >
-                {tt.message}
-              </div>
-            ))}
+      {/* All toasts: top-center below the header */}
+      {toasts.length > 0 && (
+        <div className="fixed top-[72px] sm:top-[88px] start-1/2 -translate-x-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
+          {toasts.map((tt) => (
+            <div
+              key={tt.id}
+              className={`px-4 py-3 rounded-xl border shadow-2xl text-center text-sm font-bold pointer-events-auto backdrop-blur animate-in fade-in slide-in-from-top-4 ${
+                tt.type === "success"
+                  ? "bg-success/15 border-success/30 text-success"
+                  : tt.type === "error"
+                    ? "bg-destructive/15 border-destructive/30 text-destructive"
+                    : "bg-card border-border text-foreground"
+              }`}
+            >
+              {tt.message}
+            </div>
+          ))}
         </div>
       )}
     </AppContext.Provider>
