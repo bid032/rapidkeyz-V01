@@ -76,7 +76,9 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
   if (error) throw error;
   return (data ?? []).map((p) => {
     const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-    const cheapest = activePlans.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+    const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
+    const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
     return {
       id: p.id,
       slug: p.slug,
@@ -92,6 +94,7 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
       cheapestPlanId: cheapest?.id ?? null,
       planLabel_ar: cheapest?.label_ar ?? null,
       planLabel_en: cheapest?.label_en ?? null,
+      totalStock,
     };
   });
 }
@@ -99,7 +102,9 @@ async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
 async function fetchBestSellers(): Promise<ProductCardData[]> {
   const mapRow = (p: any): ProductCardData => {
     const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-    const cheapest = activePlans.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+    const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
+    const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
     return {
       id: p.id,
       slug: p.slug,
@@ -115,6 +120,7 @@ async function fetchBestSellers(): Promise<ProductCardData[]> {
       cheapestPlanId: cheapest?.id ?? null,
       planLabel_ar: cheapest?.label_ar ?? null,
       planLabel_en: cheapest?.label_en ?? null,
+      totalStock,
     };
   };
 
@@ -229,6 +235,7 @@ function HomePage() {
           cheapestPlanId: cheapest?.id ?? null,
           planLabel_ar: cheapest?.label_ar ?? null,
           planLabel_en: cheapest?.label_en ?? null,
+      totalStock,
         } as ProductCardData;
       });
     },

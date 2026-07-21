@@ -61,7 +61,9 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
   if (error) throw error;
   return (data ?? []).map((p: any) => {
     const active = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-    const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+    const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+    const inStock = active.filter((pl: any) => Number(pl.stock ?? 0) > 0);
+    const cheapest = (inStock.length ? inStock : active).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
     return {
       id: p.id,
       slug: p.slug,
@@ -77,6 +79,7 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
       cheapestPlanId: cheapest?.id ?? null,
       planLabel_ar: cheapest?.label_ar ?? null,
       planLabel_en: cheapest?.label_en ?? null,
+      totalStock,
     };
   });
 }
