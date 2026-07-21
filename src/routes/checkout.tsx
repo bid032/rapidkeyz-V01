@@ -257,6 +257,19 @@ function CheckoutPage() {
         .select();
       if (iErr) throw iErr;
 
+      // Redeem coupon (best-effort, non-blocking for order success)
+      if (appliedCoupon) {
+        try {
+          await supabase.rpc("redeem_coupon", {
+            _coupon_id: appliedCoupon.id,
+            _order_id: order.id,
+            _amount: appliedCoupon.discount,
+          });
+        } catch (e) {
+          console.error("redeem_coupon failed", e);
+        }
+      }
+
       // Every order starts as pending. Admin reviews and delivers each item manually
       // (either by claiming instant inventory or entering credentials for manual items).
       const itemStatuses: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[] =
