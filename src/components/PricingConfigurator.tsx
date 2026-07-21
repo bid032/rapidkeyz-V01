@@ -319,12 +319,12 @@ export function PricingConfigurator({
               </div>
               <div className="flex flex-col items-stretch gap-1.5 shrink-0 max-w-[45%]">
                 {!selectedSoldOut && hasDiscount && (
-                  <span className="text-[10px] font-black px-2 py-1 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider text-center shadow-sm">
+                  <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums text-center">
                     -{discount}%
                   </span>
                 )}
-                {!selectedSoldOut && selectedStock > 0 && (
-                  <span className={`text-[10px] font-black px-2 py-1 rounded-md whitespace-nowrap text-center border ${selectedStock <= 10 ? "bg-warning/15 text-warning border-warning/30" : "bg-muted text-muted-foreground border-border"}`}>
+                {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
+                  <span className="text-[10px] font-black px-2 py-1 rounded-md whitespace-nowrap text-center bg-warning/15 text-warning border border-warning/30">
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
