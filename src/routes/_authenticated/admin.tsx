@@ -73,6 +73,7 @@ function AdminLayout() {
     { to: "/admin/faqs", label: "الأسئلة الشائعة", adminOnly: true },
     { to: "/admin/refunds", label: "التعويضات" },
     { to: "/admin/staff", label: "الاستوك", adminOnly: true },
+    { to: "/admin/coupons", label: "أكواد الخصم" },
     { to: "/admin/audit", label: "سجل الأعمال", adminOnly: true },
     { to: "/admin/settings", label: t.admin.settings, adminOnly: true },
   ];
