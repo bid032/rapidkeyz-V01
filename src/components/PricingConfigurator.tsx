@@ -84,101 +84,51 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
 
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
-        {/* Combined row: single account type + variant dropdown */}
-        {normalizedTypes.length === 1 && variants && variants.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2">
-            {/* Variant dropdown */}
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                {isAr ? "نوع الخطة" : "Plan"}
-              </p>
-              <div className="relative h-[54px]">
-                <select
-                  value={effectiveVariant ?? ""}
-                  onChange={(e) => onVariantChange?.(e.target.value)}
-                  className={`peer w-full h-full rounded-xl bg-card border-2 border-border hover:border-brand/60 focus:border-brand text-xs sm:text-sm font-black text-foreground focus:outline-none appearance-none cursor-pointer transition truncate ${isAr ? "ps-8 pe-2" : "ps-2 pe-8"} text-start`}
-                >
-                  {variants.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                </select>
-                <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-2" : "end-2"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[9px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
-                  ▼
-                </span>
-              </div>
-            </div>
-            {/* Account type card */}
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                {isAr ? "نوع الحساب" : "Account"}
-              </p>
-              <div className="relative rounded-xl px-2.5 py-2 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[54px] flex flex-col justify-center">
-                <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
-                <span className="relative block text-sm font-black leading-tight truncate">
-                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
-                </span>
-                <span className="relative block text-[9px] mt-0.5 leading-tight text-brand-foreground/85 truncate">
-                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-
-
-          <>
-            {/* Plan variant (multiple account types case) */}
+        {/* Unified row: Plan type + Account type (same design regardless of count) */}
+        {(normalizedTypes.length > 0 || (variants && variants.length > 0)) && (
+          <div className={`grid gap-2 ${variants && variants.length > 0 && normalizedTypes.length > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
+            {/* Plan variant */}
             {variants && variants.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                    {isAr ? "نوع الخطة" : "Plan Type"}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border">
-                  {variants.map((v) => {
-                    const isSel = effectiveVariant === v;
-                    return (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => onVariantChange?.(v)}
-                        className={`relative px-3 py-2 rounded-lg text-xs font-extrabold transition ${
-                          isSel
-                            ? "bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
-                            : "text-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {v}
-                      </button>
-                    );
-                  })}
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
+                  {isAr ? "نوع الخطة" : "Plan"}
+                </p>
+                <div className="relative h-[54px]">
+                  <select
+                    value={effectiveVariant ?? ""}
+                    onChange={(e) => onVariantChange?.(e.target.value)}
+                    className={`peer w-full h-full rounded-xl bg-card border-2 border-border hover:border-brand/60 focus:border-brand text-xs sm:text-sm font-black text-foreground focus:outline-none appearance-none cursor-pointer transition truncate ${isAr ? "ps-8 pe-2" : "ps-2 pe-8"} text-start`}
+                  >
+                    {variants.map((v) => (
+                      <option key={v} value={v}>{v}</option>
+                    ))}
+                  </select>
+                  <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-2" : "end-2"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[9px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
+                    ▼
+                  </span>
                 </div>
               </div>
             )}
 
-            {/* Account type , segmented pill with sliding indicator */}
+            {/* Account type - unified card design (1 or more) */}
             {normalizedTypes.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                    {isAr ? "نوع الحساب" : "Account Type"}
-                  </p>
-                </div>
-
-
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
+                  {isAr ? "نوع الحساب" : "Account"}
+                </p>
                 <div
-                  className={`grid gap-1.5 p-1 rounded-xl bg-muted/40 border border-border`}
+                  className={`grid gap-1 p-1 rounded-xl bg-muted/40 border border-border h-[54px]`}
                   style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
                 >
                   {normalizedTypes.map((a) => {
-                    const isSel = normalizedEffective === a;
+                    const isSel = normalizedEffective === a || normalizedTypes.length === 1;
                     const meta = acctMeta[a][isAr ? "ar" : "en"];
                     return (
                       <button
                         key={a}
+                        type="button"
                         onClick={() => onAcctChange(a)}
-                        className="relative px-2.5 py-2 rounded-lg text-start focus:outline-none"
+                        className="relative px-2 rounded-lg text-start focus:outline-none overflow-hidden"
                       >
                         {isSel && (
                           <motion.span
@@ -187,19 +137,11 @@ export function PricingConfigurator({
                             className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
                           />
                         )}
-                        <span className="relative block">
-                          <span
-                            className={`block text-xs font-extrabold ${
-                              isSel ? "text-brand-foreground" : "text-foreground"
-                            }`}
-                          >
+                        <span className="relative flex flex-col justify-center h-full">
+                          <span className={`block text-xs font-extrabold leading-tight truncate ${isSel ? "text-brand-foreground" : "text-foreground"}`}>
                             {meta.title}
                           </span>
-                          <span
-                            className={`block text-[9px] mt-0.5 leading-tight ${
-                              isSel ? "text-brand-foreground/80" : "text-muted-foreground"
-                            }`}
-                          >
+                          <span className={`block text-[9px] mt-0.5 leading-tight truncate ${isSel ? "text-brand-foreground/85" : "text-muted-foreground"}`}>
                             {meta.sub}
                           </span>
                         </span>
@@ -207,10 +149,9 @@ export function PricingConfigurator({
                     );
                   })}
                 </div>
-
               </div>
             )}
-          </>
+          </div>
         )}
 
 
