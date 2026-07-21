@@ -116,7 +116,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
     if (orderItemIds.size) {
       const { data: itemsFromIds } = await supabaseAdmin
         .from("order_items")
-        .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity")
+        .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
         .in("id", Array.from(orderItemIds));
       (itemsFromIds ?? []).forEach((it: any) => {
         itemById.set(it.id, it);
@@ -134,7 +134,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
 
       const { data: allItems } = await supabaseAdmin
         .from("order_items")
-        .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity")
+        .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
         .in("order_id", Array.from(orderIds));
       (allItems ?? []).forEach((it: any) => {
         itemById.set(it.id, it);
@@ -143,6 +143,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
         itemsByOrder.set(it.order_id, arr);
       });
     }
+
 
     return auditRows.map((r: any): AuditRowEnriched => {
       const meta = (r.meta ?? {}) as any;
