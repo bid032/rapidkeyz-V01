@@ -67,37 +67,35 @@ function AboutPage() {
       <Header />
       <PageHero title={t.about.title} eyebrow="RapidKeyz" />
       <main className="max-w-4xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
-        {customText && (
+        {customText ? (
           <div className="mb-10 rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
             <p data-gsap="scroll-fade" className="leading-loose text-foreground whitespace-pre-line">
               {customText}
             </p>
           </div>
+        ) : (
+          <>
+            <Section title={t.about.moreTitle}>
+              <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.moreBody}</p>
+            </Section>
+            <Section title={t.about.missionTitle}>
+              <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.missionBody}</p>
+            </Section>
+            <Section title={t.about.valuesTitle}>
+              <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+                {t.about.values.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
+              </ul>
+            </Section>
+            <Section title={t.about.whyTitle}>
+              <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+                {t.about.why.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
+              </ul>
+            </Section>
+            <Section title={t.about.visionTitle}>
+              <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.visionBody}</p>
+            </Section>
+          </>
         )}
-
-        <Section title={t.about.moreTitle}>
-          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.moreBody}</p>
-        </Section>
-
-        <Section title={t.about.missionTitle}>
-          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.missionBody}</p>
-        </Section>
-
-        <Section title={t.about.valuesTitle}>
-          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
-            {t.about.values.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
-          </ul>
-        </Section>
-
-        <Section title={t.about.whyTitle}>
-          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
-            {t.about.why.map((v) => <li key={v} className="leading-relaxed">{v}</li>)}
-          </ul>
-        </Section>
-
-        <Section title={t.about.visionTitle}>
-          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.about.visionBody}</p>
-        </Section>
 
         <FeaturesStrip />
       </main>
