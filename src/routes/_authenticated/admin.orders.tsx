@@ -468,16 +468,27 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
       <div className="flex justify-between mb-2 gap-2 flex-wrap">
         <div className="text-sm min-w-0">
           <span className="font-bold">{item.product_name}</span>{" "}
-          <span className="text-muted-foreground">, {item.plan_label} × {item.quantity}</span>
-          <span className={`ms-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+          <span className="text-muted-foreground">— {item.plan_label} × {item.quantity}</span>
+          {item.account_type && (
+            <span className="ms-2 text-[10px] px-2 py-0.5 rounded bg-brand/10 text-brand font-bold">
+              {item.account_type === "private" ? "خاص" : item.account_type === "shared" ? "مشترك" : item.account_type}
+            </span>
+          )}
+          <span className={`ms-2 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
           </span>
           <span className={`ms-2 text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
             {delivered ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered") : (lang === "ar" ? "⏳ لسه" : "⏳ Pending")}
           </span>
+          {item.product_plans?.duration_days > 0 && (
+            <span className="ms-2 text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-bold">
+              {item.product_plans.duration_days} يوم
+            </span>
+          )}
         </div>
-        <div className="text-sm font-bold shrink-0">{item.unit_price} EGP</div>
+        <div className="text-sm font-bold shrink-0">{item.unit_price} EGP × {item.quantity} = <span className="text-brand">{Number(item.unit_price) * Number(item.quantity)} EGP</span></div>
       </div>
+
       {item.subscription_email && (
         <div className="text-xs mb-2">
           <span className="text-muted-foreground">Activate on:</span>{" "}
