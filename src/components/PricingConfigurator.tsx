@@ -87,28 +87,44 @@ export function PricingConfigurator({
         {/* Unified row: Plan type + Account type (same design regardless of count) */}
         {(normalizedTypes.length > 0 || (variants && variants.length > 0)) && (
           <div className={`grid gap-2 ${variants && variants.length > 0 && normalizedTypes.length > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
-            {/* Plan variant */}
+            {/* Plan variant - segmented buttons like Account */}
             {variants && variants.length > 0 && (
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
                   {isAr ? "نوع الخطة" : "Plan"}
                 </p>
-                <div className="relative h-[54px]">
-                  <select
-                    value={effectiveVariant ?? ""}
-                    onChange={(e) => onVariantChange?.(e.target.value)}
-                    className={`peer w-full h-full rounded-xl bg-card border-2 border-border hover:border-brand/60 focus:border-brand text-xs sm:text-sm font-black text-foreground focus:outline-none appearance-none cursor-pointer transition truncate ${isAr ? "ps-8 pe-2" : "ps-2 pe-8"} text-start`}
-                  >
-                    {variants.map((v) => (
-                      <option key={v} value={v}>{v}</option>
-                    ))}
-                  </select>
-                  <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-2" : "end-2"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[9px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
-                    ▼
-                  </span>
+                <div
+                  className="grid gap-1 p-1 rounded-xl bg-muted/40 border border-border h-[54px]"
+                  style={{ gridTemplateColumns: `repeat(${variants.length}, minmax(0,1fr))` }}
+                >
+                  {variants.map((v) => {
+                    const isSel = (effectiveVariant ?? variants[0]) === v || variants.length === 1;
+                    return (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => onVariantChange?.(v)}
+                        className="relative px-2 rounded-lg text-start focus:outline-none overflow-hidden"
+                      >
+                        {isSel && (
+                          <motion.span
+                            layoutId="variant-pill"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
+                          />
+                        )}
+                        <span className="relative flex items-center justify-center h-full">
+                          <span className={`block text-xs font-extrabold leading-tight truncate text-center ${isSel ? "text-brand-foreground" : "text-foreground"}`}>
+                            <bdi>{v}</bdi>
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
+
 
             {/* Account type - unified card design (1 or more) */}
             {normalizedTypes.length > 0 && (
