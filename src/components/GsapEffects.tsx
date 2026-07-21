@@ -84,26 +84,26 @@ export function GsapEffects() {
 
 
         case "scroll-fade": {
-          // Word-level reveal driven by scroll progress
-          const words = el.textContent?.trim().split(/\s+/) ?? [];
-          if (!words.length) return;
-          el.innerHTML = words
-            .map((w) => `<span class="inline-block will-change-transform">${w}</span>`)
-            .join(" ");
-          const spans = el.querySelectorAll("span");
-          gsap.from(spans, {
-            opacity: 0,
-            y: 22,
-            filter: "blur(6px)",
-            stagger: 0.04,
-            duration: 0.9,
-            ease: "power3.out",
-            immediateRender: false,
-            clearProps: "opacity,transform,filter",
-            scrollTrigger: { trigger: el, start: "top 90%", once: true },
-          });
+          // Element-level fade + slight rise. Do NOT split words — breaking
+          // Arabic text into inline-block spans disrupts letter shaping and
+          // causes visual overlap on narrow screens.
+          gsap.fromTo(
+            el,
+            { opacity: 0, y: 22, filter: "blur(6px)" },
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.9,
+              ease: "power3.out",
+              immediateRender: false,
+              clearProps: "transform,filter",
+              scrollTrigger: { trigger: el, start: "top 90%", once: true },
+            },
+          );
           break;
         }
+
 
         case "scroll-scrub": {
           // Continuous scroll-linked animation for whole sections
