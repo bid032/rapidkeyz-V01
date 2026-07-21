@@ -182,6 +182,8 @@ export function ProductCard({ p }: { p: ProductCardData }) {
               type="button"
               onClick={openBuy}
               disabled={soldOut}
+              title={soldOut ? (lang === "ar" ? "نفذ المخزون — غير متاح للشراء" : "Sold out — unavailable") : (lang === "ar" ? "شراء الآن" : "Buy now")}
+              aria-label={soldOut ? (lang === "ar" ? "نفذ المخزون" : "Sold out") : (lang === "ar" ? "شراء الآن" : "Buy now")}
               className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-sm shadow-md transition-all active:scale-95 ${soldOut ? "bg-muted text-muted-foreground cursor-not-allowed opacity-70" : "bg-brand text-brand-foreground hover:brand-glow"}`}
             >
               <Zap className="size-3.5 sm:size-4" />
@@ -191,8 +193,8 @@ export function ProductCard({ p }: { p: ProductCardData }) {
               type="button"
               onClick={handleAdd}
               disabled={soldOut}
-              aria-label={lang === "ar" ? "أضف للسلة" : "Add to cart"}
-              title={lang === "ar" ? "أضف للسلة" : "Add to cart"}
+              aria-label={soldOut ? (lang === "ar" ? "نفذ المخزون" : "Sold out") : (lang === "ar" ? "أضف للسلة" : "Add to cart")}
+              title={soldOut ? (lang === "ar" ? "نفذ المخزون — لا يمكن الإضافة للسلة" : "Sold out — cannot add to cart") : (lang === "ar" ? "أضف للسلة" : "Add to cart")}
               className={`grid place-items-center size-9 sm:size-11 rounded-xl border border-border bg-background transition-all active:scale-90 shrink-0 ${soldOut ? "opacity-50 cursor-not-allowed text-muted-foreground" : "text-foreground hover:border-brand/60 hover:text-brand"}`}
             >
               <ShoppingCart className="size-4 sm:size-5" />
