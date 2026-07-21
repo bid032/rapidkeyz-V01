@@ -127,15 +127,6 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            aria-label={lang === "ar" ? "بحث" : "Search"}
-            className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
-          >
-            <Search className="size-4" />
-          </button>
-          <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
           <div className="hidden sm:flex bg-muted rounded-full p-1">
             <button
               onClick={() => setLang("en")}
