@@ -76,7 +76,7 @@ function AdminSettings() {
         const m = (s.value as any)?.mode;
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
-      if (["shop_intro", "page_about", "page_terms", "page_privacy", "page_refund"].includes(s.key)) {
+      if (["shop_intro", "page_about", "page_terms", "page_refund", "page_privacy"].includes(s.key)) {
         setPageContent((prev) => ({
           ...prev,
           [s.key]: { ar: (s.value as any)?.ar ?? "", en: (s.value as any)?.en ?? "" },
