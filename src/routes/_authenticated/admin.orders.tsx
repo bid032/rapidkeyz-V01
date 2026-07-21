@@ -209,11 +209,16 @@ function AdminOrders() {
         ...creds,
       });
       if (error) throw error;
+      // Flip the per-item status. Order-level status auto-flips via DB trigger.
+      const { error: sErr } = await supabase
+        .from("order_items")
+        .update({ status: "delivered" as any })
+        .eq("id", orderItemId);
+      if (sErr) throw sErr;
       // Fire-and-await customer email with the delivered credentials.
       try {
         await notifyItemDelivered({ data: { orderItemId } });
       } catch (e) {
-        // Non-fatal for delivery, but surface to admin.
         console.error("notifyItemDelivered failed", e);
         notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
       }
@@ -224,6 +229,36 @@ function AdminOrders() {
     },
     onError: (e) => showError(e, notify, lang),
   });
+
+  const deliverInstant = useMutation({
+    mutationFn: async ({ orderItemId, planId }: { orderItemId: string; planId: string }) => {
+      const { data: claimedId, error } = await supabase.rpc("claim_inventory_for_item", {
+        _order_item_id: orderItemId,
+        _plan_id: planId,
+      });
+      if (error) throw error;
+      if (!claimedId) {
+        throw new Error(lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually");
+      }
+      const { error: sErr } = await supabase
+        .from("order_items")
+        .update({ status: "delivered" as any })
+        .eq("id", orderItemId);
+      if (sErr) throw sErr;
+      try {
+        await notifyItemDelivered({ data: { orderItemId } });
+      } catch (e) {
+        console.error("notifyItemDelivered failed", e);
+        notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم التسليم الفوري من المخزون" : "Delivered from inventory", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
+  });
+
 
 
   const deleteOrder = useMutation({
