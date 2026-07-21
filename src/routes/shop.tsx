@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 const searchSchema = z.object({
   category: z.string().optional(),
   account: z.enum(["private", "shared"]).optional(),
+  q: z.string().optional(),
 });
 
 export const Route = createFileRoute("/shop")({
