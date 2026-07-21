@@ -182,6 +182,11 @@ function Dashboard() {
                       o.status === "pending" ? "bg-warning/10 text-warning" :
                       "bg-muted text-muted-foreground"
                     }`}>{o.status}</span>
+                    {Number(o.discount_amount ?? 0) > 0 && (
+                      <div className="text-[11px] text-success font-bold mt-1">
+                        {lang === "ar" ? "خصم" : "Discount"} −{o.discount_amount} {t.common.currency}
+                      </div>
+                    )}
                     <div className="text-lg font-extrabold mt-2 text-brand">
                       {o.total} {t.common.currency}
                     </div>

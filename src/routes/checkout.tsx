@@ -47,6 +47,75 @@ function CheckoutPage() {
     items: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[];
   } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    id: string;
+    code: string;
+    discount: number;
+  } | null>(null);
+
+  const discount = appliedCoupon?.discount ?? 0;
+  const finalTotal = Math.max(0, cartTotal - discount);
+
+  // Auto-remove coupon if cart changes (subtotal or products) invalidate min-order or scope
+  useEffect(() => {
+    if (!appliedCoupon) return;
+    // Re-validate on cart change
+    (async () => {
+      const productIds = Array.from(new Set(cart.map((c) => c.productId)));
+      const { data, error } = await supabase.rpc("validate_coupon", {
+        _code: appliedCoupon.code,
+        _subtotal: cartTotal,
+        _product_ids: productIds,
+      });
+      if (error || !data || !data[0]?.valid) {
+        setAppliedCoupon(null);
+      } else {
+        const d = data[0] as any;
+        if (Number(d.discount) !== appliedCoupon.discount) {
+          setAppliedCoupon({ id: d.coupon_id, code: d.code, discount: Number(d.discount) });
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartTotal, cart.length]);
+
+  const applyCoupon = async () => {
+    setCouponError(null);
+    const code = couponCode.trim();
+    if (!code) return;
+    setCouponApplying(true);
+    try {
+      const productIds = Array.from(new Set(cart.map((c) => c.productId)));
+      const { data, error } = await supabase.rpc("validate_coupon", {
+        _code: code,
+        _subtotal: cartTotal,
+        _product_ids: productIds,
+      });
+      if (error) throw error;
+      const row = data?.[0] as any;
+      if (!row?.valid) {
+        setCouponError(row?.message || (lang === "ar" ? "كود غير صالح" : "Invalid code"));
+        setAppliedCoupon(null);
+        return;
+      }
+      setAppliedCoupon({ id: row.coupon_id, code: row.code, discount: Number(row.discount) });
+    } catch (e: any) {
+      setCouponError(e.message);
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError(null);
+  };
+
   const copyNumber = async () => {
     try {
       await navigator.clipboard.writeText(WHATSAPP_NUMBER);
@@ -152,7 +221,9 @@ function CheckoutPage() {
           status: "pending",
           payment_gateway: (gateway === "simulate" ? "manual" : gateway) as any,
           subtotal: cartTotal,
-          total: cartTotal,
+          total: finalTotal,
+          discount_amount: discount,
+          coupon_id: appliedCoupon?.id ?? null,
           customer_email: email,
           customer_name: name.trim() || null,
           customer_phone: phone,
@@ -185,6 +256,19 @@ function CheckoutPage() {
         .insert(items)
         .select();
       if (iErr) throw iErr;
+
+      // Redeem coupon (best-effort, non-blocking for order success)
+      if (appliedCoupon) {
+        try {
+          await supabase.rpc("redeem_coupon", {
+            _coupon_id: appliedCoupon.id,
+            _order_id: order.id,
+            _amount: appliedCoupon.discount,
+          });
+        } catch (e) {
+          console.error("redeem_coupon failed", e);
+        }
+      }
 
       // Every order starts as pending. Admin reviews and delivers each item manually
       // (either by claiming instant inventory or entering credentials for manual items).
@@ -554,11 +638,73 @@ function CheckoutPage() {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between text-lg pt-4 border-t border-border">
-                <span className="font-bold">{t.cart.total}</span>
-                <span className="font-extrabold text-brand">
-                  {cartTotal} {t.common.currency}
-                </span>
+              {/* Coupon code */}
+              <div className="pt-4 border-t border-border">
+                <label className="text-xs font-bold text-muted-foreground mb-2 block">
+                  {lang === "ar" ? "كود الخصم" : "Coupon code"}
+                </label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-success/10 border border-success/30">
+                    <div className="min-w-0">
+                      <div className="font-mono font-extrabold text-success text-sm truncate">
+                        {appliedCoupon.code}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {lang === "ar" ? "تم تطبيق الخصم" : "Coupon applied"}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="shrink-0 text-xs px-3 py-1.5 rounded-md border border-border font-bold hover:bg-muted"
+                    >
+                      {lang === "ar" ? "إزالة" : "Remove"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase().replace(/\s+/g, ""))}
+                      placeholder={lang === "ar" ? "أدخل الكود" : "Enter code"}
+                      className="flex-1 min-w-0 px-3 py-2.5 bg-background border border-border rounded-lg font-mono text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyCoupon}
+                      disabled={couponApplying || !couponCode.trim()}
+                      className="shrink-0 px-4 py-2.5 rounded-lg bg-brand text-brand-foreground text-sm font-bold disabled:opacity-50"
+                    >
+                      {couponApplying ? "…" : (lang === "ar" ? "تطبيق" : "Apply")}
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <p className="text-xs text-destructive mt-2">{couponError}</p>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2 pt-4 border-t border-border">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{lang === "ar" ? "المجموع الفرعي" : "Subtotal"}</span>
+                  <span className="font-bold">{cartTotal} {t.common.currency}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-success font-bold">
+                      {lang === "ar" ? "الخصم" : "Discount"}
+                      {appliedCoupon && <span className="ms-1 text-muted-foreground font-mono">({appliedCoupon.code})</span>}
+                    </span>
+                    <span className="font-extrabold text-success">−{discount} {t.common.currency}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg pt-2 border-t border-border">
+                  <span className="font-bold">{t.cart.total}</span>
+                  <span className="font-extrabold text-brand">
+                    {finalTotal} {t.common.currency}
+                  </span>
+                </div>
               </div>
               <button
                 type="submit"

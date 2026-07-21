@@ -403,6 +403,17 @@ function AdminOrders() {
                   )}
                   <div><span className="text-muted-foreground">عدد الوحدات:</span> <span className="font-bold">{itemsCount}</span></div>
                   <div><span className="text-muted-foreground">الإجمالي:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
+                  {Number(o.discount_amount ?? 0) > 0 && (
+                    <div className="md:col-span-2">
+                      <span className="text-muted-foreground">الخصم:</span>{" "}
+                      <span className="font-bold text-success">−{o.discount_amount} EGP</span>
+                      {o.coupon_id && (
+                        <span className="ms-2 text-[11px] text-muted-foreground">
+                          (كوبون · مجموع فرعي {o.subtotal} EGP)
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <div><span className="text-muted-foreground">الحالة:</span> <span className="font-bold">{o.status}</span></div>
                   <div><span className="text-muted-foreground">طريقة الدفع:</span> <span className="font-bold">{o.payment_gateway}</span></div>
                   {o.payment_sender_phone && (
