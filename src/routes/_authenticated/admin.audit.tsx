@@ -59,6 +59,10 @@ const ACTION_LABELS: Record<string, string> = {
   "role.revoked": "سحب صلاحية",
   "setting.updated": "تعديل إعداد",
   "setting.deleted": "حذف إعداد",
+  "coupon.created": "إنشاء كوبون",
+  "coupon.updated": "تعديل كوبون",
+  "coupon.deleted": "حذف كوبون",
+  "coupon.redeemed": "استخدام كوبون",
 };
 
 const FIELD_LABELS: Record<string, string> = {
@@ -77,6 +81,9 @@ const FIELD_LABELS: Record<string, string> = {
   reviewer_name: "اسم المُقيّم", rating: "التقييم", body: "النص", lang: "اللغة",
   image_url: "الصورة", caption: "التعليق", value: "القيمة", key: "المفتاح",
   amount: "المبلغ", notes: "ملاحظات", type: "النوع",
+  code: "الكود", discount_type: "نوع الخصم", discount_value: "قيمة الخصم",
+  applies_to: "يطبّق على", max_uses: "أقصى استخدام", used_count: "عدد الاستخدامات",
+  expires_at: "ينتهي في", min_order_amount: "أدنى قيمة للطلب", product_ids: "المنتجات المحددة",
 };
 
 const TARGET_LABELS: Record<string, string> = {
@@ -91,6 +98,7 @@ const TARGET_LABELS: Record<string, string> = {
   testimonial: "توصية",
   user_role: "صلاحية",
   setting: "إعداد",
+  coupon: "كوبون خصم",
 };
 
 const STATUS_TONES: Record<string, string> = {
@@ -118,13 +126,11 @@ function fmtTime(d: string) {
 /** Resolve the order_id a row belongs to, if any. */
 function orderKey(r: AuditRowEnriched): string | null {
   const meta = (r.meta ?? {}) as any;
+  if (r.order_id) return r.order_id;
   if (r.target_type === "order" && r.target_id) return r.target_id;
   if (meta.order_id) return String(meta.order_id);
-  if (r.target_type === "order_item" && r.target_id && r.order_number) {
-    // fall back to order_number as a stable grouping key when order_id is missing
-    return `on:${r.order_number}`;
-  }
-  return r.order_number ? `on:${r.order_number}` : null;
+  if (r.order_number) return `on:${r.order_number}`;
+  return null;
 }
 
 type Group = {
@@ -582,7 +588,6 @@ function MetaSummary({ meta }: { meta: any }) {
   push("الخطة", meta.label_ar);
   push("السؤال", meta.question_ar);
   push("المُقيّم", meta.reviewer_name);
-  push("القسم", meta.name_ar && !meta.product_name ? undefined : undefined); // handled above
   push("المفتاح", meta.key);
   push("المبلغ", meta.amount != null ? `${meta.amount} EGP` : undefined);
   push("النوع", meta.type);
@@ -590,6 +595,34 @@ function MetaSummary({ meta }: { meta: any }) {
   push("من", meta.from);
   push("إلى", meta.to);
   push("الصلاحية", meta.role);
+
+  // Coupon fields — from event meta or embedded snapshot
+  const snap = meta.snapshot ?? {};
+  const code = meta.code ?? snap.code;
+  const dType = meta.discount_type ?? snap.discount_type;
+  const dValue = meta.discount_value ?? snap.discount_value;
+  const applies = meta.applies_to ?? snap.applies_to;
+  const maxUses = snap.max_uses;
+  const minOrder = snap.min_order_amount;
+  const expires = snap.expires_at;
+  const productIds = snap.product_ids;
+  push("الكود", code);
+  if (dValue != null) {
+    push(
+      "الخصم",
+      dType === "percent" ? `${dValue}%` : `${dValue} EGP`,
+    );
+  }
+  push(
+    "يطبّق على",
+    applies === "all" ? "كل الخدمات" : applies === "products" ? "خدمات محددة" : applies,
+  );
+  push("أقصى استخدام", maxUses);
+  push("أدنى قيمة للطلب", minOrder != null ? `${minOrder} EGP` : undefined);
+  push("ينتهي في", expires ? fmtTime(expires) : undefined);
+  if (Array.isArray(productIds) && productIds.length)
+    push("عدد المنتجات المحددة", productIds.length);
+
   if (chips.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
