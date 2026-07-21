@@ -218,15 +218,10 @@ function CheckoutPage() {
       }
 
       clearCart();
-      if (gateway === "simulate") {
-        setSuccessOrder({
-          number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
-          items: itemStatuses,
-        });
-        return;
-      }
-      if (user) navigate({ to: "/dashboard" });
-      else navigate({ to: "/" });
+      setSuccessOrder({
+        number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
+        items: itemStatuses,
+      });
     } catch (err: any) {
       console.error("checkout failed", err);
       setError(friendlyErrorMessage(err, lang));
