@@ -19,6 +19,7 @@ export type ProductCardData = {
   discount_percent?: number | null;
   planLabel_ar?: string | null;
   planLabel_en?: string | null;
+  totalStock?: number | null;
 };
 
 function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
@@ -69,10 +70,15 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     hasDiscount && p.minPrice !== null
       ? Math.round(p.minPrice * (100 - discount)) / 100
       : p.minPrice;
+  const soldOut = p.totalStock != null && p.totalStock <= 0;
 
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (soldOut) {
+      notify?.(lang === "ar" ? "هذه الخدمة نفذت من المخزون" : "This product is sold out", "error");
+      return;
+    }
     if (!p.cheapestPlanId || finalPrice === null) {
       notify?.(lang === "ar" ? "لا توجد خطة متاحة" : "No plan available", "error");
       return;
@@ -94,8 +100,13 @@ export function ProductCard({ p }: { p: ProductCardData }) {
   const openBuy = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (soldOut) {
+      notify?.(lang === "ar" ? "هذه الخدمة نفذت من المخزون" : "This product is sold out", "error");
+      return;
+    }
     setBuyOpen(true);
   };
+
 
   return (
     <>
@@ -119,12 +130,20 @@ export function ProductCard({ p }: { p: ProductCardData }) {
               </span>
             </div>
           )}
-          {hasDiscount && (
+          {hasDiscount && !soldOut && (
             <span
               className={`absolute top-2 sm:top-3 ${lang === "ar" ? "start-2 sm:start-3" : "end-2 sm:end-3"} bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-black px-2 py-0.5 sm:py-1 rounded-full shadow-lg`}
             >
               -{discount}%
             </span>
+          )}
+          {soldOut && (
+            <>
+              <div className="absolute inset-0 bg-background/60 backdrop-blur-[1px]" />
+              <span className="absolute top-2 sm:top-3 start-2 sm:start-3 bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-black px-2.5 py-1 rounded-full shadow-lg">
+                {lang === "ar" ? "نفذ المخزون" : "Sold out"}
+              </span>
+            </>
           )}
         </div>
 
@@ -162,17 +181,19 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             <button
               type="button"
               onClick={openBuy}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl bg-brand text-brand-foreground font-bold text-[11px] sm:text-sm shadow-md hover:brand-glow transition-all active:scale-95"
+              disabled={soldOut}
+              className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-2.5 rounded-xl font-bold text-[11px] sm:text-sm shadow-md transition-all active:scale-95 ${soldOut ? "bg-muted text-muted-foreground cursor-not-allowed opacity-70" : "bg-brand text-brand-foreground hover:brand-glow"}`}
             >
               <Zap className="size-3.5 sm:size-4" />
-              <span>{lang === "ar" ? "شراء الآن" : "Buy now"}</span>
+              <span>{soldOut ? (lang === "ar" ? "نفذ" : "Sold out") : (lang === "ar" ? "شراء الآن" : "Buy now")}</span>
             </button>
             <button
               type="button"
               onClick={handleAdd}
+              disabled={soldOut}
               aria-label={lang === "ar" ? "أضف للسلة" : "Add to cart"}
               title={lang === "ar" ? "أضف للسلة" : "Add to cart"}
-              className="grid place-items-center size-9 sm:size-11 rounded-xl border border-border bg-background text-foreground hover:border-brand/60 hover:text-brand transition-all active:scale-90 shrink-0"
+              className={`grid place-items-center size-9 sm:size-11 rounded-xl border border-border bg-background transition-all active:scale-90 shrink-0 ${soldOut ? "opacity-50 cursor-not-allowed text-muted-foreground" : "text-foreground hover:border-brand/60 hover:text-brand"}`}
             >
               <ShoppingCart className="size-4 sm:size-5" />
             </button>
@@ -182,5 +203,6 @@ export function ProductCard({ p }: { p: ProductCardData }) {
 
       <QuickBuyDialog open={buyOpen} onOpenChange={setBuyOpen} product={p} />
     </>
+
   );
 }
