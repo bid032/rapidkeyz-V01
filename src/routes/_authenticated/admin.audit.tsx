@@ -59,6 +59,10 @@ const ACTION_LABELS: Record<string, string> = {
   "role.revoked": "سحب صلاحية",
   "setting.updated": "تعديل إعداد",
   "setting.deleted": "حذف إعداد",
+  "coupon.created": "إنشاء كوبون",
+  "coupon.updated": "تعديل كوبون",
+  "coupon.deleted": "حذف كوبون",
+  "coupon.redeemed": "استخدام كوبون",
 };
 
 const FIELD_LABELS: Record<string, string> = {
