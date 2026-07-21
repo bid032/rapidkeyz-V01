@@ -1,12 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search, Filter, Download, RefreshCw, ChevronDown, ChevronRight,
   User as UserIcon, Package, ShoppingCart, Clock, Mail, Phone, KeyRound, Activity,
+  Trash2, Radio,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getAuditLog, type AuditRowEnriched } from "@/lib/audit.functions";
 
@@ -145,16 +147,54 @@ type Group = {
 
 function AdminAudit() {
   const fetchAudit = useServerFn(getAuditLog);
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [target, setTarget] = useState("");
   const [action, setAction] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [live, setLive] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const rows = useQuery({
     queryKey: ["audit-log-enriched"],
     queryFn: () => fetchAudit({ data: { limit: 1000 } }),
-    staleTime: 30_000,
+    staleTime: 5_000,
   });
+
+  // Realtime — refetch on any change in audit_log.
+  useEffect(() => {
+    const channel = supabase
+      .channel("audit-log-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "audit_log" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["audit-log-enriched"] });
+        },
+      )
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
+      });
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
+  const clearAll = async () => {
+    if (!window.confirm("سيتم مسح كل حركات سجل الأعمال نهائياً. متأكد؟")) return;
+    setClearing(true);
+    const { error } = await supabase
+      .from("audit_log")
+      .delete()
+      .not("id", "is", null);
+    setClearing(false);
+    if (error) {
+      toast.error("تعذّر مسح السجل: " + error.message);
+      return;
+    }
+    toast.success("تم مسح كل سجل الأعمال");
+    qc.invalidateQueries({ queryKey: ["audit-log-enriched"] });
+  };
 
   const actionOptions = useMemo(() => {
     const set = new Set<string>();
@@ -267,12 +307,25 @@ function AdminAudit() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold">سجل الأعمال</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold">سجل الأعمال</h1>
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${
+                live
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                  : "bg-muted text-muted-foreground border-border"
+              }`}
+              title={live ? "التحديث اللحظي مفعّل" : "غير متصل"}
+            >
+              <Radio className={`w-3 h-3 ${live ? "animate-pulse" : ""}`} />
+              {live ? "مباشر" : "غير متصل"}
+            </span>
+          </div>
           <p className="text-xs text-muted-foreground mt-1">
-            كل طلب في خانة واحدة — افتحه لترى كل ما حدث له ومن نفّذه ومتى وبيانات التسليم إن وُجدت.
+            كل طلب في خانة واحدة — أي تغيير يظهر تلقائياً بدون تحديث الصفحة.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => rows.refetch()}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card hover:bg-muted text-sm font-bold"
@@ -285,6 +338,14 @@ function AdminAudit() {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand text-brand-foreground text-sm font-bold hover:brand-glow disabled:opacity-50"
           >
             <Download className="w-4 h-4" /> تحميل Excel
+          </button>
+          <button
+            onClick={clearAll}
+            disabled={clearing || (rows.data?.length ?? 0) === 0}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-sm font-bold hover:bg-destructive/20 disabled:opacity-50"
+          >
+            <Trash2 className={`w-4 h-4 ${clearing ? "animate-pulse" : ""}`} />
+            {clearing ? "جارٍ المسح…" : "مسح كل السجل"}
           </button>
         </div>
       </div>
