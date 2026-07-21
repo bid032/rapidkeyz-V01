@@ -62,7 +62,15 @@ export const getAuditLog = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    const auditRows = rows ?? [];
+    // Deduplicate: some historical rows were double-logged by legacy triggers.
+    // Collapse rows sharing action_type + target_id + created_at (same microsecond).
+    const seen = new Set<string>();
+    const auditRows = (rows ?? []).filter((r: any) => {
+      const key = `${r.action_type}|${r.target_id ?? ""}|${r.created_at}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     if (auditRows.length === 0) return [];
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -127,6 +135,25 @@ export const getAuditLog = createServerFn({ method: "GET" })
         if (it.order_id) orderIds.add(it.order_id);
       });
     }
+
+    // Resolve refund → order_id for refund audit rows missing meta.order_id
+    const refundOrderMap = new Map<string, string>();
+    const refundIds = auditRows
+      .filter((r: any) => r.target_type === "refund" && r.target_id)
+      .map((r: any) => r.target_id as string);
+    if (refundIds.length) {
+      const { data: refs } = await supabaseAdmin
+        .from("refunds")
+        .select("id, order_id")
+        .in("id", refundIds);
+      (refs ?? []).forEach((rf: any) => {
+        if (rf.order_id) {
+          refundOrderMap.set(rf.id, rf.order_id);
+          orderIds.add(rf.order_id);
+        }
+      });
+    }
+
 
     let ordersMap = new Map<string, any>();
     if (orderIds.size) {
@@ -240,6 +267,8 @@ export const getAuditLog = createServerFn({ method: "GET" })
       else if (meta.order_id) orderId = String(meta.order_id);
       else if (r.target_type === "order_item" && r.target_id) {
         orderId = itemById.get(r.target_id)?.order_id ?? null;
+      } else if (r.target_type === "refund" && r.target_id) {
+        orderId = refundOrderMap.get(r.target_id) ?? null;
       }
 
       const order = orderId ? ordersMap.get(orderId) : null;
