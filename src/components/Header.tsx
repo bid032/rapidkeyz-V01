@@ -160,6 +160,16 @@ export function Header() {
 
           <button
             type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label={lang === "ar" ? "بحث" : "Search"}
+            className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
+          >
+            <Search className="size-4" />
+          </button>
+          <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+          <button
+            type="button"
             onClick={() => setCartOpen(true)}
             aria-label="Cart"
             data-cart-anchor
