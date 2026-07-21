@@ -320,8 +320,11 @@ export function GsapEffects() {
 
 
     return () => {
-      clearTimeout(first);
+      const w = window as any;
+      if (typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(first); else clearTimeout(first);
+      if (rafId) cancelAnimationFrame(rafId);
       clearInterval(safety);
+
       observer.disconnect();
       window.removeEventListener("load", onLoad);
       cleanups.forEach((fn) => fn());
