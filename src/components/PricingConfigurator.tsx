@@ -301,14 +301,14 @@ export function PricingConfigurator({
               </AnimatePresence>
 
               {!selectedSoldOut && (hasDiscount || (selectedStock > 0 && selectedStock <= 10)) && (
-                <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
+                <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
                   {hasDiscount && (
-                    <span className="inline-flex items-center text-[10px] font-black px-2 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums">
-                      -{discount}% {isAr ? "خصم" : "off"}
+                    <span className="inline-flex items-center text-[10px] font-black px-2 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums shrink-0">
+                      -{discount}%
                     </span>
                   )}
                   {selectedStock > 0 && selectedStock <= 10 && (
-                    <span className="inline-flex items-center text-[10px] font-black px-2 py-0.5 rounded-md whitespace-nowrap bg-warning/15 text-warning border border-warning/30">
+                    <span className="inline-flex items-center text-[10px] font-black px-2 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30 min-w-0 truncate">
                       {t.product.stockLeft(selectedStock)}
                     </span>
                   )}
