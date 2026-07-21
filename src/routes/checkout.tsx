@@ -157,7 +157,7 @@ function CheckoutPage() {
           customer_name: name.trim() || null,
           customer_phone: phone,
           payment_proof_url: proofUrl,
-          payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.trim() : null,
+          payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.replace(/\D/g, "") : null,
           payment_reference: gateway === "simulate" ? "SIMULATION" : null,
         })
         .select()
