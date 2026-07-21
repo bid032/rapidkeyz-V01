@@ -47,6 +47,75 @@ function CheckoutPage() {
     items: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[];
   } | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    id: string;
+    code: string;
+    discount: number;
+  } | null>(null);
+
+  const discount = appliedCoupon?.discount ?? 0;
+  const finalTotal = Math.max(0, cartTotal - discount);
+
+  // Auto-remove coupon if cart changes (subtotal or products) invalidate min-order or scope
+  useEffect(() => {
+    if (!appliedCoupon) return;
+    // Re-validate on cart change
+    (async () => {
+      const productIds = Array.from(new Set(cart.map((c) => c.productId)));
+      const { data, error } = await supabase.rpc("validate_coupon", {
+        _code: appliedCoupon.code,
+        _subtotal: cartTotal,
+        _product_ids: productIds,
+      });
+      if (error || !data || !data[0]?.valid) {
+        setAppliedCoupon(null);
+      } else {
+        const d = data[0] as any;
+        if (Number(d.discount) !== appliedCoupon.discount) {
+          setAppliedCoupon({ id: d.coupon_id, code: d.code, discount: Number(d.discount) });
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartTotal, cart.length]);
+
+  const applyCoupon = async () => {
+    setCouponError(null);
+    const code = couponCode.trim();
+    if (!code) return;
+    setCouponApplying(true);
+    try {
+      const productIds = Array.from(new Set(cart.map((c) => c.productId)));
+      const { data, error } = await supabase.rpc("validate_coupon", {
+        _code: code,
+        _subtotal: cartTotal,
+        _product_ids: productIds,
+      });
+      if (error) throw error;
+      const row = data?.[0] as any;
+      if (!row?.valid) {
+        setCouponError(row?.message || (lang === "ar" ? "كود غير صالح" : "Invalid code"));
+        setAppliedCoupon(null);
+        return;
+      }
+      setAppliedCoupon({ id: row.coupon_id, code: row.code, discount: Number(row.discount) });
+    } catch (e: any) {
+      setCouponError(e.message);
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError(null);
+  };
+
   const copyNumber = async () => {
     try {
       await navigator.clipboard.writeText(WHATSAPP_NUMBER);
