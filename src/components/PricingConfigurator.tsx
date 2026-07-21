@@ -87,25 +87,10 @@ export function PricingConfigurator({
         {/* Combined row: single account type + variant dropdown */}
         {normalizedTypes.length === 1 && variants && variants.length > 0 ? (
           <div className="grid grid-cols-2 gap-2">
-            {/* Account type card */}
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                {isAr ? "١ · نوع الحساب" : "1 · Account"}
-              </p>
-              <div className="relative rounded-xl px-2.5 py-2 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[54px] flex flex-col justify-center">
-                <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
-                <span className="relative block text-sm font-black leading-tight truncate">
-                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
-                </span>
-                <span className="relative block text-[9px] mt-0.5 leading-tight text-brand-foreground/85 truncate">
-                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
-                </span>
-              </div>
-            </div>
             {/* Variant dropdown */}
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                {isAr ? "٢ · نوع الخطة" : "2 · Plan"}
+                {isAr ? "نوع الخطة" : "Plan"}
               </p>
               <div className="relative h-[54px]">
                 <select
@@ -119,6 +104,21 @@ export function PricingConfigurator({
                 </select>
                 <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "start-2" : "end-2"} w-5 h-5 rounded-md bg-brand/10 text-brand flex items-center justify-center text-[9px] peer-focus:bg-brand peer-focus:text-brand-foreground transition`}>
                   ▼
+                </span>
+              </div>
+            </div>
+            {/* Account type card */}
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
+                {isAr ? "نوع الحساب" : "Account"}
+              </p>
+              <div className="relative rounded-xl px-2.5 py-2 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[54px] flex flex-col justify-center">
+                <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
+                <span className="relative block text-sm font-black leading-tight truncate">
+                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
+                </span>
+                <span className="relative block text-[9px] mt-0.5 leading-tight text-brand-foreground/85 truncate">
+                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
                 </span>
               </div>
             </div>
