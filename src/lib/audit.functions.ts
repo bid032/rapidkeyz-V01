@@ -132,7 +132,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
     if (orderIds.size) {
       const { data: orders } = await supabaseAdmin
         .from("orders")
-        .select("id, order_number, status, total, customer_name, customer_email, customer_phone")
+        .select("id, order_number, status, total, subtotal, discount_amount, coupon_id, customer_name, customer_email, customer_phone")
         .in("id", Array.from(orderIds));
       (orders ?? []).forEach((o: any) => ordersMap.set(o.id, o));
 
