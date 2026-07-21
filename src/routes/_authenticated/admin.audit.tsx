@@ -386,8 +386,9 @@ function GroupCard({
 }) {
   const canon = group.order ?? group.events[0];
   const isOrder = !!canon.order_number || canon.items.length > 0;
+  const HIDDEN_ACTIONS = new Set(["order.created", "coupon.redeemed"]);
   const visibleEvents = isOrder
-    ? group.events.filter((r) => r.action_type !== "order.created")
+    ? group.events.filter((r) => !HIDDEN_ACTIONS.has(r.action_type))
     : group.events;
 
   return (
@@ -460,6 +461,101 @@ function GroupCard({
 
       {expanded && (
         <div className="border-t border-border p-3 sm:p-4 space-y-3 bg-background/40">
+
+          {/* Order details */}
+          {isOrder && (
+            <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <ShoppingCart className="w-3.5 h-3.5 text-brand" />
+                تفاصيل الطلب
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+                {canon.order_customer_name && (
+                  <InfoChip icon={<UserIcon className="w-3 h-3" />} label="العميل" value={canon.order_customer_name} />
+                )}
+                {canon.order_customer_email && (
+                  <InfoChip icon={<Mail className="w-3 h-3" />} label="الإيميل" value={canon.order_customer_email} />
+                )}
+                {canon.order_customer_phone && (
+                  <InfoChip icon={<Phone className="w-3 h-3" />} label="الهاتف" value={canon.order_customer_phone} />
+                )}
+                {canon.order_total != null && (
+                  <InfoChip label="الإجمالي" value={`${canon.order_total} EGP`} />
+                )}
+                {canon.order_status && (
+                  <InfoChip label="الحالة" value={canon.order_status} />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Items + delivered accounts */}
+          {isOrder && canon.items.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <Package className="w-3.5 h-3.5 text-brand" />
+                الخدمات ({canon.items.length})
+              </div>
+              <div className="grid gap-2">
+                {canon.items.map((it) => (
+                  <div key={it.id} className="rounded-lg border border-border/70 bg-background/50 p-2.5 space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className="font-bold text-sm"><bdi>{it.product_name ?? "—"}</bdi></span>
+                      {it.plan_label && (
+                        <span className="px-1.5 py-0.5 rounded-md border border-border text-[10px]">
+                          <bdi>{it.plan_label}</bdi>
+                        </span>
+                      )}
+                      {it.account_type && (
+                        <span className="px-1.5 py-0.5 rounded-md border border-border text-[10px]">
+                          <bdi>{it.account_type}</bdi>
+                        </span>
+                      )}
+                      {it.status && (
+                        <span
+                          className={`px-1.5 py-0.5 rounded-md border text-[10px] font-bold ${
+                            STATUS_TONES[it.status] ?? "bg-muted text-muted-foreground border-border"
+                          }`}
+                        >
+                          {it.status}
+                        </span>
+                      )}
+                      {it.unit_price != null && (
+                        <span className="ms-auto text-[11px] font-bold tabular-nums">
+                          {it.unit_price} EGP
+                          {it.quantity && it.quantity > 1 ? ` × ${it.quantity}` : ""}
+                        </span>
+                      )}
+                    </div>
+                    {it.delivered_accounts.length > 0 && (
+                      <div className="rounded-md border border-emerald-500/25 bg-emerald-500/5 p-2 space-y-1.5">
+                        <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                          <KeyRound className="w-3 h-3" />
+                          بيانات مُسلَّمة ({it.delivered_accounts.length})
+                        </div>
+                        {it.delivered_accounts.map((a, i) => (
+                          <div key={i} className="text-[11px] flex flex-wrap gap-x-3 gap-y-0.5">
+                            {a.account_email && (
+                              <InfoChip icon={<Mail className="w-3 h-3" />} label="إيميل" value={a.account_email} mono />
+                            )}
+                            {a.account_username && (
+                              <InfoChip label="يوزر" value={a.account_username} mono />
+                            )}
+                            {a.account_password && (
+                              <InfoChip label="باسورد" value={a.account_password} mono />
+                            )}
+                            {a.extra_notes && (
+                              <InfoChip label="ملاحظات" value={a.extra_notes} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Timeline */}
           <div className="rounded-xl border border-border bg-card p-3 space-y-2">
