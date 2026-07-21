@@ -159,6 +159,9 @@ function AdminRefunds() {
                           orderId={o.id}
                           userId={o.user_id}
                           item={it}
+                          orderSubtotal={Number(o.subtotal ?? o.total ?? 0)}
+                          orderTotal={Number(o.total ?? 0)}
+                          orderDiscount={Number(o.discount_amount ?? 0)}
                           refunds={itemRefunds}
                           onCreated={() => {
                             qc.invalidateQueries({ queryKey: ["admin-refunds"] });
