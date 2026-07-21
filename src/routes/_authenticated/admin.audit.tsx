@@ -394,8 +394,20 @@ function GroupCard({
     ? group.events.filter((r) => !HIDDEN_ACTIONS.has(r.action_type))
     : group.events;
 
+  // Any refund/compensation events on this order?
+  const refundEvents = group.events.filter((r) => r.action_type.startsWith("refund."));
+  const hasRefund = refundEvents.length > 0;
+  const refundTotal = refundEvents.reduce((sum, r) => {
+    const amt = Number((r.meta as any)?.amount ?? 0);
+    return r.action_type === "refund.created" ? sum + (Number.isFinite(amt) ? amt : 0) : sum;
+  }, 0);
+
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+    <div
+      className={`bg-card border rounded-2xl overflow-hidden ${
+        hasRefund ? "border-destructive/40 ring-1 ring-destructive/20" : "border-border"
+      }`}
+    >
       <button
         onClick={onToggle}
         className="w-full text-start p-3 sm:p-4 flex flex-wrap items-center gap-3 hover:bg-muted/40 transition"
@@ -410,6 +422,13 @@ function GroupCard({
               <ShoppingCart className="w-4 h-4" />
               {canon.order_number ?? "—"}
             </span>
+            {hasRefund && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-destructive/40 bg-destructive/10 text-destructive text-[10px] font-extrabold">
+                <span>↩</span>
+                تعويض
+                {refundTotal > 0 && <span className="tabular-nums">− {refundTotal} EGP</span>}
+              </span>
+            )}
             {canon.order_status && (
               <span
                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${
