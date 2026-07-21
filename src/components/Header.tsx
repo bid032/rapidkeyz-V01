@@ -138,6 +138,20 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <form
+            onSubmit={(e) => { e.preventDefault(); submitSearch(searchQ); }}
+            className="hidden lg:flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-1.5 focus-within:border-brand transition-colors"
+          >
+            <Search className="size-4 text-muted-foreground shrink-0" />
+            <input
+              ref={searchRef}
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+              placeholder={lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
+              className="bg-transparent outline-none text-sm w-40 xl:w-52 placeholder:text-muted-foreground"
+              dir={lang === "ar" ? "rtl" : "ltr"}
+            />
+          </form>
           <div className="hidden sm:flex bg-muted rounded-full p-1">
             <button
               onClick={() => setLang("en")}
