@@ -34,19 +34,8 @@ export function Header() {
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
-  const [searchQ, setSearchQ] = useState("");
-  const [mobileSearchQ, setMobileSearchQ] = useState("");
   const navigate = useNavigate();
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  const submitSearch = (q: string) => {
-    const term = q.trim();
-    if (!term) return;
-    navigate({ to: "/shop", search: { q: term } as any });
-    setSearchQ("");
-    setMobileSearchQ("");
-    setMobileOpen(false);
-  };
+  void navigate;
 
   useEffect(() => {
     setMounted(true);
