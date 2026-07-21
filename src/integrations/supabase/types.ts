@@ -217,6 +217,7 @@ export type Database = {
           product_id: string | null
           product_name: string
           quantity: number
+          status: Database["public"]["Enums"]["order_item_status"]
           subscription_email: string | null
           unit_price: number
         }
@@ -231,6 +232,7 @@ export type Database = {
           product_id?: string | null
           product_name: string
           quantity?: number
+          status?: Database["public"]["Enums"]["order_item_status"]
           subscription_email?: string | null
           unit_price: number
         }
@@ -245,6 +247,7 @@ export type Database = {
           product_id?: string | null
           product_name?: string
           quantity?: number
+          status?: Database["public"]["Enums"]["order_item_status"]
           subscription_email?: string | null
           unit_price?: number
         }
@@ -778,6 +781,7 @@ export type Database = {
       account_type: "private" | "shared" | "both" | "own"
       app_role: "admin" | "user" | "moderator"
       delivery_type: "instant" | "manual"
+      order_item_status: "pending" | "delivered" | "refunded"
       order_status:
         | "pending"
         | "paid"
@@ -917,6 +921,7 @@ export const Constants = {
       account_type: ["private", "shared", "both", "own"],
       app_role: ["admin", "user", "moderator"],
       delivery_type: ["instant", "manual"],
+      order_item_status: ["pending", "delivered", "refunded"],
       order_status: [
         "pending",
         "paid",
