@@ -110,7 +110,10 @@ const STATUS_TONES: Record<string, string> = {
 };
 
 function actionTone(action: string) {
-  if (action.includes("deleted") || action.includes("revoked") || action.includes("refunded"))
+  // Refunds/compensations always red — they're money going out.
+  if (action.startsWith("refund.") || action.includes("refunded"))
+    return "bg-destructive/10 text-destructive border-destructive/20";
+  if (action.includes("deleted") || action.includes("revoked"))
     return "bg-destructive/10 text-destructive border-destructive/20";
   if (action.includes("delivered") || action.includes("created") || action.includes("granted"))
     return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
