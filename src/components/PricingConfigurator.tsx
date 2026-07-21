@@ -218,7 +218,7 @@ export function PricingConfigurator({
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-              {isAr ? "٢ · المدة" : "2 · Duration"}
+              {isAr ? "المدة" : "Duration"}
             </p>
             <p className="text-[9px] text-muted-foreground">
               {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
