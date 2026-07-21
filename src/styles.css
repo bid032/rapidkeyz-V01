@@ -72,32 +72,51 @@
 }
 
 .light {
-  --background: oklch(0.99 0.005 240);
-  --foreground: oklch(0.14 0.02 260);
+  --background: oklch(0.985 0.006 240);
+  --foreground: oklch(0.20 0.03 260);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.14 0.02 260);
+  --card-foreground: oklch(0.20 0.03 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.14 0.02 260);
-  --primary: oklch(0.55 0.18 240);
+  --popover-foreground: oklch(0.20 0.03 260);
+  --primary: oklch(0.62 0.16 235);
   --primary-foreground: oklch(0.99 0.005 240);
-  --secondary: oklch(0.95 0.02 240);
-  --secondary-foreground: oklch(0.14 0.02 260);
-  --muted: oklch(0.95 0.02 240);
-  --muted-foreground: oklch(0.42 0.03 250);
-  --accent: oklch(0.92 0.08 220);
-  --accent-foreground: oklch(0.14 0.02 260);
-  --destructive: oklch(0.58 0.24 25);
+  --secondary: oklch(0.96 0.015 240);
+  --secondary-foreground: oklch(0.20 0.03 260);
+  --muted: oklch(0.965 0.012 240);
+  --muted-foreground: oklch(0.48 0.03 250);
+  --accent: oklch(0.94 0.05 225);
+  --accent-foreground: oklch(0.20 0.03 260);
+  --destructive: oklch(0.60 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --brand: oklch(0.55 0.18 240);
+  --brand: oklch(0.62 0.16 235);
   --brand-foreground: oklch(0.99 0.005 240);
-  --brand-glow: oklch(0.72 0.16 220);
-  --brand-deep: oklch(0.40 0.22 260);
-  --success: oklch(0.55 0.16 165);
-  --warning: oklch(0.65 0.17 75);
-  --border: oklch(0.14 0.02 260 / 12%);
-  --input: oklch(0.14 0.02 260 / 14%);
-  --ring: oklch(0.55 0.18 240);
+  --brand-glow: oklch(0.75 0.14 220);
+  --brand-deep: oklch(0.45 0.20 258);
+  --success: oklch(0.58 0.15 165);
+  --warning: oklch(0.68 0.16 75);
+  --border: oklch(0.20 0.03 260 / 10%);
+  --input: oklch(0.20 0.03 260 / 12%);
+  --ring: oklch(0.62 0.16 235);
 }
+
+/* ─── Light-mode overrides for hard-coded dark utilities ─────────
+   Many components use bg-white/*, border-white/*, bg-black/* which
+   are invisible or wrong in light. Remap them to foreground tints. */
+.light [class*="bg-white/5"]   { background-color: oklch(0.20 0.03 260 / 0.04); }
+.light [class*="bg-white/10"]  { background-color: oklch(0.20 0.03 260 / 0.06); }
+.light [class*="bg-white/20"]  { background-color: oklch(0.20 0.03 260 / 0.08); }
+.light [class*="border-white/5"]  { border-color: oklch(0.20 0.03 260 / 0.06); }
+.light [class*="border-white/10"] { border-color: oklch(0.20 0.03 260 / 0.10); }
+.light [class*="border-white/20"] { border-color: oklch(0.20 0.03 260 / 0.15); }
+.light [class*="border-white/40"] { border-color: oklch(0.20 0.03 260 / 0.20); }
+.light [class*="bg-black/20"]  { background-color: oklch(0.20 0.03 260 / 0.04); }
+.light [class*="bg-black/30"]  { background-color: oklch(0.20 0.03 260 / 0.05); }
+.light [class*="bg-black/40"]  { background-color: oklch(0.20 0.03 260 / 0.06); }
+.light [class*="bg-card/80"]   { background-color: oklch(1 0 0 / 0.92); }
+.light [class*="bg-card/60"]   { background-color: oklch(1 0 0 / 0.85); }
+.light [class*="text-white/60"] { color: oklch(0.20 0.03 260 / 0.60); }
+.light [class*="text-white/70"] { color: oklch(0.20 0.03 260 / 0.70); }
+.light [class*="text-white/80"] { color: oklch(0.20 0.03 260 / 0.80); }
 
 body {
   background-image:
