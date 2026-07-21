@@ -254,36 +254,71 @@ export function PricingConfigurator({
         </div>
 
         {selected && (
-          <div className="relative rounded-xl border border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card p-3 overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]" />
+          <div
+            className={`relative rounded-xl border p-3 overflow-hidden transition-colors ${
+              selectedSoldOut
+                ? "border-destructive/40 bg-gradient-to-br from-destructive/10 via-card to-card"
+                : "border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card"
+            }`}
+          >
+            <div
+              className={`pointer-events-none absolute inset-0 ${
+                selectedSoldOut
+                  ? "bg-[radial-gradient(circle_at_top_right,hsl(var(--destructive)/0.18),transparent_60%)]"
+                  : "bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]"
+              }`}
+            />
             <div className="relative flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0">
-                <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
+                <div
+                  className={`text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 ${
+                    selectedSoldOut ? "text-destructive" : "text-brand"
+                  }`}
+                >
                   {isAr ? "الإجمالي" : "Total"}
                 </div>
                 <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${selected.id}-${finalPrice}`}
-                    initial={{ y: 8, opacity: 0, scale: 0.96 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ y: -8, opacity: 0, scale: 0.96 }}
-                    transition={{ type: "spring", stiffness: 320, damping: 26 }}
-                    className="flex items-baseline gap-2 flex-wrap"
-                  >
-                    <span className="text-2xl sm:text-3xl font-black text-brand tabular-nums leading-none">
-                      {finalPrice}
-                    </span>
-                    <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
-                    {hasDiscount && (
-                      <span className="text-xs text-muted-foreground line-through tabular-nums">
-                        {rawPrice}
+                  {selectedSoldOut ? (
+                    <motion.div
+                      key={`${selected.id}-sold`}
+                      initial={{ y: 8, opacity: 0, scale: 0.96 }}
+                      animate={{ y: 0, opacity: 1, scale: 1 }}
+                      exit={{ y: -8, opacity: 0, scale: 0.96 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                      className="flex items-center gap-2"
+                    >
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-destructive text-destructive-foreground px-3 py-1.5 text-sm font-black uppercase tracking-wider shadow-md">
+                        <span className="inline-block size-1.5 rounded-full bg-destructive-foreground/90 animate-pulse" />
+                        {t.product.soldOut}
                       </span>
-                    )}
-                  </motion.div>
+                      <span className="text-[10px] font-bold text-muted-foreground">
+                        {isAr ? "غير متاح للشراء حالياً" : "Currently unavailable"}
+                      </span>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key={`${selected.id}-${finalPrice}`}
+                      initial={{ y: 8, opacity: 0, scale: 0.96 }}
+                      animate={{ y: 0, opacity: 1, scale: 1 }}
+                      exit={{ y: -8, opacity: 0, scale: 0.96 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                      className="flex items-baseline gap-2 flex-wrap"
+                    >
+                      <span className="text-2xl sm:text-3xl font-black text-brand tabular-nums leading-none">
+                        {finalPrice}
+                      </span>
+                      <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                      {hasDiscount && (
+                        <span className="text-xs text-muted-foreground line-through tabular-nums">
+                          {rawPrice}
+                        </span>
+                      )}
+                    </motion.div>
+                  )}
                 </AnimatePresence>
               </div>
               <div className="flex flex-wrap items-center gap-1 shrink-0 justify-end max-w-[55%]">
-                {hasDiscount && (
+                {!selectedSoldOut && hasDiscount && (
                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider">
                     -{discount}%
                   </span>
@@ -291,11 +326,6 @@ export function PricingConfigurator({
                 {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30 whitespace-nowrap">
                     {t.product.stockLeft(selectedStock)}
-                  </span>
-                )}
-                {selectedSoldOut && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive/15 text-destructive border border-destructive/30">
-                    {t.product.soldOut}
                   </span>
                 )}
               </div>
