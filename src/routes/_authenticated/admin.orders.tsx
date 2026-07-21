@@ -517,9 +517,9 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
             </div>
           </div>
         </div>
-        <div className="text-sm shrink-0 text-end">
+        <div className="text-sm shrink-0 text-end" dir="ltr">
           <div className="text-xs text-muted-foreground">
-            {item.unit_price} EGP × {item.quantity}
+            {item.unit_price} EGP
             {discounted && originalUnit !== null && (
               <span className="ms-1 line-through opacity-60">{originalUnit} EGP</span>
             )}
