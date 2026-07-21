@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -12,6 +12,7 @@ import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
 import { CartDrawer } from "@/components/CartDrawer";
 import { AdminNotifications } from "@/components/AdminNotifications";
+import { SearchOverlay } from "@/components/SearchOverlay";
 
 type MobileCat = { id: string; slug: string; name_ar: string; name_en: string };
 
@@ -29,22 +30,10 @@ export function Header() {
   const [hasStock, setHasStock] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
-  const [searchQ, setSearchQ] = useState("");
-  const [mobileSearchQ, setMobileSearchQ] = useState("");
-  const navigate = useNavigate();
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  const submitSearch = (q: string) => {
-    const term = q.trim();
-    if (!term) return;
-    navigate({ to: "/shop", search: { q: term } as any });
-    setSearchQ("");
-    setMobileSearchQ("");
-    setMobileOpen(false);
-  };
 
   useEffect(() => {
     setMounted(true);
@@ -138,20 +127,15 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
-          <form
-            onSubmit={(e) => { e.preventDefault(); submitSearch(searchQ); }}
-            className="hidden lg:flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-1.5 focus-within:border-brand transition-colors"
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label={lang === "ar" ? "بحث" : "Search"}
+            className="size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
           >
-            <Search className="size-4 text-muted-foreground shrink-0" />
-            <input
-              ref={searchRef}
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-              placeholder={lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
-              className="bg-transparent outline-none text-sm w-40 xl:w-52 placeholder:text-muted-foreground"
-              dir={lang === "ar" ? "rtl" : "ltr"}
-            />
-          </form>
+            <Search className="size-4" />
+          </button>
+          <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
           <div className="hidden sm:flex bg-muted rounded-full p-1">
             <button
               onClick={() => setLang("en")}
@@ -235,21 +219,18 @@ export function Header() {
                 </div>
                 <span className="w-6" />
               </div>
-              <form
-                onSubmit={(e) => { e.preventDefault(); submitSearch(mobileSearchQ); }}
-                className="px-4 pt-3"
-              >
-                <div className="flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-2 focus-within:border-brand transition-colors">
+              <div className="px-4 pt-3">
+                <button
+                  type="button"
+                  onClick={() => { closeMobile(); setTimeout(() => setSearchOpen(true), 120); }}
+                  className="w-full flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-2 hover:border-brand transition-colors text-start"
+                >
                   <Search className="size-4 text-muted-foreground shrink-0" />
-                  <input
-                    value={mobileSearchQ}
-                    onChange={(e) => setMobileSearchQ(e.target.value)}
-                    placeholder={lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
-                    className="bg-transparent outline-none text-sm flex-1 placeholder:text-muted-foreground"
-                    dir={lang === "ar" ? "rtl" : "ltr"}
-                  />
-                </div>
-              </form>
+                  <span className="text-sm text-muted-foreground flex-1">
+                    {lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
+                  </span>
+                </button>
+              </div>
               <nav className="flex flex-col px-2 py-3">
                 {/* الأقسام */}
                 <div className="px-3 pt-2 pb-1">
