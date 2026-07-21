@@ -380,6 +380,9 @@ function GroupCard({
 }) {
   const canon = group.order ?? group.events[0];
   const isOrder = !!canon.order_number || canon.items.length > 0;
+  const visibleEvents = isOrder
+    ? group.events.filter((r) => r.action_type !== "order.created")
+    : group.events;
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
