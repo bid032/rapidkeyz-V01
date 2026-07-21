@@ -100,6 +100,18 @@ function ShopPage() {
     queryFn: () => fetchProducts(search),
   });
 
+  const shopIntro = useQuery({
+    queryKey: ["site-setting", "shop_intro"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "shop_intro")
+        .maybeSingle();
+      return (data?.value ?? null) as { ar?: string; en?: string } | null;
+    },
+  });
+
   const category = useQuery({
     queryKey: ["category-by-slug", search.category],
     enabled: !!search.category,
@@ -115,6 +127,11 @@ function ShopPage() {
 
   const inCategory = !!search.category;
   const catName = category.data ? (lang === "ar" ? category.data.name_ar : category.data.name_en) : search.category;
+  const introText =
+    (lang === "ar" ? shopIntro.data?.ar : shopIntro.data?.en)?.trim() ||
+    (lang === "ar"
+      ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
+      : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration.");
 
   return (
     <div className="min-h-screen bg-background text-foreground">
