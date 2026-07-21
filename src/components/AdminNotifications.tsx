@@ -83,21 +83,25 @@ export function AdminNotifications() {
   // Load recent orders
   useEffect(() => {
     if (!canModerate) return;
+    let alive = true;
     supabase
       .from("orders")
       .select("id, order_number, total, currency, customer_email, created_at, status")
       .order("created_at", { ascending: false })
       .limit(15)
       .then(({ data }) => {
+        if (!alive) return;
         const rows = (data as OrderRow[] | null) ?? [];
         setOrders(rows);
-        // On first load, mark everything already-existing as seen so the badge
-        // only starts counting truly new orders from now on.
         if (typeof window !== "undefined" && !localStorage.getItem(STORAGE_KEY)) {
           persistSeen(new Set(rows.map((r) => r.id)));
         }
       });
+    return () => {
+      alive = false;
+    };
   }, [canModerate]);
+
 
   // Realtime subscribe
   useEffect(() => {
