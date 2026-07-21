@@ -389,6 +389,31 @@ a[class*="size-10"]:hover {
   font-weight: 500;
 }
 
+/* ─── Arabic letter-connection fix ─────────────────────────────
+   `letter-spacing` and `text-transform: uppercase` break the
+   ligatures / connected glyphs of Arabic script, producing the
+   "chopped letters" look. Neutralize them in RTL globally. */
+[dir="rtl"] .uppercase,
+[dir="rtl"] .lowercase,
+[dir="rtl"] .capitalize {
+  text-transform: none !important;
+}
+[dir="rtl"] .tracking-tighter,
+[dir="rtl"] .tracking-tight,
+[dir="rtl"] .tracking-normal,
+[dir="rtl"] .tracking-wide,
+[dir="rtl"] .tracking-wider,
+[dir="rtl"] .tracking-widest,
+[dir="rtl"] [class*="tracking-\["] {
+  letter-spacing: 0 !important;
+}
+
+/* Section eyebrow badges — match the "شركاؤنا الرقميون" look */
+[dir="rtl"] .inline-flex[class*="rounded-full"][class*="text-brand"] {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+}
+
 
 /* Hide Lovable badge on published site */
 #lovable-badge,
