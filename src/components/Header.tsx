@@ -34,8 +34,6 @@ export function Header() {
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
-  const navigate = useNavigate();
-  void navigate;
 
   useEffect(() => {
     setMounted(true);
