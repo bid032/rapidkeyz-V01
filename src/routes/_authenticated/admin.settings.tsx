@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { translations } from "@/lib/i18n";
+import { pageDefaults } from "@/lib/page-defaults";
 
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
@@ -38,8 +39,8 @@ function AdminSettings() {
     shop_intro: { ar: "", en: "" },
     page_about: { ar: "", en: "" },
     page_terms: { ar: "", en: "" },
-    page_privacy: { ar: "", en: "" },
     page_refund: { ar: "", en: "" },
+    page_privacy: { ar: "", en: "" },
   });
 
   const heroProducts = useQuery({
@@ -75,7 +76,7 @@ function AdminSettings() {
         const m = (s.value as any)?.mode;
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
-      if (["shop_intro", "page_about", "page_terms", "page_privacy", "page_refund"].includes(s.key)) {
+      if (["shop_intro", "page_about", "page_terms", "page_refund", "page_privacy"].includes(s.key)) {
         setPageContent((prev) => ({
           ...prev,
           [s.key]: { ar: (s.value as any)?.ar ?? "", en: (s.value as any)?.en ?? "" },
@@ -339,52 +340,111 @@ function AdminSettings() {
 
 
       <Section title={"محتوى الصفحات / Page Content"}>
-        <p className="text-xs text-muted-foreground mb-4">
-          النصوص هنا بتظهر فوق المحتوى الأساسي في كل صفحة. اسيبها فاضية عشان تخفيها. بتقبل أكتر من فقرة (اضغط Enter عشان تنزل سطر).
-        </p>
+        <div className="mb-4 rounded-xl border border-brand/30 bg-brand/5 p-3 text-xs leading-relaxed space-y-1">
+          <p className="font-bold text-brand">👇 تحكم كامل في نصوص الصفحات</p>
+          <p className="text-muted-foreground">
+            كل خانة هنا بتتحكم في محتوى صفحة كاملة أو قسم منها. الشكل الجديد:
+          </p>
+          <ul className="text-muted-foreground list-disc list-inside space-y-0.5 ps-2">
+            <li>لو الخانة <b>فاضية</b> ← بيتم عرض النص الافتراضي الظاهر تحتها (اللي بيبان دلوقتي على الموقع).</li>
+            <li>لو <b>ملأتها</b> ← النص اللي بتكتبه هيستبدل المحتوى الافتراضي بالكامل في الصفحة دي.</li>
+            <li>ينفع تكتب أكتر من فقرة (اضغط Enter عشان تنزل سطر).</li>
+          </ul>
+        </div>
         <div className="space-y-6">
           {([
-            ["shop_intro", "مقدمة صفحة المتجر", "Shop page intro"],
-            ["page_about", "صفحة \"من نحن\"", "About page"],
-            ["page_terms", "صفحة الشروط والأحكام", "Terms page"],
-            ["page_privacy", "قسم الخصوصية", "Privacy section"],
-            ["page_refund", "قسم الاسترداد", "Refund section"],
-          ] as const).map(([key, labelAr, labelEn]) => (
-            <div key={key} className="p-4 rounded-xl bg-background/60 border border-border">
-              <h4 className="font-bold text-sm mb-3">
-                {labelAr} <span className="text-muted-foreground font-normal">/ {labelEn}</span>
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold text-muted-foreground">النص بالعربي</label>
-                  <textarea
-                    rows={5}
-                    value={pageContent[key]?.ar ?? ""}
-                    onChange={(e) =>
-                      setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: e.target.value } })
-                    }
-                    dir="rtl"
-                    className="px-3 py-2 bg-background border border-border rounded text-end leading-loose"
-                    placeholder="اكتب النص هنا…"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold text-muted-foreground">English text</label>
-                  <textarea
-                    rows={5}
-                    value={pageContent[key]?.en ?? ""}
-                    onChange={(e) =>
-                      setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: e.target.value } })
-                    }
-                    className="px-3 py-2 bg-background border border-border rounded leading-loose"
-                    placeholder="Write the text here…"
-                  />
+            ["shop_intro", "مقدمة صفحة المتجر (تحت \"كل الخدمات\")", "Shop page intro (under \"All services\")"],
+            ["page_about", "صفحة \"من نحن\" بالكامل", "About page (full replace)"],
+            ["page_terms", "صفحة الشروط والأحكام بالكامل", "Terms page (full replace)"],
+            ["page_refund", "قسم الاسترداد في صفحة (الاسترداد والخصوصية)", "Refund section in Refund & Privacy page"],
+            ["page_privacy", "قسم الخصوصية في صفحة (الاسترداد والخصوصية)", "Privacy section in Refund & Privacy page"],
+          ] as const).map(([key, labelAr, labelEn]) => {
+            const defAr = pageDefaults[key]("ar");
+            const defEn = pageDefaults[key]("en");
+            const valAr = pageContent[key]?.ar ?? "";
+            const valEn = pageContent[key]?.en ?? "";
+            const usingCustomAr = valAr.trim().length > 0;
+            const usingCustomEn = valEn.trim().length > 0;
+            return (
+              <div key={key} className="p-4 rounded-xl bg-background/60 border border-border">
+                <h4 className="font-bold text-sm mb-1">
+                  {labelAr} <span className="text-muted-foreground font-normal">/ {labelEn}</span>
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  {/* Arabic */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-muted-foreground">النص بالعربي</label>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomAr ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
+                        {usingCustomAr ? "نص مخصص ✓" : "افتراضي"}
+                      </span>
+                    </div>
+                    <textarea
+                      rows={6}
+                      value={valAr}
+                      onChange={(e) =>
+                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: e.target.value } })
+                      }
+                      dir="rtl"
+                      className="px-3 py-2 bg-background border border-border rounded text-end leading-loose"
+                      placeholder="اسيبها فاضية عشان تفضل النص الافتراضي…"
+                    />
+                    <details className="mt-1 group">
+                      <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground hover:text-brand select-none">
+                        عرض النص الافتراضي الظاهر حالياً ▾
+                      </summary>
+                      <pre dir="rtl" className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap text-[10px] leading-relaxed p-2 bg-muted/40 border border-border rounded text-muted-foreground font-sans text-end">
+{defAr}
+                      </pre>
+                      <button
+                        type="button"
+                        onClick={() => setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: defAr } })}
+                        className="mt-1 text-[10px] font-bold text-brand hover:underline"
+                      >
+                        نسخ الافتراضي للخانة عشان أعدّل عليه
+                      </button>
+                    </details>
+                  </div>
+                  {/* English */}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-bold text-muted-foreground">English text</label>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomEn ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
+                        {usingCustomEn ? "Custom ✓" : "Default"}
+                      </span>
+                    </div>
+                    <textarea
+                      rows={6}
+                      value={valEn}
+                      onChange={(e) =>
+                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: e.target.value } })
+                      }
+                      className="px-3 py-2 bg-background border border-border rounded leading-loose"
+                      placeholder="Leave empty to keep the default text…"
+                    />
+                    <details className="mt-1 group">
+                      <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground hover:text-brand select-none">
+                        Show default text currently shown ▾
+                      </summary>
+                      <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap text-[10px] leading-relaxed p-2 bg-muted/40 border border-border rounded text-muted-foreground font-sans">
+{defEn}
+                      </pre>
+                      <button
+                        type="button"
+                        onClick={() => setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: defEn } })}
+                        className="mt-1 text-[10px] font-bold text-brand hover:underline"
+                      >
+                        Copy default into the field to edit it
+                      </button>
+                    </details>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Section>
+
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
         className="px-6 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow">

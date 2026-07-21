@@ -39,27 +39,29 @@ function TermsPage() {
       <Header />
       <PageHero title={t.terms.title} eyebrow={t.nav.terms} />
       <main className="max-w-4xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
-        {customText && (
+        {customText ? (
           <div className="mb-10 rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
             <p data-gsap="scroll-fade" className="leading-loose text-foreground whitespace-pre-line">
               {customText}
             </p>
           </div>
+        ) : (
+          <>
+            <div data-gsap="scroll-scrub" className="mb-10">
+              <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.terms.welcome}</h2>
+              <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.terms.welcomeBody}</p>
+            </div>
+
+            {t.terms.sections.map((s) => (
+              <section key={s.h} data-gsap="scroll-scrub" className="mb-8">
+                <h3 data-gsap="split-words" className="text-lg font-bold text-brand mb-3">{s.h}</h3>
+                <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+                  {s.items.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
+                </ul>
+              </section>
+            ))}
+          </>
         )}
-
-        <div data-gsap="scroll-scrub" className="mb-10">
-          <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.terms.welcome}</h2>
-          <p data-gsap="scroll-fade" className="leading-loose text-muted-foreground">{t.terms.welcomeBody}</p>
-        </div>
-
-        {t.terms.sections.map((s) => (
-          <section key={s.h} data-gsap="scroll-scrub" className="mb-8">
-            <h3 data-gsap="split-words" className="text-lg font-bold text-brand mb-3">{s.h}</h3>
-            <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
-              {s.items.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
-            </ul>
-          </section>
-        ))}
       </main>
       <Footer />
     </div>

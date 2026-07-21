@@ -42,41 +42,48 @@ function PrivacyPage() {
   });
   const customText = (lang === "ar" ? custom.data?.ar : custom.data?.en)?.trim();
   const refundText = (lang === "ar" ? refundCustom.data?.ar : refundCustom.data?.en)?.trim();
+  const hasCustom = !!(customText || refundText);
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <PageHero title={t.privacy.title} eyebrow={t.nav.privacy} />
       <main className="max-w-4xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
-        {(customText || refundText) && (
+        {hasCustom ? (
           <div className="mb-10 space-y-5">
-            {refundText && (
+            {(refundText || !customText) && (
               <div className="rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
                 <h3 className="text-lg font-bold text-brand mb-3">{t.privacy.refundTitle}</h3>
-                <p className="leading-loose text-foreground whitespace-pre-line">{refundText}</p>
+                <p className="leading-loose text-foreground whitespace-pre-line">
+                  {refundText || t.privacy.refund.map((i) => `• ${i}`).join("\n")}
+                </p>
               </div>
             )}
-            {customText && (
+            {(customText || !refundText) && (
               <div className="rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
                 <h3 className="text-lg font-bold text-brand mb-3">{t.privacy.privacyTitle}</h3>
-                <p className="leading-loose text-foreground whitespace-pre-line">{customText}</p>
+                <p className="leading-loose text-foreground whitespace-pre-line">
+                  {customText || t.privacy.privacy.map((i) => `• ${i}`).join("\n")}
+                </p>
               </div>
             )}
           </div>
+        ) : (
+          <>
+            <section data-gsap="scroll-scrub" className="mb-12">
+              <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.privacy.refundTitle}</h2>
+              <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+                {t.privacy.refund.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
+              </ul>
+            </section>
+
+            <section data-gsap="scroll-scrub">
+              <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.privacy.privacyTitle}</h2>
+              <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
+                {t.privacy.privacy.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
+              </ul>
+            </section>
+          </>
         )}
-
-        <section data-gsap="scroll-scrub" className="mb-12">
-          <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.privacy.refundTitle}</h2>
-          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
-            {t.privacy.refund.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
-          </ul>
-        </section>
-
-        <section data-gsap="scroll-scrub">
-          <h2 data-gsap="split-words" className="text-xl font-bold text-brand mb-3">{t.privacy.privacyTitle}</h2>
-          <ul data-gsap="reveal-stagger" className="space-y-2 list-disc list-inside text-muted-foreground marker:text-brand">
-            {t.privacy.privacy.map((it) => <li key={it} className="leading-relaxed">{it}</li>)}
-          </ul>
-        </section>
       </main>
       <Footer />
     </div>
