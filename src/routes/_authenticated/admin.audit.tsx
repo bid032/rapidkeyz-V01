@@ -570,20 +570,6 @@ function GroupCard({
                     <div className="mt-1.5 space-y-1.5">
                       <MetaSummary meta={r.meta} />
                       <ChangesView changes={(r.meta as any)?.changes} />
-                      <details>
-                        <summary className="cursor-pointer text-[10px] text-muted-foreground inline-flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3" /> بيانات الحركة الخام
-                        </summary>
-                        <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap break-words text-muted-foreground bg-muted/30 rounded p-2">
-                          {JSON.stringify(r.meta, null, 2)}
-                        </pre>
-                      </details>
-                    </div>
-                  )}
-                  {r.target_id && (
-                    <div className="mt-0.5 text-[10px] text-muted-foreground/70 inline-flex items-center gap-1">
-                      <Hash className="w-3 h-3" />
-                      <span className="font-mono">{r.target_id}</span>
                     </div>
                   )}
                 </li>
