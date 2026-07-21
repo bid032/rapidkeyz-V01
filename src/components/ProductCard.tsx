@@ -70,10 +70,15 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     hasDiscount && p.minPrice !== null
       ? Math.round(p.minPrice * (100 - discount)) / 100
       : p.minPrice;
+  const soldOut = p.totalStock != null && p.totalStock <= 0;
 
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (soldOut) {
+      notify?.(lang === "ar" ? "هذه الخدمة نفذت من المخزون" : "This product is sold out", "error");
+      return;
+    }
     if (!p.cheapestPlanId || finalPrice === null) {
       notify?.(lang === "ar" ? "لا توجد خطة متاحة" : "No plan available", "error");
       return;
@@ -95,8 +100,13 @@ export function ProductCard({ p }: { p: ProductCardData }) {
   const openBuy = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    if (soldOut) {
+      notify?.(lang === "ar" ? "هذه الخدمة نفذت من المخزون" : "This product is sold out", "error");
+      return;
+    }
     setBuyOpen(true);
   };
+
 
   return (
     <>
