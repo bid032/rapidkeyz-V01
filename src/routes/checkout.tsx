@@ -7,8 +7,8 @@ import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
-import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
+import { notifyNewOrder } from "@/lib/notify-order.functions";
+
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 import { filterName, filterDigits, filterEmail, filterPhone } from "@/lib/input-filters";
