@@ -232,21 +232,18 @@ export function Header() {
                 </div>
                 <span className="w-6" />
               </div>
-              <form
-                onSubmit={(e) => { e.preventDefault(); submitSearch(mobileSearchQ); }}
-                className="px-4 pt-3"
-              >
-                <div className="flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-2 focus-within:border-brand transition-colors">
+              <div className="px-4 pt-3">
+                <button
+                  type="button"
+                  onClick={() => { closeMobile(); setTimeout(() => setSearchOpen(true), 120); }}
+                  className="w-full flex items-center gap-2 bg-muted/60 border border-border rounded-full px-3 py-2 hover:border-brand transition-colors text-start"
+                >
                   <Search className="size-4 text-muted-foreground shrink-0" />
-                  <input
-                    value={mobileSearchQ}
-                    onChange={(e) => setMobileSearchQ(e.target.value)}
-                    placeholder={lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
-                    className="bg-transparent outline-none text-sm flex-1 placeholder:text-muted-foreground"
-                    dir={lang === "ar" ? "rtl" : "ltr"}
-                  />
-                </div>
-              </form>
+                  <span className="text-sm text-muted-foreground flex-1">
+                    {lang === "ar" ? "ابحث عن خدمة…" : "Search services…"}
+                  </span>
+                </button>
+              </div>
               <nav className="flex flex-col px-2 py-3">
                 {/* الأقسام */}
                 <div className="px-3 pt-2 pb-1">
