@@ -136,6 +136,25 @@ export const getAuditLog = createServerFn({ method: "GET" })
       });
     }
 
+    // Resolve refund → order_id for refund audit rows missing meta.order_id
+    const refundOrderMap = new Map<string, string>();
+    const refundIds = auditRows
+      .filter((r: any) => r.target_type === "refund" && r.target_id)
+      .map((r: any) => r.target_id as string);
+    if (refundIds.length) {
+      const { data: refs } = await supabaseAdmin
+        .from("refunds")
+        .select("id, order_id")
+        .in("id", refundIds);
+      (refs ?? []).forEach((rf: any) => {
+        if (rf.order_id) {
+          refundOrderMap.set(rf.id, rf.order_id);
+          orderIds.add(rf.order_id);
+        }
+      });
+    }
+
+
     let ordersMap = new Map<string, any>();
     if (orderIds.size) {
       const { data: orders } = await supabaseAdmin
