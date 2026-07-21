@@ -86,7 +86,7 @@ export function PricingConfigurator({
       <div className="relative p-3.5 sm:p-4 space-y-3.5">
         {/* Unified row: Plan type + Account type (same design regardless of count) */}
         {(normalizedTypes.length > 0 || (variants && variants.length > 0)) && (
-          <div className={`grid gap-2 ${variants && variants.length > 0 && normalizedTypes.length > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
+          <div className="grid gap-2 grid-cols-1">
             {/* Plan variant - segmented buttons like Account */}
             {variants && variants.length > 0 && (
               <div className="min-w-0">
