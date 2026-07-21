@@ -184,7 +184,7 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total)")
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -568,7 +568,13 @@ function AdminOverview() {
                 const netProfit = profit - refundAmount;
                 const delivered = (r.delivered_accounts ?? [])[0];
                 const p = r._profile ?? {};
-                const status = r.orders?.status;
+                const itemDelivered = r.status === "delivered" || (r.delivered_accounts?.length ?? 0) > 0;
+                const itemRefunded = r.status === "refunded";
+                const status = itemRefunded
+                  ? "refunded"
+                  : itemDelivered
+                  ? "delivered"
+                  : r.orders?.status;
                 const isExpanded = expandedRow === r.id;
                 const statusColors: Record<string, string> = {
                   delivered: "bg-success/15 text-success",
