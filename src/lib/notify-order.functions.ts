@@ -33,7 +33,7 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
 
     const { data: order, error } = await supabaseAdmin
       .from('orders')
-      .select('*, order_items(*)')
+      .select('*, coupons(code, discount_type, discount_value), order_items(*)')
       .eq('id', data.orderId)
       .single()
     if (error || !order) throw new Error(error?.message || 'Order not found')
