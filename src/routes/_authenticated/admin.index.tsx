@@ -39,7 +39,7 @@ function AdminOverview() {
   const { t, lang } = useApp();
   const [month, setMonth] = useState<MonthKey>(() => {
     const now = new Date();
-    return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [compare, setCompare] = useState(false);
@@ -47,23 +47,24 @@ function AdminOverview() {
   const range = useMemo(() => {
     if (month === "all") return { start: null as string | null, end: null as string | null };
     const [y, m] = month.split("-").map(Number);
-    const start = new Date(Date.UTC(y, m - 1, 1)).toISOString();
-    const end = new Date(Date.UTC(y, m, 1)).toISOString();
+    // Local-time month boundaries so orders bucket by the user's local calendar day.
+    const start = new Date(y, m - 1, 1).toISOString();
+    const end = new Date(y, m, 1).toISOString();
     return { start, end };
   }, [month]);
 
   const prevMonthKey = useMemo(() => {
     if (month === "all") return null;
     const [y, m] = month.split("-").map(Number);
-    const d = new Date(Date.UTC(y, m - 2, 1));
-    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    const d = new Date(y, m - 2, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   }, [month]);
 
   const prevRange = useMemo(() => {
     if (!prevMonthKey) return { start: null as string | null, end: null as string | null };
     const [y, m] = prevMonthKey.split("-").map(Number);
-    const start = new Date(Date.UTC(y, m - 1, 1)).toISOString();
-    const end = new Date(Date.UTC(y, m, 1)).toISOString();
+    const start = new Date(y, m - 1, 1).toISOString();
+    const end = new Date(y, m, 1).toISOString();
     return { start, end };
   }, [prevMonthKey]);
 
