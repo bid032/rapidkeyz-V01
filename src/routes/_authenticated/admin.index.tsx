@@ -568,7 +568,13 @@ function AdminOverview() {
                 const netProfit = profit - refundAmount;
                 const delivered = (r.delivered_accounts ?? [])[0];
                 const p = r._profile ?? {};
-                const status = r.orders?.status;
+                const itemDelivered = r.status === "delivered" || (r.delivered_accounts?.length ?? 0) > 0;
+                const itemRefunded = r.status === "refunded";
+                const status = itemRefunded
+                  ? "refunded"
+                  : itemDelivered
+                  ? "delivered"
+                  : r.orders?.status;
                 const isExpanded = expandedRow === r.id;
                 const statusColors: Record<string, string> = {
                   delivered: "bg-success/15 text-success",
