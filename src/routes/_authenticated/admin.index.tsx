@@ -675,7 +675,7 @@ function AdminOverview() {
                                   {r._refunds.map((rf: any, i: number) => (
                                     <div key={i} className="border-s-2 border-destructive ps-2">
                                       <div className="text-destructive font-bold">-{Math.round(Number(rf.amount))} {t.common.currency} • {rf.type ?? "—"}</div>
-                                      <div className="text-muted-foreground">{new Date(rf.created_at).toLocaleString("en-GB")}</div>
+                                      <div className="text-muted-foreground">{new Date(rf.created_at).toLocaleString("en-GB", { hour12: true })}</div>
                                       {rf.notes && <div className="italic">{rf.notes}</div>}
                                     </div>
                                   ))}
