@@ -259,7 +259,7 @@ function AdminOverview() {
       }));
       (refundsAll.data ?? []).forEach((r) => {
         const d = new Date(r.basis_at);
-        const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         const row = rows.find((x) => x.bucket === key);
         const amt = Math.round(Number(r.amount ?? 0));
         if (row) row.refunds += amt;
