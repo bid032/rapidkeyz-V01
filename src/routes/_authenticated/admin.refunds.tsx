@@ -237,6 +237,9 @@ function ItemRefundBlock({
   orderId,
   userId,
   item,
+  orderSubtotal,
+  orderTotal,
+  orderDiscount,
   refunds,
   onCreated,
   onRemove,
@@ -244,12 +247,20 @@ function ItemRefundBlock({
   orderId: string;
   userId: string | null;
   item: any;
+  orderSubtotal: number;
+  orderTotal: number;
+  orderDiscount: number;
   refunds: Refund[];
   onCreated: () => void;
   onRemove: (id: string) => void;
 }) {
   const { notify } = useApp();
-  const maxAmount = Number(item.unit_price) * Number(item.quantity);
+  const grossAmount = Number(item.unit_price) * Number(item.quantity);
+  // Apply proportional discount to this item's share of the order.
+  const hasDiscount = orderDiscount > 0 && orderSubtotal > 0 && orderTotal > 0;
+  const ratio = hasDiscount ? orderTotal / orderSubtotal : 1;
+  const maxAmount = hasDiscount ? Math.round(grossAmount * ratio) : grossAmount;
+  const itemDiscount = hasDiscount ? grossAmount - maxAmount : 0;
   const [type, setType] = useState<"full" | "partial" | "replacement">("partial");
   const [amount, setAmount] = useState<number>(0);
   const [notes, setNotes] = useState("");
