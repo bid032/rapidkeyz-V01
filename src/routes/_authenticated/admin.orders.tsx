@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
 import { notifyItemDelivered } from "@/lib/notify-order.functions";
+import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
@@ -245,6 +246,11 @@ function AdminOrders() {
         .update({ status: "delivered" as any })
         .eq("id", orderItemId);
       if (sErr) throw sErr;
+      try {
+        await markInventorySoldOnSheet({ data: { inventoryId: claimedId as string } });
+      } catch (e) {
+        console.error("markInventorySoldOnSheet failed", e);
+      }
       try {
         await notifyItemDelivered({ data: { orderItemId } });
       } catch (e) {
