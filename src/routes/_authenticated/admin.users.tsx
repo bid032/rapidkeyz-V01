@@ -6,7 +6,9 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
-import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound } from "lucide-react";
+import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound, AtSign } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { syncUserStockStaff } from "@/lib/stock-staff.functions";
 
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
