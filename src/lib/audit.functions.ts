@@ -144,6 +144,69 @@ export const getAuditLog = createServerFn({ method: "GET" })
       });
     }
 
+    // Resolve UUID references inside meta.changes (category/product) to names
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const categoryIdSet = new Set<string>();
+    const productIdSet = new Set<string>();
+    const collectIds = (val: any, bucket: Set<string>) => {
+      if (val == null) return;
+      if (Array.isArray(val)) val.forEach((v) => collectIds(v, bucket));
+      else if (typeof val === "string" && UUID_RE.test(val)) bucket.add(val);
+    };
+    for (const r of auditRows) {
+      const changes = (r as any).meta?.changes;
+      if (!changes || typeof changes !== "object") continue;
+      for (const [field, val] of Object.entries<any>(changes)) {
+        if (!val || typeof val !== "object") continue;
+        if (field === "category_id" || field === "category_ids") {
+          collectIds(val.from, categoryIdSet);
+          collectIds(val.to, categoryIdSet);
+        } else if (field === "product_id") {
+          collectIds(val.from, productIdSet);
+          collectIds(val.to, productIdSet);
+        }
+      }
+    }
+    const catNameMap = new Map<string, string>();
+    if (categoryIdSet.size) {
+      const { data: cats } = await supabaseAdmin
+        .from("categories")
+        .select("id, name_ar, name_en")
+        .in("id", Array.from(categoryIdSet));
+      (cats ?? []).forEach((c: any) =>
+        catNameMap.set(c.id, c.name_ar || c.name_en || c.id),
+      );
+    }
+    const prodNameMap = new Map<string, string>();
+    if (productIdSet.size) {
+      const { data: prods } = await supabaseAdmin
+        .from("products")
+        .select("id, name_ar, name_en")
+        .in("id", Array.from(productIdSet));
+      (prods ?? []).forEach((p: any) =>
+        prodNameMap.set(p.id, p.name_ar || p.name_en || p.id),
+      );
+    }
+    const replaceIds = (val: any, map: Map<string, string>): any => {
+      if (val == null) return val;
+      if (Array.isArray(val)) return val.map((v) => replaceIds(v, map));
+      if (typeof val === "string" && UUID_RE.test(val)) return map.get(val) || val;
+      return val;
+    };
+    for (const r of auditRows) {
+      const changes = (r as any).meta?.changes;
+      if (!changes || typeof changes !== "object") continue;
+      for (const [field, val] of Object.entries<any>(changes)) {
+        if (!val || typeof val !== "object") continue;
+        if (field === "category_id" || field === "category_ids") {
+          val.from = replaceIds(val.from, catNameMap);
+          val.to = replaceIds(val.to, catNameMap);
+        } else if (field === "product_id") {
+          val.from = replaceIds(val.from, prodNameMap);
+          val.to = replaceIds(val.to, prodNameMap);
+        }
+      }
+    }
 
     return auditRows.map((r: any): AuditRowEnriched => {
       const meta = (r.meta ?? {}) as any;
