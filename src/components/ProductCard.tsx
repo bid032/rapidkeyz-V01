@@ -19,6 +19,7 @@ export type ProductCardData = {
   discount_percent?: number | null;
   planLabel_ar?: string | null;
   planLabel_en?: string | null;
+  totalStock?: number | null;
 };
 
 function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
