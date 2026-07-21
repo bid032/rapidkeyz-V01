@@ -17,6 +17,9 @@ export type AuditRowEnriched = {
   order_number: string | null;
   order_status: string | null;
   order_total: number | null;
+  order_subtotal: number | null;
+  order_discount_amount: number | null;
+  order_coupon_code: string | null;
   order_customer_name: string | null;
   order_customer_email: string | null;
   order_customer_phone: string | null;
@@ -129,9 +132,24 @@ export const getAuditLog = createServerFn({ method: "GET" })
     if (orderIds.size) {
       const { data: orders } = await supabaseAdmin
         .from("orders")
-        .select("id, order_number, status, total, customer_name, customer_email, customer_phone")
+        .select("id, order_number, status, total, subtotal, discount_amount, coupon_id, customer_name, customer_email, customer_phone")
         .in("id", Array.from(orderIds));
       (orders ?? []).forEach((o: any) => ordersMap.set(o.id, o));
+
+      const couponIds = Array.from(
+        new Set((orders ?? []).map((o: any) => o.coupon_id).filter(Boolean)),
+      ) as string[];
+      const couponCodeMap = new Map<string, string>();
+      if (couponIds.length) {
+        const { data: cps } = await supabaseAdmin
+          .from("coupons")
+          .select("id, code")
+          .in("id", couponIds);
+        (cps ?? []).forEach((c: any) => couponCodeMap.set(c.id, c.code));
+      }
+      (orders ?? []).forEach((o: any) => {
+        if (o.coupon_id) o.coupon_code = couponCodeMap.get(o.coupon_id) ?? null;
+      });
 
       const { data: allItems } = await supabaseAdmin
         .from("order_items")
@@ -249,6 +267,9 @@ export const getAuditLog = createServerFn({ method: "GET" })
         order_number: order?.order_number ?? meta.order_number ?? null,
         order_status: order?.status ?? null,
         order_total: order?.total ?? null,
+        order_subtotal: order?.subtotal ?? null,
+        order_discount_amount: order?.discount_amount ?? null,
+        order_coupon_code: order?.coupon_code ?? null,
         order_customer_name: order?.customer_name ?? null,
         order_customer_email: order?.customer_email ?? null,
         order_customer_phone: order?.customer_phone ?? null,
