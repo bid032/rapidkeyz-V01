@@ -615,3 +615,82 @@ function InfoChip({
     </span>
   );
 }
+
+function fmtVal(v: any): string {
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "boolean") return v ? "نعم" : "لا";
+  if (Array.isArray(v)) return v.length === 0 ? "—" : v.map(fmtVal).join("، ");
+  if (typeof v === "object") {
+    // localized {ar, en} objects
+    if ("ar" in v || "en" in v) {
+      return [v.ar, v.en].filter(Boolean).join(" / ") || "—";
+    }
+    const s = JSON.stringify(v);
+    return s.length > 80 ? s.slice(0, 80) + "…" : s;
+  }
+  const s = String(v);
+  return s.length > 120 ? s.slice(0, 120) + "…" : s;
+}
+
+function ChangesView({ changes }: { changes: any }) {
+  if (!changes || typeof changes !== "object" || Array.isArray(changes)) return null;
+  const entries = Object.entries(changes).filter(
+    ([, v]) => v && typeof v === "object" && ("from" in (v as any) || "to" in (v as any)),
+  );
+  if (entries.length === 0) return null;
+  return (
+    <div className="rounded-md border border-brand/25 bg-brand/5 p-2">
+      <div className="text-[10px] font-bold text-brand mb-1.5">التغييرات ({entries.length})</div>
+      <div className="grid gap-1">
+        {entries.map(([field, val]: any) => (
+          <div key={field} className="text-[11px] flex flex-wrap items-start gap-x-2 gap-y-0.5">
+            <span className="font-bold min-w-[110px]">
+              {FIELD_LABELS[field] || field}:
+            </span>
+            <span className="inline-flex flex-wrap items-center gap-1">
+              <span className="px-1.5 py-0.5 rounded bg-destructive/10 text-destructive line-through max-w-[380px] truncate">
+                <bdi>{fmtVal(val.from)}</bdi>
+              </span>
+              <span className="text-muted-foreground">←</span>
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 max-w-[380px] truncate">
+                <bdi>{fmtVal(val.to)}</bdi>
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MetaSummary({ meta }: { meta: any }) {
+  if (!meta) return null;
+  const chips: Array<{ label: string; value: string }> = [];
+  const push = (label: string, val: any) => {
+    if (val === null || val === undefined || val === "") return;
+    chips.push({ label, value: fmtVal(val) });
+  };
+  push("المنتج", meta.product_name ?? meta.name_ar);
+  push("الخطة", meta.label_ar);
+  push("السؤال", meta.question_ar);
+  push("المُقيّم", meta.reviewer_name);
+  push("القسم", meta.name_ar && !meta.product_name ? undefined : undefined); // handled above
+  push("المفتاح", meta.key);
+  push("المبلغ", meta.amount != null ? `${meta.amount} EGP` : undefined);
+  push("النوع", meta.type);
+  push("ملاحظات", meta.notes);
+  push("من", meta.from);
+  push("إلى", meta.to);
+  push("الصلاحية", meta.role);
+  if (chips.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+      {chips.map((c, i) => (
+        <span key={i} className="inline-flex items-center gap-1">
+          <span className="text-muted-foreground">{c.label}:</span>
+          <bdi className="font-bold">{c.value}</bdi>
+        </span>
+      ))}
+    </div>
+  );
+}
