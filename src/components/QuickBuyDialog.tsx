@@ -249,7 +249,7 @@ export function QuickBuyDialog({
                         key={a}
                         type="button"
                         onClick={() => setAcct(a)}
-                        className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all focus:outline-none overflow-hidden ${
+                        className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all focus:outline-none overflow-hidden h-full ${
                           isSel
                             ? "border-brand/50 bg-brand/5"
                             : "border-white/5 bg-white/5 hover:border-white/10"
