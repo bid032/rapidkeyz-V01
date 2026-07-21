@@ -327,7 +327,7 @@ function AdminOverview() {
         "سعر الشراء": r._cost ?? 0,
         "الربح": r._profit ?? 0,
         "تم التسليم؟": delivered ? "نعم" : "لا",
-        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB") : "",
+        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true }) : "",
         "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
         "تم عمل استرداد؟": refundAmount > 0 ? "نعم" : "لا",
         "قيمة الاسترداد": refundAmount,
@@ -336,7 +336,8 @@ function AdminOverview() {
         "ملاحظات الاسترداد": refundNotes,
         "صافي الربح بعد الاسترداد": netProfit,
         "التاريخ": d.toLocaleDateString("en-GB"),
-        "الوقت": d.toLocaleTimeString("en-GB"),
+        "الوقت": d.toLocaleTimeString("en-GB", { hour12: true }),
+
         "الحالة": r.orders?.status,
         "ملاحظات": r.orders?.notes ?? "",
       };
