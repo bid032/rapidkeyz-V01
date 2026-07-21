@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
   Search, Filter, Download, RefreshCw, ChevronDown, ChevronRight,
-  User as UserIcon, Package, ShoppingCart, ShieldCheck, Clock, Hash, Mail, Phone, KeyRound, Activity,
+  User as UserIcon, Package, ShoppingCart, Clock, Mail, Phone, KeyRound, Activity,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
@@ -380,6 +380,9 @@ function GroupCard({
 }) {
   const canon = group.order ?? group.events[0];
   const isOrder = !!canon.order_number || canon.items.length > 0;
+  const visibleEvents = isOrder
+    ? group.events.filter((r) => r.action_type !== "order.created")
+    : group.events;
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -418,7 +421,7 @@ function GroupCard({
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-              <Activity className="w-3 h-3" /> {group.events.length} حركة
+              <Activity className="w-3 h-3" /> {visibleEvents.length} حركة
             </span>
           </>
         ) : (
@@ -537,10 +540,10 @@ function GroupCard({
           <div className="rounded-xl border border-border bg-card p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold">
               <Activity className="w-3.5 h-3.5 text-brand" />
-              ماذا حدث ({group.events.length})
+              ماذا حدث ({visibleEvents.length})
             </div>
             <ol className="relative border-s border-border ms-2 ps-4 space-y-3">
-              {group.events.map((r) => (
+              {visibleEvents.map((r) => (
                 <li key={r.id} className="relative">
                   <span className="absolute -start-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-brand ring-2 ring-background" />
                   <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -570,20 +573,6 @@ function GroupCard({
                     <div className="mt-1.5 space-y-1.5">
                       <MetaSummary meta={r.meta} />
                       <ChangesView changes={(r.meta as any)?.changes} />
-                      <details>
-                        <summary className="cursor-pointer text-[10px] text-muted-foreground inline-flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3" /> بيانات الحركة الخام
-                        </summary>
-                        <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap break-words text-muted-foreground bg-muted/30 rounded p-2">
-                          {JSON.stringify(r.meta, null, 2)}
-                        </pre>
-                      </details>
-                    </div>
-                  )}
-                  {r.target_id && (
-                    <div className="mt-0.5 text-[10px] text-muted-foreground/70 inline-flex items-center gap-1">
-                      <Hash className="w-3 h-3" />
-                      <span className="font-mono">{r.target_id}</span>
                     </div>
                   )}
                 </li>
