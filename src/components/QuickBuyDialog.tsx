@@ -156,7 +156,7 @@ export function QuickBuyDialog({
       productId: product.id,
       planId: selected.id,
       productName: name,
-      planLabel: (isAr ? selected.label_ar : selected.label_en) ?? "",
+      planLabel: `${(isAr ? selected.label_ar : selected.label_en) ?? ""}${effectiveVariant ? ` — ${effectiveVariant}` : ""}`,
       price: unit,
       quantity: qty,
       iconUrl: product.icon_url ?? null,
