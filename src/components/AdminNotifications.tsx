@@ -174,27 +174,14 @@ export function AdminNotifications() {
 
   if (isLoading || !canModerate) return null;
 
-  const unseen = orders.filter(
-    (o) => new Date(o.created_at).getTime() > seenAt
-  ).length;
-
-  const markSeen = () => {
-    const now = Date.now();
-    setSeenAt(now);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, String(now));
-    }
-  };
+  const unseen = orders.filter((o) => !seenIds.has(o.id)).length;
 
   return (
     <div ref={wrapRef} className="relative">
       <button
         type="button"
         aria-label="Notifications"
-        onClick={() => {
-          setOpen((v) => !v);
-          if (!open) markSeen();
-        }}
+        onClick={() => setOpen((v) => !v)}
         className="relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
       >
         <Bell className="size-4" />
@@ -211,13 +198,24 @@ export function AdminNotifications() {
             <h4 className="text-sm font-bold">
               {lang === "ar" ? "الطلبات الأخيرة" : "Recent orders"}
             </h4>
-            <Link
-              to="/admin/orders"
-              onClick={() => setOpen(false)}
-              className="text-xs font-semibold text-brand hover:underline"
-            >
-              {lang === "ar" ? "عرض الكل" : "View all"}
-            </Link>
+            <div className="flex items-center gap-3">
+              {unseen > 0 && (
+                <button
+                  type="button"
+                  onClick={() => markSeen(orders.map((o) => o.id))}
+                  className="text-[11px] font-semibold text-muted-foreground hover:text-brand transition-colors"
+                >
+                  {lang === "ar" ? "تعليم كمقروء" : "Mark all read"}
+                </button>
+              )}
+              <Link
+                to="/admin/orders"
+                onClick={() => setOpen(false)}
+                className="text-xs font-semibold text-brand hover:underline"
+              >
+                {lang === "ar" ? "عرض الكل" : "View all"}
+              </Link>
+            </div>
           </div>
           {orders.length === 0 ? (
             <div className="p-6 text-center text-xs text-muted-foreground">
@@ -226,13 +224,18 @@ export function AdminNotifications() {
           ) : (
             <ul className="divide-y divide-border">
               {orders.map((o) => {
-                const isNew = new Date(o.created_at).getTime() > seenAt;
+                const isNew = !seenIds.has(o.id);
                 return (
                   <li key={o.id}>
                     <Link
                       to="/admin/orders"
-                      onClick={() => setOpen(false)}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-muted transition-colors"
+                      onClick={() => {
+                        markSeen([o.id]);
+                        setOpen(false);
+                      }}
+                      className={`flex items-start gap-3 px-4 py-3 hover:bg-muted transition-colors ${
+                        isNew ? "bg-red-500/5" : ""
+                      }`}
                     >
                       <span
                         className={`mt-1 size-2 rounded-full shrink-0 ${
