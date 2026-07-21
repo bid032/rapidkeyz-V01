@@ -338,6 +338,54 @@ function AdminSettings() {
       </Section>
 
 
+      <Section title={"محتوى الصفحات / Page Content"}>
+        <p className="text-xs text-muted-foreground mb-4">
+          النصوص هنا بتظهر فوق المحتوى الأساسي في كل صفحة. اسيبها فاضية عشان تخفيها. بتقبل أكتر من فقرة (اضغط Enter عشان تنزل سطر).
+        </p>
+        <div className="space-y-6">
+          {([
+            ["shop_intro", "مقدمة صفحة المتجر", "Shop page intro"],
+            ["page_about", "صفحة \"من نحن\"", "About page"],
+            ["page_terms", "صفحة الشروط والأحكام", "Terms page"],
+            ["page_privacy", "قسم الخصوصية", "Privacy section"],
+            ["page_refund", "قسم الاسترداد", "Refund section"],
+          ] as const).map(([key, labelAr, labelEn]) => (
+            <div key={key} className="p-4 rounded-xl bg-background/60 border border-border">
+              <h4 className="font-bold text-sm mb-3">
+                {labelAr} <span className="text-muted-foreground font-normal">/ {labelEn}</span>
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-bold text-muted-foreground">النص بالعربي</label>
+                  <textarea
+                    rows={5}
+                    value={pageContent[key]?.ar ?? ""}
+                    onChange={(e) =>
+                      setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: e.target.value } })
+                    }
+                    dir="rtl"
+                    className="px-3 py-2 bg-background border border-border rounded text-end leading-loose"
+                    placeholder="اكتب النص هنا…"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-bold text-muted-foreground">English text</label>
+                  <textarea
+                    rows={5}
+                    value={pageContent[key]?.en ?? ""}
+                    onChange={(e) =>
+                      setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: e.target.value } })
+                    }
+                    className="px-3 py-2 bg-background border border-border rounded leading-loose"
+                    placeholder="Write the text here…"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
       <button onClick={() => save.mutate()} disabled={save.isPending}
         className="px-6 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow">
         {save.isPending ? t.common.loading : t.admin.save}
