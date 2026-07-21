@@ -134,13 +134,11 @@ function AdminAudit() {
     const list: any[] = [];
     filtered.forEach((r) => {
       const base = {
-        "التاريخ": new Date(r.created_at).toLocaleString("ar-EG", { hour12: false }),
+        "التاريخ": new Date(r.created_at).toLocaleString("ar-EG", { hour12: true }),
         "المستخدم": r.actor_display,
         "البريد": r.actor_email ?? "",
         "الحركة": ACTION_LABELS[r.action_type] || r.action_type,
-        "action_type": r.action_type,
         "نوع الهدف": TARGET_LABELS[r.target_type] || r.target_type,
-        "target_id": r.target_id ?? "",
         "رقم الطلب": r.order_number ?? "",
         "حالة الطلب": r.order_status ?? "",
         "إجمالي الطلب": r.order_total ?? "",
@@ -149,7 +147,7 @@ function AdminAudit() {
         "هاتف العميل": r.order_customer_phone ?? "",
       };
       if (r.items.length === 0) {
-        list.push({ ...base, "meta": JSON.stringify(r.meta ?? {}) });
+        list.push(base);
       } else {
         r.items.forEach((it) => {
           list.push({
@@ -160,7 +158,6 @@ function AdminAudit() {
             "الكمية": it.quantity ?? "",
             "السعر": it.unit_price ?? "",
             "حالة الخدمة": it.status ?? "",
-            "meta": JSON.stringify(r.meta ?? {}),
           });
         });
       }
@@ -171,6 +168,7 @@ function AdminAudit() {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
     XLSX.writeFile(wb, `audit-log-${stamp}.xlsx`);
   };
+
 
   return (
     <div className="space-y-4" dir="rtl">
