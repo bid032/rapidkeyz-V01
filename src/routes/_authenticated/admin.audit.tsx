@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
   Search, Filter, Download, RefreshCw, ChevronDown, ChevronRight,
-  User as UserIcon, Package, ShoppingCart, ShieldCheck, Clock, Hash, Mail, Phone,
+  User as UserIcon, Package, ShoppingCart, ShieldCheck, Clock, Hash, Mail, Phone, KeyRound, Activity,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +73,29 @@ function actionTone(action: string) {
   return "bg-muted text-muted-foreground border-border";
 }
 
+function fmtTime(d: string) {
+  return new Date(d).toLocaleString("ar-EG", { hour12: true });
+}
+
+/** Resolve the order_id a row belongs to, if any. */
+function orderKey(r: AuditRowEnriched): string | null {
+  const meta = (r.meta ?? {}) as any;
+  if (r.target_type === "order" && r.target_id) return r.target_id;
+  if (meta.order_id) return String(meta.order_id);
+  if (r.target_type === "order_item" && r.target_id && r.order_number) {
+    // fall back to order_number as a stable grouping key when order_id is missing
+    return `on:${r.order_number}`;
+  }
+  return r.order_number ? `on:${r.order_number}` : null;
+}
+
+type Group = {
+  key: string;
+  order: AuditRowEnriched | null;   // canonical row carrying order+items snapshot
+  events: AuditRowEnriched[];        // all events, newest first
+  latestAt: string;
+};
+
 function AdminAudit() {
   const fetchAudit = useServerFn(getAuditLog);
   const [q, setQ] = useState("");
@@ -92,34 +115,69 @@ function AdminAudit() {
     return Array.from(set).sort();
   }, [rows.data]);
 
+  /** Group events by order; non-order rows become singleton groups. */
+  const groups = useMemo<Group[]>(() => {
+    const map = new Map<string, Group>();
+    const singles: Group[] = [];
+    for (const r of rows.data ?? []) {
+      const key = orderKey(r);
+      if (!key) {
+        singles.push({ key: `ev:${r.id}`, order: null, events: [r], latestAt: r.created_at });
+        continue;
+      }
+      const g = map.get(key);
+      if (g) {
+        g.events.push(r);
+        if (r.created_at > g.latestAt) g.latestAt = r.created_at;
+        // Prefer the row with the richest order snapshot as canonical
+        if (!g.order || (r.order_number && (!g.order.order_number || r.items.length > g.order.items.length))) {
+          g.order = r;
+        }
+      } else {
+        map.set(key, {
+          key,
+          order: r.order_number || r.items.length ? r : null,
+          events: [r],
+          latestAt: r.created_at,
+        });
+      }
+    }
+    const all = [...Array.from(map.values()), ...singles];
+    all.sort((a, b) => (a.latestAt < b.latestAt ? 1 : -1));
+    // Newest event first inside each group
+    all.forEach((g) => g.events.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)));
+    return all;
+  }, [rows.data]);
+
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    return (rows.data ?? []).filter((r) => {
-      if (target && r.target_type !== target) return false;
-      if (action && r.action_type !== action) return false;
+    return groups.filter((g) => {
+      if (target && !g.events.some((r) => r.target_type === target)) return false;
+      if (action && !g.events.some((r) => r.action_type === action)) return false;
       if (!s) return true;
+      const canon = g.order ?? g.events[0];
       const hay = [
-        r.actor_display,
-        r.actor_email,
-        r.actor_name,
-        r.action_type,
-        ACTION_LABELS[r.action_type],
-        r.target_type,
-        r.target_id,
-        r.order_number,
-        r.order_customer_name,
-        r.order_customer_email,
-        r.order_customer_phone,
-        r.order_status,
-        ...r.items.flatMap((it) => [it.product_name, it.plan_label, it.account_type, it.status]),
-        JSON.stringify(r.meta ?? {}),
+        canon.order_number,
+        canon.order_customer_name,
+        canon.order_customer_email,
+        canon.order_customer_phone,
+        canon.order_status,
+        ...canon.items.flatMap((it) => [
+          it.product_name, it.plan_label, it.account_type, it.status,
+          ...it.delivered_accounts.flatMap((a) => [a.account_email, a.account_username]),
+        ]),
+        ...g.events.flatMap((r) => [
+          r.actor_display, r.actor_email, r.actor_name, r.action_type,
+          ACTION_LABELS[r.action_type], r.target_type, r.target_id,
+          JSON.stringify(r.meta ?? {}),
+        ]),
       ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
       return hay.includes(s);
     });
-  }, [rows.data, q, target, action]);
+  }, [groups, q, target, action]);
 
   const toggle = (id: string) => {
     setExpanded((prev) => {
@@ -132,35 +190,23 @@ function AdminAudit() {
 
   const exportXlsx = () => {
     const list: any[] = [];
-    filtered.forEach((r) => {
-      const base = {
-        "التاريخ": new Date(r.created_at).toLocaleString("ar-EG", { hour12: true }),
-        "المستخدم": r.actor_display,
-        "البريد": r.actor_email ?? "",
-        "الحركة": ACTION_LABELS[r.action_type] || r.action_type,
-        "نوع الهدف": TARGET_LABELS[r.target_type] || r.target_type,
-        "رقم الطلب": r.order_number ?? "",
-        "حالة الطلب": r.order_status ?? "",
-        "إجمالي الطلب": r.order_total ?? "",
-        "اسم العميل": r.order_customer_name ?? "",
-        "إيميل العميل": r.order_customer_email ?? "",
-        "هاتف العميل": r.order_customer_phone ?? "",
-      };
-      if (r.items.length === 0) {
-        list.push(base);
-      } else {
-        r.items.forEach((it) => {
-          list.push({
-            ...base,
-            "المنتج": it.product_name ?? "",
-            "الخطة": it.plan_label ?? "",
-            "نوع الحساب": it.account_type ?? "",
-            "الكمية": it.quantity ?? "",
-            "السعر": it.unit_price ?? "",
-            "حالة الخدمة": it.status ?? "",
-          });
+    filtered.forEach((g) => {
+      const canon = g.order ?? g.events[0];
+      g.events.forEach((r) => {
+        list.push({
+          "رقم الطلب": canon.order_number ?? "",
+          "حالة الطلب": canon.order_status ?? "",
+          "إجمالي الطلب": canon.order_total ?? "",
+          "اسم العميل": canon.order_customer_name ?? "",
+          "إيميل العميل": canon.order_customer_email ?? "",
+          "هاتف العميل": canon.order_customer_phone ?? "",
+          "التاريخ": fmtTime(r.created_at),
+          "الحركة": ACTION_LABELS[r.action_type] || r.action_type,
+          "نوع الهدف": TARGET_LABELS[r.target_type] || r.target_type,
+          "المستخدم": r.actor_display,
+          "بريد المستخدم": r.actor_email ?? "",
         });
-      }
+      });
     });
     const ws = XLSX.utils.json_to_sheet(list);
     const wb = XLSX.utils.book_new();
@@ -169,7 +215,6 @@ function AdminAudit() {
     XLSX.writeFile(wb, `audit-log-${stamp}.xlsx`);
   };
 
-
   return (
     <div className="space-y-4" dir="rtl">
       {/* Header */}
@@ -177,7 +222,7 @@ function AdminAudit() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold">سجل الأعمال</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            كل حركة إدارية على الموقع مع تفاصيل الطلب والخدمات المرتبطة بها.
+            كل طلب في خانة واحدة — افتحه لترى كل ما حدث له ومن نفّذه ومتى وبيانات التسليم إن وُجدت.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -199,8 +244,8 @@ function AdminAudit() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-        <Kpi label="إجمالي" value={rows.data?.length ?? 0} />
-        <Kpi label="بعد الفلترة" value={filtered.length} tone="text-brand" />
+        <Kpi label="طلبات في السجل" value={filtered.filter((g) => g.order).length} tone="text-brand" />
+        <Kpi label="إجمالي الحركات" value={filtered.reduce((n, g) => n + g.events.length, 0)} />
         <Kpi
           label="تسليم خدمات"
           value={(rows.data ?? []).filter((r) => r.action_type === "order_item.delivered").length}
@@ -264,12 +309,12 @@ function AdminAudit() {
             لا توجد نتائج مطابقة.
           </div>
         )}
-        {filtered.map((r) => (
-          <AuditCard
-            key={r.id}
-            row={r}
-            expanded={expanded.has(r.id)}
-            onToggle={() => toggle(r.id)}
+        {filtered.map((g) => (
+          <GroupCard
+            key={g.key}
+            group={g}
+            expanded={expanded.has(g.key)}
+            onToggle={() => toggle(g.key)}
           />
         ))}
       </div>
@@ -286,19 +331,17 @@ function Kpi({ label, value, tone }: { label: string; value: number; tone?: stri
   );
 }
 
-function AuditCard({
-  row,
+function GroupCard({
+  group,
   expanded,
   onToggle,
 }: {
-  row: AuditRowEnriched;
+  group: Group;
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const hasDetails =
-    !!row.order_number ||
-    row.items.length > 0 ||
-    Object.keys(row.meta ?? {}).length > 0;
+  const canon = group.order ?? group.events[0];
+  const isOrder = !!canon.order_number || canon.items.length > 0;
 
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -310,120 +353,141 @@ function AuditCard({
           {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4 rtl:rotate-180" />}
         </div>
 
+        {isOrder ? (
+          <>
+            <span className="inline-flex items-center gap-1 text-sm font-extrabold text-brand">
+              <ShoppingCart className="w-4 h-4" />
+              {canon.order_number ?? "—"}
+            </span>
+            {canon.order_status && (
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${
+                  STATUS_TONES[canon.order_status] ?? "bg-muted text-muted-foreground border-border"
+                }`}
+              >
+                {canon.order_status}
+              </span>
+            )}
+            {canon.order_customer_name && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                <UserIcon className="w-3 h-3" />
+                <bdi>{canon.order_customer_name}</bdi>
+              </span>
+            )}
+            {canon.order_total != null && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-muted-foreground tabular-nums">
+                {canon.order_total} EGP
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Activity className="w-3 h-3" /> {group.events.length} حركة
+            </span>
+          </>
+        ) : (
+          <>
+            <span
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-bold ${actionTone(
+                canon.action_type,
+              )}`}
+            >
+              {ACTION_LABELS[canon.action_type] || canon.action_type}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+              <Package className="w-3 h-3" /> {TARGET_LABELS[canon.target_type] || canon.target_type}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+              <UserIcon className="w-3 h-3" />
+              <bdi>{canon.actor_display}</bdi>
+            </span>
+          </>
+        )}
+
         <span
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-bold ${actionTone(
-            row.action_type,
-          )}`}
+          className="ms-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums"
+          dir="ltr"
         >
-          {ACTION_LABELS[row.action_type] || row.action_type}
-        </span>
-
-        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-          <Package className="w-3 h-3" /> {TARGET_LABELS[row.target_type] || row.target_type}
-        </span>
-
-        {row.order_number && (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand">
-            <ShoppingCart className="w-3 h-3" /> {row.order_number}
-          </span>
-        )}
-
-        {row.order_status && (
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${
-              STATUS_TONES[row.order_status] ?? "bg-muted text-muted-foreground border-border"
-            }`}
-          >
-            {row.order_status}
-          </span>
-        )}
-
-        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-          <UserIcon className="w-3 h-3" />
-          <bdi>{row.actor_display}</bdi>
-        </span>
-
-        <span className="ms-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums" dir="ltr">
           <Clock className="w-3 h-3" />
-          {new Date(row.created_at).toLocaleString("ar-EG", { hour12: true })}
+          {fmtTime(group.latestAt)}
         </span>
       </button>
 
-      {expanded && hasDetails && (
+      {expanded && (
         <div className="border-t border-border p-3 sm:p-4 space-y-3 bg-background/40">
-          {/* Actor block */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-            <InfoChip icon={<UserIcon className="w-3 h-3" />} label="المستخدم" value={row.actor_display} />
-            {row.actor_email && (
-              <InfoChip icon={<Mail className="w-3 h-3" />} label="بريد المستخدم" value={row.actor_email} />
-            )}
-            {row.target_id && (
-              <InfoChip icon={<Hash className="w-3 h-3" />} label="Target ID" value={row.target_id} mono />
-            )}
-          </div>
-
           {/* Order block */}
-          {(row.order_number || row.order_customer_email) && (
+          {isOrder && (
             <div className="rounded-xl border border-border bg-card p-3 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold">
                 <ShoppingCart className="w-3.5 h-3.5 text-brand" />
                 تفاصيل الطلب
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                {row.order_number && <InfoChip label="رقم الطلب" value={row.order_number} />}
-                {row.order_status && <InfoChip label="الحالة" value={row.order_status} />}
-                {row.order_total != null && (
-                  <InfoChip label="الإجمالي" value={`${row.order_total} EGP`} />
+                {canon.order_number && <InfoChip label="رقم الطلب" value={canon.order_number} />}
+                {canon.order_status && <InfoChip label="الحالة" value={canon.order_status} />}
+                {canon.order_total != null && (
+                  <InfoChip label="الإجمالي" value={`${canon.order_total} EGP`} />
                 )}
-                {row.order_customer_name && (
-                  <InfoChip icon={<UserIcon className="w-3 h-3" />} label="العميل" value={row.order_customer_name} />
+                {canon.order_customer_name && (
+                  <InfoChip icon={<UserIcon className="w-3 h-3" />} label="العميل" value={canon.order_customer_name} />
                 )}
-                {row.order_customer_email && (
-                  <InfoChip icon={<Mail className="w-3 h-3" />} label="الإيميل" value={row.order_customer_email} />
+                {canon.order_customer_email && (
+                  <InfoChip icon={<Mail className="w-3 h-3" />} label="الإيميل" value={canon.order_customer_email} />
                 )}
-                {row.order_customer_phone && (
-                  <InfoChip icon={<Phone className="w-3 h-3" />} label="الهاتف" value={row.order_customer_phone} />
+                {canon.order_customer_phone && (
+                  <InfoChip icon={<Phone className="w-3 h-3" />} label="الهاتف" value={canon.order_customer_phone} />
                 )}
               </div>
             </div>
           )}
 
-          {/* Items */}
-          {row.items.length > 0 && (
+          {/* Items + delivered credentials */}
+          {canon.items.length > 0 && (
             <div className="rounded-xl border border-border bg-card p-3 space-y-2">
               <div className="flex items-center gap-2 text-xs font-bold">
                 <Package className="w-3.5 h-3.5 text-brand" />
-                الخدمات ({row.items.length})
+                الخدمات ({canon.items.length})
               </div>
-              <div className="space-y-1.5">
-                {row.items.map((it) => (
-                  <div
-                    key={it.id}
-                    className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs bg-muted/30 rounded-lg p-2"
-                  >
-                    <span className="font-bold">{it.product_name || "—"}</span>
-                    {it.plan_label && (
-                      <span className="text-muted-foreground">{it.plan_label}</span>
-                    )}
-                    {it.account_type && (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-brand/10 text-brand text-[10px] font-bold">
-                        {it.account_type}
-                      </span>
-                    )}
-                    {it.quantity != null && it.quantity > 1 && (
-                      <span className="text-muted-foreground">× {it.quantity}</span>
-                    )}
-                    {it.unit_price != null && (
-                      <span className="text-muted-foreground tabular-nums">{it.unit_price} EGP</span>
-                    )}
-                    {it.status && (
-                      <span
-                        className={`ms-auto inline-flex px-1.5 py-0.5 rounded border text-[10px] font-bold ${
-                          STATUS_TONES[it.status] ?? "bg-muted text-muted-foreground border-border"
-                        }`}
-                      >
-                        {it.status}
-                      </span>
+              <div className="space-y-2">
+                {canon.items.map((it) => (
+                  <div key={it.id} className="bg-muted/30 rounded-lg p-2 space-y-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="font-bold">{it.product_name || "—"}</span>
+                      {it.plan_label && <span className="text-muted-foreground">{it.plan_label}</span>}
+                      {it.account_type && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-brand/10 text-brand text-[10px] font-bold">
+                          {it.account_type}
+                        </span>
+                      )}
+                      {it.quantity != null && it.quantity > 1 && (
+                        <span className="text-muted-foreground">× {it.quantity}</span>
+                      )}
+                      {it.unit_price != null && (
+                        <span className="text-muted-foreground tabular-nums">{it.unit_price} EGP</span>
+                      )}
+                      {it.status && (
+                        <span
+                          className={`ms-auto inline-flex px-1.5 py-0.5 rounded border text-[10px] font-bold ${
+                            STATUS_TONES[it.status] ?? "bg-muted text-muted-foreground border-border"
+                          }`}
+                        >
+                          {it.status}
+                        </span>
+                      )}
+                    </div>
+                    {it.delivered_accounts.length > 0 && (
+                      <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-2 space-y-1.5">
+                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600">
+                          <KeyRound className="w-3 h-3" />
+                          بيانات مُرسلة للعميل ({it.delivered_accounts.length})
+                        </div>
+                        {it.delivered_accounts.map((a, i) => (
+                          <div key={i} className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
+                            {a.account_email && <InfoChip label="Email" value={a.account_email} mono />}
+                            {a.account_username && <InfoChip label="User" value={a.account_username} mono />}
+                            {a.account_password && <InfoChip label="Pass" value={a.account_password} mono />}
+                            {a.extra_notes && <InfoChip label="Notes" value={a.extra_notes} />}
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -431,18 +495,59 @@ function AuditCard({
             </div>
           )}
 
-          {/* Raw meta */}
-          {row.meta && Object.keys(row.meta).length > 0 && (
-            <details className="rounded-xl border border-border bg-card p-3">
-              <summary className="cursor-pointer text-xs font-bold flex items-center gap-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
-                بيانات الحركة الخام (meta)
-              </summary>
-              <pre className="mt-2 text-[10px] font-mono whitespace-pre-wrap break-words text-muted-foreground">
-                {JSON.stringify(row.meta, null, 2)}
-              </pre>
-            </details>
-          )}
+          {/* Timeline */}
+          <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <Activity className="w-3.5 h-3.5 text-brand" />
+              ماذا حدث ({group.events.length})
+            </div>
+            <ol className="relative border-s border-border ms-2 ps-4 space-y-3">
+              {group.events.map((r) => (
+                <li key={r.id} className="relative">
+                  <span className="absolute -start-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-brand ring-2 ring-background" />
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold ${actionTone(
+                        r.action_type,
+                      )}`}
+                    >
+                      {ACTION_LABELS[r.action_type] || r.action_type}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <UserIcon className="w-3 h-3" />
+                      <bdi>{r.actor_display}</bdi>
+                      {r.actor_email && r.actor_email !== r.actor_display && (
+                        <span className="text-muted-foreground/70">({r.actor_email})</span>
+                      )}
+                    </span>
+                    <span
+                      className="ms-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums"
+                      dir="ltr"
+                    >
+                      <Clock className="w-3 h-3" />
+                      {fmtTime(r.created_at)}
+                    </span>
+                  </div>
+                  {r.meta && Object.keys(r.meta).length > 0 && (
+                    <details className="mt-1">
+                      <summary className="cursor-pointer text-[10px] text-muted-foreground inline-flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" /> بيانات الحركة
+                      </summary>
+                      <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap break-words text-muted-foreground bg-muted/30 rounded p-2">
+                        {JSON.stringify(r.meta, null, 2)}
+                      </pre>
+                    </details>
+                  )}
+                  {r.target_id && (
+                    <div className="mt-0.5 text-[10px] text-muted-foreground/70 inline-flex items-center gap-1">
+                      <Hash className="w-3 h-3" />
+                      <span className="font-mono">{r.target_id}</span>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
       )}
     </div>
@@ -464,7 +569,7 @@ function InfoChip({
     <span className="inline-flex items-center gap-1.5">
       {icon}
       <span className="text-muted-foreground">{label}:</span>
-      <bdi className={`font-bold ${mono ? "font-mono text-[10px]" : ""}`}>{value}</bdi>
+      <bdi className={`font-bold ${mono ? "font-mono text-[10px] break-all" : ""}`}>{value}</bdi>
     </span>
   );
 }
