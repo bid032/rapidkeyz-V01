@@ -118,13 +118,11 @@ function fmtTime(d: string) {
 /** Resolve the order_id a row belongs to, if any. */
 function orderKey(r: AuditRowEnriched): string | null {
   const meta = (r.meta ?? {}) as any;
+  if (r.order_id) return r.order_id;
   if (r.target_type === "order" && r.target_id) return r.target_id;
   if (meta.order_id) return String(meta.order_id);
-  if (r.target_type === "order_item" && r.target_id && r.order_number) {
-    // fall back to order_number as a stable grouping key when order_id is missing
-    return `on:${r.order_number}`;
-  }
-  return r.order_number ? `on:${r.order_number}` : null;
+  if (r.order_number) return `on:${r.order_number}`;
+  return null;
 }
 
 type Group = {
