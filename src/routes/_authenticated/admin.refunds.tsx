@@ -298,7 +298,17 @@ function ItemRefundBlock({
           <div className="font-bold text-sm">{item.product_name}</div>
           <div className="text-xs text-muted-foreground">{item.plan_label} × {item.quantity} · {item.unit_price} EGP</div>
         </div>
-        <div className="text-xs font-bold text-brand">إجمالي: {maxAmount} EGP</div>
+        <div className="text-xs font-bold text-brand text-end">
+          {hasDiscount ? (
+            <div className="space-y-0.5">
+              <div className="text-muted-foreground line-through font-normal">قبل الخصم: {grossAmount} EGP</div>
+              <div className="text-destructive font-normal">خصم كوبون: -{itemDiscount} EGP</div>
+              <div>إجمالي بعد الخصم: {maxAmount} EGP</div>
+            </div>
+          ) : (
+            <div>إجمالي: {maxAmount} EGP</div>
+          )}
+        </div>
       </div>
 
       {refunds.length > 0 && (
