@@ -336,14 +336,19 @@ function AdminOrders() {
                 </button>
               </div>
             </div>
-            {expanded === o.id && (
+            {expanded === o.id && (() => {
+              const prof = profilesMap.data?.get(o.user_id) ?? {};
+              const itemsCount = (o.order_items ?? []).reduce((s: number, it: any) => s + Number(it.quantity ?? 0), 0);
+              return (
               <div className="p-4 border-t border-border space-y-4 bg-muted/30">
                 {/* Order details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-muted-foreground">اسم العميل:</span> <span className="font-bold">{o.customer_name || prof.display_name || "—"}</span></div>
+                  <div><span className="text-muted-foreground">الحساب:</span> {o.user_id ? <span className="text-xs px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">مسجّل</span> : <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-bold">زائر</span>}</div>
                   <div><span className="text-muted-foreground">البريد:</span> <span className="font-mono">{o.customer_email}</span></div>
                   <div>
                     <span className="text-muted-foreground">الهاتف:</span>{" "}
-                    <span className="font-mono">{o.customer_phone || ","}</span>
+                    <span className="font-mono">{o.customer_phone || "—"}</span>
                     {o.customer_phone && (
                       <a
                         href={`https://wa.me/${String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "20")}`}
@@ -352,8 +357,16 @@ function AdminOrders() {
                       >واتساب</a>
                     )}
                   </div>
+                  {prof.country && (
+                    <div><span className="text-muted-foreground">الدولة:</span> <span className="font-bold">{prof.country}</span></div>
+                  )}
+                  <div><span className="text-muted-foreground">عدد الوحدات:</span> <span className="font-bold">{itemsCount}</span></div>
+                  <div><span className="text-muted-foreground">الإجمالي:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
+                  <div><span className="text-muted-foreground">الحالة:</span> <span className="font-bold">{o.status}</span></div>
                   <div><span className="text-muted-foreground">طريقة الدفع:</span> <span className="font-bold">{o.payment_gateway}</span></div>
-                  <div><span className="text-muted-foreground">رقم المُحوَّل منه:</span> <span className="font-mono">{o.payment_sender_phone || ","}</span></div>
+                  {o.payment_sender_phone && (
+                    <div><span className="text-muted-foreground">رقم المُحوَّل منه:</span> <span className="font-mono">{o.payment_sender_phone}</span></div>
+                  )}
                   {o.payment_reference && (
                     <div className="md:col-span-2"><span className="text-muted-foreground">مرجع الدفع:</span> <span className="font-mono">{o.payment_reference}</span></div>
                   )}
@@ -368,6 +381,7 @@ function AdminOrders() {
                     </div>
                   )}
                 </div>
+
 
                 {/* Approve / Cancel */}
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
@@ -405,7 +419,9 @@ function AdminOrders() {
                   ))}
                 </div>
               </div>
-            )}
+              );
+            })()}
+
           </div>
         ))}
         {visible.length === 0 && (
@@ -452,16 +468,27 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
       <div className="flex justify-between mb-2 gap-2 flex-wrap">
         <div className="text-sm min-w-0">
           <span className="font-bold">{item.product_name}</span>{" "}
-          <span className="text-muted-foreground">, {item.plan_label} × {item.quantity}</span>
-          <span className={`ms-3 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+          <span className="text-muted-foreground">— {item.plan_label} × {item.quantity}</span>
+          {item.account_type && (
+            <span className="ms-2 text-[10px] px-2 py-0.5 rounded bg-brand/10 text-brand font-bold">
+              {item.account_type === "private" ? "خاص" : item.account_type === "shared" ? "مشترك" : item.account_type}
+            </span>
+          )}
+          <span className={`ms-2 text-[10px] px-2 py-0.5 rounded ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
             {item.delivery_type}
           </span>
           <span className={`ms-2 text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
             {delivered ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered") : (lang === "ar" ? "⏳ لسه" : "⏳ Pending")}
           </span>
+          {item.product_plans?.duration_days > 0 && (
+            <span className="ms-2 text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-bold">
+              {item.product_plans.duration_days} يوم
+            </span>
+          )}
         </div>
-        <div className="text-sm font-bold shrink-0">{item.unit_price} EGP</div>
+        <div className="text-sm font-bold shrink-0">{item.unit_price} EGP × {item.quantity} = <span className="text-brand">{Number(item.unit_price) * Number(item.quantity)} EGP</span></div>
       </div>
+
       {item.subscription_email && (
         <div className="text-xs mb-2">
           <span className="text-muted-foreground">Activate on:</span>{" "}
