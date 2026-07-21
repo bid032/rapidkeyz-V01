@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
   Search, Filter, Download, RefreshCw, ChevronDown, ChevronRight,
-  User as UserIcon, Package, ShoppingCart, ShieldCheck, Clock, Hash, Mail, Phone, KeyRound, Activity,
+  User as UserIcon, Package, ShoppingCart, Clock, Mail, Phone, KeyRound, Activity,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
