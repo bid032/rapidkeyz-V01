@@ -557,8 +557,12 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
               <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
                 {lang === "ar" ? "التسليم:" : "Delivery:"} {item.delivery_type === "instant" ? (lang === "ar" ? "فوري" : "Instant") : (lang === "ar" ? "يدوي" : "Manual")}
               </span>
-              <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
-                {delivered ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered") : (lang === "ar" ? "⏳ في الانتظار" : "⏳ Pending")}
+              <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : refunded ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
+                {delivered
+                  ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered")
+                  : refunded
+                  ? (lang === "ar" ? "↺ تم الاسترداد" : "↺ Refunded")
+                  : (lang === "ar" ? "⏳ قيد المراجعة" : "⏳ Pending review")}
               </span>
             </div>
           </div>
