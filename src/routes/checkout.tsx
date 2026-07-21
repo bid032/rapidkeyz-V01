@@ -123,12 +123,12 @@ function CheckoutPage() {
         return;
       }
     }
-    // Global phone validity (main contact number)
+    // Main contact phone must be a real number
     if (phone.length < 7 || phone.length > 15 || /^(\d)\1+$/.test(phone)) {
       setError(lang === "ar" ? "رقم الهاتف غير صحيح" : "Invalid phone number");
       return;
     }
-    if (false) {
+
 
     setSubmitting(true);
     try {
