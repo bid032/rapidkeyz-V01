@@ -345,7 +345,7 @@ function AuditCard({
 
         <span className="ms-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground tabular-nums" dir="ltr">
           <Clock className="w-3 h-3" />
-          {new Date(row.created_at).toLocaleString("ar-EG", { hour12: false })}
+          {new Date(row.created_at).toLocaleString("ar-EG", { hour12: true })}
         </span>
       </button>
 
