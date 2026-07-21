@@ -86,3 +86,47 @@ export const saveStockStaff = createServerFn({ method: "POST" })
     if (!res.ok) throw new Error(`Sheets update ${res.status}: ${await res.text()}`);
     return { ok: true as const, count: cleaned.length };
   });
+
+/**
+ * Upsert or remove a Staff sheet row for a specific site user.
+ * Anchored by display name (case-insensitive). If active=false, the row is removed.
+ */
+export const syncUserStockStaff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { name: string; username?: string; password?: string; active: boolean }) => d)
+  .handler(async ({ data, context }) => {
+    await requireAdminOrModerator(context);
+    const spreadsheetId = await getSpreadsheetId(context.supabase);
+    const name = (data.name ?? "").trim();
+    if (!name) throw new Error("اسم المستخدم مطلوب");
+
+    const current = await fetchStaffFromSheet();
+    const key = name.toLowerCase();
+    const others = current.filter((s) => s.name.trim().toLowerCase() !== key);
+
+    let next: StaffRecord[] = others;
+    if (data.active) {
+      const username = (data.username ?? "").trim();
+      const existing = current.find((s) => s.name.trim().toLowerCase() === key);
+      const password = String(data.password ?? "") || existing?.password || "";
+      if (username) {
+        const dupe = others.find((s) => s.username && s.username.toLowerCase() === username.toLowerCase());
+        if (dupe) throw new Error(`اسم المستخدم مستخدم بالفعل: ${username}`);
+      }
+      next = [...others, { name, username, password, active: true }];
+    }
+
+    const rows: (string | number)[][] = [HEADER];
+    for (const s of next) rows.push([s.name, s.username, s.password, s.active ? "TRUE" : "FALSE"]);
+    while (rows.length < MAX_ROWS) rows.push(["", "", "", ""]);
+
+    const range = `${STAFF_TAB}!A1:D${MAX_ROWS}`;
+    const url = `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ range, majorDimension: "ROWS", values: rows }),
+    });
+    if (!res.ok) throw new Error(`Sheets update ${res.status}: ${await res.text()}`);
+    return { ok: true as const };
+  });

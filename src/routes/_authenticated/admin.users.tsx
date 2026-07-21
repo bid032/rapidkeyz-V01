@@ -6,7 +6,9 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
-import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound } from "lucide-react";
+import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound, AtSign } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { syncUserStockStaff } from "@/lib/stock-staff.functions";
 
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
@@ -466,28 +468,45 @@ function StockAccessDialog({
 }) {
   const { lang, notify } = useApp();
   const [access, setAccess] = useState<boolean>(!!user.stock_access);
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const syncFn = useServerFn(syncUserStockStaff);
 
   const save = async () => {
-    if (access && !user.has_stock_password && !password) {
-      notify(lang === "ar" ? "أدخل كلمة سر عشان اليوزر يقدر يدخل" : "Set a password first", "error");
+    if (username && !/^[a-zA-Z0-9._-]{3,32}$/.test(username)) {
+      notify(lang === "ar" ? "اسم المستخدم: حروف/أرقام إنجليزية 3-32" : "Username: 3-32 letters/digits", "error");
       return;
     }
-    if (password && !/^\d{4}$/.test(password)) {
-      notify(lang === "ar" ? "كلمة السر لازم تكون 4 أرقام" : "Password must be exactly 4 digits", "error");
+    if (username && !password) {
+      notify(lang === "ar" ? "اكتب كلمة سر مع اسم المستخدم" : "Set a password with the username", "error");
       return;
     }
     setLoading(true);
-    const { error } = await supabase.rpc("admin_set_stock_access", {
-      _user_id: user.id,
-      _access: access,
-      _password: password || "",
-    });
-    setLoading(false);
-    if (error) return notify(error.message, "error");
-    notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
-    onSaved();
+    try {
+      // Sync Staff sheet (source of truth for /stock login)
+      await syncFn({
+        data: {
+          name: user.display_name || user.email || "user",
+          username: username || "",
+          password: password || "",
+          active: access,
+        },
+      });
+      // Update profile flag (controls menu link visibility)
+      const { error } = await supabase.rpc("admin_set_stock_access", {
+        _user_id: user.id,
+        _access: access,
+        _password: "",
+      });
+      if (error) throw error;
+      notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
+      onSaved();
+    } catch (e: any) {
+      notify(e?.message ?? "خطأ", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -528,25 +547,41 @@ function StockAccessDialog({
           </div>
         </label>
 
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-3">
           <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" />
-            {user.has_stock_password
-              ? (lang === "ar" ? "تغيير كلمة السر (اختياري)" : "Change password (optional)")
-              : (lang === "ar" ? "كلمة السر الأولى" : "Set password")}
+            <AtSign className="w-3.5 h-3.5" />
+            {lang === "ar" ? "اسم المستخدم (اختياري)" : "Username (optional)"}
           </label>
           <input
             type="text"
-            inputMode="numeric"
-            pattern="\d{4}"
-            maxLength={4}
-            value={password}
-            onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            placeholder={user.has_stock_password ? "•••• (اتركها فاضية لعدم التغيير)" : "٤ أرقام"}
-            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm tracking-[0.5em] text-center"
             dir="ltr"
+            autoComplete="off"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.trim())}
+            placeholder="username"
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
           />
+        </div>
 
+        <div className="space-y-2 mb-4">
+          <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" />
+            {lang === "ar" ? "كلمة السر (اختياري)" : "Password (optional)"}
+          </label>
+          <input
+            type="text"
+            dir="ltr"
+            autoComplete="off"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={lang === "ar" ? "اتركها فاضية لعدم التغيير" : "Leave blank to keep"}
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
+          />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {lang === "ar"
+              ? "لما تحط اسم مستخدم وكلمة سر، هيتضاف تلقائياً في تبويب/شيت الاستوك ويقدر يدخل بيهم على /stock."
+              : "Adding a username + password auto-syncs a Staff row so they can sign into /stock."}
+          </p>
         </div>
 
         <div className="flex gap-2">
