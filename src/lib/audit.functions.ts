@@ -13,6 +13,7 @@ export type AuditRowEnriched = {
   meta: any;
   created_at: string;
   // enrichments
+  order_id: string | null;
   order_number: string | null;
   order_status: string | null;
   order_total: number | null;
