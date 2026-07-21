@@ -16,7 +16,8 @@ type OrderRow = {
   status: string | null;
 };
 
-const STORAGE_KEY = "admin_notifications_seen_at";
+const STORAGE_KEY = "admin_notifications_seen_ids";
+const MAX_SEEN = 200;
 
 function playBeep() {
   try {
@@ -46,12 +47,38 @@ export function AdminNotifications() {
   const { lang } = useApp();
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [open, setOpen] = useState(false);
-  const [seenAt, setSeenAt] = useState<number>(() => {
-    if (typeof window === "undefined") return Date.now();
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? Number(raw) || Date.now() : Date.now();
+  const [seenIds, setSeenIds] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw);
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch {
+      return new Set();
+    }
   });
   const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  const persistSeen = (next: Set<string>) => {
+    setSeenIds(new Set(next));
+    if (typeof window !== "undefined") {
+      const arr = Array.from(next).slice(-MAX_SEEN);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+  };
+
+  const markSeen = (ids: string[]) => {
+    const next = new Set(seenIds);
+    let changed = false;
+    for (const id of ids) {
+      if (!next.has(id)) {
+        next.add(id);
+        changed = true;
+      }
+    }
+    if (changed) persistSeen(next);
+  };
 
   // Load recent orders
   useEffect(() => {
@@ -61,7 +88,15 @@ export function AdminNotifications() {
       .select("id, order_number, total, currency, customer_email, created_at, status")
       .order("created_at", { ascending: false })
       .limit(15)
-      .then(({ data }) => setOrders((data as OrderRow[] | null) ?? []));
+      .then(({ data }) => {
+        const rows = (data as OrderRow[] | null) ?? [];
+        setOrders(rows);
+        // On first load, mark everything already-existing as seen so the badge
+        // only starts counting truly new orders from now on.
+        if (typeof window !== "undefined" && !localStorage.getItem(STORAGE_KEY)) {
+          persistSeen(new Set(rows.map((r) => r.id)));
+        }
+      });
   }, [canModerate]);
 
   // Realtime subscribe
@@ -139,27 +174,14 @@ export function AdminNotifications() {
 
   if (isLoading || !canModerate) return null;
 
-  const unseen = orders.filter(
-    (o) => new Date(o.created_at).getTime() > seenAt
-  ).length;
-
-  const markSeen = () => {
-    const now = Date.now();
-    setSeenAt(now);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, String(now));
-    }
-  };
+  const unseen = orders.filter((o) => !seenIds.has(o.id)).length;
 
   return (
     <div ref={wrapRef} className="relative">
       <button
         type="button"
         aria-label="Notifications"
-        onClick={() => {
-          setOpen((v) => !v);
-          if (!open) markSeen();
-        }}
+        onClick={() => setOpen((v) => !v)}
         className="relative size-8 sm:size-9 grid place-items-center rounded-lg border border-border hover:bg-muted hover:text-brand transition-colors"
       >
         <Bell className="size-4" />
@@ -176,13 +198,24 @@ export function AdminNotifications() {
             <h4 className="text-sm font-bold">
               {lang === "ar" ? "الطلبات الأخيرة" : "Recent orders"}
             </h4>
-            <Link
-              to="/admin/orders"
-              onClick={() => setOpen(false)}
-              className="text-xs font-semibold text-brand hover:underline"
-            >
-              {lang === "ar" ? "عرض الكل" : "View all"}
-            </Link>
+            <div className="flex items-center gap-3">
+              {unseen > 0 && (
+                <button
+                  type="button"
+                  onClick={() => markSeen(orders.map((o) => o.id))}
+                  className="text-[11px] font-semibold text-muted-foreground hover:text-brand transition-colors"
+                >
+                  {lang === "ar" ? "تعليم كمقروء" : "Mark all read"}
+                </button>
+              )}
+              <Link
+                to="/admin/orders"
+                onClick={() => setOpen(false)}
+                className="text-xs font-semibold text-brand hover:underline"
+              >
+                {lang === "ar" ? "عرض الكل" : "View all"}
+              </Link>
+            </div>
           </div>
           {orders.length === 0 ? (
             <div className="p-6 text-center text-xs text-muted-foreground">
@@ -191,13 +224,18 @@ export function AdminNotifications() {
           ) : (
             <ul className="divide-y divide-border">
               {orders.map((o) => {
-                const isNew = new Date(o.created_at).getTime() > seenAt;
+                const isNew = !seenIds.has(o.id);
                 return (
                   <li key={o.id}>
                     <Link
                       to="/admin/orders"
-                      onClick={() => setOpen(false)}
-                      className="flex items-start gap-3 px-4 py-3 hover:bg-muted transition-colors"
+                      onClick={() => {
+                        markSeen([o.id]);
+                        setOpen(false);
+                      }}
+                      className={`flex items-start gap-3 px-4 py-3 hover:bg-muted transition-colors ${
+                        isNew ? "bg-red-500/5" : ""
+                      }`}
                     >
                       <span
                         className={`mt-1 size-2 rounded-full shrink-0 ${
