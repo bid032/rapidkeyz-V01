@@ -638,11 +638,73 @@ function CheckoutPage() {
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between text-lg pt-4 border-t border-border">
-                <span className="font-bold">{t.cart.total}</span>
-                <span className="font-extrabold text-brand">
-                  {cartTotal} {t.common.currency}
-                </span>
+              {/* Coupon code */}
+              <div className="pt-4 border-t border-border">
+                <label className="text-xs font-bold text-muted-foreground mb-2 block">
+                  {lang === "ar" ? "كود الخصم" : "Coupon code"}
+                </label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-success/10 border border-success/30">
+                    <div className="min-w-0">
+                      <div className="font-mono font-extrabold text-success text-sm truncate">
+                        {appliedCoupon.code}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {lang === "ar" ? "تم تطبيق الخصم" : "Coupon applied"}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeCoupon}
+                      className="shrink-0 text-xs px-3 py-1.5 rounded-md border border-border font-bold hover:bg-muted"
+                    >
+                      {lang === "ar" ? "إزالة" : "Remove"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase().replace(/\s+/g, ""))}
+                      placeholder={lang === "ar" ? "أدخل الكود" : "Enter code"}
+                      className="flex-1 min-w-0 px-3 py-2.5 bg-background border border-border rounded-lg font-mono text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={applyCoupon}
+                      disabled={couponApplying || !couponCode.trim()}
+                      className="shrink-0 px-4 py-2.5 rounded-lg bg-brand text-brand-foreground text-sm font-bold disabled:opacity-50"
+                    >
+                      {couponApplying ? "…" : (lang === "ar" ? "تطبيق" : "Apply")}
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <p className="text-xs text-destructive mt-2">{couponError}</p>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2 pt-4 border-t border-border">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{lang === "ar" ? "المجموع الفرعي" : "Subtotal"}</span>
+                  <span className="font-bold">{cartTotal} {t.common.currency}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-success font-bold">
+                      {lang === "ar" ? "الخصم" : "Discount"}
+                      {appliedCoupon && <span className="ms-1 text-muted-foreground font-mono">({appliedCoupon.code})</span>}
+                    </span>
+                    <span className="font-extrabold text-success">−{discount} {t.common.currency}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-lg pt-2 border-t border-border">
+                  <span className="font-bold">{t.cart.total}</span>
+                  <span className="font-extrabold text-brand">
+                    {finalTotal} {t.common.currency}
+                  </span>
+                </div>
               </div>
               <button
                 type="submit"
