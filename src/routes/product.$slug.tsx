@@ -511,30 +511,30 @@ function ProductPage() {
 
         {/* Mobile sticky buy bar */}
         {selected && typeof document !== "undefined" && createPortal(
-          <div className="fixed bottom-0 inset-x-0 z-40 md:hidden p-3 bg-background/90 backdrop-blur-2xl border-t border-border flex items-center justify-between gap-3">
+          <div className="fixed bottom-0 inset-x-0 z-40 md:hidden p-3 bg-card/90 backdrop-blur-2xl border-t border-white/10 flex items-center justify-between gap-3">
             <div className="flex flex-col leading-tight min-w-0">
-              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+              <span className="text-[10px] text-brand font-black uppercase tracking-wider">
                 {lang === "ar" ? "الإجمالي" : "Total"}
               </span>
-              <span className="text-xl font-black text-brand tabular-nums truncate">
-                {finalPrice} {t.common.currency}
+              <span className={`text-xl font-black tabular-nums truncate ${selectedSoldOut ? "text-destructive line-through" : "text-brand"}`}>
+                {selectedSoldOut ? t.product.soldOut : `${finalPrice} ${t.common.currency}`}
               </span>
             </div>
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={() => handleAdd(false)}
                 disabled={selectedSoldOut}
-                className="px-3 py-3 rounded-xl border border-border font-bold text-xs hover:bg-muted disabled:opacity-50"
+                className="px-3 py-3 rounded-2xl border border-white/10 bg-white/5 font-bold text-xs hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
-                {t.product.addToCart}
+                {selectedSoldOut ? t.product.soldOut : t.product.addToCart}
               </button>
               <button
                 onClick={() => setConfirmBuy(true)}
                 disabled={selectedSoldOut}
-                className={`px-5 py-3 rounded-xl font-black text-sm shadow-lg ${
+                className={`px-5 py-3 rounded-2xl font-black text-sm shadow-[0_0_24px_hsl(var(--brand)/0.35)] transition ${
                   selectedSoldOut
-                    ? "bg-muted text-muted-foreground"
-                    : "bg-brand text-brand-foreground shadow-[0_0_20px_hsl(var(--brand)/0.35)]"
+                    ? "bg-muted text-muted-foreground border border-border"
+                    : "bg-brand text-brand-foreground hover:brightness-110"
                 }`}
               >
                 {selectedSoldOut ? t.product.soldOut : t.product.buyNow}
