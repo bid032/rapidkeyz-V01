@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import logoDark from "@/assets/white_logo_rapid.png.asset.json";
 import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import { ShoppingCart, Sun, Moon, Menu, X } from "lucide-react";
+import { ShoppingCart, Sun, Moon, Menu, X, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
@@ -32,6 +32,19 @@ export function Header() {
   const [shrunk, setShrunk] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [mobileCats, setMobileCats] = useState<MobileCat[]>([]);
+  const [searchQ, setSearchQ] = useState("");
+  const [mobileSearchQ, setMobileSearchQ] = useState("");
+  const navigate = useNavigate();
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const submitSearch = (q: string) => {
+    const term = q.trim();
+    if (!term) return;
+    navigate({ to: "/shop", search: { q: term } as any });
+    setSearchQ("");
+    setMobileSearchQ("");
+    setMobileOpen(false);
+  };
 
   useEffect(() => {
     setMounted(true);
