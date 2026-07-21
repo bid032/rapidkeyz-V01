@@ -524,7 +524,7 @@ function HomePage() {
 
 
       {/* CTA: Browse all subscriptions — hero-style button */}
-      <section className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-10 flex justify-center">
+      <section className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-5 flex justify-center">
         <Link
           to="/shop"
           data-gsap="magnetic"
