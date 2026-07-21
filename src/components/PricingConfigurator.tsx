@@ -132,7 +132,7 @@ export function PricingConfigurator({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                    {isAr ? "٠ · نوع الخطة" : "0 · Plan Type"}
+                    {isAr ? "نوع الخطة" : "Plan Type"}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border">
