@@ -113,15 +113,23 @@ function CheckoutPage() {
         setError(lang === "ar" ? "حجم الملف كبير جدًا (الحد 5MB)" : "File too large (max 5MB)");
         return;
       }
-      if (!/^[0-9+\s-]{6,20}$/.test(senderPhone.trim())) {
+      const sp = senderPhone.replace(/\D/g, "");
+      if (sp.length < 7 || sp.length > 15 || /^(\d)\1+$/.test(sp)) {
         setError(
           lang === "ar"
-            ? "يرجى إدخال رقم الهاتف الذي تم التحويل منه"
-            : "Please enter the phone number you transferred from"
+            ? "برجاء إدخال رقم هاتف صحيح للتحويل منه"
+            : "Please enter a valid phone number used for the transfer"
         );
         return;
       }
     }
+    // Global phone validity (main contact number)
+    if (phone.length < 7 || phone.length > 15 || /^(\d)\1+$/.test(phone)) {
+      setError(lang === "ar" ? "رقم الهاتف غير صحيح" : "Invalid phone number");
+      return;
+    }
+    if (false) {
+
     setSubmitting(true);
     try {
       let proofUrl: string | null = null;
