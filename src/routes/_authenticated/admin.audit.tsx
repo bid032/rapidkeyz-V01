@@ -26,12 +26,14 @@ export const Route = createFileRoute("/_authenticated/admin/audit")({
 });
 
 const ACTION_LABELS: Record<string, string> = {
+  "order.created": "طلب جديد",
   "order.status_change": "تغيير حالة طلب",
   "order_item.delivered": "تسليم خدمة",
   "order_item.refunded": "استرداد خدمة",
   "order_item.status_change": "تغيير حالة خدمة",
   "delivery.manual": "تسليم يدوي",
   "refund.created": "إنشاء تعويض",
+  "refund.updated": "تعديل تعويض",
   "refund.deleted": "حذف تعويض",
   "product.created": "إضافة منتج",
   "product.updated": "تعديل منتج",
@@ -39,10 +41,42 @@ const ACTION_LABELS: Record<string, string> = {
   "plan.created": "إضافة خطة",
   "plan.updated": "تعديل خطة",
   "plan.deleted": "حذف خطة",
+  "plan_cost.updated": "تعديل تكلفة خطة",
+  "plan_cost.deleted": "حذف تكلفة خطة",
+  "category.created": "إضافة قسم",
+  "category.updated": "تعديل قسم",
+  "category.deleted": "حذف قسم",
+  "faq.created": "إضافة سؤال شائع",
+  "faq.updated": "تعديل سؤال شائع",
+  "faq.deleted": "حذف سؤال شائع",
+  "review.created": "إضافة تقييم",
+  "review.updated": "تعديل تقييم",
+  "review.deleted": "حذف تقييم",
+  "testimonial.created": "إضافة صورة توصية",
+  "testimonial.updated": "تعديل صورة توصية",
+  "testimonial.deleted": "حذف صورة توصية",
   "role.granted": "منح صلاحية",
   "role.revoked": "سحب صلاحية",
   "setting.updated": "تعديل إعداد",
   "setting.deleted": "حذف إعداد",
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  name_ar: "الاسم بالعربية", name_en: "الاسم بالإنجليزية",
+  slug: "الرابط (Slug)", description_ar: "الوصف بالعربية", description_en: "الوصف بالإنجليزية",
+  icon_url: "أيقونة", cover_url: "صورة الغلاف", status: "الحالة",
+  is_featured: "مميز", is_bestseller: "الأكثر مبيعاً", sort_order: "الترتيب",
+  discount_percent: "نسبة الخصم", account_type: "نوع الحساب", account_types: "أنواع الحساب",
+  category_id: "القسم", category_ids: "الأقسام", plan_variants: "أنواع الخطط",
+  delivery_type: "نوع التسليم", google_spreadsheet_id: "معرّف Google Sheet",
+  label_ar: "التسمية بالعربية", label_en: "التسمية بالإنجليزية",
+  duration_days: "المدة (يوم)", price: "السعر", compare_price: "السعر قبل الخصم",
+  stock: "المخزون", is_active: "نشط", plan_variant: "نوع الخطة", sheet_csv_url: "رابط CSV",
+  cost_price: "التكلفة", question_ar: "السؤال بالعربية", question_en: "السؤال بالإنجليزية",
+  answer_ar: "الإجابة بالعربية", answer_en: "الإجابة بالإنجليزية",
+  reviewer_name: "اسم المُقيّم", rating: "التقييم", body: "النص", lang: "اللغة",
+  image_url: "الصورة", caption: "التعليق", value: "القيمة", key: "المفتاح",
+  amount: "المبلغ", notes: "ملاحظات", type: "النوع",
 };
 
 const TARGET_LABELS: Record<string, string> = {
@@ -51,6 +85,10 @@ const TARGET_LABELS: Record<string, string> = {
   refund: "تعويض",
   product: "منتج",
   plan: "خطة",
+  category: "قسم",
+  faq: "سؤال شائع",
+  review: "تقييم",
+  testimonial: "توصية",
   user_role: "صلاحية",
   setting: "إعداد",
 };
@@ -529,14 +567,18 @@ function GroupCard({
                     </span>
                   </div>
                   {r.meta && Object.keys(r.meta).length > 0 && (
-                    <details className="mt-1">
-                      <summary className="cursor-pointer text-[10px] text-muted-foreground inline-flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3" /> بيانات الحركة
-                      </summary>
-                      <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap break-words text-muted-foreground bg-muted/30 rounded p-2">
-                        {JSON.stringify(r.meta, null, 2)}
-                      </pre>
-                    </details>
+                    <div className="mt-1.5 space-y-1.5">
+                      <MetaSummary meta={r.meta} />
+                      <ChangesView changes={(r.meta as any)?.changes} />
+                      <details>
+                        <summary className="cursor-pointer text-[10px] text-muted-foreground inline-flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3" /> بيانات الحركة الخام
+                        </summary>
+                        <pre className="mt-1 text-[10px] font-mono whitespace-pre-wrap break-words text-muted-foreground bg-muted/30 rounded p-2">
+                          {JSON.stringify(r.meta, null, 2)}
+                        </pre>
+                      </details>
+                    </div>
                   )}
                   {r.target_id && (
                     <div className="mt-0.5 text-[10px] text-muted-foreground/70 inline-flex items-center gap-1">
@@ -571,5 +613,84 @@ function InfoChip({
       <span className="text-muted-foreground">{label}:</span>
       <bdi className={`font-bold ${mono ? "font-mono text-[10px] break-all" : ""}`}>{value}</bdi>
     </span>
+  );
+}
+
+function fmtVal(v: any): string {
+  if (v === null || v === undefined || v === "") return "—";
+  if (typeof v === "boolean") return v ? "نعم" : "لا";
+  if (Array.isArray(v)) return v.length === 0 ? "—" : v.map(fmtVal).join("، ");
+  if (typeof v === "object") {
+    // localized {ar, en} objects
+    if ("ar" in v || "en" in v) {
+      return [v.ar, v.en].filter(Boolean).join(" / ") || "—";
+    }
+    const s = JSON.stringify(v);
+    return s.length > 80 ? s.slice(0, 80) + "…" : s;
+  }
+  const s = String(v);
+  return s.length > 120 ? s.slice(0, 120) + "…" : s;
+}
+
+function ChangesView({ changes }: { changes: any }) {
+  if (!changes || typeof changes !== "object" || Array.isArray(changes)) return null;
+  const entries = Object.entries(changes).filter(
+    ([, v]) => v && typeof v === "object" && ("from" in (v as any) || "to" in (v as any)),
+  );
+  if (entries.length === 0) return null;
+  return (
+    <div className="rounded-md border border-brand/25 bg-brand/5 p-2">
+      <div className="text-[10px] font-bold text-brand mb-1.5">التغييرات ({entries.length})</div>
+      <div className="grid gap-1">
+        {entries.map(([field, val]: any) => (
+          <div key={field} className="text-[11px] flex flex-wrap items-start gap-x-2 gap-y-0.5">
+            <span className="font-bold min-w-[110px]">
+              {FIELD_LABELS[field] || field}:
+            </span>
+            <span className="inline-flex flex-wrap items-center gap-1">
+              <span className="px-1.5 py-0.5 rounded bg-destructive/10 text-destructive line-through max-w-[380px] truncate">
+                <bdi>{fmtVal(val.from)}</bdi>
+              </span>
+              <span className="text-muted-foreground">←</span>
+              <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 max-w-[380px] truncate">
+                <bdi>{fmtVal(val.to)}</bdi>
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MetaSummary({ meta }: { meta: any }) {
+  if (!meta) return null;
+  const chips: Array<{ label: string; value: string }> = [];
+  const push = (label: string, val: any) => {
+    if (val === null || val === undefined || val === "") return;
+    chips.push({ label, value: fmtVal(val) });
+  };
+  push("المنتج", meta.product_name ?? meta.name_ar);
+  push("الخطة", meta.label_ar);
+  push("السؤال", meta.question_ar);
+  push("المُقيّم", meta.reviewer_name);
+  push("القسم", meta.name_ar && !meta.product_name ? undefined : undefined); // handled above
+  push("المفتاح", meta.key);
+  push("المبلغ", meta.amount != null ? `${meta.amount} EGP` : undefined);
+  push("النوع", meta.type);
+  push("ملاحظات", meta.notes);
+  push("من", meta.from);
+  push("إلى", meta.to);
+  push("الصلاحية", meta.role);
+  if (chips.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+      {chips.map((c, i) => (
+        <span key={i} className="inline-flex items-center gap-1">
+          <span className="text-muted-foreground">{c.label}:</span>
+          <bdi className="font-bold">{c.value}</bdi>
+        </span>
+      ))}
+    </div>
   );
 }
