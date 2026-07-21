@@ -23,15 +23,19 @@ interface DeliveredAccount {
 export interface OrderDeliveredEmailProps {
   orderNumber: string
   total: number
+  subtotal?: number | null
+  discountAmount?: number | null
+  couponCode?: string | null
   currency: string
   accounts: DeliveredAccount[]
   lang?: 'ar' | 'en'
 }
 
 export const OrderDeliveredEmail = ({
-  orderNumber, total, currency, accounts, lang = 'ar',
+  orderNumber, total, subtotal, discountAmount, couponCode, currency, accounts, lang = 'ar',
 }: OrderDeliveredEmailProps) => {
   const isAr = lang === 'ar'
+  const hasCoupon = Number(discountAmount ?? 0) > 0
   const t = {
     preview: isAr
       ? `طلبك #${orderNumber} جاهز ، بيانات الحساب في الإيميل`
@@ -40,6 +44,9 @@ export const OrderDeliveredEmail = ({
     thanks: isAr ? 'شكراً لشرائك من' : 'Thank you for your purchase from',
     orderNo: isAr ? 'رقم الطلب' : 'Order number',
     amount: isAr ? 'المبلغ' : 'Amount',
+    before: isAr ? 'قبل الخصم' : 'Before discount',
+    coupon: isAr ? 'كوبون خصم' : 'Coupon',
+    discount: isAr ? 'الخصم' : 'Discount',
     accountsHeading: isAr ? 'بيانات الحسابات' : 'Account credentials',
     activationKey: isAr ? 'مفتاح التفعيل' : 'Activation key',
     email: isAr ? 'البريد' : 'Email',
@@ -64,6 +71,26 @@ export const OrderDeliveredEmail = ({
           {t.thanks} <b style={{ color: '#fff' }}>RapidKeyz</b> <br />
           {t.orderNo}: <span style={styles.mono}>#{orderNumber}</span> , {t.amount}: <span style={styles.mono}>{total} {currency}</span>
         </Text>
+
+        {hasCoupon && (
+          <Section style={styles.card}>
+            {subtotal != null && (
+              <Text style={styles.line}>
+                <b style={{ color: '#fff' }}>{t.before}:</b>{' '}
+                <span style={{ ...styles.mono, textDecoration: 'line-through', opacity: 0.7 }}>{subtotal} {currency}</span>
+              </Text>
+            )}
+            <Text style={styles.line}>
+              <b style={{ color: '#fff' }}>🎟️ {t.coupon}:</b>{' '}
+              {couponCode && <span style={styles.mono}>{couponCode}</span>}{' '}
+              <span style={{ color: '#22c55e', fontWeight: 700 }}>−{discountAmount} {currency}</span>
+            </Text>
+            <Text style={styles.line}>
+              <b style={{ color: '#fff' }}>{t.amount}:</b>{' '}
+              <span style={styles.mono}>{total} {currency}</span>
+            </Text>
+          </Section>
+        )}
 
         <Heading as="h2" style={styles.h2}>{t.accountsHeading}</Heading>
         {accounts.map((a, i) => {

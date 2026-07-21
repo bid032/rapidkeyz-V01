@@ -90,7 +90,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*, delivered_accounts(*))")
+        .select("*, coupons(code, discount_type, discount_value), order_items(*, delivered_accounts(*))")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -183,8 +183,14 @@ function Dashboard() {
                       "bg-muted text-muted-foreground"
                     }`}>{o.status}</span>
                     {Number(o.discount_amount ?? 0) > 0 && (
-                      <div className="text-[11px] text-success font-bold mt-1">
-                        {lang === "ar" ? "خصم" : "Discount"} −{o.discount_amount} {t.common.currency}
+                      <div className="mt-1 text-[11px] leading-tight">
+                        <div className="text-muted-foreground">
+                          {lang === "ar" ? "قبل الخصم" : "Before"}: <span className="line-through">{o.subtotal} {t.common.currency}</span>
+                        </div>
+                        <div className="text-success font-bold">
+                          {lang === "ar" ? "خصم" : "Discount"} −{o.discount_amount} {t.common.currency}
+                          {o.coupons?.code && <span className="ms-1 font-mono">({o.coupons.code})</span>}
+                        </div>
                       </div>
                     )}
                     <div className="text-lg font-extrabold mt-2 text-brand">

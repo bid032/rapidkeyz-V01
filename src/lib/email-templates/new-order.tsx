@@ -13,6 +13,11 @@ interface Item {
 
 export interface NewOrderEmailProps {
   orderNumber: string
+  subtotal?: number | null
+  discountAmount?: number | null
+  couponCode?: string | null
+  couponDiscountType?: string | null
+  couponDiscountValue?: number | null
   total: number
   currency: string
   customerEmail: string
@@ -25,9 +30,12 @@ export interface NewOrderEmailProps {
 }
 
 export const NewOrderEmail = ({
-  orderNumber, total, currency, customerEmail, customerPhone,
+  orderNumber, subtotal, discountAmount, couponCode, couponDiscountType, couponDiscountValue,
+  total, currency, customerEmail, customerPhone,
   paymentGateway, paymentSenderPhone, paymentProofUrl, items, adminUrl,
-}: NewOrderEmailProps) => (
+}: NewOrderEmailProps) => {
+  const hasCoupon = Number(discountAmount ?? 0) > 0
+  return (
   <Html lang="ar" dir="rtl">
     <Head />
     <Preview>{`طلب جديد #${orderNumber} ، ${total} ${currency}`}</Preview>
@@ -38,7 +46,23 @@ export const NewOrderEmail = ({
       </Text>
 
       <Section style={styles.card}>
-        <Text style={styles.line}><b style={{ color: '#fff' }}>المبلغ:</b> <span style={styles.mono}>{total} {currency}</span></Text>
+        {hasCoupon && subtotal != null && (
+          <Text style={styles.line}>
+            <b style={{ color: '#fff' }}>قبل الخصم:</b>{' '}
+            <span style={{ ...styles.mono, textDecoration: 'line-through', opacity: 0.7 }}>{subtotal} {currency}</span>
+          </Text>
+        )}
+        {hasCoupon && (
+          <Text style={styles.line}>
+            <b style={{ color: '#fff' }}>🎟️ كوبون خصم:</b>{' '}
+            {couponCode && <span style={styles.mono}>{couponCode}</span>}{' '}
+            <span style={{ color: '#22c55e', fontWeight: 700 }}>−{discountAmount} {currency}</span>
+            {couponDiscountType === 'percent' && couponDiscountValue != null && (
+              <span style={{ opacity: 0.7 }}> ({couponDiscountValue}%)</span>
+            )}
+          </Text>
+        )}
+        <Text style={styles.line}><b style={{ color: '#fff' }}>{hasCoupon ? 'المبلغ بعد الخصم:' : 'المبلغ:'}</b> <span style={styles.mono}>{total} {currency}</span></Text>
         <Text style={styles.line}><b style={{ color: '#fff' }}>طريقة الدفع:</b> {paymentGateway}</Text>
         <Text style={styles.line}><b style={{ color: '#fff' }}>العميل:</b> {customerEmail}{customerPhone ? ` , ${customerPhone}` : ''}</Text>
         {paymentSenderPhone && (
@@ -70,7 +94,8 @@ export const NewOrderEmail = ({
       </Text>
     </BrandLayout>
   </Html>
-)
+  )
+}
 
 export default NewOrderEmail
 

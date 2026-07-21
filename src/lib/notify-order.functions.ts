@@ -33,7 +33,7 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
 
     const { data: order, error } = await supabaseAdmin
       .from('orders')
-      .select('*, order_items(*)')
+      .select('*, coupons(code, discount_type, discount_value), order_items(*)')
       .eq('id', data.orderId)
       .single()
     if (error || !order) throw new Error(error?.message || 'Order not found')
@@ -59,6 +59,11 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
       idempotencyKey: `new-order-${order.id}`,
       templateData: {
         orderNumber: order.order_number,
+        subtotal: (order as any).subtotal,
+        discountAmount: Number((order as any).discount_amount ?? 0),
+        couponCode: (order as any).coupons?.code ?? null,
+        couponDiscountType: (order as any).coupons?.discount_type ?? null,
+        couponDiscountValue: (order as any).coupons?.discount_value ?? null,
         total: order.total,
         currency: order.currency || 'EGP',
         customerEmail: order.customer_email,
@@ -89,7 +94,7 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
 
     const { data: order, error } = await supabaseAdmin
       .from('orders')
-      .select('id, order_number, total, currency, customer_email, created_at, order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
+      .select('id, order_number, total, subtotal, discount_amount, currency, customer_email, created_at, coupons(code), order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
       .eq('id', data.orderId)
       .single()
     if (error || !order) throw new Error(error?.message || 'Order not found')
@@ -123,6 +128,9 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
       templateData: {
         orderNumber: order.order_number,
         total: order.total,
+        subtotal: (order as any).subtotal,
+        discountAmount: Number((order as any).discount_amount ?? 0),
+        couponCode: (order as any).coupons?.code ?? null,
         currency: order.currency || 'EGP',
         accounts,
         lang,
@@ -156,7 +164,7 @@ export const notifyItemDelivered = createServerFn({ method: 'POST' })
 
     const { data: item, error } = await supabaseAdmin
       .from('order_items')
-      .select('id, product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes), orders(id, order_number, total, currency, customer_email)')
+      .select('id, product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes), orders(id, order_number, total, subtotal, discount_amount, currency, customer_email, coupons(code))')
       .eq('id', data.orderItemId)
       .single()
     if (error || !item) throw new Error(error?.message || 'Order item not found')
@@ -182,6 +190,9 @@ export const notifyItemDelivered = createServerFn({ method: 'POST' })
       templateData: {
         orderNumber: order.order_number,
         total: order.total,
+        subtotal: order.subtotal,
+        discountAmount: Number(order.discount_amount ?? 0),
+        couponCode: order.coupons?.code ?? null,
         currency: order.currency || 'EGP',
         accounts,
         lang,
