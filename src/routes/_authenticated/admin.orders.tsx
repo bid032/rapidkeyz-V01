@@ -477,18 +477,22 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
             <img src={prod.cover_url || prod.icon_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0" />
           )}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap" dir={lang === "ar" ? "rtl" : "ltr"}>
               {prod?.slug ? (
                 <a href={`/product/${prod.slug}`} target="_blank" rel="noreferrer" className="font-bold hover:text-brand underline-offset-2 hover:underline">
-                  {item.product_name}
+                  <bdi>{item.product_name}</bdi>
                 </a>
               ) : (
-                <span className="font-bold">{item.product_name}</span>
+                <span className="font-bold"><bdi>{item.product_name}</bdi></span>
               )}
-              <span className="text-muted-foreground text-sm">— {item.plan_label}</span>
-              <span className="text-sm font-bold">× {item.quantity}</span>
+              <span className="text-sm font-bold text-muted-foreground">
+                {lang === "ar" ? "الكمية:" : "Qty:"} {item.quantity}
+              </span>
             </div>
-            <div className="flex flex-wrap gap-1.5 mt-1.5">
+            <div className="flex flex-wrap gap-1.5 mt-1.5" dir={lang === "ar" ? "rtl" : "ltr"}>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-brand/10 text-brand font-bold">
+                {lang === "ar" ? "الخطة:" : "Plan:"} <bdi>{item.plan_label}</bdi>
+              </span>
               {item.account_type && (
                 <span className="text-[10px] px-2 py-0.5 rounded bg-brand/10 text-brand font-bold">
                   {lang === "ar" ? "نوع الحساب:" : "Account:"} {item.account_type === "private" ? (lang === "ar" ? "خاص" : "Private") : item.account_type === "shared" ? (lang === "ar" ? "مشترك" : "Shared") : item.account_type}
@@ -496,12 +500,12 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
               )}
               {plan?.plan_variant && (
                 <span className="text-[10px] px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 font-bold">
-                  {lang === "ar" ? "المتغير:" : "Variant:"} <bdi>{plan.plan_variant}</bdi>
+                  {lang === "ar" ? "نوع الخطة:" : "Variant:"} <bdi>{plan.plan_variant}</bdi>
                 </span>
               )}
               {plan?.duration_days > 0 && (
                 <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-bold">
-                  {lang === "ar" ? `${plan.duration_days} يوم` : `${plan.duration_days} days`}
+                  {lang === "ar" ? "المدة:" : "Duration:"} {lang === "ar" ? `${plan.duration_days} يوم` : `${plan.duration_days} days`}
                 </span>
               )}
               <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
@@ -513,9 +517,9 @@ function ItemRow({ item, onDeliver }: { item: any; onDeliver: (creds: any) => vo
             </div>
           </div>
         </div>
-        <div className="text-sm shrink-0 text-end">
+        <div className="text-sm shrink-0 text-end" dir="ltr">
           <div className="text-xs text-muted-foreground">
-            {item.unit_price} EGP × {item.quantity}
+            {item.unit_price} EGP
             {discounted && originalUnit !== null && (
               <span className="ms-1 line-through opacity-60">{originalUnit} EGP</span>
             )}
