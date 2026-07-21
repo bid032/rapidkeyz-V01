@@ -409,14 +409,21 @@ function AdminOrders() {
                   <div><span className="text-muted-foreground">عدد الوحدات:</span> <span className="font-bold">{itemsCount}</span></div>
                   <div><span className="text-muted-foreground">الإجمالي:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
                   {Number(o.discount_amount ?? 0) > 0 && (
-                    <div className="md:col-span-2">
-                      <span className="text-muted-foreground">الخصم:</span>{" "}
-                      <span className="font-bold text-success">−{o.discount_amount} EGP</span>
-                      {o.coupon_id && (
-                        <span className="ms-2 text-[11px] text-muted-foreground">
-                          (كوبون · مجموع فرعي {o.subtotal} EGP)
-                        </span>
-                      )}
+                    <div className="md:col-span-2 p-3 rounded-lg bg-success/5 border border-success/20 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold text-success">🎟️ كوبون خصم مُطبَّق</span>
+                        {o.coupons?.code && (
+                          <code className="text-xs font-mono bg-success/15 text-success px-2 py-0.5 rounded font-bold">{o.coupons.code}</code>
+                        )}
+                        {o.coupons?.discount_type === "percent" && (
+                          <span className="text-[11px] text-muted-foreground">({o.coupons.discount_value}%)</span>
+                        )}
+                      </div>
+                      <div className="text-xs grid grid-cols-3 gap-2 pt-1">
+                        <div><span className="text-muted-foreground">قبل الخصم:</span> <span className="font-bold line-through text-muted-foreground">{o.subtotal} EGP</span></div>
+                        <div><span className="text-muted-foreground">الخصم:</span> <span className="font-bold text-success">−{o.discount_amount} EGP</span></div>
+                        <div><span className="text-muted-foreground">بعد الخصم:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
+                      </div>
                     </div>
                   )}
                   <div><span className="text-muted-foreground">الحالة:</span> <span className="font-bold">{o.status}</span></div>
