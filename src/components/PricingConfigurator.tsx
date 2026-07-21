@@ -87,25 +87,10 @@ export function PricingConfigurator({
         {/* Combined row: single account type + variant dropdown */}
         {normalizedTypes.length === 1 && variants && variants.length > 0 ? (
           <div className="grid grid-cols-2 gap-2">
-            {/* Account type card */}
-            <div className="min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                {isAr ? "١ · نوع الحساب" : "1 · Account"}
-              </p>
-              <div className="relative rounded-xl px-2.5 py-2 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[54px] flex flex-col justify-center">
-                <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
-                <span className="relative block text-sm font-black leading-tight truncate">
-                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
-                </span>
-                <span className="relative block text-[9px] mt-0.5 leading-tight text-brand-foreground/85 truncate">
-                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
-                </span>
-              </div>
-            </div>
             {/* Variant dropdown */}
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                {isAr ? "٢ · نوع الخطة" : "2 · Plan"}
+                {isAr ? "نوع الخطة" : "Plan"}
               </p>
               <div className="relative h-[54px]">
                 <select
@@ -122,6 +107,21 @@ export function PricingConfigurator({
                 </span>
               </div>
             </div>
+            {/* Account type card */}
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
+                {isAr ? "نوع الحساب" : "Account"}
+              </p>
+              <div className="relative rounded-xl px-2.5 py-2 bg-gradient-to-br from-brand to-brand/70 text-brand-foreground shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)] overflow-hidden h-[54px] flex flex-col justify-center">
+                <span className="pointer-events-none absolute -top-4 -end-4 w-16 h-16 bg-white/15 rounded-full blur-xl" />
+                <span className="relative block text-sm font-black leading-tight truncate">
+                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].title}
+                </span>
+                <span className="relative block text-[9px] mt-0.5 leading-tight text-brand-foreground/85 truncate">
+                  {acctMeta[normalizedTypes[0]][isAr ? "ar" : "en"].sub}
+                </span>
+              </div>
+            </div>
           </div>
         ) : (
 
@@ -132,7 +132,7 @@ export function PricingConfigurator({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                    {isAr ? "٠ · نوع الخطة" : "0 · Plan Type"}
+                    {isAr ? "نوع الخطة" : "Plan Type"}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-muted/40 border border-border">
@@ -162,7 +162,7 @@ export function PricingConfigurator({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                    {isAr ? "١ · نوع الحساب" : "1 · Account Type"}
+                    {isAr ? "نوع الحساب" : "Account Type"}
                   </p>
                 </div>
 
@@ -218,7 +218,7 @@ export function PricingConfigurator({
         <div>
           <div className="flex items-center justify-between mb-2">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-              {isAr ? "٢ · المدة" : "2 · Duration"}
+              {isAr ? "المدة" : "Duration"}
             </p>
             <p className="text-[9px] text-muted-foreground">
               {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
@@ -302,7 +302,7 @@ export function PricingConfigurator({
             <div className="relative flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
-                  {isAr ? "٣ · الإجمالي" : "3 · Total"}
+                  {isAr ? "الإجمالي" : "Total"}
                 </div>
                 <AnimatePresence mode="wait">
                   <motion.div
