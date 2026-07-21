@@ -17,6 +17,9 @@ export type AuditRowEnriched = {
   order_number: string | null;
   order_status: string | null;
   order_total: number | null;
+  order_subtotal: number | null;
+  order_discount_amount: number | null;
+  order_coupon_code: string | null;
   order_customer_name: string | null;
   order_customer_email: string | null;
   order_customer_phone: string | null;
