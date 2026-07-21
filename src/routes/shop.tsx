@@ -150,10 +150,8 @@ function ShopPage() {
           />
 
           <div className="max-w-4xl mx-auto px-3 sm:px-6 -mt-4 mb-2 text-center">
-            <p className="text-sm sm:text-base text-muted-foreground leading-loose">
-              {lang === "ar"
-                ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
-                : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration."}
+            <p className="text-sm sm:text-base text-muted-foreground leading-loose whitespace-pre-line">
+              {introText}
             </p>
           </div>
 
