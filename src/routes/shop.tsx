@@ -58,6 +58,12 @@ async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<Pro
   if (categoryId) q = q.or(`category_id.eq.${categoryId},category_ids.cs.{${categoryId}}`);
 
   if (filters.account) q = q.eq("account_type", filters.account);
+  if (filters.q && filters.q.trim()) {
+    const term = filters.q.trim().replace(/[%,()]/g, " ");
+    q = q.or(
+      `name_ar.ilike.%${term}%,name_en.ilike.%${term}%,description_ar.ilike.%${term}%,description_en.ilike.%${term}%,slug.ilike.%${term}%`,
+    );
+  }
   const { data, error } = await q.order("sort_order");
   if (error) throw error;
   return (data ?? []).map((p: any) => {
