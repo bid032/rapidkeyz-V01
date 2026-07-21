@@ -222,6 +222,32 @@ function CheckoutPage() {
       <div className="max-w-5xl mx-auto px-3 sm:px-6 py-8 sm:py-12">
         <h1 className="text-2xl sm:text-4xl font-extrabold mb-6 sm:mb-8">{t.checkout.title}</h1>
 
+        {!user && requireLogin && cart.length > 0 && (
+          <div className="mb-6 sm:mb-8 relative overflow-hidden rounded-2xl border-2 border-warning/50 bg-gradient-to-r from-warning/15 via-warning/10 to-warning/15 p-4 sm:p-5 animate-[pulse_3s_ease-in-out_infinite]">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="shrink-0 size-10 sm:size-12 grid place-items-center rounded-full bg-warning/20 text-warning text-xl sm:text-2xl">
+                🔒
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm sm:text-base text-foreground mb-0.5">
+                  {t.checkout.loginRequired}
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {lang === "ar"
+                    ? "سجّل دخولك عشان نقدر نحفظ طلبك ونوصّلك بيه."
+                    : "Sign in so we can save and deliver your order."}
+                </p>
+              </div>
+              <Link
+                to="/auth"
+                search={{ redirect: "/checkout" }}
+                className="shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-brand text-brand-foreground text-sm font-bold hover:opacity-90 transition-opacity whitespace-nowrap"
+              >
+                {t.auth.signIn}
+              </Link>
+            </div>
+          </div>
+        )}
 
         {cart.length === 0 ? (
           <div className="p-8 border border-dashed border-border rounded-2xl text-center">
@@ -236,14 +262,6 @@ function CheckoutPage() {
               <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
 
                 <h2 className="font-bold mb-4">{t.checkout.contact}</h2>
-                {!user && requireLogin && (
-                  <p className="text-sm text-warning mb-4">
-                    {t.checkout.loginRequired} ,{" "}
-                    <Link to="/auth" search={{ redirect: "/checkout" }} className="text-brand underline">
-                      {t.auth.signIn}
-                    </Link>
-                  </p>
-                )}
                 {!user && !requireLogin && (
                   <p className="text-xs text-muted-foreground mb-4">
                     {lang === "ar"
