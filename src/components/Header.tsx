@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { BrandName } from "@/components/BrandName";
 import { CategoriesMenu } from "@/components/CategoriesMenu";
 import { CartDrawer } from "@/components/CartDrawer";
+import { AdminNotifications } from "@/components/AdminNotifications";
 
 type MobileCat = { id: string; slug: string; name_ar: string; name_en: string };
 
@@ -152,6 +153,8 @@ export function Header() {
               {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </button>
           )}
+
+          <AdminNotifications />
 
           <button
             type="button"
