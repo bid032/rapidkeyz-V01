@@ -195,7 +195,14 @@ export const getAuditLog = createServerFn({ method: "GET" })
           unit_price: it.unit_price ?? null,
           status: it.status ?? null,
           quantity: it.quantity ?? null,
+          delivered_accounts: (it.delivered_accounts ?? []).map((a: any) => ({
+            account_email: a.account_email ?? null,
+            account_username: a.account_username ?? null,
+            account_password: a.account_password ?? null,
+            extra_notes: a.extra_notes ?? null,
+          })),
         })),
+
       };
     });
   });
