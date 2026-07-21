@@ -86,6 +86,39 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action_type: string
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          id: string
+          meta: Json
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action_type: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action_type?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -770,6 +803,15 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      log_action: {
+        Args: {
+          _action_type: string
+          _meta?: Json
+          _target_id: string
+          _target_type: string
+        }
+        Returns: undefined
+      }
       recalc_order_totals: { Args: { _order_id: string }; Returns: undefined }
       sync_plan_stock_from_inventory: {
         Args: { _plan_id: string }

@@ -164,18 +164,22 @@ function CheckoutPage() {
         .single();
       if (oErr) throw oErr;
 
-      const items = cart.map((c) => ({
-        order_id: order.id,
-        product_id: c.productId,
-        plan_id: c.planId,
-        product_name: c.productName,
-        plan_label: c.planLabel,
-        unit_price: c.price,
-        quantity: c.quantity,
-        delivery_type: c.deliveryType,
-        account_type: c.accountType,
-        subscription_email: null,
-      }));
+      // Split every quantity>1 into individual order_items so each unit gets
+      // its own delivery credentials (one account per unit) and its own status.
+      const items = cart.flatMap((c) =>
+        Array.from({ length: Math.max(1, c.quantity) }, () => ({
+          order_id: order.id,
+          product_id: c.productId,
+          plan_id: c.planId,
+          product_name: c.productName,
+          plan_label: c.planLabel,
+          unit_price: c.price,
+          quantity: 1,
+          delivery_type: c.deliveryType,
+          account_type: c.accountType,
+          subscription_email: null,
+        })),
+      );
       const { data: insertedItems, error: iErr } = await supabase
         .from("order_items")
         .insert(items)
