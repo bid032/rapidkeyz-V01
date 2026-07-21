@@ -803,6 +803,10 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      jsonb_diff: {
+        Args: { _ignore?: string[]; _new: Json; _old: Json }
+        Returns: Json
+      }
       log_action: {
         Args: {
           _action_type: string
