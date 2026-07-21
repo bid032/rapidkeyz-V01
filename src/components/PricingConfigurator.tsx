@@ -317,14 +317,14 @@ export function PricingConfigurator({
                   )}
                 </AnimatePresence>
               </div>
-              <div className="flex flex-wrap items-center gap-1 shrink-0 justify-end max-w-[55%]">
+              <div className="flex flex-col items-stretch gap-1.5 shrink-0 max-w-[45%]">
                 {!selectedSoldOut && hasDiscount && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider">
+                  <span className="text-[10px] font-black px-2 py-1 rounded-md bg-destructive text-destructive-foreground uppercase tracking-wider text-center shadow-sm">
                     -{discount}%
                   </span>
                 )}
-                {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-warning/15 text-warning border border-warning/30 whitespace-nowrap">
+                {!selectedSoldOut && selectedStock > 0 && (
+                  <span className={`text-[10px] font-black px-2 py-1 rounded-md whitespace-nowrap text-center border ${selectedStock <= 10 ? "bg-warning/15 text-warning border-warning/30" : "bg-muted text-muted-foreground border-border"}`}>
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
