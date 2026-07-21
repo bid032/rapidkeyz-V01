@@ -46,7 +46,7 @@ function AdminRefunds() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, order_number, customer_email, customer_phone, total, status, user_id, created_at, order_items(id, product_name, plan_label, quantity, unit_price)")
+        .select("id, order_number, customer_email, customer_phone, subtotal, total, discount_amount, coupon_id, status, user_id, created_at, order_items(id, product_name, plan_label, quantity, unit_price)")
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -159,6 +159,9 @@ function AdminRefunds() {
                           orderId={o.id}
                           userId={o.user_id}
                           item={it}
+                          orderSubtotal={Number(o.subtotal ?? o.total ?? 0)}
+                          orderTotal={Number(o.total ?? 0)}
+                          orderDiscount={Number(o.discount_amount ?? 0)}
                           refunds={itemRefunds}
                           onCreated={() => {
                             qc.invalidateQueries({ queryKey: ["admin-refunds"] });
@@ -234,6 +237,9 @@ function ItemRefundBlock({
   orderId,
   userId,
   item,
+  orderSubtotal,
+  orderTotal,
+  orderDiscount,
   refunds,
   onCreated,
   onRemove,
@@ -241,12 +247,20 @@ function ItemRefundBlock({
   orderId: string;
   userId: string | null;
   item: any;
+  orderSubtotal: number;
+  orderTotal: number;
+  orderDiscount: number;
   refunds: Refund[];
   onCreated: () => void;
   onRemove: (id: string) => void;
 }) {
   const { notify } = useApp();
-  const maxAmount = Number(item.unit_price) * Number(item.quantity);
+  const grossAmount = Number(item.unit_price) * Number(item.quantity);
+  // Apply proportional discount to this item's share of the order.
+  const hasDiscount = orderDiscount > 0 && orderSubtotal > 0 && orderTotal > 0;
+  const ratio = hasDiscount ? orderTotal / orderSubtotal : 1;
+  const maxAmount = hasDiscount ? Math.round(grossAmount * ratio) : grossAmount;
+  const itemDiscount = hasDiscount ? grossAmount - maxAmount : 0;
   const [type, setType] = useState<"full" | "partial" | "replacement">("partial");
   const [amount, setAmount] = useState<number>(0);
   const [notes, setNotes] = useState("");
@@ -284,7 +298,17 @@ function ItemRefundBlock({
           <div className="font-bold text-sm">{item.product_name}</div>
           <div className="text-xs text-muted-foreground">{item.plan_label} × {item.quantity} · {item.unit_price} EGP</div>
         </div>
-        <div className="text-xs font-bold text-brand">إجمالي: {maxAmount} EGP</div>
+        <div className="text-xs font-bold text-brand text-end">
+          {hasDiscount ? (
+            <div className="space-y-0.5">
+              <div className="text-muted-foreground line-through font-normal">قبل الخصم: {grossAmount} EGP</div>
+              <div className="text-destructive font-normal">خصم كوبون: -{itemDiscount} EGP</div>
+              <div>إجمالي بعد الخصم: {maxAmount} EGP</div>
+            </div>
+          ) : (
+            <div>إجمالي: {maxAmount} EGP</div>
+          )}
+        </div>
       </div>
 
       {refunds.length > 0 && (
