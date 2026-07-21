@@ -62,7 +62,15 @@ export const getAuditLog = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    const auditRows = rows ?? [];
+    // Deduplicate: some historical rows were double-logged by legacy triggers.
+    // Collapse rows sharing action_type + target_id + created_at (same microsecond).
+    const seen = new Set<string>();
+    const auditRows = (rows ?? []).filter((r: any) => {
+      const key = `${r.action_type}|${r.target_id ?? ""}|${r.created_at}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     if (auditRows.length === 0) return [];
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
