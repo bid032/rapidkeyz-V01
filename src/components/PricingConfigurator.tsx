@@ -237,7 +237,7 @@ export function PricingConfigurator({
         {/* Summary card */}
         {selected && (
           <div
-            className={`relative rounded-2xl border p-5 overflow-hidden transition-colors ${
+            className={`relative rounded-2xl border p-4 sm:p-5 overflow-hidden transition-colors ${
               selectedSoldOut
                 ? "border-destructive/30 bg-gradient-to-br from-destructive/10 via-card to-card"
                 : "border-white/10 bg-gradient-to-br from-brand/10 via-card to-card"
@@ -250,7 +250,74 @@ export function PricingConfigurator({
                   : "bg-[radial-gradient(circle_at_top_start,hsl(var(--brand)/0.15),transparent_60%)]"
               }`}
             />
-            <div className="relative flex items-start justify-between gap-3 flex-wrap">
+
+            {/* MOBILE layout */}
+            <div className="relative sm:hidden">
+              <AnimatePresence mode="wait">
+                {selectedSoldOut ? (
+                  <motion.div
+                    key={`${selected.id}-sold-m`}
+                    initial={{ y: 8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -8, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                    className="flex flex-col items-center text-center gap-2"
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-destructive">
+                      {isAr ? "الإجمالي" : "Total"}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-destructive text-destructive-foreground px-3 py-1.5 text-sm font-black uppercase tracking-wider shadow-md">
+                      <span className="inline-block size-1.5 rounded-full bg-destructive-foreground/90 animate-pulse" />
+                      {t.product.soldOut}
+                    </span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={`${selected.id}-${finalPrice}-m`}
+                    initial={{ y: 8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -8, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                        {isAr ? "الإجمالي" : "Total"}
+                      </span>
+                      {hasDiscount && (
+                        <span className="text-[11px] text-muted-foreground line-through tabular-nums mt-0.5">
+                          {rawPrice} {t.common.currency}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-1 shrink-0">
+                      <span className="text-3xl font-black text-brand tabular-nums leading-none">
+                        {finalPrice}
+                      </span>
+                      <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {!selectedSoldOut && (hasDiscount || (selectedStock > 0 && selectedStock <= 10)) && (
+                <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-white/5">
+                  {hasDiscount && (
+                    <span className="inline-flex items-center text-[10px] font-black px-2 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums">
+                      -{discount}% {isAr ? "خصم" : "off"}
+                    </span>
+                  )}
+                  {selectedStock > 0 && selectedStock <= 10 && (
+                    <span className="inline-flex items-center text-[10px] font-black px-2 py-0.5 rounded-md whitespace-nowrap bg-warning/15 text-warning border border-warning/30">
+                      {t.product.stockLeft(selectedStock)}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP layout */}
+            <div className="relative hidden sm:flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <div
                   className={`text-xs font-black uppercase tracking-[0.2em] mb-1 ${
