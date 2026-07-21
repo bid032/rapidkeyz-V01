@@ -158,7 +158,9 @@ function AdminAudit() {
   const rows = useQuery({
     queryKey: ["audit-log-enriched"],
     queryFn: () => fetchAudit({ data: { limit: 1000 } }),
-    staleTime: 5_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 15_000,
   });
 
   // Realtime — refetch on any change in audit_log.
