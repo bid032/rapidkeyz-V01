@@ -31,7 +31,7 @@ async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)",
+          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order, stock)",
         )
         .eq("status", "active")
         .or(`category_id.eq.${c.id},category_ids.cs.{${c.id}}`)
@@ -40,6 +40,7 @@ async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
       const mapped: ProductCardData[] = (prods ?? []).map((p: any) => {
         const active = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
         const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
         return {
           id: p.id,
           slug: p.slug,
@@ -55,6 +56,7 @@ async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
           cheapestPlanId: cheapest?.id ?? null,
           planLabel_ar: cheapest?.label_ar ?? null,
           planLabel_en: cheapest?.label_en ?? null,
+          totalStock,
         } as ProductCardData;
       });
       return { id: c.id, slug: c.slug, name_ar: c.name_ar, name_en: c.name_en, products: mapped };
