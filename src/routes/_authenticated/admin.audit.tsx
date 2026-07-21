@@ -26,12 +26,14 @@ export const Route = createFileRoute("/_authenticated/admin/audit")({
 });
 
 const ACTION_LABELS: Record<string, string> = {
+  "order.created": "طلب جديد",
   "order.status_change": "تغيير حالة طلب",
   "order_item.delivered": "تسليم خدمة",
   "order_item.refunded": "استرداد خدمة",
   "order_item.status_change": "تغيير حالة خدمة",
   "delivery.manual": "تسليم يدوي",
   "refund.created": "إنشاء تعويض",
+  "refund.updated": "تعديل تعويض",
   "refund.deleted": "حذف تعويض",
   "product.created": "إضافة منتج",
   "product.updated": "تعديل منتج",
@@ -39,10 +41,42 @@ const ACTION_LABELS: Record<string, string> = {
   "plan.created": "إضافة خطة",
   "plan.updated": "تعديل خطة",
   "plan.deleted": "حذف خطة",
+  "plan_cost.updated": "تعديل تكلفة خطة",
+  "plan_cost.deleted": "حذف تكلفة خطة",
+  "category.created": "إضافة قسم",
+  "category.updated": "تعديل قسم",
+  "category.deleted": "حذف قسم",
+  "faq.created": "إضافة سؤال شائع",
+  "faq.updated": "تعديل سؤال شائع",
+  "faq.deleted": "حذف سؤال شائع",
+  "review.created": "إضافة تقييم",
+  "review.updated": "تعديل تقييم",
+  "review.deleted": "حذف تقييم",
+  "testimonial.created": "إضافة صورة توصية",
+  "testimonial.updated": "تعديل صورة توصية",
+  "testimonial.deleted": "حذف صورة توصية",
   "role.granted": "منح صلاحية",
   "role.revoked": "سحب صلاحية",
   "setting.updated": "تعديل إعداد",
   "setting.deleted": "حذف إعداد",
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  name_ar: "الاسم بالعربية", name_en: "الاسم بالإنجليزية",
+  slug: "الرابط (Slug)", description_ar: "الوصف بالعربية", description_en: "الوصف بالإنجليزية",
+  icon_url: "أيقونة", cover_url: "صورة الغلاف", status: "الحالة",
+  is_featured: "مميز", is_bestseller: "الأكثر مبيعاً", sort_order: "الترتيب",
+  discount_percent: "نسبة الخصم", account_type: "نوع الحساب", account_types: "أنواع الحساب",
+  category_id: "القسم", category_ids: "الأقسام", plan_variants: "أنواع الخطط",
+  delivery_type: "نوع التسليم", google_spreadsheet_id: "معرّف Google Sheet",
+  label_ar: "التسمية بالعربية", label_en: "التسمية بالإنجليزية",
+  duration_days: "المدة (يوم)", price: "السعر", compare_price: "السعر قبل الخصم",
+  stock: "المخزون", is_active: "نشط", plan_variant: "نوع الخطة", sheet_csv_url: "رابط CSV",
+  cost_price: "التكلفة", question_ar: "السؤال بالعربية", question_en: "السؤال بالإنجليزية",
+  answer_ar: "الإجابة بالعربية", answer_en: "الإجابة بالإنجليزية",
+  reviewer_name: "اسم المُقيّم", rating: "التقييم", body: "النص", lang: "اللغة",
+  image_url: "الصورة", caption: "التعليق", value: "القيمة", key: "المفتاح",
+  amount: "المبلغ", notes: "ملاحظات", type: "النوع",
 };
 
 const TARGET_LABELS: Record<string, string> = {
@@ -51,6 +85,10 @@ const TARGET_LABELS: Record<string, string> = {
   refund: "تعويض",
   product: "منتج",
   plan: "خطة",
+  category: "قسم",
+  faq: "سؤال شائع",
+  review: "تقييم",
+  testimonial: "توصية",
   user_role: "صلاحية",
   setting: "إعداد",
 };
