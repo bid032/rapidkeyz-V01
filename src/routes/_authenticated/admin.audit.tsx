@@ -486,6 +486,34 @@ function GroupCard({
                   <InfoChip label="الحالة" value={canon.order_status} />
                 )}
               </div>
+
+              {(canon.order_coupon_code || (canon.order_discount_amount != null && canon.order_discount_amount > 0)) && (
+                <div className="rounded-lg border border-brand/30 bg-brand/5 p-2.5 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-brand">
+                    <span>🎟️</span> كوبون خصم مُستخدم
+                  </div>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+                    {canon.order_coupon_code && (
+                      <InfoChip label="الكود" value={canon.order_coupon_code} mono />
+                    )}
+                    {canon.order_subtotal != null && (
+                      <InfoChip label="قبل الخصم" value={`${canon.order_subtotal} EGP`} />
+                    )}
+                    {canon.order_discount_amount != null && (
+                      <span className="inline-flex items-center gap-1">
+                        <span className="text-muted-foreground">الخصم:</span>
+                        <bdi className="font-bold text-destructive">− {canon.order_discount_amount} EGP</bdi>
+                      </span>
+                    )}
+                    {canon.order_total != null && (
+                      <span className="inline-flex items-center gap-1">
+                        <span className="text-muted-foreground">بعد الخصم:</span>
+                        <bdi className="font-bold text-emerald-600">{canon.order_total} EGP</bdi>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
