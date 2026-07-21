@@ -588,7 +588,6 @@ function MetaSummary({ meta }: { meta: any }) {
   push("الخطة", meta.label_ar);
   push("السؤال", meta.question_ar);
   push("المُقيّم", meta.reviewer_name);
-  push("القسم", meta.name_ar && !meta.product_name ? undefined : undefined); // handled above
   push("المفتاح", meta.key);
   push("المبلغ", meta.amount != null ? `${meta.amount} EGP` : undefined);
   push("النوع", meta.type);
@@ -596,6 +595,34 @@ function MetaSummary({ meta }: { meta: any }) {
   push("من", meta.from);
   push("إلى", meta.to);
   push("الصلاحية", meta.role);
+
+  // Coupon fields — from event meta or embedded snapshot
+  const snap = meta.snapshot ?? {};
+  const code = meta.code ?? snap.code;
+  const dType = meta.discount_type ?? snap.discount_type;
+  const dValue = meta.discount_value ?? snap.discount_value;
+  const applies = meta.applies_to ?? snap.applies_to;
+  const maxUses = snap.max_uses;
+  const minOrder = snap.min_order_amount;
+  const expires = snap.expires_at;
+  const productIds = snap.product_ids;
+  push("الكود", code);
+  if (dValue != null) {
+    push(
+      "الخصم",
+      dType === "percent" ? `${dValue}%` : `${dValue} EGP`,
+    );
+  }
+  push(
+    "يطبّق على",
+    applies === "all" ? "كل الخدمات" : applies === "products" ? "خدمات محددة" : applies,
+  );
+  push("أقصى استخدام", maxUses);
+  push("أدنى قيمة للطلب", minOrder != null ? `${minOrder} EGP` : undefined);
+  push("ينتهي في", expires ? fmtTime(expires) : undefined);
+  if (Array.isArray(productIds) && productIds.length)
+    push("عدد المنتجات المحددة", productIds.length);
+
   if (chips.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
