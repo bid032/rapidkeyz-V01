@@ -302,7 +302,7 @@ export function PricingConfigurator({
             <div className="relative flex items-center justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <div className="text-[9px] font-black uppercase tracking-[0.2em] text-brand mb-0.5">
-                  {isAr ? "٣ · الإجمالي" : "3 · Total"}
+                  {isAr ? "الإجمالي" : "Total"}
                 </div>
                 <AnimatePresence mode="wait">
                   <motion.div
