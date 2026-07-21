@@ -351,7 +351,7 @@ function ProductPage() {
                     )}
                     {hasDiscount && (
                       <span
-                        className={`absolute top-1.5 ${lang === "ar" ? "start-1.5" : "end-1.5"} bg-destructive text-destructive-foreground text-[10px] md:text-xs font-black px-1.5 md:px-2 py-0.5 rounded-md md:rounded-lg shadow-lg`}
+                        className={`absolute top-1.5 ${lang === "ar" ? "start-1.5" : "end-1.5"} bg-destructive text-destructive-foreground text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-lg`}
                       >
                         -{discount}%
                       </span>
