@@ -247,24 +247,37 @@ export function GsapEffects() {
     };
 
     // Initial scan (delayed once to let first paint settle)
-    scan();
-    const first = setTimeout(() => {
+    const idle = (cb: () => void) => {
+      const w = window as any;
+      if (typeof w.requestIdleCallback === "function") return w.requestIdleCallback(cb, { timeout: 800 });
+      return window.setTimeout(cb, 200);
+    };
+    const first = idle(() => {
       scan();
       ScrollTrigger.refresh();
-    }, 300);
+    });
 
-    // Observe DOM for async-rendered elements
+    // Observe DOM for async-rendered elements — but batch work with rAF so
+    // rapid React rerenders don't cause main-thread jank on load.
+    let pending: HTMLElement[] = [];
+    let rafId = 0;
+    const flush = () => {
+      rafId = 0;
+      const batch = pending;
+      pending = [];
+      batch.forEach(init);
+      if (batch.length) ScrollTrigger.refresh();
+    };
     const observer = new MutationObserver((mutations) => {
-      let touched = false;
       for (const m of mutations) {
         m.addedNodes.forEach((n) => {
           if (n.nodeType !== 1) return;
           const el = n as HTMLElement;
-          if (el.hasAttribute?.("data-gsap")) { init(el); touched = true; }
-          el.querySelectorAll?.<HTMLElement>("[data-gsap]").forEach((c) => { init(c); touched = true; });
+          if (el.hasAttribute?.("data-gsap")) pending.push(el);
+          el.querySelectorAll?.<HTMLElement>("[data-gsap]").forEach((c) => pending.push(c));
         });
       }
-      if (touched) ScrollTrigger.refresh();
+      if (pending.length && !rafId) rafId = requestAnimationFrame(flush);
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -293,9 +306,8 @@ export function GsapEffects() {
       scrollTrigger: { start: 0, end: () => document.documentElement.scrollHeight - window.innerHeight, scrub: 0.2 },
     });
 
-    // Safety net: if any [data-gsap] element remains invisible after 2.5s
-    // (e.g. ScrollTrigger didn't fire, or a tween was killed mid-flight during
-    // route transitions), force it back to a visible state.
+    // Safety net: if any [data-gsap] element remains invisible after a while
+    // force it back to a visible state. Run less often to save CPU.
     const safety = window.setInterval(() => {
       document.querySelectorAll<HTMLElement>("[data-gsap]").forEach((el) => {
         const cs = getComputedStyle(el);
@@ -304,11 +316,15 @@ export function GsapEffects() {
           el.style.opacity = "1";
         }
       });
-    }, 2500);
+    }, 6000);
+
 
     return () => {
-      clearTimeout(first);
+      const w = window as any;
+      if (typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(first); else clearTimeout(first);
+      if (rafId) cancelAnimationFrame(rafId);
       clearInterval(safety);
+
       observer.disconnect();
       window.removeEventListener("load", onLoad);
       cleanups.forEach((fn) => fn());

@@ -222,6 +222,8 @@ function RootComponent() {
             resolve();
           }
         });
+        // Don't let a slow loader hold the splash — cap the wait.
+        setTimeout(() => { try { unsub(); } catch {} resolve(); }, 1200);
       });
 
     const fontsReady =
@@ -233,7 +235,8 @@ function RootComponent() {
     ]).then(doHide, doHide);
 
     // Safety fallback
-    const fallback = setTimeout(doHide, 5000);
+    const fallback = setTimeout(doHide, 2500);
+
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
