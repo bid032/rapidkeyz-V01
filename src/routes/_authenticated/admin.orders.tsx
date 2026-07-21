@@ -419,7 +419,9 @@ function AdminOrders() {
                   ))}
                 </div>
               </div>
-            )}
+              );
+            })()}
+
           </div>
         ))}
         {visible.length === 0 && (
