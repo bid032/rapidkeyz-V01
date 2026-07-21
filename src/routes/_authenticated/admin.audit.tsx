@@ -81,6 +81,9 @@ const FIELD_LABELS: Record<string, string> = {
   reviewer_name: "اسم المُقيّم", rating: "التقييم", body: "النص", lang: "اللغة",
   image_url: "الصورة", caption: "التعليق", value: "القيمة", key: "المفتاح",
   amount: "المبلغ", notes: "ملاحظات", type: "النوع",
+  code: "الكود", discount_type: "نوع الخصم", discount_value: "قيمة الخصم",
+  applies_to: "يطبّق على", max_uses: "أقصى استخدام", used_count: "عدد الاستخدامات",
+  expires_at: "ينتهي في", min_order_amount: "أدنى قيمة للطلب", product_ids: "المنتجات المحددة",
 };
 
 const TARGET_LABELS: Record<string, string> = {
@@ -95,6 +98,7 @@ const TARGET_LABELS: Record<string, string> = {
   testimonial: "توصية",
   user_role: "صلاحية",
   setting: "إعداد",
+  coupon: "كوبون خصم",
 };
 
 const STATUS_TONES: Record<string, string> = {
