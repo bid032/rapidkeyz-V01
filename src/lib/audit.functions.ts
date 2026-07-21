@@ -267,6 +267,8 @@ export const getAuditLog = createServerFn({ method: "GET" })
       else if (meta.order_id) orderId = String(meta.order_id);
       else if (r.target_type === "order_item" && r.target_id) {
         orderId = itemById.get(r.target_id)?.order_id ?? null;
+      } else if (r.target_type === "refund" && r.target_id) {
+        orderId = refundOrderMap.get(r.target_id) ?? null;
       }
 
       const order = orderId ? ordersMap.get(orderId) : null;
