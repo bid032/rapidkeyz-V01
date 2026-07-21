@@ -468,28 +468,45 @@ function StockAccessDialog({
 }) {
   const { lang, notify } = useApp();
   const [access, setAccess] = useState<boolean>(!!user.stock_access);
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const syncFn = useServerFn(syncUserStockStaff);
 
   const save = async () => {
-    if (access && !user.has_stock_password && !password) {
-      notify(lang === "ar" ? "أدخل كلمة سر عشان اليوزر يقدر يدخل" : "Set a password first", "error");
+    if (username && !/^[a-zA-Z0-9._-]{3,32}$/.test(username)) {
+      notify(lang === "ar" ? "اسم المستخدم: حروف/أرقام إنجليزية 3-32" : "Username: 3-32 letters/digits", "error");
       return;
     }
-    if (password && !/^\d{4}$/.test(password)) {
-      notify(lang === "ar" ? "كلمة السر لازم تكون 4 أرقام" : "Password must be exactly 4 digits", "error");
+    if (username && !password) {
+      notify(lang === "ar" ? "اكتب كلمة سر مع اسم المستخدم" : "Set a password with the username", "error");
       return;
     }
     setLoading(true);
-    const { error } = await supabase.rpc("admin_set_stock_access", {
-      _user_id: user.id,
-      _access: access,
-      _password: password || "",
-    });
-    setLoading(false);
-    if (error) return notify(error.message, "error");
-    notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
-    onSaved();
+    try {
+      // Sync Staff sheet (source of truth for /stock login)
+      await syncFn({
+        data: {
+          name: user.display_name || user.email || "user",
+          username: username || "",
+          password: password || "",
+          active: access,
+        },
+      });
+      // Update profile flag (controls menu link visibility)
+      const { error } = await supabase.rpc("admin_set_stock_access", {
+        _user_id: user.id,
+        _access: access,
+        _password: "",
+      });
+      if (error) throw error;
+      notify(lang === "ar" ? "تم الحفظ" : "Saved", "success");
+      onSaved();
+    } catch (e: any) {
+      notify(e?.message ?? "خطأ", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
 
