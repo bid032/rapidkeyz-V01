@@ -94,7 +94,7 @@ export const notifyCustomerDelivery = createServerFn({ method: 'POST' })
 
     const { data: order, error } = await supabaseAdmin
       .from('orders')
-      .select('id, order_number, total, currency, customer_email, created_at, order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
+      .select('id, order_number, total, subtotal, discount_amount, currency, customer_email, created_at, coupons(code), order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
       .eq('id', data.orderId)
       .single()
     if (error || !order) throw new Error(error?.message || 'Order not found')
