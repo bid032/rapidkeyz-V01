@@ -153,7 +153,7 @@ function AdminOrders() {
           "الكمية": "",
           "سعر الوحدة": "",
           "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
-          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB"),
+          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
           "ملاحظات": o.notes ?? "",
         });
         return;
@@ -174,7 +174,7 @@ function AdminOrders() {
           "الكمية": it.quantity,
           "سعر الوحدة": Number(it.unit_price ?? 0),
           "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
-          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB"),
+          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
           "ملاحظات": o.notes ?? "",
         });
       });
