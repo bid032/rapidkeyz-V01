@@ -25,7 +25,6 @@ type Props = {
   onVariantChange?: (v: string) => void;
 };
 
-
 const acctMeta = {
   private: {
     ar: { title: "خاص", sub: "تحكم كامل • أجهزة متعددة" },
@@ -49,21 +48,21 @@ export function PricingConfigurator({
   selectedId,
   onSelectPlan,
   discount,
-  minRawPrice,
   variants,
   effectiveVariant,
   onVariantChange,
 }: Props) {
-
   const { lang, t } = useApp();
   const isAr = lang === "ar";
   const hasDiscount = discount > 0;
+
   // Normalize: treat "own" as "private" so users only see Private / Shared
   const normalizedTypes = Array.from(
     new Set(accountTypes.map((a) => (a === "own" ? "private" : a))),
   ) as ("private" | "shared")[];
   const normalizedEffective =
     effectiveAcct === "own" ? "private" : (effectiveAcct as "private" | "shared" | undefined);
+
   const selected = plans.find((p) => p.id === selectedId) ?? plans[0];
   const rawPrice = selected ? Number(selected.price) : 0;
   const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
@@ -77,131 +76,123 @@ export function PricingConfigurator({
   };
   const maxPerDay = plans.reduce((m, p) => Math.max(m, perDay(p)), 0);
 
+  const sectionLabel = (text: string) => (
+    <h3 className="text-brand text-sm font-semibold mb-3">{text}</h3>
+  );
+
   return (
-    <div className="relative rounded-3xl border border-border bg-gradient-to-br from-card via-card to-background overflow-hidden">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute -top-24 -end-24 w-64 h-64 bg-brand/15 rounded-full blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/10 rounded-full blur-3xl" />
+    <div className="relative rounded-3xl border border-white/10 bg-card/80 backdrop-blur-xl overflow-hidden shadow-2xl">
+      {/* Soft ambient glow */}
+      <div className="pointer-events-none absolute -top-24 -end-24 w-64 h-64 bg-brand/10 rounded-full blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/5 rounded-full blur-3xl" />
 
-      <div className="relative p-3.5 sm:p-4 space-y-3.5">
-        {/* Unified row: Plan type + Account type (same design regardless of count) */}
-        {(normalizedTypes.length > 0 || (variants && variants.length > 0)) && (
-          <div className="grid gap-2 grid-cols-1">
-            {/* Plan variant - segmented buttons like Account */}
-            {variants && variants.length > 0 && (
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                  {isAr ? "نوع الخطة" : "Plan"}
-                </p>
-                <div
-                  className="grid gap-1 p-1 rounded-xl bg-muted/40 border border-border h-[54px]"
-                  style={{ gridTemplateColumns: `repeat(${variants.length}, minmax(0,1fr))` }}
-                >
-                  {variants.map((v) => {
-                    const isSel = (effectiveVariant ?? variants[0]) === v || variants.length === 1;
-                    return (
-                      <button
-                        key={v}
-                        type="button"
-                        onClick={() => onVariantChange?.(v)}
-                        className="relative px-2 rounded-lg text-start focus:outline-none overflow-hidden"
-                      >
-                        {isSel && (
-                          <motion.span
-                            layoutId="variant-pill"
-                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
-                          />
-                        )}
-                        <span className="relative flex items-center justify-center h-full">
-                          <span className={`block text-xs font-extrabold leading-tight truncate text-center ${isSel ? "text-brand-foreground" : "text-foreground"}`}>
-                            <bdi>{v}</bdi>
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-
-            {/* Account type - unified card design (1 or more) */}
-            {normalizedTypes.length > 0 && (
-              <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-brand mb-1.5">
-                  {isAr ? "نوع الحساب" : "Account"}
-                </p>
-                <div
-                  className={`grid gap-1 p-1 rounded-xl bg-muted/40 border border-border h-[54px]`}
-                  style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
-                >
-                  {normalizedTypes.map((a) => {
-                    const isSel = normalizedEffective === a || normalizedTypes.length === 1;
-                    const meta = acctMeta[a][isAr ? "ar" : "en"];
-                    return (
-                      <button
-                        key={a}
-                        type="button"
-                        onClick={() => onAcctChange(a)}
-                        className="relative px-2 rounded-lg text-start focus:outline-none overflow-hidden"
-                      >
-                        {isSel && (
-                          <motion.span
-                            layoutId="acct-pill"
-                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                            className="absolute inset-0 rounded-lg bg-gradient-to-br from-brand to-brand/70 shadow-[0_10px_30px_-10px_hsl(var(--brand)/0.6)]"
-                          />
-                        )}
-                        <span className="relative flex flex-col justify-center h-full">
-                          <span className={`block text-xs font-extrabold leading-tight truncate ${isSel ? "text-brand-foreground" : "text-foreground"}`}>
-                            {meta.title}
-                          </span>
-                          <span className={`block text-[9px] mt-0.5 leading-tight truncate ${isSel ? "text-brand-foreground/85" : "text-muted-foreground"}`}>
-                            {meta.sub}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+      <div className="relative p-4 sm:p-6 space-y-6">
+        {/* Plan variant selector */}
+        {variants && variants.length > 0 && (
+          <section>
+            {sectionLabel(isAr ? "نوع الخطة" : "Plan")}
+            <div
+              className="grid gap-2 p-1.5 rounded-2xl bg-black/30 border border-white/5"
+              style={{ gridTemplateColumns: `repeat(${variants.length}, minmax(0,1fr))` }}
+            >
+              {variants.map((v) => {
+                const isSel = effectiveVariant === v || variants.length === 1;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => onVariantChange?.(v)}
+                    className={`relative py-3 px-2 rounded-xl text-sm font-bold transition-all focus:outline-none overflow-hidden ${
+                      isSel
+                        ? "bg-brand text-brand-foreground shadow-lg shadow-brand/20"
+                        : "text-muted-foreground hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="relative block truncate text-center">
+                      <bdi>{v}</bdi>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
         )}
 
+        {/* Account type selector — stacked radio cards */}
+        {normalizedTypes.length > 0 && (
+          <section>
+            {sectionLabel(isAr ? "نوع الحساب" : "Account")}
+            <div className="space-y-2">
+              {normalizedTypes.map((a) => {
+                const isSel = normalizedEffective === a || normalizedTypes.length === 1;
+                const meta = acctMeta[a][isAr ? "ar" : "en"];
+                return (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() => onAcctChange(a)}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl border text-start transition-all focus:outline-none ${
+                      isSel
+                        ? "border-brand/50 bg-brand/5"
+                        : "border-white/5 bg-white/5 hover:border-white/10"
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className={`font-bold ${isSel ? "text-foreground" : "text-foreground/70"}`}>
+                        {meta.title}
+                      </div>
+                      <div className={`text-xs mt-1 leading-relaxed ${isSel ? "text-brand/80" : "text-muted-foreground"}`}>
+                        {meta.sub}
+                      </div>
+                    </div>
+                    <div
+                      className={`shrink-0 ms-3 size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        isSel ? "border-brand" : "border-white/20"
+                      }`}
+                    >
+                      {isSel && (
+                        <motion.div
+                          layoutId="acct-radio"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                          className="size-2.5 rounded-full bg-brand"
+                        />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-        {/* Duration cards */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-              {isAr ? "المدة" : "Duration"}
-            </p>
-            <p className="text-[9px] text-muted-foreground">
+        {/* Duration grid */}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            {sectionLabel(isAr ? "المدة" : "Duration")}
+            <span className="text-xs text-muted-foreground">
               {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
-            </p>
+            </span>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1.5">
-
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {plans.map((pl) => {
               const isSel = selected?.id === pl.id;
               const stock = Number(pl.stock ?? 0);
               const soldOut = stock <= 0;
               const raw = Number(pl.price);
               const price = hasDiscount ? Math.round(raw * (100 - discount)) / 100 : raw;
-              const savePct =
-                maxPerDay > 0 ? Math.round((1 - perDay(pl) / maxPerDay) * 100) : 0;
+              const savePct = maxPerDay > 0 ? Math.round((1 - perDay(pl) / maxPerDay) * 100) : 0;
+
               return (
                 <button
                   key={pl.id}
                   onClick={() => !soldOut && onSelectPlan(pl.id)}
                   disabled={soldOut}
-                  className={`relative text-start p-2.5 rounded-xl border-2 transition-all overflow-hidden group ${
+                  className={`relative p-4 rounded-2xl border-2 text-start transition-all overflow-hidden group ${
                     soldOut
-                      ? "border-destructive/40 bg-destructive/5 cursor-not-allowed"
+                      ? "border-destructive/30 bg-destructive/5 cursor-not-allowed"
                       : isSel
                       ? "border-brand bg-brand/5 shadow-[0_0_0_3px_hsl(var(--brand)/0.08)]"
-                      : "border-border bg-card hover:border-brand/50 hover:-translate-y-0.5"
+                      : "border-white/10 bg-white/5 hover:border-brand/40 hover:-translate-y-0.5"
                   }`}
                 >
                   {isSel && !soldOut && (
@@ -211,38 +202,41 @@ export function PricingConfigurator({
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
+
                   {soldOut && (
-                    <span className={`pointer-events-none absolute top-1/2 -translate-y-1/2 ${isAr ? "end-2" : "start-2"} text-[11px] font-black uppercase px-2 py-1 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10`}>
+                    <span className="pointer-events-none absolute top-2 start-2 text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10">
                       {t.product.soldOut}
                     </span>
                   )}
-                  <div className={`relative flex items-center justify-between gap-2 ${soldOut ? "opacity-70" : ""}`}>
-                    <div className="min-w-0 flex-1">
-                      <div className={`text-xs font-extrabold mb-1 leading-tight truncate ${soldOut ? "line-through" : ""}`}>
-                        {isAr ? pl.durAr : pl.durEn}
-                      </div>
-                      <div className="flex items-baseline gap-1">
-                        <span
-                          className={`text-base font-black tabular-nums leading-none ${
-                            isSel ? "text-brand" : "text-foreground"
-                          } ${soldOut ? "line-through" : ""}`}
-                        >
-                          {price}
-                        </span>
-                        <span className="text-[9px] font-bold text-muted-foreground">
-                          {t.common.currency}
-                        </span>
-                      </div>
+
+                  {savePct >= 10 && !soldOut && (
+                    <span className={`absolute top-2 start-2 text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums ${
+                      isSel
+                        ? "bg-success/20 text-success border border-success/30"
+                        : "bg-white/10 text-foreground/60 border border-white/10"
+                    }`}>
+                      -{savePct}%
+                    </span>
+                  )}
+
+                  <div className={`relative flex flex-col gap-1 ${soldOut ? "opacity-60" : ""}`}>
+                    <div className={`text-sm font-bold ${soldOut ? "line-through" : ""}`}>
+                      {isAr ? pl.durAr : pl.durEn}
                     </div>
-                    {savePct >= 10 && !soldOut && (
-                      <span className="shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums">
-                        -{savePct}%
+                    <div className="flex items-baseline gap-1">
+                      <span
+                        className={`text-lg font-black tabular-nums leading-none ${
+                          isSel ? "text-brand" : soldOut ? "text-foreground/50" : "text-foreground"
+                        } ${soldOut ? "line-through" : ""}`}
+                      >
+                        {price}
                       </span>
-                    )}
+                      <span className="text-[10px] font-bold text-muted-foreground">
+                        {t.common.currency}
+                      </span>
+                    </div>
                   </div>
                 </button>
-
-
               );
             })}
             {plans.length === 0 && (
@@ -251,27 +245,28 @@ export function PricingConfigurator({
               </div>
             )}
           </div>
-        </div>
+        </section>
 
+        {/* Summary card */}
         {selected && (
           <div
-            className={`relative rounded-xl border p-3 overflow-hidden transition-colors ${
+            className={`relative rounded-2xl border p-5 overflow-hidden transition-colors ${
               selectedSoldOut
-                ? "border-destructive/40 bg-gradient-to-br from-destructive/10 via-card to-card"
-                : "border-brand/30 bg-gradient-to-br from-brand/10 via-card to-card"
+                ? "border-destructive/30 bg-gradient-to-br from-destructive/10 via-card to-card"
+                : "border-white/10 bg-gradient-to-br from-brand/10 via-card to-card"
             }`}
           >
             <div
               className={`pointer-events-none absolute inset-0 ${
                 selectedSoldOut
-                  ? "bg-[radial-gradient(circle_at_top_right,hsl(var(--destructive)/0.18),transparent_60%)]"
-                  : "bg-[radial-gradient(circle_at_top_right,hsl(var(--brand)/0.18),transparent_60%)]"
+                  ? "bg-[radial-gradient(circle_at_top_start,hsl(var(--destructive)/0.15),transparent_60%)]"
+                  : "bg-[radial-gradient(circle_at_top_start,hsl(var(--brand)/0.15),transparent_60%)]"
               }`}
             />
-            <div className="relative flex items-center justify-between gap-3 flex-wrap">
+            <div className="relative flex items-start justify-between gap-3 flex-wrap">
               <div className="min-w-0">
                 <div
-                  className={`text-[9px] font-black uppercase tracking-[0.2em] mb-0.5 ${
+                  className={`text-xs font-black uppercase tracking-[0.2em] mb-1 ${
                     selectedSoldOut ? "text-destructive" : "text-brand"
                   }`}
                 >
@@ -285,13 +280,13 @@ export function PricingConfigurator({
                       animate={{ y: 0, opacity: 1, scale: 1 }}
                       exit={{ y: -8, opacity: 0, scale: 0.96 }}
                       transition={{ type: "spring", stiffness: 320, damping: 26 }}
-                      className="flex items-center gap-2"
+                      className="flex flex-col gap-1"
                     >
-                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-destructive text-destructive-foreground px-3 py-1.5 text-sm font-black uppercase tracking-wider shadow-md">
+                      <span className="inline-flex items-center gap-1.5 rounded-lg bg-destructive text-destructive-foreground px-3 py-1.5 text-sm font-black uppercase tracking-wider shadow-md w-fit">
                         <span className="inline-block size-1.5 rounded-full bg-destructive-foreground/90 animate-pulse" />
                         {t.product.soldOut}
                       </span>
-                      <span className="text-[10px] font-bold text-muted-foreground">
+                      <span className="text-xs font-bold text-muted-foreground">
                         {isAr ? "غير متاح للشراء حالياً" : "Currently unavailable"}
                       </span>
                     </motion.div>
@@ -302,38 +297,38 @@ export function PricingConfigurator({
                       animate={{ y: 0, opacity: 1, scale: 1 }}
                       exit={{ y: -8, opacity: 0, scale: 0.96 }}
                       transition={{ type: "spring", stiffness: 320, damping: 26 }}
-                      className="flex items-baseline gap-2 flex-wrap"
+                      className="flex flex-col"
                     >
-                      <span className="text-2xl sm:text-3xl font-black text-brand tabular-nums leading-none">
-                        {finalPrice}
-                      </span>
-                      <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="text-3xl font-black text-brand tabular-nums leading-none">
+                          {finalPrice}
+                        </span>
+                        <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
+                      </div>
                       {hasDiscount && (
-                        <span className="text-xs text-muted-foreground line-through tabular-nums">
-                          {rawPrice}
+                        <span className="text-sm text-muted-foreground line-through tabular-nums">
+                          {rawPrice} {t.common.currency}
                         </span>
                       )}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-              <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <div className="flex flex-col items-end gap-2 shrink-0">
                 {!selectedSoldOut && hasDiscount && (
-                  <span className="inline-flex items-center justify-center w-fit text-[9px] font-black px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30 tabular-nums">
-                    -{discount}%
+                  <span className="inline-flex items-center justify-center w-fit text-xs font-black px-2.5 py-1 rounded-lg bg-success/15 text-success border border-success/30 tabular-nums">
+                    -{discount}% {isAr ? "خصم" : "off"}
                   </span>
                 )}
                 {!selectedSoldOut && selectedStock > 0 && selectedStock <= 10 && (
-                  <span className="inline-flex items-center justify-center w-fit text-[10px] font-black px-2 py-1 rounded-md whitespace-nowrap bg-warning/15 text-warning border border-warning/30">
+                  <span className="inline-flex items-center justify-center w-fit text-xs font-black px-2.5 py-1 rounded-lg whitespace-nowrap bg-warning/15 text-warning border border-warning/30">
                     {t.product.stockLeft(selectedStock)}
                   </span>
                 )}
               </div>
             </div>
-
           </div>
         )}
-
       </div>
     </div>
   );

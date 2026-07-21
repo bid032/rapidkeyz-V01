@@ -178,21 +178,21 @@ export function QuickBuyDialog({
         {/* ============ MOBILE LAYOUT (unchanged) ============ */}
         <div className="md:hidden flex flex-col min-h-0 flex-1">
           {/* Header */}
-          <div className="shrink-0 px-4 pt-5 pb-3 border-b border-border/60 bg-card">
+          <div className="shrink-0 px-4 pt-5 pb-3 border-b border-white/10 bg-card/80 backdrop-blur-xl">
             <DialogHeader className="!text-start space-y-1 pe-12 sm:!text-start">
               <div className="flex items-center gap-3">
-                <div className="shrink-0 size-10 rounded-xl border border-border bg-background overflow-hidden shadow-md">
+                <div className="shrink-0 size-11 rounded-2xl border border-white/10 bg-white/5 overflow-hidden shadow-md grid place-items-center">
                   {product.icon_url ? (
                     <img src={product.icon_url} alt={name} className="size-full object-cover" />
                   ) : (
-                    <div className="size-full grid place-items-center bg-brand/10 text-brand font-black text-base">
+                    <span className="text-brand font-black text-base">
                       {name.slice(0, 2).toUpperCase()}
-                    </div>
+                    </span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <DialogTitle className="text-sm font-black leading-tight break-words">{name}</DialogTitle>
-                  <DialogDescription className="text-[10px] mt-0.5 leading-tight">
+                  <DialogDescription className="text-[10px] mt-0.5 leading-tight text-brand/80">
                     {isAr ? "اختر الخطة والكمية للشراء السريع" : "Pick a plan and quantity"}
                   </DialogDescription>
                 </div>
@@ -200,14 +200,17 @@ export function QuickBuyDialog({
             </DialogHeader>
           </div>
 
-          {/* Plans */}
-          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3">
+          {/* Plans — glass mobile configurator */}
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-5">
             {productVariants.length > 0 && (
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
-                  {isAr ? "نوع الخطة" : "Plan type"}
-                </div>
-                <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-muted/40 border border-border">
+              <section>
+                <h3 className="text-brand text-sm font-semibold mb-2.5">
+                  {isAr ? "نوع الخطة" : "Plan"}
+                </h3>
+                <div
+                  className="grid gap-2 p-1.5 rounded-2xl bg-black/30 border border-white/5"
+                  style={{ gridTemplateColumns: `repeat(${productVariants.length}, minmax(0,1fr))` }}
+                >
                   {productVariants.map((v) => {
                     const isSel = effectiveVariant === v;
                     return (
@@ -215,123 +218,142 @@ export function QuickBuyDialog({
                         key={v}
                         type="button"
                         onClick={() => { setVariant(v); setSelectedId(null); }}
-                        className={`px-2.5 py-1.5 rounded-md text-[11px] font-extrabold transition ${
-                          isSel ? "bg-brand text-brand-foreground shadow" : "text-foreground hover:bg-muted"
+                        className={`relative py-3 px-2 rounded-xl text-xs font-bold transition-all focus:outline-none overflow-hidden ${
+                          isSel
+                            ? "bg-brand text-brand-foreground shadow-lg shadow-brand/20"
+                            : "text-muted-foreground hover:bg-white/5"
                         }`}
                       >
-                        {v}
+                        <span className="relative block truncate text-center"><bdi>{v}</bdi></span>
                       </button>
                     );
                   })}
                 </div>
-              </div>
+              </section>
             )}
-            {hasAcctChoice && (
 
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-1.5">
-                  {isAr ? "نوع الحساب" : "Account type"}
-                </div>
-                <div
-                  className="grid gap-1 p-1 rounded-lg bg-muted/40 border border-border"
-                  style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
-                >
+            {hasAcctChoice && (
+              <section>
+                <h3 className="text-brand text-sm font-semibold mb-2.5">
+                  {isAr ? "نوع الحساب" : "Account"}
+                </h3>
+                <div className="space-y-2">
                   {normalizedTypes.map((a) => {
                     const isSel = effectiveAcct === a;
+                    const sub =
+                      a === "private"
+                        ? (isAr ? "تحكم كامل • أجهزة متعددة" : "Full control • Multi-device")
+                        : (isAr ? "اقتصادي • جهاز واحد" : "Best value • Single device");
                     return (
                       <button
                         key={a}
                         type="button"
                         onClick={() => setAcct(a)}
-                        className={`px-2 py-1.5 rounded-md text-xs font-extrabold transition ${
+                        className={`w-full flex items-center justify-between p-4 rounded-2xl border text-start transition-all focus:outline-none ${
                           isSel
-                            ? "bg-brand text-brand-foreground shadow"
-                            : "text-foreground hover:bg-muted"
+                            ? "border-brand/50 bg-brand/5"
+                            : "border-white/5 bg-white/5 hover:border-white/10"
                         }`}
                       >
-                        {acctMeta[a][isAr ? "ar" : "en"]}
+                        <div className="min-w-0">
+                          <div className={`font-bold ${isSel ? "text-foreground" : "text-foreground/70"}`}>
+                            {acctMeta[a][isAr ? "ar" : "en"]}
+                          </div>
+                          <div className={`text-xs mt-1 leading-relaxed ${isSel ? "text-brand/80" : "text-muted-foreground"}`}>
+                            {sub}
+                          </div>
+                        </div>
+                        <div
+                          className={`shrink-0 ms-3 size-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                            isSel ? "border-brand" : "border-white/20"
+                          }`}
+                        >
+                          {isSel && <span className="size-2.5 rounded-full bg-brand" />}
+                        </div>
                       </button>
                     );
                   })}
                 </div>
-              </div>
+              </section>
             )}
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-brand mb-2">
-              {isAr ? "اختر الخطة" : "Choose a plan"}
-            </div>
 
-            {plansQ.isLoading ? (
-              <div className="grid grid-cols-1 gap-1.5">
-                {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="h-12 rounded-lg bg-muted animate-pulse" />
-                ))}
-              </div>
-            ) : plans.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                {isAr ? "لا توجد خطط متاحة" : "No plans available"}
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 gap-1.5">
-                {plans.map((pl) => {
-                  const isSel = selected?.id === pl.id;
-                  const so = Number(pl.stock ?? 0) <= 0;
-                  const raw = Number(pl.price);
-                  const price = hasDiscount ? Math.round(raw * (100 - discount)) / 100 : raw;
-                  return (
-                    <button
-                      key={pl.id}
-                      type="button"
-                      onClick={() => !so && setSelectedId(pl.id)}
-                      disabled={so}
-                      className={`flex items-center justify-between gap-2 text-start px-3 py-2 rounded-lg border-2 transition-all ${
-                        so
-                          ? "border-border bg-muted/30 opacity-60 cursor-not-allowed"
-                          : isSel
-                            ? "border-brand bg-brand/5"
-                            : "border-border bg-background"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        {isSel && !so && (
-                          <span className="shrink-0 grid place-items-center size-4 rounded-full bg-brand text-brand-foreground">
-                            <Check className="size-2.5" />
+            <section>
+              <h3 className="text-brand text-sm font-semibold mb-2.5">
+                {isAr ? "المدة" : "Duration"}
+              </h3>
+              {plansQ.isLoading ? (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 rounded-2xl bg-white/5 animate-pulse" />
+                  ))}
+                </div>
+              ) : plans.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  {isAr ? "لا توجد خطط متاحة" : "No plans available"}
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-2.5">
+                  {plans.map((pl) => {
+                    const isSel = selected?.id === pl.id;
+                    const so = Number(pl.stock ?? 0) <= 0;
+                    const raw = Number(pl.price);
+                    const price = hasDiscount ? Math.round(raw * (100 - discount)) / 100 : raw;
+                    return (
+                      <button
+                        key={pl.id}
+                        type="button"
+                        onClick={() => !so && setSelectedId(pl.id)}
+                        disabled={so}
+                        className={`relative p-3.5 rounded-2xl border-2 text-start transition-all overflow-hidden ${
+                          so
+                            ? "border-destructive/30 bg-destructive/5 cursor-not-allowed"
+                            : isSel
+                              ? "border-brand bg-brand/5 shadow-[0_0_0_3px_hsl(var(--brand)/0.08)]"
+                              : "border-white/10 bg-white/5 hover:border-brand/40"
+                        }`}
+                      >
+                        {so && (
+                          <span className="pointer-events-none absolute top-2 start-2 text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider">
+                            {isAr ? "نفذ" : "Sold out"}
                           </span>
                         )}
-                        <span className={`text-xs font-extrabold truncate ${so ? "line-through" : ""}`}>
-                          {(isAr ? pl.label_ar : pl.label_en) || (isAr ? "خطة" : "Plan")}
-                        </span>
-                      </div>
-                      <div className="shrink-0 flex items-baseline gap-1">
-                        <span className={`text-sm font-black tabular-nums ${isSel ? "text-brand" : ""}`}>
-                          {price}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground">{t.common.currency}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                        <div className={`flex flex-col gap-1 ${so ? "opacity-60" : ""}`}>
+                          <div className={`text-sm font-bold ${so ? "line-through" : ""}`}>
+                            {(isAr ? pl.label_ar : pl.label_en) || (isAr ? "خطة" : "Plan")}
+                          </div>
+                          <div className="flex items-baseline gap-1">
+                            <span className={`text-lg font-black tabular-nums leading-none ${isSel ? "text-brand" : ""} ${so ? "line-through" : ""}`}>
+                              {price}
+                            </span>
+                            <span className="text-[10px] font-bold text-muted-foreground">{t.common.currency}</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
           </div>
 
-          {/* Footer */}
+          {/* Footer — glass summary */}
           {plans.length > 0 && (
-            <div className="shrink-0 border-t border-border/60 bg-card px-4 py-3 space-y-2.5">
+            <div className="shrink-0 border-t border-white/10 bg-card/80 backdrop-blur-xl px-4 py-3.5 space-y-3">
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
+                <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 p-0.5">
                   <button
                     type="button"
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    className="size-7 rounded-full grid place-items-center hover:bg-muted transition text-sm"
+                    className="size-8 rounded-full grid place-items-center hover:bg-white/10 transition text-sm text-foreground"
                     aria-label="decrease"
                   >
                     −
                   </button>
-                  <span className="min-w-6 text-center font-black tabular-nums text-sm">{qty}</span>
+                  <span className="min-w-7 text-center font-black tabular-nums text-sm text-foreground">{qty}</span>
                   <button
                     type="button"
                     onClick={() => setQty((q) => Math.min(99, q + 1))}
-                    className="size-7 rounded-full grid place-items-center hover:bg-muted transition text-sm"
+                    className="size-8 rounded-full grid place-items-center hover:bg-white/10 transition text-sm text-foreground"
                     aria-label="increase"
                   >
                     +
@@ -342,20 +364,20 @@ export function QuickBuyDialog({
                     <span className="text-[10px] font-black uppercase tracking-widest text-brand">
                       {isAr ? "الإجمالي" : "Total"}
                     </span>
-                    <span className="text-2xl font-black text-brand tabular-nums leading-none">
-                      {total}
+                    <span className={`text-2xl font-black tabular-nums leading-none ${soldOut ? "text-destructive line-through" : "text-brand"}`}>
+                      {soldOut ? (isAr ? "نفذ" : "Sold out") : total}
                     </span>
-                    <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                    {!soldOut && <span className="text-xs font-black text-brand/80">{t.common.currency}</span>}
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => doAdd(true)}
                   disabled={!selected || soldOut}
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full bg-brand text-brand-foreground font-black text-xs shadow-lg hover:brand-glow transition-all disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-brand text-brand-foreground font-black text-xs shadow-[0_0_20px_hsl(var(--brand)/0.35)] hover:brightness-110 transition-all disabled:opacity-50"
                 >
                   <Zap className="size-3.5" />
                   {isAr ? "اشترِ الآن" : "Buy now"}
@@ -364,7 +386,7 @@ export function QuickBuyDialog({
                   type="button"
                   onClick={() => doAdd(false)}
                   disabled={!selected || soldOut}
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full border border-border bg-background text-foreground font-bold text-xs hover:border-brand/60 hover:text-brand transition disabled:opacity-50"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 text-foreground font-bold text-xs hover:bg-white/10 transition disabled:opacity-50"
                 >
                   <ShoppingCart className="size-3.5" />
                   {isAr ? "أضف للسلة" : "Add to cart"}
@@ -375,7 +397,7 @@ export function QuickBuyDialog({
                 to="/product/$slug"
                 params={{ slug: product.slug }}
                 onClick={() => onOpenChange(false)}
-                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-full border-2 border-dashed border-brand/40 bg-brand/5 text-brand font-black text-xs hover:bg-brand/10 hover:border-brand transition-all"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-2xl border border-dashed border-brand/40 bg-brand/5 text-brand font-black text-xs hover:bg-brand/10 hover:border-brand transition-all"
               >
                 <ExternalLink className="size-3.5" />
                 <span>{isAr ? "التفاصيل الكاملة" : "Full details"}</span>
