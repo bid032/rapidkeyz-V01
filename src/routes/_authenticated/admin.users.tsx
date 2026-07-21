@@ -547,25 +547,41 @@ function StockAccessDialog({
           </div>
         </label>
 
-        <div className="space-y-2 mb-4">
+        <div className="space-y-2 mb-3">
           <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" />
-            {user.has_stock_password
-              ? (lang === "ar" ? "تغيير كلمة السر (اختياري)" : "Change password (optional)")
-              : (lang === "ar" ? "كلمة السر الأولى" : "Set password")}
+            <AtSign className="w-3.5 h-3.5" />
+            {lang === "ar" ? "اسم المستخدم (اختياري)" : "Username (optional)"}
           </label>
           <input
             type="text"
-            inputMode="numeric"
-            pattern="\d{4}"
-            maxLength={4}
-            value={password}
-            onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 4))}
-            placeholder={user.has_stock_password ? "•••• (اتركها فاضية لعدم التغيير)" : "٤ أرقام"}
-            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm tracking-[0.5em] text-center"
             dir="ltr"
+            autoComplete="off"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.trim())}
+            placeholder="username"
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
           />
+        </div>
 
+        <div className="space-y-2 mb-4">
+          <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+            <KeyRound className="w-3.5 h-3.5" />
+            {lang === "ar" ? "كلمة السر (اختياري)" : "Password (optional)"}
+          </label>
+          <input
+            type="text"
+            dir="ltr"
+            autoComplete="off"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={lang === "ar" ? "اتركها فاضية لعدم التغيير" : "Leave blank to keep"}
+            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
+          />
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            {lang === "ar"
+              ? "لما تحط اسم مستخدم وكلمة سر، هيتضاف تلقائياً في تبويب/شيت الاستوك ويقدر يدخل بيهم على /stock."
+              : "Adding a username + password auto-syncs a Staff row so they can sign into /stock."}
+          </p>
         </div>
 
         <div className="flex gap-2">
