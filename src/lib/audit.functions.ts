@@ -27,8 +27,15 @@ export type AuditRowEnriched = {
     unit_price: number | null;
     status: string | null;
     quantity: number | null;
+    delivered_accounts: Array<{
+      account_email: string | null;
+      account_username: string | null;
+      account_password: string | null;
+      extra_notes: string | null;
+    }>;
   }>;
 };
+
 
 async function requireAdmin(context: any) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
