@@ -94,7 +94,8 @@ export const NewOrderEmail = ({
       </Text>
     </BrandLayout>
   </Html>
-)
+  )
+}
 
 export default NewOrderEmail
 
