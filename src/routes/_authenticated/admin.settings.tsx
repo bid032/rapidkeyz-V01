@@ -34,6 +34,13 @@ function AdminSettings() {
     trusted_ar: "", trusted_en: "",
     trending_slug: "", new_slug: "",
   });
+  const [pageContent, setPageContent] = useState<Record<string, { ar: string; en: string }>>({
+    shop_intro: { ar: "", en: "" },
+    page_about: { ar: "", en: "" },
+    page_terms: { ar: "", en: "" },
+    page_privacy: { ar: "", en: "" },
+    page_refund: { ar: "", en: "" },
+  });
 
   const heroProducts = useQuery({
     queryKey: ["admin-hero-products"],
