@@ -586,11 +586,13 @@ function AdminProducts() {
                               }
                             }}
                           />
-                          <span>
+                          <span className="min-w-0 flex-1">
                             <b>الخدمة فيها أنواع خطط؟</b>
-                            <span className="block text-[11px] text-muted-foreground mt-0.5">
-                              زي مثلاً LinkedIn: Premium Career ، Premium Business ، Sales Navigator Core ، Recruiter Lite ، LinkedIn Learning.
-                              كل خطة سعر بتتربط بنوع واحد منهم.
+                            <span className="block text-[11px] text-muted-foreground mt-0.5 leading-relaxed break-words">
+                              زي مثلاً <bdi>LinkedIn</bdi>:{" "}
+                              <bdi>Premium Career</bdi>، <bdi>Premium Business</bdi>،{" "}
+                              <bdi>Sales Navigator Core</bdi>، <bdi>Recruiter Lite</bdi>،{" "}
+                              <bdi>LinkedIn Learning</bdi>. كل خطة سعر بتتربط بنوع واحد منهم.
                             </span>
                           </span>
                         </label>
@@ -598,21 +600,22 @@ function AdminProducts() {
                         {editing.plan_variants.length > 0 && (
                           <div className="space-y-2">
                             {editing.plan_variants.map((v, i) => (
-                              <div key={i} className="flex items-center gap-2">
+                              <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2">
                                 <input
                                   value={v}
-                                  placeholder={`نوع ${i + 1} — مثال: Premium Career`}
+                                  dir="ltr"
+                                  placeholder={`Variant ${i + 1} — e.g. Premium Career`}
                                   onChange={(e) => {
                                     const next = [...editing.plan_variants];
                                     next[i] = e.target.value;
                                     setEditing({ ...editing, plan_variants: next });
                                   }}
-                                  className="flex-1 h-9 px-3 bg-card border border-border rounded-lg text-sm"
+                                  className="flex-1 min-w-0 h-9 px-3 bg-card border border-border rounded-lg text-sm"
                                 />
                                 <button
                                   type="button"
                                   onClick={() => setEditing({ ...editing, plan_variants: editing.plan_variants.filter((_, j) => j !== i) })}
-                                  className="shrink-0 h-9 px-3 border border-destructive/40 text-destructive rounded-lg text-xs font-bold hover:bg-destructive/10"
+                                  className="shrink-0 h-9 px-3 border border-destructive/40 text-destructive rounded-lg text-xs font-bold hover:bg-destructive/10 self-end sm:self-auto"
                                 >
                                   حذف
                                 </button>
