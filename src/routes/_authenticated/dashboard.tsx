@@ -90,7 +90,7 @@ function Dashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("*, order_items(*, delivered_accounts(*))")
+        .select("*, coupons(code, discount_type, discount_value), order_items(*, delivered_accounts(*))")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
