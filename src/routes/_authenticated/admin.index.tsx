@@ -626,7 +626,7 @@ function AdminOverview() {
                       </td>
                       <td className="p-2 font-mono text-[11px] whitespace-nowrap">
                         {d.toLocaleDateString("en-GB")}<br />
-                        <span className="text-muted-foreground">{d.toLocaleTimeString("en-GB")}</span>
+                        <span className="text-muted-foreground">{d.toLocaleTimeString("en-GB", { hour12: true })}</span>
                       </td>
                     </tr>
                     {isExpanded && (
