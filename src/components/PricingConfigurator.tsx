@@ -118,11 +118,14 @@ export function PricingConfigurator({
           </section>
         )}
 
-        {/* Account type selector — side-by-side on mobile, stacked on desktop */}
+        {/* Account type selector — segmented pill (same style as plan variant) */}
         {normalizedTypes.length > 0 && (
           <section>
             {sectionLabel(isAr ? "نوع الحساب" : "Account")}
-            <div className="grid grid-cols-2 gap-2 sm:block sm:space-y-2">
+            <div
+              className="grid gap-2 p-1.5 rounded-2xl bg-black/30 border border-white/5"
+              style={{ gridTemplateColumns: `repeat(${normalizedTypes.length}, minmax(0,1fr))` }}
+            >
               {normalizedTypes.map((a) => {
                 const isSel = normalizedEffective === a || normalizedTypes.length === 1;
                 const meta = acctMeta[a][isAr ? "ar" : "en"];
@@ -131,40 +134,18 @@ export function PricingConfigurator({
                     key={a}
                     type="button"
                     onClick={() => onAcctChange(a)}
-                    className={`relative flex flex-col items-center text-center p-3 rounded-2xl border transition-all focus:outline-none overflow-hidden h-full sm:flex-row sm:justify-between sm:text-start sm:p-4 ${
+                    className={`relative py-2.5 px-2 rounded-xl transition-all focus:outline-none overflow-hidden ${
                       isSel
-                        ? "border-brand/50 bg-brand/5"
-                        : "border-white/5 bg-white/5 hover:border-white/10"
+                        ? "bg-brand text-brand-foreground shadow-lg shadow-brand/20"
+                        : "text-muted-foreground hover:bg-white/5"
                     }`}
                   >
-                    {isSel && (
-                      <motion.span
-                        layoutId="acct-glow"
-                        className="pointer-events-none absolute -top-6 -end-6 w-16 h-16 bg-brand/20 rounded-full blur-2xl"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                      />
-                    )}
-                    <div
-                      className={`shrink-0 size-5 rounded-full border-2 flex items-center justify-center transition-colors mb-2 sm:order-2 sm:mb-0 sm:ms-3 ${
-                        isSel ? "border-brand" : "border-white/20"
-                      }`}
-                    >
-                      {isSel && (
-                        <motion.div
-                          layoutId="acct-radio"
-                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                          className="size-2.5 rounded-full bg-brand"
-                        />
-                      )}
-                    </div>
-                    <div className="min-w-0 relative z-10 sm:order-1">
-                      <div className={`text-sm font-bold ${isSel ? "text-foreground" : "text-foreground/70"}`}>
-                        {meta.title}
-                      </div>
-                      <div className={`text-[10px] sm:text-xs mt-1 leading-relaxed ${isSel ? "text-brand/80" : "text-muted-foreground"}`}>
+                    <span className="relative block text-center leading-tight">
+                      <span className="block text-sm font-bold truncate">{meta.title}</span>
+                      <span className={`block text-[10px] mt-0.5 truncate ${isSel ? "text-brand-foreground/80" : "text-muted-foreground/80"}`}>
                         {meta.sub}
-                      </div>
-                    </div>
+                      </span>
+                    </span>
                   </button>
                 );
               })}
@@ -174,13 +155,13 @@ export function PricingConfigurator({
 
         {/* Duration grid */}
         <section>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             {sectionLabel(isAr ? "المدة" : "Duration")}
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[11px] text-muted-foreground">
               {isAr ? "وفر أكثر مع المدد الأطول" : "Longer = save more"}
             </span>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {plans.map((pl) => {
               const isSel = selected?.id === pl.id;
               const stock = Number(pl.stock ?? 0);
@@ -188,13 +169,14 @@ export function PricingConfigurator({
               const raw = Number(pl.price);
               const price = hasDiscount ? Math.round(raw * (100 - discount)) / 100 : raw;
               const savePct = maxPerDay > 0 ? Math.round((1 - perDay(pl) / maxPerDay) * 100) : 0;
+              const showSave = savePct >= 10 && !soldOut;
 
               return (
                 <button
                   key={pl.id}
                   onClick={() => !soldOut && onSelectPlan(pl.id)}
                   disabled={soldOut}
-                  className={`relative p-4 rounded-2xl border-2 text-start transition-all overflow-hidden group ${
+                  className={`relative p-3 pt-7 rounded-2xl border-2 text-center transition-all overflow-hidden ${
                     soldOut
                       ? "border-destructive/30 bg-destructive/5 cursor-not-allowed"
                       : isSel
@@ -210,27 +192,25 @@ export function PricingConfigurator({
                     />
                   )}
 
-                  {soldOut && (
-                    <span className="pointer-events-none absolute top-2 start-2 text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10">
+                  {soldOut ? (
+                    <span className="pointer-events-none absolute top-1.5 start-1.5 text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-destructive text-destructive-foreground shadow-md tracking-wider z-10">
                       {t.product.soldOut}
                     </span>
-                  )}
-
-                  {savePct >= 10 && !soldOut && (
-                    <span className={`absolute top-2 start-2 text-[10px] font-black px-2 py-0.5 rounded-full tabular-nums ${
+                  ) : showSave ? (
+                    <span className={`pointer-events-none absolute top-1.5 start-1.5 text-[9px] font-black px-1.5 py-0.5 rounded-full tabular-nums z-10 ${
                       isSel
                         ? "bg-success/20 text-success border border-success/30"
                         : "bg-white/10 text-foreground/60 border border-white/10"
                     }`}>
                       -{savePct}%
                     </span>
-                  )}
+                  ) : null}
 
-                  <div className={`relative flex flex-col gap-1 ${soldOut ? "opacity-60" : ""}`}>
-                    <div className={`text-sm font-bold ${soldOut ? "line-through" : ""}`}>
+                  <div className={`relative flex flex-col items-center gap-1.5 ${soldOut ? "opacity-60" : ""}`}>
+                    <div className={`text-sm font-bold leading-tight ${soldOut ? "line-through" : ""}`}>
                       {isAr ? pl.durAr : pl.durEn}
                     </div>
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-1 justify-center">
                       <span
                         className={`text-lg font-black tabular-nums leading-none ${
                           isSel ? "text-brand" : soldOut ? "text-foreground/50" : "text-foreground"
