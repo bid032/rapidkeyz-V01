@@ -450,7 +450,16 @@ function AdminOrders() {
                 {/* Items */}
                 <div className="space-y-3 pt-2 border-t border-border">
                   {o.order_items?.map((it: any) => (
-                    <ItemRow key={it.id} item={it} onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })} />
+                    <ItemRow
+                      key={it.id}
+                      item={it}
+                      onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })}
+                      onDeliverInstant={
+                        it.delivery_type === "instant" && it.plan_id
+                          ? () => deliverInstant.mutate({ orderItemId: it.id, planId: it.plan_id })
+                          : undefined
+                      }
+                    />
                   ))}
                 </div>
               </div>
