@@ -639,27 +639,39 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
         </div>
 
       ) : (
-        <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-          <input placeholder="Account email" value={creds.account_email}
-            onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <input placeholder="Username" value={creds.account_username}
-            onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <input placeholder="Password" value={creds.account_password}
-            onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <input placeholder="Notes" value={creds.extra_notes}
-            onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
-            className="px-3 py-2 bg-card border border-border rounded text-sm" />
-          <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
-            {lang === "ar" ? "تسليم البيانات وإرسال إيميل" : "Deliver credentials & email"}
-          </button>
-        </form>
+        <div className="mt-2 space-y-2">
+          {onDeliverInstant && (
+            <button
+              type="button"
+              onClick={onDeliverInstant}
+              className="w-full px-3 py-2 rounded bg-success/15 text-success border border-success/30 font-bold text-sm hover:bg-success hover:text-success-foreground transition"
+            >
+              {lang === "ar" ? "⚡ تسليم فوري من المخزون" : "⚡ Deliver from inventory"}
+            </button>
+          )}
+          <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input placeholder="Account email" value={creds.account_email}
+              onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <input placeholder="Username" value={creds.account_username}
+              onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <input placeholder="Password" value={creds.account_password}
+              onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <input placeholder="Notes" value={creds.extra_notes}
+              onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
+              className="px-3 py-2 bg-card border border-border rounded text-sm" />
+            <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
+              {lang === "ar" ? "تسليم يدوي وإرسال إيميل" : "Deliver manually & email"}
+            </button>
+          </form>
+        </div>
       )}
     </div>
   );
 }
+
 
 
 function ProofLightbox({ src, loading, onClose }: { src: string; loading: boolean; onClose: () => void }) {
