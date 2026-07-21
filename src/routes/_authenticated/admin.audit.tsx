@@ -147,16 +147,54 @@ type Group = {
 
 function AdminAudit() {
   const fetchAudit = useServerFn(getAuditLog);
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [target, setTarget] = useState("");
   const [action, setAction] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [live, setLive] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   const rows = useQuery({
     queryKey: ["audit-log-enriched"],
     queryFn: () => fetchAudit({ data: { limit: 1000 } }),
-    staleTime: 30_000,
+    staleTime: 5_000,
   });
+
+  // Realtime — refetch on any change in audit_log.
+  useEffect(() => {
+    const channel = supabase
+      .channel("audit-log-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "audit_log" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["audit-log-enriched"] });
+        },
+      )
+      .subscribe((status) => {
+        setLive(status === "SUBSCRIBED");
+      });
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
+  const clearAll = async () => {
+    if (!window.confirm("سيتم مسح كل حركات سجل الأعمال نهائياً. متأكد؟")) return;
+    setClearing(true);
+    const { error } = await supabase
+      .from("audit_log")
+      .delete()
+      .not("id", "is", null);
+    setClearing(false);
+    if (error) {
+      toast.error("تعذّر مسح السجل: " + error.message);
+      return;
+    }
+    toast.success("تم مسح كل سجل الأعمال");
+    qc.invalidateQueries({ queryKey: ["audit-log-enriched"] });
+  };
 
   const actionOptions = useMemo(() => {
     const set = new Set<string>();
