@@ -204,7 +204,9 @@ function AdminAudit() {
     return Array.from(set).sort();
   }, [rows.data]);
 
-  /** Group events by order; non-order rows become singleton groups. */
+  /** Group events by order; non-order rows become singleton groups.
+   *  Groups are sorted by the newest event inside them, so any recent change
+   *  bubbles the whole order card to the top. */
   const groups = useMemo<Group[]>(() => {
     const map = new Map<string, Group>();
     const singles: Group[] = [];
@@ -217,7 +219,7 @@ function AdminAudit() {
       const g = map.get(key);
       if (g) {
         g.events.push(r);
-        if (r.created_at > g.latestAt) g.latestAt = r.created_at;
+        if (Date.parse(r.created_at) > Date.parse(g.latestAt)) g.latestAt = r.created_at;
         // Prefer the row with the richest order snapshot as canonical
         if (!g.order || (r.order_number && (!g.order.order_number || r.items.length > g.order.items.length))) {
           g.order = r;
@@ -232,9 +234,12 @@ function AdminAudit() {
       }
     }
     const all = [...Array.from(map.values()), ...singles];
-    all.sort((a, b) => (a.latestAt < b.latestAt ? 1 : -1));
+    // Newest activity first across groups
+    all.sort((a, b) => Date.parse(b.latestAt) - Date.parse(a.latestAt));
     // Newest event first inside each group
-    all.forEach((g) => g.events.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)));
+    all.forEach((g) =>
+      g.events.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)),
+    );
     return all;
   }, [rows.data]);
 
