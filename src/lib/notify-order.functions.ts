@@ -59,6 +59,11 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
       idempotencyKey: `new-order-${order.id}`,
       templateData: {
         orderNumber: order.order_number,
+        subtotal: (order as any).subtotal,
+        discountAmount: Number((order as any).discount_amount ?? 0),
+        couponCode: (order as any).coupons?.code ?? null,
+        couponDiscountType: (order as any).coupons?.discount_type ?? null,
+        couponDiscountValue: (order as any).coupons?.discount_value ?? null,
         total: order.total,
         currency: order.currency || 'EGP',
         customerEmail: order.customer_email,
