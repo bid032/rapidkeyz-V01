@@ -165,6 +165,26 @@ function ShopPage() {
       )}
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 pb-12 pt-6">
+        {search.q && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand/5 border border-brand/20 px-4 py-3">
+            <p className="text-sm">
+              {lang === "ar" ? "نتائج البحث عن: " : "Search results for: "}
+              <span className="font-extrabold text-brand">"{search.q}"</span>
+              {products.data && (
+                <span className="text-muted-foreground ms-2">
+                  ({products.data.length} {lang === "ar" ? "نتيجة" : "results"})
+                </span>
+              )}
+            </p>
+            <Link
+              to="/shop"
+              search={{}}
+              className="text-xs font-bold text-muted-foreground hover:text-brand"
+            >
+              {lang === "ar" ? "مسح البحث ✕" : "Clear ✕"}
+            </Link>
+          </div>
+        )}
         {products.isLoading && <p className="text-muted-foreground">{t.common.loading}</p>}
         {products.data && products.data.length === 0 && (
           <p className="text-center text-muted-foreground py-16">
