@@ -604,7 +604,7 @@ function AdminOverview() {
                         <div className="text-xs text-muted-foreground truncate max-w-[180px]">{r.plan_label}</div>
                       </td>
                       <td className="p-2">{r.quantity}</td>
-                      <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                      <td className="p-2 font-bold text-brand">{Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</td>
                       <td className={`p-2 font-bold ${netProfit >= 0 ? "text-success" : "text-destructive"}`}>
                         {Math.round(netProfit)} {t.common.currency}
                       </td>
