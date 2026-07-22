@@ -1,12 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote,
-  Copy, Undo2, Minus, Plus, UserCircle2, Package, Sparkles, CheckCircle2,
-  LogOut, KeyRound, Phone,
+  Copy, Undo2, Minus, Plus, UserCircle2, Package, Sparkles, CheckCircle2, Phone,
 } from "lucide-react";
 
 import { useApp } from "@/contexts/AppContext";
@@ -15,7 +14,7 @@ import {
   type IssueResult,
 } from "@/lib/stock-sheet.functions";
 
-import { getStockSession } from "@/lib/stock-auth.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { filterName, filterPhone } from "@/lib/input-filters";
@@ -25,30 +24,59 @@ export const Route = createFileRoute("/stock")({
   component: StockPage,
 });
 
+type Access = { signedIn: boolean; hasAccess: boolean; staffName: string };
+
 function StockPage() {
-  const sessionFn = useServerFn(getStockSession);
-  const queryClient = useQueryClient();
-  const q = useQuery({
-    queryKey: ["stock-session"],
-    queryFn: () => sessionFn(),
-    staleTime: 0,
+  const access = useQuery({
+    queryKey: ["stock-access"],
+    queryFn: async (): Promise<Access> => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (!user) return { signedIn: false, hasAccess: false, staffName: "" };
+      const [{ data: hasAccess }, { data: profile }] = await Promise.all([
+        supabase.rpc("current_user_stock_access"),
+        supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+      ]);
+      return {
+        signedIn: true,
+        hasAccess: !!hasAccess,
+        staffName: profile?.display_name || user.email || "Staff",
+      };
+    },
+    staleTime: 30_000,
   });
 
-  const handleLoggedIn = (staffName: string) => {
-    queryClient.setQueryData(["stock-session"], { loggedIn: true as const, staffName });
-    queryClient.invalidateQueries({ queryKey: ["stock-app-data"] });
-  };
+  useEffect(() => {
+    const sub = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        access.refetch();
+      }
+    });
+    return () => {
+      sub.data.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 sm:py-10">
-        {q.isLoading ? (
+        {access.isLoading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">جارٍ التحميل...</div>
-        ) : q.data?.loggedIn ? (
-          <StockDispenser staffName={q.data.staffName} onLogout={() => q.refetch()} />
+        ) : !access.data?.signedIn ? (
+          <AccessGate
+            title="سجّل الدخول للمتابعة"
+            description="تحتاج لتسجيل الدخول بحسابك أولاً، ثم يقوم الأدمن بمنحك صلاحية الوصول لتابة الاستوك."
+            cta={<Link to="/auth" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-brand-foreground font-extrabold hover:brand-glow transition">تسجيل الدخول</Link>}
+          />
+        ) : !access.data.hasAccess ? (
+          <AccessGate
+            title="ليس لديك صلاحية الوصول"
+            description="تابة الاستوك متاحة فقط للأعضاء الذين منحهم الأدمن صلاحية الوصول من قسم المستخدمين."
+          />
         ) : (
-          <LoginGate onLoggedIn={handleLoggedIn} />
+          <StockDispenser staffName={access.data.staffName} />
         )}
       </main>
       <Footer />
@@ -56,111 +84,36 @@ function StockPage() {
   );
 }
 
-function LoginGate({ onLoggedIn }: { onLoggedIn: (staffName: string) => void }) {
-  const { notify } = useApp();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim() || !password) return;
-    setLoading(true);
-    try {
-      const response = await fetch("/api/public/stock/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
-      });
-      const res = (await response.json()) as { ok: boolean; staffName?: string; error?: string };
-      if (res.ok) {
-        notify(`أهلاً ${res.staffName ?? ""}`, "success");
-        onLoggedIn(res.staffName ?? "");
-      } else {
-        notify(res.error || "بيانات الدخول غير صحيحة", "error");
-      }
-    } catch (e: any) {
-      notify(e?.message ?? "حصل خطأ", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+function AccessGate({ title, description, cta }: { title: string; description: string; cta?: React.ReactNode }) {
   return (
     <div className="max-w-md mx-auto mt-8 sm:mt-16 px-2">
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden bg-card border border-border rounded-3xl p-7 sm:p-9 shadow-2xl"
+        className="relative overflow-hidden bg-card border border-border rounded-3xl p-7 sm:p-9 shadow-2xl text-center"
       >
         <div aria-hidden className="pointer-events-none absolute -top-16 -end-16 w-48 h-48 bg-brand/20 blur-3xl rounded-full" />
         <div aria-hidden className="pointer-events-none absolute -bottom-16 -start-16 w-48 h-48 bg-blue-500/15 blur-3xl rounded-full" />
-
-        <div className="relative flex flex-col items-center text-center gap-2 mb-6">
-          <div className="w-14 h-14 rounded-2xl grid place-items-center bg-brand/10 text-brand ring-1 ring-brand/20">
+        <div className="relative">
+          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-brand/10 text-brand">
             <Lock className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-extrabold">دخول موظفي الاستوك</h1>
-          <p className="text-sm text-muted-foreground">استخدم اسم المستخدم وكلمة السر الخاصة بك</p>
+          <h1 className="text-xl sm:text-2xl font-black">{title}</h1>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{description}</p>
+          {cta ? <div className="mt-5 flex justify-center">{cta}</div> : null}
         </div>
-
-        <form onSubmit={submit} className="relative space-y-3">
-          <label className="block">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1.5">
-              <UserCircle2 className="w-3.5 h-3.5" /> اسم المستخدم
-            </span>
-            <input
-              type="text"
-              autoFocus
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="username"
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-brand"
-              dir="ltr"
-            />
-          </label>
-          <label className="block">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1.5">
-              <KeyRound className="w-3.5 h-3.5" /> كلمة السر
-            </span>
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:border-brand"
-              dir="ltr"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading || !username.trim() || !password}
-            className="w-full px-4 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-60 transition"
-          >
-            {loading ? "جارٍ التحقق..." : "دخول"}
-          </button>
-        </form>
-
-        <p className="relative mt-5 text-[11px] text-muted-foreground text-center">
-          للحصول على حساب تواصل مع الأدمن.
-        </p>
       </motion.div>
     </div>
   );
 }
 
-function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: () => void }) {
+function StockDispenser({ staffName }: { staffName: string }) {
   const { notify, confirm } = useApp();
   const qc = useQueryClient();
   const fetcher = useServerFn(getStockAppData);
   const issueFn = useServerFn(issueStock);
   const revertFn = useServerFn(revertIssue);
-  
-
 
   const [customerName, setCustomerName] = useState("");
   const [customerWhatsapp, setCustomerWhatsapp] = useState("");
@@ -177,16 +130,12 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     staleTime: 45_000,
-
     retry: (count, err: any) => {
       const msg = String(err?.message ?? "");
       if (msg.includes(" 429")) return false;
       return count < 2;
     },
   });
-
-
-
 
   const products = q.data?.products ?? [];
   const selected = products.find((p) => p.productName === productName);
@@ -248,13 +197,6 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
     }
   };
 
-  const doLogout = async () => {
-    await fetch("/api/public/stock/logout", { method: "POST", credentials: "include" });
-    qc.setQueryData(["stock-session"], { loggedIn: false });
-    notify("تم تسجيل الخروج", "success");
-    onLogout();
-  };
-
   const copyAll = () => {
     if (!result?.displayText) return;
     navigator.clipboard.writeText(result.displayText).then(() => notify("تم نسخ الأكواد", "success"));
@@ -268,7 +210,6 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
 
   return (
     <div className="space-y-6">
-      {/* Hero + KPIs */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -296,12 +237,6 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
               <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} />
               تحديث
             </button>
-            <button
-              onClick={doLogout}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-background hover:bg-destructive/10 hover:text-destructive text-sm font-bold"
-            >
-              <LogOut className="w-4 h-4" /> خروج
-            </button>
           </div>
         </div>
 
@@ -312,11 +247,6 @@ function StockDispenser({ staffName, onLogout }: { staffName: string; onLogout: 
           <KpiTile icon={<CheckCircle2 className="w-4 h-4" />} label="جاهز الآن" value={selected ? availableNow : "—"} accent="emerald" />
         </div>
       </motion.div>
-
-
-
-
-      {/* Main grid */}
 
       <div className="grid lg:grid-cols-5 gap-5">
         <motion.div
@@ -484,11 +414,6 @@ function KpiTile({ icon, label, value, accent }: { icon: React.ReactNode; label:
     </div>
   );
 }
-
-
-
-
-
 
 function StepField({ step, icon, label, children, className = "" }: { step: number; icon: React.ReactNode; label: string; children: React.ReactNode; className?: string }) {
   return (
