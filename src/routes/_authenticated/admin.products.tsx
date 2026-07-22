@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { ImageUpload } from "@/components/ImageUpload";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { showError } from "@/lib/error-handler";
 
 function ModalPortal({ children }: { children: React.ReactNode }) {
@@ -441,14 +442,22 @@ function AdminProducts() {
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الوصف والتفاصيل</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <Field label="الوصف بالعربي">
-                          <textarea placeholder="اشترك في نتفليكس..." value={editing.description_ar}
-                            onChange={(e) => setEditing({ ...editing, description_ar: e.target.value })}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg min-h-[110px] resize-none" />
+                          <RichTextEditor
+                            value={editing.description_ar}
+                            onChange={(v) => setEditing({ ...editing, description_ar: v })}
+                            placeholder="اشترك في نتفليكس..."
+                            dir="rtl"
+                            lang="ar"
+                          />
                         </Field>
                         <Field label="Description (English)">
-                          <textarea placeholder="Subscribe to Netflix..." value={editing.description_en}
-                            onChange={(e) => setEditing({ ...editing, description_en: e.target.value })}
-                            className="w-full px-3 py-2 bg-background border border-border rounded-lg min-h-[110px] resize-none" dir="ltr" />
+                          <RichTextEditor
+                            value={editing.description_en}
+                            onChange={(v) => setEditing({ ...editing, description_en: v })}
+                            placeholder="Subscribe to Netflix..."
+                            dir="ltr"
+                            lang="en"
+                          />
                         </Field>
                       </div>
                     </section>
