@@ -13,6 +13,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { PricingConfigurator } from "@/components/PricingConfigurator";
 import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
+import { stripMd } from "@/lib/strip-md";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/product/$slug")({
@@ -54,10 +55,9 @@ export const Route = createFileRoute("/product/$slug")({
     }
     const name = p.name_ar || p.name_en;
     const nameEn = p.name_en || p.name_ar;
-    const desc =
-      (p.description_ar || p.description_en || `اشتراك ${name} أصلي بأفضل سعر وتسليم فوري من RapidKeyz.`)
-        .toString()
-        .slice(0, 160);
+    const desc = stripMd(
+      p.description_ar || p.description_en || `اشتراك ${name} أصلي بأفضل سعر وتسليم فوري من RapidKeyz.`
+    ).slice(0, 160);
     const title = `${name} ، اشتراك أصلي بأفضل سعر | RapidKeyz`;
     const url = `/product/${params.slug}`;
     return {
@@ -373,7 +373,7 @@ function ProductPage() {
                           descExpanded ? "" : "line-clamp-2"
                         }`}
                       >
-                        {(desc || "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/[*_`>#~]/g, "")}
+                        {stripMd(desc)}
                       </p>
                       {desc.length > 100 && (
                         <button

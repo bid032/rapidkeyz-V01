@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ShoppingCart, Zap } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { QuickBuyDialog } from "@/components/QuickBuyDialog";
+import { stripMd } from "@/lib/strip-md";
 
 export type ProductCardData = {
   id: string;
@@ -153,7 +154,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
               {name}
             </h3>
             <p className="text-muted-foreground text-[11px] sm:text-sm line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
-              {desc || " "}
+              {stripMd(desc) || " "}
             </p>
           </div>
 
