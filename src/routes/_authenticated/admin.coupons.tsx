@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 export const Route = createFileRoute("/_authenticated/admin/coupons")({
   beforeLoad: async () => {
