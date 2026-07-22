@@ -86,6 +86,29 @@ function AdminUsers() {
     onError: (e) => showError(e, notify, lang),
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      await deleteUserFn({ data: { userId } });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      notify(lang === "ar" ? "تم حذف المستخدم" : "User deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
+  });
+
+  const askDelete = async (u: any) => {
+    const ok = await confirm({
+      message:
+        lang === "ar"
+          ? `سيتم حذف حساب ${u.display_name || u.email} نهائياً مع كل بياناته. متأكد؟`
+          : `Permanently delete ${u.display_name || u.email} and all their data. Continue?`,
+      tone: "danger",
+    });
+    if (!ok) return;
+    deleteUser.mutate(u.id);
+  };
+
   const stats = useMemo(() => {
     const data = users.data ?? [];
     const admins = data.filter((u: any) => u.user_roles?.some((r: any) => r.role === "admin")).length;
