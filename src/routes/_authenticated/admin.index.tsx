@@ -306,7 +306,9 @@ function AdminOverview() {
   const exportSalesXlsx = () => {
     const rows = (sales.data ?? []).map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
-      const total = Number(r.unit_price) * Number(r.quantity);
+      const gross = Number(r.unit_price) * Number(r.quantity);
+      const lineDiscount = Number(r._lineDiscount ?? 0);
+      const netRevenue = Number(r._netRevenue ?? gross);
       const p = r._profile ?? {};
       const applicable = r._refunds ?? [];
       const refundAmount = Number(r._refundAmount ?? 0);
@@ -326,9 +328,11 @@ function AdminOverview() {
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
         "سعر الوحدة": Number(r.unit_price),
-        "الإجمالي": total,
+        "الإجمالي قبل الخصم": gross,
+        "خصم الكوبون (حصة السطر)": Math.round(lineDiscount),
+        "الإجمالي بعد الخصم": Math.round(netRevenue),
         "سعر الشراء": r._cost ?? 0,
-        "الربح": r._profit ?? 0,
+        "الربح (بعد الخصم)": Math.round(Number(r._profit ?? 0)),
         "تم التسليم؟": delivered ? "نعم" : "لا",
         "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true }) : "",
         "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
@@ -337,7 +341,7 @@ function AdminOverview() {
         "نوع الاسترداد": refundTypes,
         "تاريخ الاسترداد": refundDates,
         "ملاحظات الاسترداد": refundNotes,
-        "صافي الربح بعد الاسترداد": netProfit,
+        "صافي الربح بعد الاسترداد": Math.round(netProfit),
         "التاريخ": d.toLocaleDateString("en-GB"),
         "الوقت": d.toLocaleTimeString("en-GB", { hour12: true }),
 
