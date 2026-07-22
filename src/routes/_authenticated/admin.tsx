@@ -46,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 function AdminLayout() {
   const { t } = useApp();
   const { isAdmin, canModerate } = useAdminRole();
+  useAdminRealtime(canModerate);
   const [mobileOpen, setMobileOpen] = useState(false);
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
