@@ -442,23 +442,32 @@ function AdminOrders() {
         </p>
       )}
       <div className="space-y-3">
-        {visible.map(({ order: o, minDays }) => (
-          <div key={o.id} className="bg-card border border-border rounded-2xl overflow-hidden">
+        {visible.map(({ order: o, minDays }) => {
+          const refundTotal = (o.refunds ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+          const hasRefund = refundTotal > 0;
+          const isFullRefund = hasRefund && refundTotal >= Number(o.total ?? 0) - 0.001;
+          const hasCoupon = Number(o.discount_amount ?? 0) > 0 || !!o.coupons?.code;
+          const accentClass = hasRefund && hasCoupon
+            ? "border-r-4 border-r-destructive ring-1 ring-success/40"
+            : hasRefund
+              ? "border-r-4 border-r-destructive"
+              : hasCoupon
+                ? "border-r-4 border-r-success"
+                : "";
+          return (
+          <div key={o.id} className={`bg-card border border-border rounded-2xl overflow-hidden ${accentClass}`}>
             <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
               <div className="min-w-0">
                 <div className="font-bold flex items-center gap-2 flex-wrap">
                   #{o.order_number}
-                  {(o.refunds?.length ?? 0) > 0 && (() => {
-                    const total = o.refunds.reduce((s: number, r: any) => s + Number(r.amount), 0);
-                    return (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-destructive/15 text-destructive font-bold">
-                        تعويض -{total} EGP
-                      </span>
-                    );
-                  })()}
-                  {Number(o.discount_amount ?? 0) > 0 && (
+                  {hasRefund && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${isFullRefund ? "bg-destructive text-destructive-foreground" : "bg-destructive/15 text-destructive"}`}>
+                      {isFullRefund ? "↩️ تعويض كلي" : "↩️ تعويض جزئي"} -{refundTotal} EGP
+                    </span>
+                  )}
+                  {hasCoupon && (
                     <span className="text-[10px] px-2 py-0.5 rounded bg-success/15 text-success font-bold">
-                      كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""} −{o.discount_amount} EGP
+                      🎟️ كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""} {Number(o.discount_amount ?? 0) > 0 ? `−${o.discount_amount} EGP` : ""}
                     </span>
                   )}
                 </div>
