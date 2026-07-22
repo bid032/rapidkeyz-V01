@@ -256,10 +256,10 @@ function CategoryStrip({
           type="button"
           aria-label="next"
           onClick={() => scrollBy(1)}
-          className="grid absolute top-1/2 -translate-y-1/2 end-0 translate-x-1/2 rtl:-translate-x-1/2 z-10 place-items-center size-8 sm:size-10 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
+          className="hidden sm:grid absolute top-1/2 -translate-y-1/2 end-0 translate-x-1/2 rtl:-translate-x-1/2 z-10 place-items-center size-10 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
         >
-          <ChevronRight className="size-4 sm:size-5 rtl:hidden" />
-          <ChevronLeft className="size-4 sm:size-5 hidden rtl:block" />
+          <ChevronRight className="size-5 rtl:hidden" />
+          <ChevronLeft className="size-5 hidden rtl:block" />
         </button>
       )}
     </div>
