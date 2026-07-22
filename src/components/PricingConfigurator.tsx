@@ -439,7 +439,7 @@ function PlanVariantDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-2xl border border-white/15 shadow-2xl p-1.5 bg-card/60 backdrop-blur-2xl backdrop-saturate-150"
+            className="absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-2xl border border-border/70 shadow-2xl p-1.5 bg-background/95 backdrop-blur-xl"
           >
             {variants.map((v) => {
               const isSel = v === value;
