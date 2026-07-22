@@ -372,3 +372,105 @@ export function PricingConfigurator({
     </div>
   );
 }
+
+function PlanVariantDropdown({
+  variants,
+  value,
+  onChange,
+  isAr,
+}: {
+  variants: string[];
+  value: string;
+  onChange: (v: string) => void;
+  isAr: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border bg-black/30 text-start transition-all focus:outline-none ${
+          open ? "border-brand shadow-lg shadow-brand/10" : "border-white/10 hover:border-brand/40"
+        }`}
+      >
+        <span className="flex flex-col min-w-0">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand/80">
+            {isAr ? "الخطة المختارة" : "Selected plan"}
+          </span>
+          <span className="mt-0.5 text-sm font-bold truncate">
+            <bdi>{value}</bdi>
+          </span>
+        </span>
+        <span
+          className={`shrink-0 grid place-items-center size-8 rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-transform ${
+            open ? "rotate-180 text-brand border-brand/40" : ""
+          }`}
+        >
+          <ChevronDown className="size-4" />
+        </span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.ul
+            role="listbox"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-2xl border border-white/10 bg-card/95 backdrop-blur-xl shadow-2xl p-1.5"
+          >
+            {variants.map((v) => {
+              const isSel = v === value;
+              return (
+                <li key={v}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={isSel}
+                    onClick={() => {
+                      onChange(v);
+                      setOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-start transition-all ${
+                      isSel
+                        ? "bg-brand text-brand-foreground shadow-md shadow-brand/20"
+                        : "hover:bg-white/5 text-foreground"
+                    }`}
+                  >
+                    <span className="text-sm font-bold truncate">
+                      <bdi>{v}</bdi>
+                    </span>
+                    {isSel && <Check className="size-4 shrink-0" />}
+                  </button>
+                </li>
+              );
+            })}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
