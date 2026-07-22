@@ -122,6 +122,20 @@ function AdminOrders() {
     if (statusFilter !== "all") {
       list = list.filter(({ order: o }: any) => o.status === statusFilter);
     }
+    if (flagFilter !== "all") {
+      list = list.filter(({ order: o }: any) => {
+        const hasCoupon = Number(o.discount_amount ?? 0) > 0 || !!o.coupons?.code;
+        const refundTotal = (o.refunds ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+        const hasRefund = refundTotal > 0;
+        const isFullRefund = hasRefund && refundTotal >= Number(o.total ?? 0) - 0.001;
+        if (flagFilter === "coupon") return hasCoupon;
+        if (flagFilter === "refund") return hasRefund;
+        if (flagFilter === "refund_partial") return hasRefund && !isFullRefund;
+        if (flagFilter === "refund_full") return isFullRefund;
+        if (flagFilter === "clean") return !hasCoupon && !hasRefund;
+        return true;
+      });
+    }
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter(({ order: o }: any) =>
@@ -132,7 +146,7 @@ function AdminOrders() {
       );
     }
     return list;
-  }, [expiring, tab, search, statusFilter]);
+  }, [expiring, tab, search, statusFilter, flagFilter]);
 
   const profilesMap = useQuery({
     queryKey: ["admin-orders-profiles", (orders.data ?? []).map((o: any) => o.user_id).filter(Boolean).join(",")],
