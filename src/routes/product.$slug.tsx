@@ -13,6 +13,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { PricingConfigurator } from "@/components/PricingConfigurator";
 import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
+import { stripMd } from "@/lib/strip-md";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/product/$slug")({
