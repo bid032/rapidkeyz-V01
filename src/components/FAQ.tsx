@@ -173,9 +173,10 @@ export function FAQ() {
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                     className="overflow-hidden"
                   >
-                    <p className="px-4 sm:px-5 pb-5 text-sm sm:text-[15px] text-muted-foreground leading-loose">
-                      {it.a}
-                    </p>
+                    <div className="px-4 sm:px-5 pb-5 text-sm sm:text-[15px] text-muted-foreground leading-loose">
+                      <MarkdownContent content={it.a} dir={lang === "ar" ? "rtl" : "ltr"} />
+                    </div>
+
                   </motion.div>
                 )}
               </AnimatePresence>
