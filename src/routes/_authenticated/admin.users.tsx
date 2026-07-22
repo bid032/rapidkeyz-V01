@@ -471,6 +471,14 @@ function AdminUsers() {
                     ? (lang === "ar" ? "إدارة صلاحية الاستوك" : "Manage Stock Access")
                     : (lang === "ar" ? "منح صلاحية الاستوك" : "Grant Stock Access")}
                 </button>
+                <button
+                  onClick={() => askDelete(u)}
+                  disabled={deleteUser.isPending}
+                  className="w-full text-xs px-3 py-2.5 rounded-xl font-bold transition inline-flex items-center justify-center gap-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {lang === "ar" ? "حذف المستخدم" : "Delete user"}
+                </button>
               </div>
             );
           })}
