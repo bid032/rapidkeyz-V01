@@ -115,7 +115,7 @@ function DescriptionTab({
           {isAr ? "نظرة عامة" : "Overview"}
         </p>
         <h3 className="text-xl sm:text-2xl font-extrabold mb-3">{productName}</h3>
-        <p className="text-muted-foreground leading-relaxed">
+        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
           {description ||
             (isAr
               ? `احصل على ${productName} بأفضل الأسعار مع تفعيل فوري وضمان كامل طوال فترة الاشتراك.`
