@@ -374,7 +374,7 @@ function ProductPage() {
                           descExpanded ? "" : "line-clamp-2"
                         }`}
                       >
-                        {(desc || "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/[*_`>#~]/g, "")}
+                        {stripMd(desc)}
                       </p>
                       {desc.length > 100 && (
                         <button
