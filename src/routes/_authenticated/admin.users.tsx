@@ -379,6 +379,15 @@ function AdminUsers() {
                             <Boxes className="w-3 h-3" />
                             {lang === "ar" ? "استوك" : "Stock"}
                           </button>
+                          <button
+                            onClick={() => askDelete(u)}
+                            disabled={deleteUser.isPending}
+                            className="text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition inline-flex items-center gap-1 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                            title={lang === "ar" ? "حذف المستخدم" : "Delete user"}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            {lang === "ar" ? "حذف" : "Delete"}
+                          </button>
                         </div>
                       </td>
                     </tr>
