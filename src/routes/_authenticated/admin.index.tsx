@@ -285,7 +285,7 @@ function AdminOverview() {
       const d = new Date(it.orders?.created_at ?? it.created_at);
       if (d.getFullYear() !== y || d.getMonth() + 1 !== m) return;
       const idx = d.getDate() - 1;
-      rows[idx].revenue += Math.round(Number(it.unit_price) * Number(it.quantity));
+      rows[idx].revenue += Math.round(Number(it._netRevenue ?? (Number(it.unit_price) * Number(it.quantity))));
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
 
