@@ -159,7 +159,6 @@ function ShopPage() {
             compact
             mini
             activeSlug={search.category}
-            slugs={["design", "ai-tools", "software", "educational"]}
           />
         </>
       )}
