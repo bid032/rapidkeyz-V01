@@ -467,7 +467,7 @@ function PlanVariantDropdown({
                 top: rect.top,
                 left: rect.left,
                 width: rect.width,
-                backgroundColor: "oklch(0.19 0.03 255)",
+                backgroundColor: "var(--card)",
                 zIndex: 9999,
               }}
               className="max-h-72 overflow-auto rounded-2xl border border-border shadow-2xl p-1.5"
