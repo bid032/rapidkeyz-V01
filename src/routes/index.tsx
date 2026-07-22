@@ -484,11 +484,7 @@ function HomePage() {
       <BrandsStrip />
 
       {/* Categories , small 4-across clickable pills */}
-      <CategoriesShowcase
-        compact
-        mini
-        slugs={["design", "ai-tools", "software", "educational"]}
-      />
+      <CategoriesShowcase compact mini />
 
       {/* Best Sellers — moved BEFORE AI tools row */}
       {(() => {
