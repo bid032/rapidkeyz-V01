@@ -6,9 +6,10 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
-import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound, AtSign } from "lucide-react";
+import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound, AtSign, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { syncUserStockStaff } from "@/lib/stock-staff.functions";
+import { deleteUserAccount } from "@/lib/admin-users.functions";
 
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
@@ -29,11 +30,12 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 type RoleFilter = "all" | "admin" | "moderator" | "user";
 
 function AdminUsers() {
-  const { t, lang, notify } = useApp();
+  const { t, lang, notify, confirm } = useApp();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [stockUser, setStockUser] = useState<any | null>(null);
+  const deleteUserFn = useServerFn(deleteUserAccount);
 
   const users = useQuery({
     queryKey: ["admin-users"],
@@ -83,6 +85,29 @@ function AdminUsers() {
     },
     onError: (e) => showError(e, notify, lang),
   });
+
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      await deleteUserFn({ data: { userId } });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-users"] });
+      notify(lang === "ar" ? "تم حذف المستخدم" : "User deleted", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
+  });
+
+  const askDelete = async (u: any) => {
+    const ok = await confirm({
+      message:
+        lang === "ar"
+          ? `سيتم حذف حساب ${u.display_name || u.email} نهائياً مع كل بياناته. متأكد؟`
+          : `Permanently delete ${u.display_name || u.email} and all their data. Continue?`,
+      tone: "danger",
+    });
+    if (!ok) return;
+    deleteUser.mutate(u.id);
+  };
 
   const stats = useMemo(() => {
     const data = users.data ?? [];
@@ -354,6 +379,15 @@ function AdminUsers() {
                             <Boxes className="w-3 h-3" />
                             {lang === "ar" ? "استوك" : "Stock"}
                           </button>
+                          <button
+                            onClick={() => askDelete(u)}
+                            disabled={deleteUser.isPending}
+                            className="text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition inline-flex items-center gap-1 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                            title={lang === "ar" ? "حذف المستخدم" : "Delete user"}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            {lang === "ar" ? "حذف" : "Delete"}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -436,6 +470,14 @@ function AdminUsers() {
                   {u.stock_access
                     ? (lang === "ar" ? "إدارة صلاحية الاستوك" : "Manage Stock Access")
                     : (lang === "ar" ? "منح صلاحية الاستوك" : "Grant Stock Access")}
+                </button>
+                <button
+                  onClick={() => askDelete(u)}
+                  disabled={deleteUser.isPending}
+                  className="w-full text-xs px-3 py-2.5 rounded-xl font-bold transition inline-flex items-center justify-center gap-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  {lang === "ar" ? "حذف المستخدم" : "Delete user"}
                 </button>
               </div>
             );

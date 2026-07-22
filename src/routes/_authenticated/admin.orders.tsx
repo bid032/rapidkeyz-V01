@@ -279,6 +279,30 @@ function AdminOrders() {
     onError: (e) => showError(e, notify, lang),
   });
 
+  const clearAllOrders = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("orders").delete().not("id", "is", null);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم مسح كل الطلبات" : "All orders cleared", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
+  });
+
+  const askClearAll = async () => {
+    const ok = await confirm({
+      message:
+        lang === "ar"
+          ? "سيتم حذف كل الطلبات نهائياً مع كل تفاصيلها. متأكد؟"
+          : "All orders and their details will be permanently deleted. Continue?",
+      tone: "danger",
+    });
+    if (!ok) return;
+    clearAllOrders.mutate();
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -327,6 +351,15 @@ function AdminOrders() {
           className="px-4 py-2.5 bg-brand text-brand-foreground rounded-lg font-bold text-sm disabled:opacity-50 whitespace-nowrap"
         >
           تحميل Excel
+        </button>
+        <button
+          onClick={askClearAll}
+          disabled={clearAllOrders.isPending || !(orders.data?.length)}
+          className="px-4 py-2.5 rounded-lg font-bold text-sm border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50 whitespace-nowrap"
+        >
+          {clearAllOrders.isPending
+            ? (lang === "ar" ? "جارٍ المسح…" : "Clearing…")
+            : (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")}
         </button>
       </div>
 
