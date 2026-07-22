@@ -415,15 +415,17 @@ function AdminSettings() {
                         {usingCustomEn ? "Custom ✓" : "Default"}
                       </span>
                     </div>
-                    <textarea
-                      rows={6}
+                    <RichTextEditor
                       value={valEn}
-                      onChange={(e) =>
-                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: e.target.value } })
+                      onChange={(v) =>
+                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: v } })
                       }
-                      className="px-3 py-2 bg-background border border-border rounded leading-loose"
+                      dir="ltr"
+                      lang="en"
+                      minHeight={180}
                       placeholder="Leave empty to keep the default text…"
                     />
+
                     <details className="mt-1 group">
                       <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground hover:text-brand select-none">
                         Show default text currently shown ▾
