@@ -210,12 +210,14 @@ function AdminReviews() {
               </div>
               <div className="sm:col-span-2">
                 <label className="text-[11px] font-bold text-muted-foreground">نص التقييم</label>
-                <textarea
+                <RichTextEditor
                   value={draft.body ?? ""}
-                  rows={3}
-                  onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-background border border-border rounded"
+                  onChange={(v) => setDraft({ ...draft, body: v })}
+                  dir={(draft.lang ?? "ar") === "ar" ? "rtl" : "ltr"}
+                  lang={(draft.lang ?? "ar") as "ar" | "en"}
+                  minHeight={140}
                 />
+
               </div>
               <div>
                 <label className="text-[11px] font-bold text-muted-foreground">اللغة</label>
