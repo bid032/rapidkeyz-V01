@@ -422,7 +422,7 @@ export function QuickBuyDialog({
                 {name}
               </DialogTitle>
               <DialogDescription className="text-xs leading-snug text-muted-foreground line-clamp-2">
-                {desc || (isAr ? "اختر الخطة والكمية وأتمّ شراءك في ثوانٍ" : "Pick a plan and quantity to check out in seconds")}
+                {stripMd(desc) || (isAr ? "اختر الخطة والكمية وأتمّ شراءك في ثوانٍ" : "Pick a plan and quantity to check out in seconds")}
               </DialogDescription>
             </DialogHeader>
           </div>
