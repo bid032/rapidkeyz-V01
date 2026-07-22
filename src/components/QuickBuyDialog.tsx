@@ -12,6 +12,7 @@ import {
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductCardData } from "@/components/ProductCard";
+import { stripMd } from "@/lib/strip-md";
 
 type Plan = {
   id: string;
