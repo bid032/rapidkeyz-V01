@@ -279,6 +279,30 @@ function AdminOrders() {
     onError: (e) => showError(e, notify, lang),
   });
 
+  const clearAllOrders = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("orders").delete().not("id", "is", null);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      notify(lang === "ar" ? "تم مسح كل الطلبات" : "All orders cleared", "success");
+    },
+    onError: (e) => showError(e, notify, lang),
+  });
+
+  const askClearAll = async () => {
+    const ok = await confirm({
+      message:
+        lang === "ar"
+          ? "سيتم حذف كل الطلبات نهائياً مع كل تفاصيلها. متأكد؟"
+          : "All orders and their details will be permanently deleted. Continue?",
+      tone: "danger",
+    });
+    if (!ok) return;
+    clearAllOrders.mutate();
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
