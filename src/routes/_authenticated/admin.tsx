@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { useApp } from "@/contexts/AppContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useAdminRealtime } from "@/hooks/useAdminRealtime";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 function AdminLayout() {
   const { t } = useApp();
   const { isAdmin, canModerate } = useAdminRole();
+  useAdminRealtime(canModerate);
   const [mobileOpen, setMobileOpen] = useState(false);
   const currentPath = useRouterState({ select: (s) => s.location.pathname });
 
