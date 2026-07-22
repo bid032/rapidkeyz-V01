@@ -25,17 +25,11 @@ import { spawn } from 'child_process';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-let {
-  OLD_SUPABASE_DB_URL,
+const {
   NEW_SUPABASE_URL,
   NEW_SUPABASE_SERVICE_ROLE_KEY,
   NEW_SUPABASE_DB_URL,
 } = process.env;
-
-// لو OLD_SUPABASE_DB_URL مش موجود في .env، استخدم قيمة البيئة من المشروع الحالي
-if (!OLD_SUPABASE_DB_URL) {
-  OLD_SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
-}
 
 function required(name, value) {
   if (!value) {
@@ -45,10 +39,10 @@ function required(name, value) {
   }
 }
 
-required('OLD_SUPABASE_DB_URL', OLD_SUPABASE_DB_URL);
 required('NEW_SUPABASE_URL', NEW_SUPABASE_URL);
 required('NEW_SUPABASE_SERVICE_ROLE_KEY', NEW_SUPABASE_SERVICE_ROLE_KEY);
 required('NEW_SUPABASE_DB_URL', NEW_SUPABASE_DB_URL);
+
 
 const newSupabase = createClient(NEW_SUPABASE_URL, NEW_SUPABASE_SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -81,42 +75,29 @@ async function runPsql(fileName) {
 async function migrateUsers() {
   console.log('\n🔑 جاري نقل المستخدمين ...');
 
-  const oldClient = new pg.Client({ connectionString: OLD_SUPABASE_DB_URL });
-  await oldClient.connect();
+  const usersFile = path.join(__dirname, 'users.json');
+  let users = [];
+  try {
+    const raw = await fs.readFile(usersFile, 'utf8');
+    users = JSON.parse(raw);
+  } catch (err) {
+    console.warn(`⚠️ مفيش ملف users.json — هيتم تخطي نقل المستخدمين. (${err.message})`);
+    return;
+  }
 
-  const { rows: users } = await oldClient.query(`
-    SELECT
-      id,
-      email,
-      encrypted_password,
-      email_confirmed_at,
-      raw_user_meta_data,
-      created_at,
-      updated_at
-    FROM auth.users
-    WHERE email IS NOT NULL
-    ORDER BY created_at;
-  `);
+  console.log(`ℹ️ لقيت ${users.length} مستخدم في users.json`);
 
-  await oldClient.end();
-
-  console.log(`ℹ️ لقيت ${users.length} مستخدم في المشروع القديم`);
-
-  let created = 0;
-  let skipped = 0;
-  let failed = 0;
+  let created = 0, skipped = 0, failed = 0;
 
   for (const user of users) {
     try {
       const { data: existing } = await newSupabase.auth.admin.getUserById(user.id);
       if (existing?.user) {
-        console.log(`⏭️ المستخدم موجود فعلاً: ${user.email}`);
+        console.log(`⏭️ موجود: ${user.email}`);
         skipped++;
         continue;
       }
-    } catch {
-      // مفيش مشكلة، هنحاول ننشئ
-    }
+    } catch {}
 
     try {
       const { error } = await newSupabase.auth.admin.createUser({
@@ -126,9 +107,7 @@ async function migrateUsers() {
         email_confirm: true,
         user_metadata: user.raw_user_meta_data || {},
       });
-
       if (error) throw error;
-
       console.log(`✅ اتنقل: ${user.email}`);
       created++;
     } catch (err) {
@@ -138,13 +117,12 @@ async function migrateUsers() {
   }
 
   console.log(`\n📊 المستخدمين: ${created} اتنقلوا، ${skipped} موجودين، ${failed} فشلوا`);
-
   if (created > 0) {
-    console.log('\n⚠️ ملاحظة مهمة:');
-    console.log('كل الحسابات اتنقلت بباسورد مؤقت: TempPassword123!ChangeMe');
-    console.log('اليوزرز لازم يستخدموا "نسيت كلمة السر" في الموقع الجديد عشان يعملوا باسورد جديدة.');
+    console.log('\n⚠️ الباسورد المؤقت: TempPassword123!ChangeMe');
+    console.log('اليوزرز يستخدموا "نسيت كلمة السر" في الموقع الجديد.');
   }
 }
+
 
 async function main() {
   console.log('🚀 بدء ترحيل Supabase ...');
