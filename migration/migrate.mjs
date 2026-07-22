@@ -25,17 +25,11 @@ import { spawn } from 'child_process';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-let {
-  OLD_SUPABASE_DB_URL,
+const {
   NEW_SUPABASE_URL,
   NEW_SUPABASE_SERVICE_ROLE_KEY,
   NEW_SUPABASE_DB_URL,
 } = process.env;
-
-// لو OLD_SUPABASE_DB_URL مش موجود في .env، استخدم قيمة البيئة من المشروع الحالي
-if (!OLD_SUPABASE_DB_URL) {
-  OLD_SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
-}
 
 function required(name, value) {
   if (!value) {
@@ -45,10 +39,10 @@ function required(name, value) {
   }
 }
 
-required('OLD_SUPABASE_DB_URL', OLD_SUPABASE_DB_URL);
 required('NEW_SUPABASE_URL', NEW_SUPABASE_URL);
 required('NEW_SUPABASE_SERVICE_ROLE_KEY', NEW_SUPABASE_SERVICE_ROLE_KEY);
 required('NEW_SUPABASE_DB_URL', NEW_SUPABASE_DB_URL);
+
 
 const newSupabase = createClient(NEW_SUPABASE_URL, NEW_SUPABASE_SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
