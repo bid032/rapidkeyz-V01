@@ -6,6 +6,7 @@ import { PageHero } from "@/components/PageHero";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Phone, Wrench, ShieldCheck, Zap } from "lucide-react";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
