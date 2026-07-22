@@ -662,8 +662,20 @@ function AdminOverview() {
                               <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
                               <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
                               <div>الإجمالي قبل الخصم: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              {r._coupon && (
+                                <div className="text-warning">
+                                  كود الخصم: <span className="font-mono font-bold">{r._coupon.code}</span>
+                                  {" · "}
+                                  {r._coupon.discount_type === "percent"
+                                    ? `${r._coupon.discount_value}%`
+                                    : `${r._coupon.discount_value} ${t.common.currency}`}
+                                </div>
+                              )}
                               {Number(r._lineDiscount ?? 0) > 0 && (
                                 <div className="text-warning">خصم الكوبون (حصة السطر): -{Math.round(Number(r._lineDiscount))} {t.common.currency}</div>
+                              )}
+                              {Number(r.orders?.discount_amount ?? 0) > 0 && (
+                                <div className="text-warning text-[11px]">خصم الطلب كامل: -{Math.round(Number(r.orders.discount_amount))} {t.common.currency}</div>
                               )}
                               <div className="font-bold">الإجمالي بعد الخصم: {Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</div>
                               <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
