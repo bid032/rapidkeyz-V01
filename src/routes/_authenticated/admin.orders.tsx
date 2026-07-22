@@ -444,7 +444,7 @@ function AdminOrders() {
                     <span className="font-mono">{o.customer_phone || "—"}</span>
                     {o.customer_phone && (
                       <a
-                        href={`https://wa.me/${String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "20")}`}
+                        href={`https://wa.me/${buildWaNumber(o.customer_phone, prof.country)}`}
                         target="_blank" rel="noreferrer"
                         className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
                       >واتساب</a>
