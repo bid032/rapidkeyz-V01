@@ -1,4 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 type Plan = {
