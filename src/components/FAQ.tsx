@@ -5,6 +5,7 @@ import { Plus, HelpCircle } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { BrandName } from "@/components/BrandName";
 import { supabase } from "@/integrations/supabase/client";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 type QA = { q: string; a: string };
 
