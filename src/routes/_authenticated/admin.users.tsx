@@ -6,9 +6,8 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
-import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, KeyRound, AtSign, Trash2 } from "lucide-react";
+import { Search, Download, Users, Shield, ShieldCheck, User, Mail, Phone, MapPin, Calendar, X, Boxes, Trash2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { syncUserStockStaff } from "@/lib/stock-staff.functions";
 import { deleteUserAccount } from "@/lib/admin-users.functions";
 
 
