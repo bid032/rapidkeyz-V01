@@ -109,20 +109,27 @@ function AdminFaqs() {
             onChange={(e) => setDraft({ ...draft, question_en: e.target.value })}
             className="px-3 py-2 bg-background border border-border rounded-lg"
           />
-          <textarea
-            placeholder="الإجابة (عربي)"
-            rows={3}
-            value={draft.answer_ar ?? ""}
-            onChange={(e) => setDraft({ ...draft, answer_ar: e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded-lg"
-          />
-          <textarea
-            placeholder="Answer (EN)"
-            rows={3}
-            value={draft.answer_en ?? ""}
-            onChange={(e) => setDraft({ ...draft, answer_en: e.target.value })}
-            className="px-3 py-2 bg-background border border-border rounded-lg"
-          />
+          <div className="sm:col-span-2">
+            <RichTextEditor
+              value={draft.answer_ar ?? ""}
+              onChange={(v) => setDraft({ ...draft, answer_ar: v })}
+              dir="rtl"
+              lang="ar"
+              minHeight={140}
+              placeholder="الإجابة (عربي)"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <RichTextEditor
+              value={draft.answer_en ?? ""}
+              onChange={(v) => setDraft({ ...draft, answer_en: v })}
+              dir="ltr"
+              lang="en"
+              minHeight={140}
+              placeholder="Answer (EN)"
+            />
+          </div>
+
           <input
             type="number"
             placeholder="ترتيب العرض"
