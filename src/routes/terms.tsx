@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -40,10 +41,8 @@ function TermsPage() {
       <PageHero title={t.terms.title} eyebrow={t.nav.terms} />
       <main className="max-w-4xl mx-auto px-3 sm:px-6 pb-10 sm:pb-16">
         {customText ? (
-          <div className="mb-10 rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
-            <p data-gsap="scroll-fade" className="leading-loose text-foreground whitespace-pre-line">
-              {customText}
-            </p>
+          <div className="mb-10 rounded-2xl border border-border bg-card/60 p-5 sm:p-7" data-gsap="scroll-fade">
+            <MarkdownContent content={customText} dir={lang === "ar" ? "rtl" : "ltr"} />
           </div>
         ) : (
           <>

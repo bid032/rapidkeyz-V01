@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { translations } from "@/lib/i18n";
 import { pageDefaults } from "@/lib/page-defaults";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
@@ -379,16 +380,17 @@ function AdminSettings() {
                         {usingCustomAr ? "نص مخصص ✓" : "افتراضي"}
                       </span>
                     </div>
-                    <textarea
-                      rows={6}
+                    <RichTextEditor
                       value={valAr}
-                      onChange={(e) =>
-                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: e.target.value } })
+                      onChange={(v) =>
+                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: v } })
                       }
                       dir="rtl"
-                      className="px-3 py-2 bg-background border border-border rounded text-end leading-loose"
+                      lang="ar"
+                      minHeight={180}
                       placeholder="اسيبها فاضية عشان تفضل النص الافتراضي…"
                     />
+
                     <details className="mt-1 group">
                       <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground hover:text-brand select-none">
                         عرض النص الافتراضي الظاهر حالياً ▾
@@ -413,15 +415,17 @@ function AdminSettings() {
                         {usingCustomEn ? "Custom ✓" : "Default"}
                       </span>
                     </div>
-                    <textarea
-                      rows={6}
+                    <RichTextEditor
                       value={valEn}
-                      onChange={(e) =>
-                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: e.target.value } })
+                      onChange={(v) =>
+                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], en: v } })
                       }
-                      className="px-3 py-2 bg-background border border-border rounded leading-loose"
+                      dir="ltr"
+                      lang="en"
+                      minHeight={180}
                       placeholder="Leave empty to keep the default text…"
                     />
+
                     <details className="mt-1 group">
                       <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground hover:text-brand select-none">
                         Show default text currently shown ▾

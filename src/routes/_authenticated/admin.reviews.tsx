@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { useApp } from "@/contexts/AppContext";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 export const Route = createFileRoute("/_authenticated/admin/reviews")({
   component: AdminReviews,
@@ -209,12 +210,14 @@ function AdminReviews() {
               </div>
               <div className="sm:col-span-2">
                 <label className="text-[11px] font-bold text-muted-foreground">نص التقييم</label>
-                <textarea
+                <RichTextEditor
                   value={draft.body ?? ""}
-                  rows={3}
-                  onChange={(e) => setDraft({ ...draft, body: e.target.value })}
-                  className="mt-1 w-full px-3 py-2 bg-background border border-border rounded"
+                  onChange={(v) => setDraft({ ...draft, body: v })}
+                  dir={(draft.lang ?? "ar") === "ar" ? "rtl" : "ltr"}
+                  lang={(draft.lang ?? "ar") as "ar" | "en"}
+                  minHeight={140}
                 />
+
               </div>
               <div>
                 <label className="text-[11px] font-bold text-muted-foreground">اللغة</label>

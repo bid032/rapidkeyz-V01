@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -53,19 +54,22 @@ function PrivacyPage() {
             {(refundText || !customText) && (
               <div className="rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
                 <h3 className="text-lg font-bold text-brand mb-3">{t.privacy.refundTitle}</h3>
-                <p className="leading-loose text-foreground whitespace-pre-line">
-                  {refundText || t.privacy.refund.map((i) => `• ${i}`).join("\n")}
-                </p>
+                <MarkdownContent
+                  content={refundText || t.privacy.refund.map((i) => `- ${i}`).join("\n")}
+                  dir={lang === "ar" ? "rtl" : "ltr"}
+                />
               </div>
             )}
             {(customText || !refundText) && (
               <div className="rounded-2xl border border-border bg-card/60 p-5 sm:p-7">
                 <h3 className="text-lg font-bold text-brand mb-3">{t.privacy.privacyTitle}</h3>
-                <p className="leading-loose text-foreground whitespace-pre-line">
-                  {customText || t.privacy.privacy.map((i) => `• ${i}`).join("\n")}
-                </p>
+                <MarkdownContent
+                  content={customText || t.privacy.privacy.map((i) => `- ${i}`).join("\n")}
+                  dir={lang === "ar" ? "rtl" : "ltr"}
+                />
               </div>
             )}
+
           </div>
         ) : (
           <>

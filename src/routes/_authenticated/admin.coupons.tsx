@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, Plus, Trash2, Pencil, X, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 export const Route = createFileRoute("/_authenticated/admin/coupons")({
   beforeLoad: async () => {
@@ -482,14 +483,16 @@ function CouponEditor({
 
           <label className="block">
             <span className="text-xs font-bold text-muted-foreground mb-1 block">ملاحظات داخلية</span>
-            <textarea
+            <RichTextEditor
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
+              onChange={setNotes}
+              dir="rtl"
+              lang="ar"
+              minHeight={120}
               placeholder="لمرجعية الفريق فقط"
-              className="w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm"
             />
           </label>
+
         </div>
 
         <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border sticky bottom-0 bg-card rounded-b-2xl">

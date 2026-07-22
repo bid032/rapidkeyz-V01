@@ -235,7 +235,10 @@ function ReviewsTab({ isAr, productId }: { isAr: boolean; productId: string }) {
                 <span className="text-muted-foreground/40">{"★".repeat(5 - r.rating)}</span>
               </span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">{r.body}</p>
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              <MarkdownContent content={r.body} dir={isAr ? "rtl" : "ltr"} />
+            </div>
+
           </div>
         ))}
       </div>
