@@ -90,11 +90,25 @@ export async function readStockSession(): Promise<StockSessionData> {
 }
 
 export async function requireStockStaff(): Promise<Required<Pick<StockSessionData, "staffName">> & StockSessionData> {
-  const data = await readStockSession();
-  if (!data.staffName) {
-    const err: any = new Error("Unauthorized");
-    err.statusCode = 401;
-    throw err;
+  const { getRequestHeader } = await import("@tanstack/react-start/server");
+  const auth = getRequestHeader("authorization") || getRequestHeader("Authorization");
+  const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+  if (!token) {
+    const err: any = new Error("Unauthorized"); err.statusCode = 401; throw err;
   }
-  return data as Required<Pick<StockSessionData, "staffName">> & StockSessionData;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: userRes, error: userErr } = await supabaseAdmin.auth.getUser(token);
+  if (userErr || !userRes.user) {
+    const err: any = new Error("Unauthorized"); err.statusCode = 401; throw err;
+  }
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("display_name, stock_access")
+    .eq("id", userRes.user.id)
+    .maybeSingle();
+  if (!profile?.stock_access) {
+    const err: any = new Error("Forbidden: no stock access"); err.statusCode = 403; throw err;
+  }
+  const staffName = profile.display_name || userRes.user.email || "Staff";
+  return { staffName, loggedAt: Date.now(), exp: Date.now() + MAX_AGE_SECONDS * 1000 };
 }

@@ -437,7 +437,7 @@ function AdminOverview() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-5">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-5">
             {(() => {
               // Source of truth: SQL RPC (admin_revenue_stats). It filters by
               // status IN (paid, delivered, refunded) and subtracts refunds
@@ -447,6 +447,14 @@ function AdminOverview() {
               const totRef = Math.round(stats.data?.refunds ?? 0);
               const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
 
+              // Total cost = sum of purchase prices for delivered/paid/refunded items in range.
+              const validStatuses = new Set(["paid", "delivered", "refunded"]);
+              const totCost = Math.round(
+                (sales.data ?? [])
+                  .filter((it: any) => validStatuses.has(it.orders?.status))
+                  .reduce((s: number, it: any) => s + Number(it._cost ?? 0) * Number(it.quantity ?? 0), 0),
+              );
+              const prevCost = 0; // no previous-period cost available; skip delta
 
               const p = prevStats.data;
               const showCompare = compare && !!prevMonthKey && !!p;
@@ -479,6 +487,7 @@ function AdminOverview() {
               );
               return [
                 chip("الإيرادات", `${totRev} ${t.common.currency}`, "border-brand/40 bg-brand/10 text-brand", delta(totRev, p?.revenue ?? 0)),
+                chip("Cost", `${totCost} ${t.common.currency}`, "border-muted-foreground/30 bg-muted/40 text-foreground", delta(totCost, prevCost)),
                 chip("الأرباح", `${totProf} ${t.common.currency}`, "border-success/40 bg-success/10 text-success", delta(totProf, p?.profit ?? 0)),
                 chip("التعويضات", `${totRef} ${t.common.currency}`, "border-destructive/40 bg-destructive/10 text-destructive", delta(totRef, p?.refunds ?? 0)),
                 chip("هامش الربح", `${margin}%`, "border-warning/40 bg-warning/10 text-warning", delta(margin, prevMargin, true)),
