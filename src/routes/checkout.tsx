@@ -362,15 +362,21 @@ function CheckoutPage() {
                     onChange={(e) => setName(filterName(e.target.value))}
                     className="px-4 py-3 bg-background border border-border rounded-lg"
                   />
-                  <input
-                    required
-                    type="email"
-                    placeholder={t.checkout.email}
-                    value={email}
-                    onChange={(e) => setEmail(filterEmail(e.target.value))}
-                    readOnly={!!user}
-                    className={`px-4 py-3 bg-background border border-border rounded-lg ${user ? "opacity-70 cursor-not-allowed" : ""}`}
-                  />
+                  <div className="space-y-1">
+                    <input
+                      required
+                      type="email"
+                      placeholder={lang === "ar" ? "البريد للتواصل ، هنبعتلك عليه بيانات الطلب" : "Contact email , we'll send your order details here"}
+                      value={email}
+                      onChange={(e) => setEmail(filterEmail(e.target.value))}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-lg"
+                    />
+                    <p className="text-xs text-muted-foreground px-1">
+                      {lang === "ar"
+                        ? "ده الإيميل اللي هيوصلك عليه بيانات الطلب ، تقدر تغيّره."
+                        : "This is where we'll send your order details , you can change it."}
+                    </p>
+                  </div>
                   <select
                     required
                     value={country}
@@ -390,19 +396,14 @@ function CheckoutPage() {
                       required
                       type="tel"
                       inputMode="tel"
-                      placeholder={lang === "ar" ? "1XXXXXXXXX" : "1XXXXXXXXX"}
+                      placeholder={lang === "ar" ? "تأكد إن الرقم عليه واتساب" : "Make sure this number has WhatsApp"}
                       value={phone}
                       onChange={(e) => setPhone(filterDigits(e.target.value, 15))}
-                      className="flex-1 px-4 py-3 bg-transparent outline-none"
+                      className="flex-1 px-4 py-3 bg-transparent outline-none placeholder:text-xs sm:placeholder:text-sm"
                       dir="ltr"
                     />
                   </div>
-                  <p className="text-xs text-warning flex items-center gap-1.5">
-                    <span aria-hidden>⚠️</span>
-                    {lang === "ar"
-                      ? "تأكد إن الرقم ده مفعّل عليه واتساب ، عشان نقدر نوصلك بالطلب."
-                      : "Make sure this number has WhatsApp active , so we can reach you about your order."}
-                  </p>
+
                 </div>
               </section>
 
