@@ -30,11 +30,12 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 type RoleFilter = "all" | "admin" | "moderator" | "user";
 
 function AdminUsers() {
-  const { t, lang, notify } = useApp();
+  const { t, lang, notify, confirm } = useApp();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [stockUser, setStockUser] = useState<any | null>(null);
+  const deleteUserFn = useServerFn(deleteUserAccount);
 
   const users = useQuery({
     queryKey: ["admin-users"],
