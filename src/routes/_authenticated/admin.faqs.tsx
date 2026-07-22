@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Trash2, Plus, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export const Route = createFileRoute("/_authenticated/admin/faqs")({
   component: AdminFaqs,
