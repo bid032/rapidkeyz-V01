@@ -1,9 +1,3 @@
---
--- PostgreSQL database dump
---
-
-\restrict Mehcvb95qC4dU8aNQRfEnC8ICzrDNnBw3Dm0aGPeXflGxRTsGcrfJgXBhU6w7NT
-
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.9
 
@@ -3192,4 +3186,3 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 --
 
 \unrestrict Mehcvb95qC4dU8aNQRfEnC8ICzrDNnBw3Dm0aGPeXflGxRTsGcrfJgXBhU6w7NT
-
