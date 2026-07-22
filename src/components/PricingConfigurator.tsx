@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
+
 import { useApp } from "@/contexts/AppContext";
 
 type Plan = {
@@ -386,11 +388,29 @@ function PlanVariantDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) return;
+    const update = () => {
+      const r = btnRef.current!.getBoundingClientRect();
+      setRect({ top: r.bottom + 8, left: r.left, width: r.width });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (!ref.current?.contains(t) && !(t as HTMLElement).closest?.("[data-plan-dd]")) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -406,6 +426,7 @@ function PlanVariantDropdown({
   return (
     <div ref={ref} className="relative">
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
@@ -431,46 +452,59 @@ function PlanVariantDropdown({
         </span>
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.ul
-            role="listbox"
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-30 mt-2 w-full max-h-72 overflow-auto rounded-2xl border border-white/10 shadow-2xl p-1.5 bg-card backdrop-blur-xl"
-          >
-            {variants.map((v) => {
-              const isSel = v === value;
-              return (
-                <li key={v}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={isSel}
-                    onClick={() => {
-                      onChange(v);
-                      setOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-start transition-all ${
-                      isSel
-                        ? "bg-brand text-brand-foreground shadow-md shadow-brand/20"
-                        : "hover:bg-white/5 text-foreground"
-                    }`}
-                  >
-                    <span className="text-sm font-bold truncate">
-                      <bdi>{v}</bdi>
-                    </span>
-                    {isSel && <Check className="size-4 shrink-0" />}
-                  </button>
-                </li>
-              );
-            })}
-          </motion.ul>
-        )}
-      </AnimatePresence>
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {open && rect && (
+            <motion.ul
+              data-plan-dd
+              role="listbox"
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.15 }}
+              style={{
+                position: "fixed",
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                backgroundColor: "var(--card)",
+                zIndex: 9999,
+              }}
+              className="max-h-72 overflow-auto rounded-2xl border border-border shadow-2xl p-1.5"
+            >
+              {variants.map((v) => {
+                const isSel = v === value;
+                return (
+                  <li key={v}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={isSel}
+                      onClick={() => {
+                        onChange(v);
+                        setOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-start transition-all ${
+                        isSel
+                          ? "bg-brand text-brand-foreground shadow-md shadow-brand/20"
+                          : "hover:bg-white/5 text-foreground"
+                      }`}
+                    >
+                      <span className="text-sm font-bold truncate">
+                        <bdi>{v}</bdi>
+                      </span>
+                      {isSel && <Check className="size-4 shrink-0" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </motion.ul>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
+
 
