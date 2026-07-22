@@ -191,6 +191,7 @@ function AdminRefunds() {
               <tr>
                 <th className="p-3 text-start">التاريخ</th>
                 <th className="p-3 text-start">الطلب</th>
+                <th className="p-3 text-start">حالة الطلب</th>
                 <th className="p-3 text-start">النوع</th>
                 <th className="p-3 text-start">المبلغ</th>
                 <th className="p-3 text-start">ملاحظات</th>
@@ -198,9 +199,17 @@ function AdminRefunds() {
               </tr>
             </thead>
             <tbody>
-              {refunds.data?.map((r) => {
-                const order = orders.data?.find((o: any) => o.id === r.order_id) as any;
-                const item = order?.order_items?.find((i: any) => i.id === r.order_item_id);
+              {refunds.data?.map((r: any) => {
+                const order = (r.orders as any) ?? orders.data?.find((o: any) => o.id === r.order_id);
+                const fullOrder = orders.data?.find((o: any) => o.id === r.order_id) as any;
+                const item = fullOrder?.order_items?.find((i: any) => i.id === r.order_item_id);
+                const statusColors: Record<string, string> = {
+                  delivered: "bg-success/15 text-success",
+                  paid: "bg-brand/15 text-brand",
+                  refunded: "bg-destructive/15 text-destructive",
+                  pending: "bg-warning/15 text-warning",
+                  cancelled: "bg-muted text-muted-foreground",
+                };
                 return (
                   <tr key={r.id} className="border-t border-border">
                     <td className="p-3 whitespace-nowrap">{new Date(r.created_at).toLocaleDateString("ar-EG")}</td>
@@ -210,6 +219,13 @@ function AdminRefunds() {
                           <div className="font-bold">#{order.order_number}</div>
                           {item && <div className="text-xs text-muted-foreground">{item.product_name} · {item.plan_label}</div>}
                         </div>
+                      ) : "—"}
+                    </td>
+                    <td className="p-3">
+                      {order?.status ? (
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColors[order.status] ?? "bg-muted text-muted-foreground"}`}>
+                          {order.status}
+                        </span>
                       ) : "—"}
                     </td>
                     <td className="p-3">{typeLabel(r.type)}</td>
@@ -224,7 +240,7 @@ function AdminRefunds() {
                 );
               })}
               {(refunds.data ?? []).length === 0 && (
-                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">لا يوجد تعويضات</td></tr>
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">لا يوجد تعويضات</td></tr>
               )}
             </tbody>
           </table>
