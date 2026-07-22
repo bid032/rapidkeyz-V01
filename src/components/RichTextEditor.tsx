@@ -241,7 +241,7 @@ export function RichTextEditor({
             <Sparkles className="size-4" />
           </Btn>
           {tplOpen && (
-            <div className="absolute top-full mt-1 z-50 p-1 rounded-lg border border-border bg-popover shadow-lg w-[220px]">
+            <div className="absolute top-full start-0 mt-1 z-50 p-1 rounded-lg border border-border bg-popover shadow-lg w-[220px] max-w-[calc(100vw-2rem)]">
               {(Object.keys(TEMPLATES[lang]) as TemplateKey[]).map((k) => (
                 <button
                   key={k}
