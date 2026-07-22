@@ -487,7 +487,7 @@ function AdminOverview() {
               );
               return [
                 chip("الإيرادات", `${totRev} ${t.common.currency}`, "border-brand/40 bg-brand/10 text-brand", delta(totRev, p?.revenue ?? 0)),
-                chip("Cost", `${totCost} ${t.common.currency}`, "border-muted-foreground/30 bg-muted/40 text-foreground", delta(totCost, prevCost)),
+                chip(lang === "ar" ? "التكلفة" : "Cost", `${totCost} ${t.common.currency}`, "border-muted-foreground/30 bg-muted/40 text-foreground", delta(totCost, prevCost)),
                 chip("الأرباح", `${totProf} ${t.common.currency}`, "border-success/40 bg-success/10 text-success", delta(totProf, p?.profit ?? 0)),
                 chip("التعويضات", `${totRef} ${t.common.currency}`, "border-destructive/40 bg-destructive/10 text-destructive", delta(totRef, p?.refunds ?? 0)),
                 chip("هامش الربح", `${margin}%`, "border-warning/40 bg-warning/10 text-warning", delta(margin, prevMargin, true)),
