@@ -197,6 +197,12 @@ function AdminOverview() {
         const { data: costs } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", planIds);
         (costs ?? []).forEach((c: any) => costMap.set(c.plan_id, Number(c.cost_price ?? 0)));
       }
+      const couponIds = Array.from(new Set(items.map((r) => r.orders?.coupon_id).filter(Boolean)));
+      const couponMap = new Map<string, any>();
+      if (couponIds.length) {
+        const { data: cps } = await supabase.from("coupons").select("id, code, discount_type, discount_value").in("id", couponIds);
+        (cps ?? []).forEach((c: any) => couponMap.set(c.id, c));
+      }
       const userIds = Array.from(new Set(items.map((r) => r.orders?.user_id).filter(Boolean)));
       const profileMap = new Map<string, any>();
       if (userIds.length) {
