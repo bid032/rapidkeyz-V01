@@ -614,7 +614,7 @@ function AdminOrders() {
             })()}
 
           </div>
-        ))}
+        );})}
         {visible.length === 0 && (
           <p className="text-muted-foreground text-center py-16">
             {tab === "expiring" ? "مفيش خدمات قربت تنتهي" : "No orders yet"}
