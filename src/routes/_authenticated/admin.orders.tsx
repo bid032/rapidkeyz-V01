@@ -404,6 +404,19 @@ function AdminOrders() {
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
+        <select
+          value={flagFilter}
+          onChange={(e) => setFlagFilter(e.target.value as any)}
+          className="px-3 py-2.5 bg-background border border-border rounded-lg text-sm font-bold"
+          title="فلترة حسب الكوبون / التعويض"
+        >
+          <option value="all">الكل (كوبون/تعويض)</option>
+          <option value="coupon">🎟️ عليه كوبون</option>
+          <option value="refund">↩️ عليه تعويض</option>
+          <option value="refund_partial">↩️ تعويض جزئي</option>
+          <option value="refund_full">↩️ تعويض كلي</option>
+          <option value="clean">بدون كوبون/تعويض</option>
+        </select>
         <button
           onClick={exportOrdersXlsx}
           disabled={!visible.length}
