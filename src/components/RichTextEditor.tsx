@@ -184,7 +184,7 @@ export function RichTextEditor({
   const over = chars > maxLength;
 
   return (
-    <div className="border border-border rounded-xl bg-background overflow-hidden">
+    <div className="border border-border rounded-xl bg-background">
       {/* Toolbar */}
       <div className="flex items-center gap-1 flex-wrap px-2 py-1.5 border-b border-border bg-muted/30" dir={dir}>
         <Btn onClick={() => wrap("**", "**", isAr ? "نص عريض" : "bold text")} title={T.bold}>
