@@ -435,13 +435,8 @@ function PlanVariantDropdown({
           open ? "border-brand shadow-lg shadow-brand/10" : "border-white/10 hover:border-brand/40"
         }`}
       >
-        <span className="flex flex-col min-w-0">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand/80">
-            {isAr ? "الخطة المختارة" : "Selected plan"}
-          </span>
-          <span className="mt-0.5 text-sm font-bold truncate">
-            <bdi>{value}</bdi>
-          </span>
+        <span className="text-sm font-bold truncate min-w-0">
+          <bdi>{value}</bdi>
         </span>
         <span
           className={`shrink-0 grid place-items-center size-8 rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-transform ${
