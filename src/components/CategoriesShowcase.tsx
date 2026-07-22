@@ -190,18 +190,18 @@ function CategoryStrip({
           type="button"
           aria-label="prev"
           onClick={() => scrollBy(-1)}
-          className="grid absolute top-1/2 -translate-y-1/2 start-0 -translate-x-1/2 rtl:translate-x-1/2 z-10 place-items-center size-8 sm:size-10 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
+          className="hidden sm:grid absolute top-1/2 -translate-y-1/2 start-0 -translate-x-1/2 rtl:translate-x-1/2 z-10 place-items-center size-10 rounded-full bg-card/90 backdrop-blur border border-border shadow-lg text-foreground hover:bg-brand hover:text-brand-foreground hover:border-brand transition-all"
         >
-          <ChevronLeft className="size-4 sm:size-5 rtl:hidden" />
-          <ChevronRight className="size-4 sm:size-5 hidden rtl:block" />
+          <ChevronLeft className="size-5 rtl:hidden" />
+          <ChevronRight className="size-5 hidden rtl:block" />
         </button>
       )}
 
       <div
         ref={scrollerRef}
         data-gsap="card-pop"
-        className={`flex gap-2.5 sm:gap-3.5 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory ${
-          showArrows ? "px-6 sm:px-8" : ""
+        className={`grid grid-cols-2 gap-2.5 sm:flex sm:gap-3.5 sm:overflow-x-auto sm:pb-2 sm:[scrollbar-width:none] sm:[-ms-overflow-style:none] sm:[&::-webkit-scrollbar]:hidden sm:snap-x sm:snap-mandatory ${
+          showArrows ? "sm:px-8" : ""
         } ${cats.length <= 5 ? "sm:justify-center" : ""}`}
       >
         {cats.map((c, i) => {
@@ -213,7 +213,7 @@ function CategoryStrip({
               search={{ category: c.slug }}
               data-gsap="magnetic"
               data-strength="0.2"
-              className={`snap-start shrink-0 basis-[70%] xs:basis-[55%] sm:basis-[calc((100%-3*0.875rem)/4)] lg:basis-[calc((100%-4*0.875rem)/5)] group relative flex items-center gap-2.5 sm:gap-3 overflow-hidden rounded-xl border px-3 py-2.5 sm:px-3.5 sm:py-3 text-start transition-all duration-500 hover:-translate-y-0.5 hover:brand-glow ${
+              className={`sm:snap-start sm:shrink-0 sm:basis-[calc((100%-3*0.875rem)/4)] lg:sm:basis-[calc((100%-4*0.875rem)/5)] group relative flex items-center gap-2.5 sm:gap-3 overflow-hidden rounded-xl border px-3 py-2.5 sm:px-3.5 sm:py-3 text-start transition-all duration-500 hover:-translate-y-0.5 hover:brand-glow ${
                 isActive
                   ? "border-brand bg-brand/10"
                   : "border-border bg-card hover:border-brand"
