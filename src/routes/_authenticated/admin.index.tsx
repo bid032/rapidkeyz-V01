@@ -646,7 +646,11 @@ function AdminOverview() {
                             <div>
                               <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
                               <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
-                              <div>الإجمالي: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              <div>الإجمالي قبل الخصم: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              {Number(r._lineDiscount ?? 0) > 0 && (
+                                <div className="text-warning">خصم الكوبون (حصة السطر): -{Math.round(Number(r._lineDiscount))} {t.common.currency}</div>
+                              )}
+                              <div className="font-bold">الإجمالي بعد الخصم: {Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</div>
                               <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
                               <div className="text-success">الربح: {Math.round(profit)} {t.common.currency}</div>
                               {refundAmount > 0 && (
