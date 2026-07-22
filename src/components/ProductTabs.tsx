@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 type Props = {
   productId: string;
@@ -115,12 +116,15 @@ function DescriptionTab({
           {isAr ? "نظرة عامة" : "Overview"}
         </p>
         <h3 className="text-xl sm:text-2xl font-extrabold mb-3">{productName}</h3>
-        <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-          {description ||
-            (isAr
+        {description && description.trim() ? (
+          <MarkdownContent content={description} dir={isAr ? "rtl" : "ltr"} />
+        ) : (
+          <p className="text-muted-foreground leading-relaxed">
+            {isAr
               ? `احصل على ${productName} بأفضل الأسعار مع تفعيل فوري وضمان كامل طوال فترة الاشتراك.`
-              : `Get ${productName} at the best price with instant activation and full warranty for the entire plan.`)}
-        </p>
+              : `Get ${productName} at the best price with instant activation and full warranty for the entire plan.`}
+          </p>
+        )}
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
         {highlights.map((h, i) => (
