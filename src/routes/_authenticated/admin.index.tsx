@@ -339,7 +339,7 @@ function AdminOverview() {
         "كود الخصم": r._coupon?.code ?? "",
         "نوع الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? "نسبة %" : "مبلغ ثابت") : "",
         "قيمة الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? `${r._coupon.discount_value}%` : `${r._coupon.discount_value} EGP`) : "",
-        "قيمة الخصم على السطر": Math.round(lineDiscount),
+        
         "قيمة الخصم على الطلب كامل": Math.round(Number(r.orders?.discount_amount ?? 0)),
         "الإجمالي بعد الخصم": Math.round(netRevenue),
         "سعر الشراء": r._cost ?? 0,
