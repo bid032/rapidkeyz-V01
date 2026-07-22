@@ -89,38 +89,7 @@ export function PricingConfigurator({
       <div className="pointer-events-none absolute -bottom-32 -start-24 w-72 h-72 bg-brand/5 rounded-full blur-3xl" />
 
       <div className="relative p-4 sm:p-6 space-y-6">
-        {/* Plan variant selector */}
-        {variants && variants.length > 0 && (
-          <section>
-            {sectionLabel(isAr ? "نوع الخطة" : "Plan")}
-            <div
-              className="grid gap-2 p-1.5 rounded-2xl bg-black/30 border border-white/5"
-              style={{ gridTemplateColumns: `repeat(${variants.length}, minmax(0,1fr))` }}
-            >
-              {variants.map((v) => {
-                const isSel = effectiveVariant === v || variants.length === 1;
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => onVariantChange?.(v)}
-                    className={`relative py-3 px-2 rounded-xl text-sm font-bold transition-all focus:outline-none overflow-hidden ${
-                      isSel
-                        ? "bg-brand text-brand-foreground shadow-lg shadow-brand/20"
-                        : "text-muted-foreground hover:bg-white/5"
-                    }`}
-                  >
-                    <span className="relative block truncate text-center">
-                      <bdi>{v}</bdi>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* Account type selector — segmented pill (same style as plan variant) */}
+        {/* Account type selector — segmented pill */}
         {normalizedTypes.length > 0 && (
           <section>
             {sectionLabel(isAr ? "نوع الحساب" : "Account")}
@@ -154,6 +123,20 @@ export function PricingConfigurator({
             </div>
           </section>
         )}
+
+        {/* Plan variant selector — dropdown */}
+        {variants && variants.length > 0 && (
+          <section>
+            {sectionLabel(isAr ? "نوع الخطة" : "Plan")}
+            <PlanVariantDropdown
+              variants={variants}
+              value={effectiveVariant ?? variants[0]}
+              onChange={(v) => onVariantChange?.(v)}
+              isAr={isAr}
+            />
+          </section>
+        )}
+
 
         {/* Duration grid */}
         <section>
