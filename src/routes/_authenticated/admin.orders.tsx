@@ -442,13 +442,17 @@ function AdminOrders() {
                   <div>
                     <span className="text-muted-foreground">الهاتف:</span>{" "}
                     <span className="font-mono">{o.customer_phone || "—"}</span>
-                    {o.customer_phone && (
-                      <a
-                        href={`https://wa.me/${buildWaNumber(o.customer_phone, prof.country)}`}
-                        target="_blank" rel="noreferrer"
-                        className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
-                      >واتساب</a>
-                    )}
+                    {o.customer_phone && (() => {
+                      const wa = buildWaNumber(o.customer_phone, prof.country);
+                      return (
+                        <a
+                          href={`https://wa.me/${wa}`}
+                          target="_blank" rel="noreferrer"
+                          title={`wa.me/${wa}`}
+                          className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
+                        >واتساب (+{wa})</a>
+                      );
+                    })()}
                   </div>
                   {prof.country && (
                     <div><span className="text-muted-foreground">الدولة:</span> <span className="font-bold">{prof.country}</span></div>
