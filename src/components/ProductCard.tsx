@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ShoppingCart, Zap } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { QuickBuyDialog } from "@/components/QuickBuyDialog";
+import { stripMd } from "@/lib/strip-md";
 
 export type ProductCardData = {
   id: string;
