@@ -614,15 +614,25 @@ function AdminOverview() {
                   <React.Fragment key={r.id}>
                     <tr
                       key={r.id}
-                      className="border-b border-border/60 hover:bg-muted/30 cursor-pointer transition-colors"
+                      className={`border-b border-border/60 hover:bg-muted/30 cursor-pointer transition-colors ${r._coupon ? "bg-success/5 border-s-4 border-s-success" : ""}`}
                       onClick={() => setExpandedRow(isExpanded ? null : r.id)}
                     >
                       <td className="p-2 text-muted-foreground">{isExpanded ? "▾" : "▸"}</td>
-                      <td className="p-2 font-mono text-xs">#{r.orders?.order_number}</td>
+                      <td className="p-2 font-mono text-xs">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>#{r.orders?.order_number}</span>
+                          {r._coupon && (
+                            <span title={`كود الخصم: ${r._coupon.code}`} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-success/15 text-success border border-success/30 text-[9px] font-bold">
+                              🎟️ {r._coupon.code}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-2 text-xs">
                         <div className="font-bold truncate max-w-[140px]">{r.orders?.customer_name ?? p.display_name ?? "—"}</div>
                         <div className="text-muted-foreground truncate max-w-[140px]">{r.orders?.customer_email}</div>
                       </td>
+
                       <td className="p-2">
                         <div className="font-bold truncate max-w-[180px]">{r.product_name}</div>
                         <div className="text-xs text-muted-foreground truncate max-w-[180px]">{r.plan_label}</div>
