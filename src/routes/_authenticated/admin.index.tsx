@@ -184,7 +184,7 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total, subtotal, discount_amount, coupon_id)")
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -221,29 +221,32 @@ function AdminOverview() {
           }
         });
       }
-      // Pre-compute each order's total revenue for pro-rating order-level refunds across items.
-      const orderTotal = new Map<string, number>();
+      // Pre-compute each order's gross (pre-discount) total so we can pro-rate
+      // both the coupon discount AND order-level refunds across line items.
+      const orderGross = new Map<string, number>();
       items.forEach((r) => {
         const t = Number(r.unit_price) * Number(r.quantity);
-        orderTotal.set(r.order_id, (orderTotal.get(r.order_id) ?? 0) + t);
+        orderGross.set(r.order_id, (orderGross.get(r.order_id) ?? 0) + t);
       });
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
-        const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
+        const grossProfit = (Number(r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
         const itemRefs = refundsByItem.get(r.id) ?? [];
         const orderRefs = refundsByOrder.get(r.order_id) ?? [];
-        // Item-level refunds attach directly. Order-level refunds are pro-rated
-        // by this line's share of the order revenue so multi-item orders don't
-        // count the same refund N times.
         const itemAmount = itemRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
         const lineTotal = Number(r.unit_price) * Number(r.quantity);
-        const orderRev = orderTotal.get(r.order_id) ?? 0;
-        const share = orderRev > 0 ? lineTotal / orderRev : 0;
+        const gross = orderGross.get(r.order_id) ?? 0;
+        const share = gross > 0 ? lineTotal / gross : 0;
         const orderAmount = orderRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0) * share;
         const refundAmount = itemAmount + orderAmount;
+        // Proportional coupon discount for this line.
+        const orderDiscount = Number(r.orders?.discount_amount ?? 0);
+        const lineDiscount = orderDiscount * share;
+        const netRevenue = Math.max(0, lineTotal - lineDiscount);
+        const profit = grossProfit - lineDiscount; // profit after coupon (before refund)
         const refs = [...itemRefs, ...orderRefs];
-        return { ...r, _cost: cost, _profit: profit, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
+        return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
       });
 
     },
@@ -282,7 +285,7 @@ function AdminOverview() {
       const d = new Date(it.orders?.created_at ?? it.created_at);
       if (d.getFullYear() !== y || d.getMonth() + 1 !== m) return;
       const idx = d.getDate() - 1;
-      rows[idx].revenue += Math.round(Number(it.unit_price) * Number(it.quantity));
+      rows[idx].revenue += Math.round(Number(it._netRevenue ?? (Number(it.unit_price) * Number(it.quantity))));
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
 
@@ -303,7 +306,9 @@ function AdminOverview() {
   const exportSalesXlsx = () => {
     const rows = (sales.data ?? []).map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
-      const total = Number(r.unit_price) * Number(r.quantity);
+      const gross = Number(r.unit_price) * Number(r.quantity);
+      const lineDiscount = Number(r._lineDiscount ?? 0);
+      const netRevenue = Number(r._netRevenue ?? gross);
       const p = r._profile ?? {};
       const applicable = r._refunds ?? [];
       const refundAmount = Number(r._refundAmount ?? 0);
@@ -323,9 +328,11 @@ function AdminOverview() {
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
         "سعر الوحدة": Number(r.unit_price),
-        "الإجمالي": total,
+        "الإجمالي قبل الخصم": gross,
+        "خصم الكوبون (حصة السطر)": Math.round(lineDiscount),
+        "الإجمالي بعد الخصم": Math.round(netRevenue),
         "سعر الشراء": r._cost ?? 0,
-        "الربح": r._profit ?? 0,
+        "الربح (بعد الخصم)": Math.round(Number(r._profit ?? 0)),
         "تم التسليم؟": delivered ? "نعم" : "لا",
         "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true }) : "",
         "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
@@ -334,7 +341,7 @@ function AdminOverview() {
         "نوع الاسترداد": refundTypes,
         "تاريخ الاسترداد": refundDates,
         "ملاحظات الاسترداد": refundNotes,
-        "صافي الربح بعد الاسترداد": netProfit,
+        "صافي الربح بعد الاسترداد": Math.round(netProfit),
         "التاريخ": d.toLocaleDateString("en-GB"),
         "الوقت": d.toLocaleTimeString("en-GB", { hour12: true }),
 
@@ -601,7 +608,7 @@ function AdminOverview() {
                         <div className="text-xs text-muted-foreground truncate max-w-[180px]">{r.plan_label}</div>
                       </td>
                       <td className="p-2">{r.quantity}</td>
-                      <td className="p-2 font-bold text-brand">{Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</td>
+                      <td className="p-2 font-bold text-brand">{Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</td>
                       <td className={`p-2 font-bold ${netProfit >= 0 ? "text-success" : "text-destructive"}`}>
                         {Math.round(netProfit)} {t.common.currency}
                       </td>
@@ -643,7 +650,11 @@ function AdminOverview() {
                             <div>
                               <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
                               <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
-                              <div>الإجمالي: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              <div>الإجمالي قبل الخصم: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              {Number(r._lineDiscount ?? 0) > 0 && (
+                                <div className="text-warning">خصم الكوبون (حصة السطر): -{Math.round(Number(r._lineDiscount))} {t.common.currency}</div>
+                              )}
+                              <div className="font-bold">الإجمالي بعد الخصم: {Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</div>
                               <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
                               <div className="text-success">الربح: {Math.round(profit)} {t.common.currency}</div>
                               {refundAmount > 0 && (
