@@ -592,7 +592,7 @@ function GroupCard({
                     {canon.order_discount_amount != null && (
                       <span className="inline-flex items-center gap-1">
                         <span className="text-muted-foreground">الخصم:</span>
-                        <bdi className="font-bold text-destructive">− {canon.order_discount_amount} EGP</bdi>
+                        <bdi className="font-bold text-success">− {canon.order_discount_amount} EGP</bdi>
                       </span>
                     )}
                     {canon.order_total != null && (
