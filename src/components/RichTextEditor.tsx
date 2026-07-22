@@ -220,7 +220,7 @@ export function RichTextEditor({
             <Smile className="size-4" />
           </Btn>
           {emojiOpen && (
-            <div className="absolute top-full mt-1 z-50 p-2 rounded-lg border border-border bg-popover shadow-lg grid grid-cols-5 gap-1 w-[200px]">
+            <div className="absolute top-full start-0 mt-1 z-50 p-2 rounded-lg border border-border bg-popover shadow-lg grid grid-cols-5 gap-1 w-[200px] max-w-[calc(100vw-2rem)]">
               {EMOJIS.map((e) => (
                 <button
                   key={e}
@@ -241,7 +241,7 @@ export function RichTextEditor({
             <Sparkles className="size-4" />
           </Btn>
           {tplOpen && (
-            <div className="absolute top-full mt-1 z-50 p-1 rounded-lg border border-border bg-popover shadow-lg w-[220px]">
+            <div className="absolute top-full start-0 mt-1 z-50 p-1 rounded-lg border border-border bg-popover shadow-lg w-[220px] max-w-[calc(100vw-2rem)]">
               {(Object.keys(TEMPLATES[lang]) as TemplateKey[]).map((k) => (
                 <button
                   key={k}
