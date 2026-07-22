@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
