@@ -221,29 +221,32 @@ function AdminOverview() {
           }
         });
       }
-      // Pre-compute each order's total revenue for pro-rating order-level refunds across items.
-      const orderTotal = new Map<string, number>();
+      // Pre-compute each order's gross (pre-discount) total so we can pro-rate
+      // both the coupon discount AND order-level refunds across line items.
+      const orderGross = new Map<string, number>();
       items.forEach((r) => {
         const t = Number(r.unit_price) * Number(r.quantity);
-        orderTotal.set(r.order_id, (orderTotal.get(r.order_id) ?? 0) + t);
+        orderGross.set(r.order_id, (orderGross.get(r.order_id) ?? 0) + t);
       });
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
-        const profit = (Number(r.unit_price) - cost) * Number(r.quantity);
+        const grossProfit = (Number(r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
         const itemRefs = refundsByItem.get(r.id) ?? [];
         const orderRefs = refundsByOrder.get(r.order_id) ?? [];
-        // Item-level refunds attach directly. Order-level refunds are pro-rated
-        // by this line's share of the order revenue so multi-item orders don't
-        // count the same refund N times.
         const itemAmount = itemRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
         const lineTotal = Number(r.unit_price) * Number(r.quantity);
-        const orderRev = orderTotal.get(r.order_id) ?? 0;
-        const share = orderRev > 0 ? lineTotal / orderRev : 0;
+        const gross = orderGross.get(r.order_id) ?? 0;
+        const share = gross > 0 ? lineTotal / gross : 0;
         const orderAmount = orderRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0) * share;
         const refundAmount = itemAmount + orderAmount;
+        // Proportional coupon discount for this line.
+        const orderDiscount = Number(r.orders?.discount_amount ?? 0);
+        const lineDiscount = orderDiscount * share;
+        const netRevenue = Math.max(0, lineTotal - lineDiscount);
+        const profit = grossProfit - lineDiscount; // profit after coupon (before refund)
         const refs = [...itemRefs, ...orderRefs];
-        return { ...r, _cost: cost, _profit: profit, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
+        return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
       });
 
     },
