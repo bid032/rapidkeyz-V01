@@ -153,7 +153,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             <h3 className="text-sm sm:text-lg font-bold mb-1 text-foreground line-clamp-1">
               {name}
             </h3>
-            <p className="text-muted-foreground text-[11px] sm:text-sm line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
+            <p className="text-muted-foreground text-[11px] sm:text-sm line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] whitespace-pre-line">
               {stripMd(desc) || " "}
             </p>
           </div>
