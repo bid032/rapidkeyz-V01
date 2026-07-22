@@ -32,12 +32,13 @@ function AdminRefunds() {
   const refunds = useQuery({
     queryKey: ["admin-refunds"],
     queryFn: async () => {
+      // inner-join orders so orphan refunds (order deleted) never leak in
       const { data, error } = await supabase
         .from("refunds")
-        .select("*")
+        .select("id, user_id, order_id, order_item_id, amount, type, notes, created_at, orders!inner(id, order_number, status)")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Refund[];
+      return (data ?? []) as (Refund & { orders?: { id: string; order_number: string; status: string } })[];
     },
   });
 
