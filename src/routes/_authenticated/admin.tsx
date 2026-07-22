@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { useApp } from "@/contexts/AppContext";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useAdminRealtime } from "@/hooks/useAdminRealtime";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/_authenticated/admin")({
