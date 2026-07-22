@@ -252,7 +252,8 @@ function AdminOverview() {
         const netRevenue = Math.max(0, lineTotal - lineDiscount);
         const profit = grossProfit - lineDiscount; // profit after coupon (before refund)
         const refs = [...itemRefs, ...orderRefs];
-        return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
+        const coupon = couponMap.get(r.orders?.coupon_id) ?? null;
+        return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount, _coupon: coupon };
       });
 
     },
