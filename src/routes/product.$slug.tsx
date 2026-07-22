@@ -369,11 +369,11 @@ function ProductPage() {
                   {desc && (
                     <div className="mt-1">
                       <p
-                        className={`text-muted-foreground text-[11px] sm:text-[13px] leading-relaxed ${
+                        className={`text-muted-foreground text-[11px] sm:text-[13px] leading-relaxed whitespace-pre-line ${
                           descExpanded ? "" : "line-clamp-2"
                         }`}
                       >
-                        {desc}
+                        {(desc || "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/[*_`>#~]/g, "")}
                       </p>
                       {desc.length > 100 && (
                         <button
