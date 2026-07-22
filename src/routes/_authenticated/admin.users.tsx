@@ -510,32 +510,11 @@ function StockAccessDialog({
 }) {
   const { lang, notify } = useApp();
   const [access, setAccess] = useState<boolean>(!!user.stock_access);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const syncFn = useServerFn(syncUserStockStaff);
 
   const save = async () => {
-    if (username && !/^[a-zA-Z0-9._-]{3,32}$/.test(username)) {
-      notify(lang === "ar" ? "اسم المستخدم: حروف/أرقام إنجليزية 3-32" : "Username: 3-32 letters/digits", "error");
-      return;
-    }
-    if (username && !password) {
-      notify(lang === "ar" ? "اكتب كلمة سر مع اسم المستخدم" : "Set a password with the username", "error");
-      return;
-    }
     setLoading(true);
     try {
-      // Sync Staff sheet (source of truth for /stock login)
-      await syncFn({
-        data: {
-          name: user.display_name || user.email || "user",
-          username: username || "",
-          password: password || "",
-          active: access,
-        },
-      });
-      // Update profile flag (controls menu link visibility)
       const { error } = await supabase.rpc("admin_set_stock_access", {
         _user_id: user.id,
         _access: access,
@@ -550,7 +529,6 @@ function StockAccessDialog({
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -584,47 +562,12 @@ function StockAccessDialog({
           <div>
             <div className="font-bold text-sm">{lang === "ar" ? "السماح بالدخول لصفحة الاستوك" : "Allow access to stock page"}</div>
             <div className="text-xs text-muted-foreground mt-1">
-              {lang === "ar" ? "لو مقفول، لن يظهر رابط الاستوك في القائمة." : "Hides the stock link if disabled."}
+              {lang === "ar"
+                ? "المستخدم هيدخل على /stock بحسابه على الويب سايت مباشرة، بدون اسم مستخدم أو كلمة سر إضافية."
+                : "The user signs into /stock with their website account — no extra username or password needed."}
             </div>
           </div>
         </label>
-
-        <div className="space-y-2 mb-3">
-          <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-            <AtSign className="w-3.5 h-3.5" />
-            {lang === "ar" ? "اسم المستخدم (اختياري)" : "Username (optional)"}
-          </label>
-          <input
-            type="text"
-            dir="ltr"
-            autoComplete="off"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.trim())}
-            placeholder="username"
-            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
-          />
-        </div>
-
-        <div className="space-y-2 mb-4">
-          <label className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-            <KeyRound className="w-3.5 h-3.5" />
-            {lang === "ar" ? "كلمة السر (اختياري)" : "Password (optional)"}
-          </label>
-          <input
-            type="text"
-            dir="ltr"
-            autoComplete="off"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={lang === "ar" ? "اتركها فاضية لعدم التغيير" : "Leave blank to keep"}
-            className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm"
-          />
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            {lang === "ar"
-              ? "لما تحط اسم مستخدم وكلمة سر، هيتضاف تلقائياً في تبويب/شيت الاستوك ويقدر يدخل بيهم على /stock."
-              : "Adding a username + password auto-syncs a Staff row so they can sign into /stock."}
-          </p>
-        </div>
 
         <div className="flex gap-2">
           <button
@@ -643,6 +586,7 @@ function StockAccessDialog({
     document.body
   );
 }
+
 
 
 function StatCard({
