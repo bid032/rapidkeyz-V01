@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+
 import {
   Lock, RefreshCw, Boxes, PackageCheck, AlertTriangle, Send, StickyNote,
   Copy, Undo2, Minus, Plus, UserCircle2, Package, Sparkles, CheckCircle2, Phone,
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/stock")({
 type Access = { signedIn: boolean; hasAccess: boolean; staffName: string };
 
 function StockPage() {
+  const navigate = useNavigate();
   const access = useQuery({
     queryKey: ["stock-access"],
     queryFn: async (): Promise<Access> => {
@@ -58,31 +60,30 @@ function StockPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (access.isLoading || !access.data) return;
+    if (!access.data.signedIn || !access.data.hasAccess) {
+      navigate({ to: "/", replace: true });
+    }
+  }, [access.isLoading, access.data, navigate]);
+
+  const allowed = access.data?.signedIn && access.data?.hasAccess;
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Header />
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 sm:py-10">
-        {access.isLoading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">جارٍ التحميل...</div>
-        ) : !access.data?.signedIn ? (
-          <AccessGate
-            title="سجّل الدخول للمتابعة"
-            description="تحتاج لتسجيل الدخول بحسابك أولاً، ثم يقوم الأدمن بمنحك صلاحية الوصول لتابة الاستوك."
-            cta={<Link to="/auth" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand text-brand-foreground font-extrabold hover:brand-glow transition">تسجيل الدخول</Link>}
-          />
-        ) : !access.data.hasAccess ? (
-          <AccessGate
-            title="ليس لديك صلاحية الوصول"
-            description="تابة الاستوك متاحة فقط للأعضاء الذين منحهم الأدمن صلاحية الوصول من قسم المستخدمين."
-          />
+        {!allowed ? (
+          <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">جارٍ التحويل...</div>
         ) : (
-          <StockDispenser staffName={access.data.staffName} />
+          <StockDispenser staffName={access.data!.staffName} />
         )}
       </main>
       <Footer />
     </div>
   );
 }
+
 
 function AccessGate({ title, description, cta }: { title: string; description: string; cta?: React.ReactNode }) {
   return (
