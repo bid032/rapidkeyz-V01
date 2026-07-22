@@ -197,6 +197,12 @@ function AdminOverview() {
         const { data: costs } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", planIds);
         (costs ?? []).forEach((c: any) => costMap.set(c.plan_id, Number(c.cost_price ?? 0)));
       }
+      const couponIds = Array.from(new Set(items.map((r) => r.orders?.coupon_id).filter(Boolean)));
+      const couponMap = new Map<string, any>();
+      if (couponIds.length) {
+        const { data: cps } = await supabase.from("coupons").select("id, code, discount_type, discount_value").in("id", couponIds);
+        (cps ?? []).forEach((c: any) => couponMap.set(c.id, c));
+      }
       const userIds = Array.from(new Set(items.map((r) => r.orders?.user_id).filter(Boolean)));
       const profileMap = new Map<string, any>();
       if (userIds.length) {
@@ -246,7 +252,8 @@ function AdminOverview() {
         const netRevenue = Math.max(0, lineTotal - lineDiscount);
         const profit = grossProfit - lineDiscount; // profit after coupon (before refund)
         const refs = [...itemRefs, ...orderRefs];
-        return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount };
+        const coupon = couponMap.get(r.orders?.coupon_id) ?? null;
+        return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount, _coupon: coupon };
       });
 
     },
@@ -329,7 +336,11 @@ function AdminOverview() {
         "الكمية": r.quantity,
         "سعر الوحدة": Number(r.unit_price),
         "الإجمالي قبل الخصم": gross,
-        "خصم الكوبون (حصة السطر)": Math.round(lineDiscount),
+        "كود الخصم": r._coupon?.code ?? "",
+        "نوع الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? "نسبة %" : "مبلغ ثابت") : "",
+        "قيمة الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? `${r._coupon.discount_value}%` : `${r._coupon.discount_value} EGP`) : "",
+        "قيمة الخصم على السطر": Math.round(lineDiscount),
+        "قيمة الخصم على الطلب كامل": Math.round(Number(r.orders?.discount_amount ?? 0)),
         "الإجمالي بعد الخصم": Math.round(netRevenue),
         "سعر الشراء": r._cost ?? 0,
         "الربح (بعد الخصم)": Math.round(Number(r._profit ?? 0)),
@@ -651,8 +662,20 @@ function AdminOverview() {
                               <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
                               <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
                               <div>الإجمالي قبل الخصم: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              {r._coupon && (
+                                <div className="text-warning">
+                                  كود الخصم: <span className="font-mono font-bold">{r._coupon.code}</span>
+                                  {" · "}
+                                  {r._coupon.discount_type === "percent"
+                                    ? `${r._coupon.discount_value}%`
+                                    : `${r._coupon.discount_value} ${t.common.currency}`}
+                                </div>
+                              )}
                               {Number(r._lineDiscount ?? 0) > 0 && (
                                 <div className="text-warning">خصم الكوبون (حصة السطر): -{Math.round(Number(r._lineDiscount))} {t.common.currency}</div>
+                              )}
+                              {Number(r.orders?.discount_amount ?? 0) > 0 && (
+                                <div className="text-warning text-[11px]">خصم الطلب كامل: -{Math.round(Number(r.orders.discount_amount))} {t.common.currency}</div>
                               )}
                               <div className="font-bold">الإجمالي بعد الخصم: {Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</div>
                               <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
