@@ -8,6 +8,20 @@ import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
 import { notifyItemDelivered } from "@/lib/notify-order.functions";
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
+import { dialForCountry } from "@/lib/arab-countries";
+
+// Build a wa.me-safe number: prepend country dial code when the phone was
+// entered in local form (e.g. "010..." or "10..."). Handles cases where the
+// dial is already there so we never double-prefix.
+function buildWaNumber(phone: string, country?: string | null): string {
+  const dial = dialForCountry(country ?? "");
+  let digits = String(phone ?? "").replace(/[^0-9]/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (dial && digits.startsWith(dial)) return digits;
+  digits = digits.replace(/^0+/, "");
+  return `${dial}${digits}`;
+}
 
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
@@ -430,7 +444,7 @@ function AdminOrders() {
                     <span className="font-mono">{o.customer_phone || "—"}</span>
                     {o.customer_phone && (
                       <a
-                        href={`https://wa.me/${String(o.customer_phone).replace(/[^0-9]/g, "").replace(/^0/, "20")}`}
+                        href={`https://wa.me/${buildWaNumber(o.customer_phone, prof.country)}`}
                         target="_blank" rel="noreferrer"
                         className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
                       >واتساب</a>
