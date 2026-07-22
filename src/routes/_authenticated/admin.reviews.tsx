@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { useApp } from "@/contexts/AppContext";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 export const Route = createFileRoute("/_authenticated/admin/reviews")({
   component: AdminReviews,
