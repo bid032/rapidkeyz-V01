@@ -52,6 +52,7 @@ function AdminOrders() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [flagFilter, setFlagFilter] = useState<"all" | "coupon" | "refund" | "refund_partial" | "refund_full" | "clean">("all");
 
 
 
