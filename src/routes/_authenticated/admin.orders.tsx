@@ -352,6 +352,15 @@ function AdminOrders() {
         >
           تحميل Excel
         </button>
+        <button
+          onClick={askClearAll}
+          disabled={clearAllOrders.isPending || !(orders.data?.length)}
+          className="px-4 py-2.5 rounded-lg font-bold text-sm border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50 whitespace-nowrap"
+        >
+          {clearAllOrders.isPending
+            ? (lang === "ar" ? "جارٍ المسح…" : "Clearing…")
+            : (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")}
+        </button>
       </div>
 
 
