@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { translations } from "@/lib/i18n";
 import { pageDefaults } from "@/lib/page-defaults";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
