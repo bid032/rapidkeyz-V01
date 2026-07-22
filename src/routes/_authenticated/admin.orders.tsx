@@ -52,6 +52,7 @@ function AdminOrders() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [flagFilter, setFlagFilter] = useState<"all" | "coupon" | "refund" | "refund_partial" | "refund_full" | "clean">("all");
 
 
 
@@ -121,6 +122,20 @@ function AdminOrders() {
     if (statusFilter !== "all") {
       list = list.filter(({ order: o }: any) => o.status === statusFilter);
     }
+    if (flagFilter !== "all") {
+      list = list.filter(({ order: o }: any) => {
+        const hasCoupon = Number(o.discount_amount ?? 0) > 0 || !!o.coupons?.code;
+        const refundTotal = (o.refunds ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+        const hasRefund = refundTotal > 0;
+        const isFullRefund = hasRefund && refundTotal >= Number(o.total ?? 0) - 0.001;
+        if (flagFilter === "coupon") return hasCoupon;
+        if (flagFilter === "refund") return hasRefund;
+        if (flagFilter === "refund_partial") return hasRefund && !isFullRefund;
+        if (flagFilter === "refund_full") return isFullRefund;
+        if (flagFilter === "clean") return !hasCoupon && !hasRefund;
+        return true;
+      });
+    }
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter(({ order: o }: any) =>
@@ -131,7 +146,7 @@ function AdminOrders() {
       );
     }
     return list;
-  }, [expiring, tab, search, statusFilter]);
+  }, [expiring, tab, search, statusFilter, flagFilter]);
 
   const profilesMap = useQuery({
     queryKey: ["admin-orders-profiles", (orders.data ?? []).map((o: any) => o.user_id).filter(Boolean).join(",")],
@@ -389,6 +404,19 @@ function AdminOrders() {
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
+        <select
+          value={flagFilter}
+          onChange={(e) => setFlagFilter(e.target.value as any)}
+          className="px-3 py-2.5 bg-background border border-border rounded-lg text-sm font-bold"
+          title="فلترة حسب الكوبون / التعويض"
+        >
+          <option value="all">الكل (كوبون/تعويض)</option>
+          <option value="coupon">🎟️ عليه كوبون</option>
+          <option value="refund">↩️ عليه تعويض</option>
+          <option value="refund_partial">↩️ تعويض جزئي</option>
+          <option value="refund_full">↩️ تعويض كلي</option>
+          <option value="clean">بدون كوبون/تعويض</option>
+        </select>
         <button
           onClick={exportOrdersXlsx}
           disabled={!visible.length}
@@ -414,23 +442,32 @@ function AdminOrders() {
         </p>
       )}
       <div className="space-y-3">
-        {visible.map(({ order: o, minDays }) => (
-          <div key={o.id} className="bg-card border border-border rounded-2xl overflow-hidden">
+        {visible.map(({ order: o, minDays }) => {
+          const refundTotal = (o.refunds ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+          const hasRefund = refundTotal > 0;
+          const isFullRefund = hasRefund && refundTotal >= Number(o.total ?? 0) - 0.001;
+          const hasCoupon = Number(o.discount_amount ?? 0) > 0 || !!o.coupons?.code;
+          const accentClass = hasRefund && hasCoupon
+            ? "border-r-4 border-r-destructive ring-1 ring-success/40"
+            : hasRefund
+              ? "border-r-4 border-r-destructive"
+              : hasCoupon
+                ? "border-r-4 border-r-success"
+                : "";
+          return (
+          <div key={o.id} className={`bg-card border border-border rounded-2xl overflow-hidden ${accentClass}`}>
             <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
               <div className="min-w-0">
                 <div className="font-bold flex items-center gap-2 flex-wrap">
                   #{o.order_number}
-                  {(o.refunds?.length ?? 0) > 0 && (() => {
-                    const total = o.refunds.reduce((s: number, r: any) => s + Number(r.amount), 0);
-                    return (
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-destructive/15 text-destructive font-bold">
-                        تعويض -{total} EGP
-                      </span>
-                    );
-                  })()}
-                  {Number(o.discount_amount ?? 0) > 0 && (
+                  {hasRefund && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${isFullRefund ? "bg-destructive text-destructive-foreground" : "bg-destructive/15 text-destructive"}`}>
+                      {isFullRefund ? "↩️ تعويض كلي" : "↩️ تعويض جزئي"} -{refundTotal} EGP
+                    </span>
+                  )}
+                  {hasCoupon && (
                     <span className="text-[10px] px-2 py-0.5 rounded bg-success/15 text-success font-bold">
-                      كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""} −{o.discount_amount} EGP
+                      🎟️ كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""} {Number(o.discount_amount ?? 0) > 0 ? `−${o.discount_amount} EGP` : ""}
                     </span>
                   )}
                 </div>
@@ -577,7 +614,7 @@ function AdminOrders() {
             })()}
 
           </div>
-        ))}
+        );})}
         {visible.length === 0 && (
           <p className="text-muted-foreground text-center py-16">
             {tab === "expiring" ? "مفيش خدمات قربت تنتهي" : "No orders yet"}
