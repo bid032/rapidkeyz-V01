@@ -187,18 +187,25 @@ function FaqRow({
           onChange={(e) => setLocal({ ...local, question_en: e.target.value })}
           className="px-3 py-2 bg-background border border-border rounded-lg font-bold"
         />
-        <textarea
-          rows={3}
-          value={local.answer_ar}
-          onChange={(e) => setLocal({ ...local, answer_ar: e.target.value })}
-          className="px-3 py-2 bg-background border border-border rounded-lg"
-        />
-        <textarea
-          rows={3}
-          value={local.answer_en}
-          onChange={(e) => setLocal({ ...local, answer_en: e.target.value })}
-          className="px-3 py-2 bg-background border border-border rounded-lg"
-        />
+        <div className="sm:col-span-2">
+          <RichTextEditor
+            value={local.answer_ar}
+            onChange={(v) => setLocal({ ...local, answer_ar: v })}
+            dir="rtl"
+            lang="ar"
+            minHeight={140}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <RichTextEditor
+            value={local.answer_en}
+            onChange={(v) => setLocal({ ...local, answer_en: v })}
+            dir="ltr"
+            lang="en"
+            minHeight={140}
+          />
+        </div>
+
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <input
