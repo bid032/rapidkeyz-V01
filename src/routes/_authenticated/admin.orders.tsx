@@ -151,6 +151,14 @@ function AdminOrders() {
     visible.forEach(({ order: o }: any) => {
       const prof = profilesMap.data?.get(o.user_id) ?? {};
       const items = o.order_items ?? [];
+      const subtotal = Number(o.subtotal ?? 0);
+      const discountAmount = Number(o.discount_amount ?? 0);
+      const couponCode = o.coupons?.code ?? "";
+      const couponInfo = o.coupons?.discount_type === "percent"
+        ? `${o.coupons?.discount_value ?? ""}%`
+        : o.coupons?.discount_type === "fixed"
+          ? `${o.coupons?.discount_value ?? ""} EGP`
+          : "";
       if (!items.length) {
         rows.push({
           "رقم الطلب": o.order_number,
@@ -159,7 +167,11 @@ function AdminOrders() {
           "رقم الواتساب": o.customer_phone ?? prof.phone ?? "",
           "الدولة": prof.country ?? "",
           "الحالة": o.status,
-          "الإجمالي": Number(o.total ?? 0),
+          "الإجمالي قبل الخصم": subtotal,
+          "كود الخصم": couponCode,
+          "نوع/قيمة الكود": couponInfo,
+          "قيمة الخصم": discountAmount,
+          "الإجمالي بعد الخصم": Number(o.total ?? 0),
           "طريقة الدفع": o.payment_gateway ?? "",
           "رقم المرسل": o.payment_sender_phone ?? "",
           "الخدمة": "",
@@ -172,7 +184,19 @@ function AdminOrders() {
         });
         return;
       }
+      // Compute proportional discount per item (matches refunds logic)
+      const totalItemsValue = items.reduce(
+        (s: number, it: any) => s + Number(it.unit_price ?? 0) * Number(it.quantity ?? 1),
+        0,
+      );
       items.forEach((it: any) => {
+        const gross = Number(it.unit_price ?? 0) * Number(it.quantity ?? 1);
+        const itemDiscount = totalItemsValue > 0 && discountAmount > 0
+          ? Math.round((gross / totalItemsValue) * discountAmount * 100) / 100
+          : 0;
+        const netUnit = it.quantity > 0
+          ? Math.round(((gross - itemDiscount) / Number(it.quantity)) * 100) / 100
+          : Number(it.unit_price ?? 0);
         rows.push({
           "رقم الطلب": o.order_number,
           "اسم العميل": o.customer_name ?? prof.display_name ?? "",
@@ -180,19 +204,25 @@ function AdminOrders() {
           "رقم الواتساب": o.customer_phone ?? prof.phone ?? "",
           "الدولة": prof.country ?? "",
           "الحالة": o.status,
-          "الإجمالي": Number(o.total ?? 0),
+          "الإجمالي قبل الخصم": subtotal,
+          "كود الخصم": couponCode,
+          "نوع/قيمة الكود": couponInfo,
+          "قيمة الخصم": discountAmount,
+          "الإجمالي بعد الخصم": Number(o.total ?? 0),
           "طريقة الدفع": o.payment_gateway ?? "",
           "رقم المرسل": o.payment_sender_phone ?? "",
           "الخدمة": it.product_name,
           "الخطة": it.plan_label,
           "الكمية": it.quantity,
-          "سعر الوحدة": Number(it.unit_price ?? 0),
+          "سعر الوحدة قبل الخصم": Number(it.unit_price ?? 0),
+          "سعر الوحدة بعد الخصم": netUnit,
           "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
           "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
           "ملاحظات": o.notes ?? "",
         });
       });
     });
+
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orders");
