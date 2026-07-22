@@ -380,16 +380,17 @@ function AdminSettings() {
                         {usingCustomAr ? "نص مخصص ✓" : "افتراضي"}
                       </span>
                     </div>
-                    <textarea
-                      rows={6}
+                    <RichTextEditor
                       value={valAr}
-                      onChange={(e) =>
-                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: e.target.value } })
+                      onChange={(v) =>
+                        setPageContent({ ...pageContent, [key]: { ...pageContent[key], ar: v } })
                       }
                       dir="rtl"
-                      className="px-3 py-2 bg-background border border-border rounded text-end leading-loose"
+                      lang="ar"
+                      minHeight={180}
                       placeholder="اسيبها فاضية عشان تفضل النص الافتراضي…"
                     />
+
                     <details className="mt-1 group">
                       <summary className="cursor-pointer text-[10px] font-bold text-muted-foreground hover:text-brand select-none">
                         عرض النص الافتراضي الظاهر حالياً ▾
