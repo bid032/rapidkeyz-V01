@@ -5,7 +5,7 @@ import { sendSmtpEmail } from '@/lib/smtp'
 
 // Server-only: sends through the project's own SMTP server (nodemailer).
 
-const DEFAULT_FROM_EMAIL = 'RapidKeyz <noreply@rapidkeyz.com>'
+const DEFAULT_FROM_EMAIL = 'RapidKeyz <_mainaccount@rapidkeyz.com>'
 
 function getFromEmail(): string {
   return process.env.SMTP_FROM || process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL
