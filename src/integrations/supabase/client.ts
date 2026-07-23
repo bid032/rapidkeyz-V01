@@ -28,8 +28,8 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 
 function createSupabaseClient() {
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+  const SUPABASE_URL = 'https://efecpgxwbinhpfijqrzo.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_349vO3p4skvYFHMeAf4hQw_c_B_u80v';
 
 
 
