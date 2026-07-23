@@ -2,7 +2,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict qW96g3hl1uNJLiocBk5ZAtARDDlg2yjDES0vAtG9tFVjSNiiRBQixXlMmmuYYWt
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.9
@@ -476,5 +475,4 @@ INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES ('ed74fe54-
 -- PostgreSQL database dump complete
 --
 
-\unrestrict qW96g3hl1uNJLiocBk5ZAtARDDlg2yjDES0vAtG9tFVjSNiiRBQixXlMmmuYYWt
 
