@@ -8,16 +8,17 @@ import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
-import { sendResendEmail, getWebhookSecret } from '@/lib/resend'
+import { sendSmtpEmail } from '@/lib/smtp'
+import { getWebhookSecret } from '@/lib/resend'
 
 const SITE_NAME = 'RapidKeyz'
 const ROOT_DOMAIN = 'rapidkeyz.com'
 const SITE_URL = process.env.SITE_URL || `https://${ROOT_DOMAIN}`
 
-// The visible From: address. Must be verified in Resend.
-const DEFAULT_FROM_EMAIL = 'RapidKeyz <noreply@rapidkeyz.com>'
+// The visible From: address. Defaults to the cPanel main account shown in the screenshot.
+const DEFAULT_FROM_EMAIL = 'RapidKeyz <_mainaccount@rapidkeyz.com>'
 function getFromEmail(): string {
-  return process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL
+  return process.env.SMTP_FROM || process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL
 }
 
 interface AuthHookPayload {
