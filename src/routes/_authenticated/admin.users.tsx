@@ -370,7 +370,7 @@ function AdminUsers() {
                       <td className="p-3.5">
                         <div className="flex gap-1.5 justify-end">
                           <button
-                            onClick={() => toggleRole.mutate({ userId: u.id, role: "admin", add: !isAdmin })}
+                            onClick={() => askToggleRole(u, "admin", !isAdmin)}
                             className={`text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition ${
                               isAdmin
                                 ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
@@ -380,7 +380,7 @@ function AdminUsers() {
                             {isAdmin ? (lang === "ar" ? "إلغاء أدمن" : "Remove admin") : (lang === "ar" ? "أدمن" : "Make admin")}
                           </button>
                           <button
-                            onClick={() => toggleRole.mutate({ userId: u.id, role: "moderator", add: !isModerator })}
+                            onClick={() => askToggleRole(u, "moderator", !isModerator)}
                             className={`text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition ${
                               isModerator
                                 ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
