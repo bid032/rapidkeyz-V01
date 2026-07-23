@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   component: AdminUsers,
 });
 
-type RoleFilter = "all" | "admin" | "moderator" | "user";
+type RoleFilter = "all" | "admin" | "moderator" | "user" | "stock";
 
 function AdminUsers() {
   const { t, lang, notify, confirm } = useApp();
@@ -116,7 +116,8 @@ function AdminUsers() {
       const roles = (u.user_roles ?? []).map((r: any) => r.role);
       return roles.includes("user") && !roles.includes("admin") && !roles.includes("moderator");
     }).length;
-    return { total: data.length, admins, mods, customers };
+    const stock = data.filter((u: any) => u.stock_access).length;
+    return { total: data.length, admins, mods, customers, stock };
   }, [users.data]);
 
   const filtered = useMemo(() => {
@@ -124,6 +125,7 @@ function AdminUsers() {
     let data = users.data ?? [];
     if (roleFilter !== "all") {
       data = data.filter((u: any) => {
+        if (roleFilter === "stock") return !!u.stock_access;
         const roles = (u.user_roles ?? []).map((r: any) => r.role);
         if (roleFilter === "user")
           return roles.includes("user") && !roles.includes("admin") && !roles.includes("moderator");
@@ -170,7 +172,28 @@ function AdminUsers() {
     { key: "admin", label: lang === "ar" ? "الأدمن" : "Admins", count: stats.admins },
     { key: "moderator", label: lang === "ar" ? "المشرفين" : "Mods", count: stats.mods },
     { key: "user", label: lang === "ar" ? "عملاء" : "Users", count: stats.customers },
+    { key: "stock", label: lang === "ar" ? "الاستوك" : "Stock", count: stats.stock },
   ];
+
+  const askToggleRole = async (u: any, role: "admin" | "moderator", add: boolean) => {
+    const name = u.display_name || u.email;
+    const messages = {
+      ar: {
+        admin: add ? `تفعيل صلاحية الأدمن للمستخدم ${name}؟` : `إلغاء صلاحية الأدمن عن ${name}؟`,
+        moderator: add ? `تفعيل صلاحية المشرف للمستخدم ${name}؟` : `إلغاء صلاحية المشرف عن ${name}؟`,
+      },
+      en: {
+        admin: add ? `Grant admin role to ${name}?` : `Remove admin role from ${name}?`,
+        moderator: add ? `Grant moderator role to ${name}?` : `Remove moderator role from ${name}?`,
+      },
+    };
+    const ok = await confirm({
+      message: messages[lang === "ar" ? "ar" : "en"][role],
+      tone: add ? "default" : "danger",
+    });
+    if (!ok) return;
+    toggleRole.mutate({ userId: u.id, role, add });
+  };
 
   return (
     <div className="space-y-6">
@@ -347,7 +370,7 @@ function AdminUsers() {
                       <td className="p-3.5">
                         <div className="flex gap-1.5 justify-end">
                           <button
-                            onClick={() => toggleRole.mutate({ userId: u.id, role: "admin", add: !isAdmin })}
+                            onClick={() => askToggleRole(u, "admin", !isAdmin)}
                             className={`text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition ${
                               isAdmin
                                 ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
@@ -357,7 +380,7 @@ function AdminUsers() {
                             {isAdmin ? (lang === "ar" ? "إلغاء أدمن" : "Remove admin") : (lang === "ar" ? "أدمن" : "Make admin")}
                           </button>
                           <button
-                            onClick={() => toggleRole.mutate({ userId: u.id, role: "moderator", add: !isModerator })}
+                            onClick={() => askToggleRole(u, "moderator", !isModerator)}
                             className={`text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition ${
                               isModerator
                                 ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
@@ -439,7 +462,7 @@ function AdminUsers() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => toggleRole.mutate({ userId: u.id, role: "admin", add: !isAdmin })}
+                    onClick={() => askToggleRole(u, "admin", !isAdmin)}
                     className={`flex-1 text-xs px-3 py-2.5 rounded-xl font-bold transition ${
                       isAdmin
                         ? "bg-destructive/10 text-destructive"
@@ -449,7 +472,7 @@ function AdminUsers() {
                     {isAdmin ? (lang === "ar" ? "إلغاء أدمن" : "Remove admin") : (lang === "ar" ? "جعله أدمن" : "Make admin")}
                   </button>
                   <button
-                    onClick={() => toggleRole.mutate({ userId: u.id, role: "moderator", add: !isModerator })}
+                    onClick={() => askToggleRole(u, "moderator", !isModerator)}
                     className={`flex-1 text-xs px-3 py-2.5 rounded-xl font-bold transition ${
                       isModerator
                         ? "bg-destructive/10 text-destructive"
@@ -507,11 +530,19 @@ function StockAccessDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { lang, notify } = useApp();
+  const { lang, notify, confirm } = useApp();
   const [access, setAccess] = useState<boolean>(!!user.stock_access);
   const [loading, setLoading] = useState(false);
 
   const save = async () => {
+    if (access !== !!user.stock_access) {
+      const name = user.display_name || user.email;
+      const msg = access
+        ? (lang === "ar" ? `منح صلاحية الاستوك للمستخدم ${name}؟` : `Grant stock access to ${name}?`)
+        : (lang === "ar" ? `إلغاء صلاحية الاستوك عن ${name}؟` : `Revoke stock access from ${name}?`);
+      const ok = await confirm({ message: msg, tone: access ? "default" : "danger" });
+      if (!ok) return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.rpc("admin_set_stock_access", {
