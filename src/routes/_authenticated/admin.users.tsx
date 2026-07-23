@@ -629,12 +629,13 @@ function StatCard({
   icon: any;
   label: string;
   value: number;
-  tone: "brand" | "warning" | "muted";
+  tone: "brand" | "warning" | "muted" | "success";
 }) {
   const tones = {
     brand: "from-brand/20 to-brand/5 border-brand/20 text-brand",
     warning: "from-warning/20 to-warning/5 border-warning/20 text-warning",
     muted: "from-muted to-muted/40 border-border text-foreground",
+    success: "from-success/20 to-success/5 border-success/20 text-success",
   } as const;
   return (
     <div className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-3 sm:p-4 ${tones[tone]}`}>
