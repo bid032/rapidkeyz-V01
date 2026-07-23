@@ -172,7 +172,28 @@ function AdminUsers() {
     { key: "admin", label: lang === "ar" ? "الأدمن" : "Admins", count: stats.admins },
     { key: "moderator", label: lang === "ar" ? "المشرفين" : "Mods", count: stats.mods },
     { key: "user", label: lang === "ar" ? "عملاء" : "Users", count: stats.customers },
+    { key: "stock", label: lang === "ar" ? "الاستوك" : "Stock", count: stats.stock },
   ];
+
+  const askToggleRole = async (u: any, role: "admin" | "moderator", add: boolean) => {
+    const name = u.display_name || u.email;
+    const messages = {
+      ar: {
+        admin: add ? `تفعيل صلاحية الأدمن للمستخدم ${name}؟` : `إلغاء صلاحية الأدمن عن ${name}؟`,
+        moderator: add ? `تفعيل صلاحية المشرف للمستخدم ${name}؟` : `إلغاء صلاحية المشرف عن ${name}؟`,
+      },
+      en: {
+        admin: add ? `Grant admin role to ${name}?` : `Remove admin role from ${name}?`,
+        moderator: add ? `Grant moderator role to ${name}?` : `Remove moderator role from ${name}?`,
+      },
+    };
+    const ok = await confirm({
+      message: messages[lang === "ar" ? "ar" : "en"][role],
+      tone: add ? "default" : "danger",
+    });
+    if (!ok) return;
+    toggleRole.mutate({ userId: u.id, role, add });
+  };
 
   return (
     <div className="space-y-6">
