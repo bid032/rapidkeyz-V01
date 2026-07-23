@@ -19,6 +19,134 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Migration helper: the exported data contains old auth user UUIDs.
+-- If you created users manually in the new project, their UUIDs may be different.
+-- This block remaps old UUIDs to the existing auth.users rows by email while importing.
+-- Missing users are treated safely: orders become guest orders, optional actor fields become NULL,
+-- and user-only rows such as profiles/roles/refunds are skipped instead of stopping the import.
+--
+
+CREATE TEMP TABLE IF NOT EXISTS _migration_user_map (
+    old_id uuid PRIMARY KEY,
+    email text NOT NULL
+);
+
+TRUNCATE _migration_user_map;
+
+INSERT INTO _migration_user_map (old_id, email) VALUES
+    ('eb426053-88ff-4a02-9bc7-4219a4685608', 'bidotito1@gmail.com'),
+    ('27d8b276-4f88-4f3e-8950-a8a902a0ca8f', 'bido4779@gmail.com'),
+    ('d4cfb01c-8061-40e0-b7fe-6d5406debc72', 'maahm.gamal@gmail.com'),
+    ('edf2263b-8d24-4a9a-bca5-0edd345b701c', 'bido7432@gmail.com'),
+    ('9bae9918-05aa-463b-8027-14330a7e2b82', 'mahgamalx@gmail.com'),
+    ('6d6872cc-2624-4897-870f-a8606e4420c4', 'ammar.talat123@gmail.com'),
+    ('073573b5-c255-407b-a550-33b445108086', 'maahmooudg@gmail.com')
+ON CONFLICT (old_id) DO UPDATE SET email = EXCLUDED.email;
+
+CREATE OR REPLACE FUNCTION public._migration_map_auth_user(_old_id uuid)
+RETURNS uuid
+LANGUAGE plpgsql
+STABLE
+AS $migration_helper$
+DECLARE
+    mapped_id uuid;
+BEGIN
+    IF _old_id IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    SELECT u.id INTO mapped_id
+    FROM auth.users u
+    WHERE u.id = _old_id
+    LIMIT 1;
+
+    IF mapped_id IS NOT NULL THEN
+        RETURN mapped_id;
+    END IF;
+
+    SELECT u.id INTO mapped_id
+    FROM _migration_user_map m
+    JOIN auth.users u ON lower(u.email) = lower(m.email)
+    WHERE m.old_id = _old_id
+    LIMIT 1;
+
+    RETURN mapped_id;
+END;
+$migration_helper$;
+
+CREATE OR REPLACE FUNCTION public._migration_remap_public_user_refs()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $migration_helper$
+BEGIN
+    IF TG_TABLE_NAME = 'coupons' THEN
+        NEW.created_by := public._migration_map_auth_user(NEW.created_by);
+        RETURN NEW;
+    ELSIF TG_TABLE_NAME = 'orders' THEN
+        NEW.user_id := public._migration_map_auth_user(NEW.user_id);
+        RETURN NEW;
+    ELSIF TG_TABLE_NAME = 'audit_log' THEN
+        NEW.actor_id := public._migration_map_auth_user(NEW.actor_id);
+        RETURN NEW;
+    ELSIF TG_TABLE_NAME = 'coupon_redemptions' THEN
+        NEW.user_id := public._migration_map_auth_user(NEW.user_id);
+        RETURN NEW;
+    ELSIF TG_TABLE_NAME = 'profiles' THEN
+        NEW.id := public._migration_map_auth_user(NEW.id);
+        IF NEW.id IS NULL THEN
+            RETURN NULL;
+        END IF;
+        RETURN NEW;
+    ELSIF TG_TABLE_NAME = 'refunds' THEN
+        NEW.user_id := public._migration_map_auth_user(NEW.user_id);
+        NEW.created_by := public._migration_map_auth_user(NEW.created_by);
+
+        IF NEW.user_id IS NULL AND NEW.order_id IS NOT NULL THEN
+            SELECT o.user_id INTO NEW.user_id
+            FROM public.orders o
+            WHERE o.id = NEW.order_id
+            LIMIT 1;
+        END IF;
+
+        IF NEW.user_id IS NULL THEN
+            RETURN NULL;
+        END IF;
+
+        RETURN NEW;
+    ELSIF TG_TABLE_NAME = 'user_roles' THEN
+        NEW.user_id := public._migration_map_auth_user(NEW.user_id);
+        IF NEW.user_id IS NULL THEN
+            RETURN NULL;
+        END IF;
+        RETURN NEW;
+    END IF;
+
+    RETURN NEW;
+END;
+$migration_helper$;
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.coupons;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.coupons FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.orders;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.orders FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.audit_log;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.audit_log FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.coupon_redemptions;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.coupon_redemptions FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.profiles;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.profiles FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.refunds;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.refunds FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.user_roles;
+CREATE TRIGGER _migration_remap_user_refs BEFORE INSERT ON public.user_roles FOR EACH ROW EXECUTE FUNCTION public._migration_remap_public_user_refs();
+
+--
 -- Data for Name: categories; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -469,6 +597,23 @@ INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES ('e981ef6c-
 INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES ('989b5d02-425f-498f-a9b8-5aa94ee4d388', '6d6872cc-2624-4897-870f-a8606e4420c4', 'moderator', '2026-07-22 18:36:00.818872+00') ON CONFLICT DO NOTHING;
 INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES ('b4a525d0-5f76-46d4-bae8-734dce95da2f', '6d6872cc-2624-4897-870f-a8606e4420c4', 'admin', '2026-07-22 19:54:26.914172+00') ON CONFLICT DO NOTHING;
 INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES ('ed74fe54-358f-447c-867d-6db36d2f21db', '073573b5-c255-407b-a550-33b445108086', 'user', '2026-07-22 21:38:47.848722+00') ON CONFLICT DO NOTHING;
+
+
+--
+-- Cleanup migration-only helpers.
+--
+
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.coupons;
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.orders;
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.audit_log;
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.coupon_redemptions;
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.profiles;
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.refunds;
+DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.user_roles;
+
+DROP FUNCTION IF EXISTS public._migration_remap_public_user_refs();
+DROP FUNCTION IF EXISTS public._migration_map_auth_user(uuid);
+DROP TABLE IF EXISTS _migration_user_map;
 
 
 --
