@@ -1,32 +1,28 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
 import { TEMPLATES } from './registry'
-import { sendResendEmail } from '@/lib/resend'
+import { sendSmtpEmail } from '@/lib/smtp'
 
-// Server-only: reads LOVABLE_API_KEY and RESEND_API_KEY. Never import from client components.
+// Server-only: sends through the project's own SMTP server (nodemailer).
 
-const SITE_NAME = 'RapidKeyz'
-
-// The visible From: address. This domain MUST be verified in Resend before
-// emails can be sent to users. Override with RESEND_FROM_EMAIL if needed.
 const DEFAULT_FROM_EMAIL = 'RapidKeyz <noreply@rapidkeyz.com>'
 
 function getFromEmail(): string {
-  return process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL
+  return process.env.SMTP_FROM || process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL
 }
 
 export type SendTemplateEmailResult = { sent: true }
 
 export interface SendTemplateEmailOptions {
   templateData?: Record<string, any>
-  /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
+  /** Kept for API compatibility; SMTP has no idempotency header. */
   idempotencyKey?: string
   replyTo?: string
 }
 
 /**
- * Renders a registered template and sends it through Resend via the Lovable
- * connector gateway. Throws on failure; a successful send resolves { sent: true }.
+ * Renders a registered template and sends it through the project's SMTP server.
+ * Throws on failure; a successful send resolves { sent: true }.
  */
 export async function sendTemplateEmail(
   templateName: string,
@@ -40,8 +36,6 @@ export async function sendTemplateEmail(
     )
   }
 
-  // Template-level `to` takes precedence; notification templates always
-  // send to their fixed address.
   const recipient = template.to || to
   if (!recipient) {
     throw new Error('Recipient is required (the template defines no fixed recipient)')
@@ -56,15 +50,15 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  await sendResendEmail({
+  await sendSmtpEmail({
     to: recipient,
     from: getFromEmail(),
     subject,
     html,
     text,
     replyTo: options.replyTo,
-    idempotencyKey: options.idempotencyKey || crypto.randomUUID(),
   })
 
   return { sent: true }
 }
+
