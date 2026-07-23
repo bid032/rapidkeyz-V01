@@ -462,7 +462,7 @@ function AdminUsers() {
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => toggleRole.mutate({ userId: u.id, role: "admin", add: !isAdmin })}
+                    onClick={() => askToggleRole(u, "admin", !isAdmin)}
                     className={`flex-1 text-xs px-3 py-2.5 rounded-xl font-bold transition ${
                       isAdmin
                         ? "bg-destructive/10 text-destructive"
@@ -472,7 +472,7 @@ function AdminUsers() {
                     {isAdmin ? (lang === "ar" ? "إلغاء أدمن" : "Remove admin") : (lang === "ar" ? "جعله أدمن" : "Make admin")}
                   </button>
                   <button
-                    onClick={() => toggleRole.mutate({ userId: u.id, role: "moderator", add: !isModerator })}
+                    onClick={() => askToggleRole(u, "moderator", !isModerator)}
                     className={`flex-1 text-xs px-3 py-2.5 rounded-xl font-bold transition ${
                       isModerator
                         ? "bg-destructive/10 text-destructive"
