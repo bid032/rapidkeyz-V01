@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   component: AdminUsers,
 });
 
-type RoleFilter = "all" | "admin" | "moderator" | "user";
+type RoleFilter = "all" | "admin" | "moderator" | "user" | "stock";
 
 function AdminUsers() {
   const { t, lang, notify, confirm } = useApp();
