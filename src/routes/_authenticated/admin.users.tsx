@@ -215,10 +215,11 @@ function AdminUsers() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         <StatCard icon={Users} label={lang === "ar" ? "إجمالي" : "Total"} value={stats.total} tone="brand" />
         <StatCard icon={ShieldCheck} label={lang === "ar" ? "أدمن" : "Admins"} value={stats.admins} tone="warning" />
         <StatCard icon={Shield} label={lang === "ar" ? "مشرفين" : "Mods"} value={stats.mods} tone="muted" />
+        <StatCard icon={Boxes} label={lang === "ar" ? "الاستوك" : "Stock"} value={stats.stock} tone="success" />
       </div>
 
       {/* Search + Role tabs */}
