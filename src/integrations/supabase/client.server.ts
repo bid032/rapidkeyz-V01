@@ -30,9 +30,9 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseAdminClient() {
-  // Hardcoded to external Supabase project (migrated from Lovable Cloud)
-  const SUPABASE_URL = 'https://efecpgxwbinhpfijqrzo.supabase.co';
-  const SUPABASE_SERVICE_ROLE_KEY = 'sb_secret_O5odro7t0y8Po9lqTzkkVw_YwjsfVnL';
+  const SUPABASE_URL = process.env.SUPABASE_URL as string;
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+
 
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
