@@ -1,114 +1,214 @@
 import * as React from 'react'
-import { createAuthEmailHandler } from '@lovable.dev/email-js'
 import { createFileRoute } from '@tanstack/react-router'
+import { render } from '@react-email/render'
+import { Webhook } from 'standardwebhooks'
 import { SignupEmail } from '@/lib/email-templates/signup'
 import { InviteEmail } from '@/lib/email-templates/invite'
 import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
+import { sendResendEmail, getWebhookSecret } from '@/lib/resend'
 
-// Configuration
-const SITE_NAME = "RapidKeyz"
-const SENDER_DOMAIN = "info.rapidkeyz.com"
-const ROOT_DOMAIN = "rapidkeyz.com"
-const FROM_DOMAIN = "rapidkeyz.com"
-const SITE_URL = `https://${ROOT_DOMAIN}`
+const SITE_NAME = 'RapidKeyz'
+const ROOT_DOMAIN = 'rapidkeyz.com'
+const SITE_URL = process.env.SITE_URL || `https://${ROOT_DOMAIN}`
 
-// The SDK handler owns verification, dispatch, and retry semantics; this file
-// owns only the email decisions: subjects, templates, and per-type props.
-const handler = createAuthEmailHandler({
-  apiKey: process.env.LOVABLE_API_KEY!,
-  from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-  senderDomain: SENDER_DOMAIN,
-  sendUrl: process.env.LOVABLE_SEND_URL,
-  emails: {
-    signup: {
-      subject: "أكد بريدك الإلكتروني",
-      render: (data) => {
-        const lang = pickLang(data)
-        return React.createElement(SignupEmail, {
-          siteName: SITE_NAME,
-          siteUrl: SITE_URL,
-          recipient: data.email,
-          confirmationUrl: data.url,
-          lang,
-        })
-      },
-    },
-    invite: {
-      subject: "تمت دعوتك",
-      render: (data) => {
-        const lang = pickLang(data)
-        return React.createElement(InviteEmail, {
-          siteName: SITE_NAME,
-          siteUrl: SITE_URL,
-          confirmationUrl: data.url,
-          lang,
-        })
-      },
-    },
-    magiclink: {
-      subject: "رابط الدخول",
-      render: (data) => {
-        const lang = pickLang(data)
-        return React.createElement(MagicLinkEmail, {
-          siteName: SITE_NAME,
-          confirmationUrl: data.url,
-          lang,
-        })
-      },
-    },
-    recovery: {
-      subject: "إعادة تعيين كلمة السر",
-      render: (data) => {
-        const lang = pickLang(data)
-        return React.createElement(RecoveryEmail, {
-          siteName: SITE_NAME,
-          confirmationUrl: data.url,
-          lang,
-        })
-      },
-    },
-    email_change: {
-      subject: "تأكيد البريد الجديد",
-      render: (data) => {
-        const lang = pickLang(data)
-        return React.createElement(EmailChangeEmail, {
-          siteName: SITE_NAME,
-          oldEmail: data.old_email ?? '',
-          email: data.email,
-          newEmail: data.new_email ?? '',
-          confirmationUrl: data.url,
-          lang,
-        })
-      },
-    },
-    reauthentication: {
-      subject: "رمز التحقق",
-      render: (data) => {
-        const lang = pickLang(data)
-        return React.createElement(ReauthenticationEmail, { token: data.token ?? '', lang })
+// The visible From: address. Must be verified in Resend.
+const DEFAULT_FROM_EMAIL = 'RapidKeyz <noreply@rapidkeyz.com>'
+function getFromEmail(): string {
+  return process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL
+}
+
+interface AuthHookPayload {
+  user: {
+    id: string
+    email: string
+    user_metadata?: Record<string, any>
+  }
+  email_data: {
+    token: string
+    token_hash: string
+    redirect_to?: string
+    email_action_type:
+      | 'signup'
+      | 'invite'
+      | 'magiclink'
+      | 'recovery'
+      | 'email_change'
+      | 'reauthentication'
+    site_url?: string
+    token_new?: string
+    token_hash_new?: string
+  }
+}
+
+export const Route = createFileRoute('/lovable/email/auth/webhook')({
+  server: {
+    handlers: {
+      POST: async ({ request }) => {
+        const rawSecret = process.env.SEND_EMAIL_HOOK_SECRET
+        if (!rawSecret) {
+          console.error('[auth-webhook] SEND_EMAIL_HOOK_SECRET is not configured')
+          return Response.json(
+            { error: 'Webhook secret not configured' },
+            { status: 500 }
+          )
+        }
+
+        const secret = getWebhookSecret(rawSecret)
+        const payload = await request.text()
+        const wh = new Webhook(secret)
+
+        let data: AuthHookPayload
+        try {
+          const verified = wh.verify(payload, Object.fromEntries(request.headers)) as AuthHookPayload
+          data = verified
+        } catch (err) {
+          console.error('[auth-webhook] signature verification failed', err)
+          return Response.json({ error: 'Invalid signature' }, { status: 401 })
+        }
+
+        const { user, email_data: emailData } = data
+        const lang = pickLang(user?.user_metadata)
+        const siteUrl = emailData.site_url || SITE_URL
+        const action = emailData.email_action_type
+
+        try {
+          const { subject, html, to } = await renderAuthEmail({
+            action,
+            user,
+            emailData,
+            siteUrl,
+            lang,
+          })
+
+          await sendResendEmail({
+            to,
+            from: getFromEmail(),
+            subject,
+            html,
+            idempotencyKey: `auth-${action}-${user.id}-${emailData.token_hash}`,
+          })
+
+          return Response.json({ sent: true })
+        } catch (err) {
+          console.error('[auth-webhook] send failed', err)
+          return Response.json(
+            { error: err instanceof Error ? err.message : 'Send failed' },
+            { status: 500 }
+          )
+        }
       },
     },
   },
 })
 
-// Extract preferred language from Supabase user metadata; default to Arabic.
-function pickLang(data: any): 'ar' | 'en' {
+interface RenderArgs {
+  action: AuthHookPayload['email_data']['email_action_type']
+  user: AuthHookPayload['user']
+  emailData: AuthHookPayload['email_data']
+  siteUrl: string
+  lang: 'ar' | 'en'
+}
+
+async function renderAuthEmail({ action, user, emailData, siteUrl, lang }: RenderArgs) {
+  const confirmationUrl = buildConfirmationUrl(siteUrl, emailData)
+
+  switch (action) {
+    case 'signup': {
+      const html = await render(
+        React.createElement(SignupEmail, {
+          siteName: SITE_NAME,
+          siteUrl,
+          recipient: user.email,
+          confirmationUrl,
+          lang,
+        })
+      )
+      return { subject: 'أكد بريدك الإلكتروني', html, to: user.email }
+    }
+
+    case 'invite': {
+      const html = await render(
+        React.createElement(InviteEmail, {
+          siteName: SITE_NAME,
+          siteUrl,
+          confirmationUrl,
+          lang,
+        })
+      )
+      return { subject: 'تمت دعوتك', html, to: user.email }
+    }
+
+    case 'magiclink': {
+      const html = await render(
+        React.createElement(MagicLinkEmail, {
+          siteName: SITE_NAME,
+          confirmationUrl,
+          lang,
+        })
+      )
+      return { subject: 'رابط الدخول', html, to: user.email }
+    }
+
+    case 'recovery': {
+      const html = await render(
+        React.createElement(RecoveryEmail, {
+          siteName: SITE_NAME,
+          confirmationUrl,
+          lang,
+        })
+      )
+      return { subject: 'إعادة تعيين كلمة السر', html, to: user.email }
+    }
+
+    case 'email_change': {
+      const html = await render(
+        React.createElement(EmailChangeEmail, {
+          siteName: SITE_NAME,
+          oldEmail: user.email,
+          email: user.email,
+          newEmail: user.email,
+          confirmationUrl,
+          lang,
+        })
+      )
+      return { subject: 'تأكيد البريد الجديد', html, to: user.email }
+    }
+
+    case 'reauthentication': {
+      const html = await render(
+        React.createElement(ReauthenticationEmail, { token: emailData.token, lang })
+      )
+      return { subject: 'رمز التحقق', html, to: user.email }
+    }
+
+    default: {
+      const _exhaustive: never = action
+      throw new Error(`Unsupported auth email action: ${_exhaustive}`)
+    }
+  }
+}
+
+function buildConfirmationUrl(
+  siteUrl: string,
+  emailData: AuthHookPayload['email_data']
+): string {
+  const base = siteUrl.replace(/\/$/, '')
+  const params = new URLSearchParams({
+    token_hash: emailData.token_hash,
+    type: emailData.email_action_type,
+  })
+  if (emailData.redirect_to) {
+    params.append('next', emailData.redirect_to)
+  }
+  return `${base}/auth/confirm?${params.toString()}`
+}
+
+function pickLang(metadata?: Record<string, any>): 'ar' | 'en' {
   const raw =
-    data?.user?.user_metadata?.language ??
-    data?.user?.user_metadata?.locale ??
-    data?.user_metadata?.language ??
-    data?.metadata?.language
+    metadata?.language ?? metadata?.locale ?? ''
   if (typeof raw === 'string' && raw.toLowerCase().startsWith('en')) return 'en'
   return 'ar'
 }
-
-export const Route = createFileRoute("/lovable/email/auth/webhook")({
-  server: {
-    handlers: {
-      POST: ({ request }) => handler(request),
-    },
-  },
-})
