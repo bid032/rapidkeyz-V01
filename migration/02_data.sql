@@ -22,26 +22,11 @@ SET row_security = off;
 -- Migration helper: the exported data contains old auth user UUIDs.
 -- If you created users manually in the new project, their UUIDs may be different.
 -- This block remaps old UUIDs to the existing auth.users rows by email while importing.
+-- The email map is embedded inside the function so it works in SQL editors that don't keep temp tables
+-- visible across function-trigger execution.
 -- Missing users are treated safely: orders become guest orders, optional actor fields become NULL,
 -- and user-only rows such as profiles/roles/refunds are skipped instead of stopping the import.
 --
-
-CREATE TEMP TABLE IF NOT EXISTS _migration_user_map (
-    old_id uuid PRIMARY KEY,
-    email text NOT NULL
-);
-
-TRUNCATE _migration_user_map;
-
-INSERT INTO _migration_user_map (old_id, email) VALUES
-    ('eb426053-88ff-4a02-9bc7-4219a4685608', 'bidotito1@gmail.com'),
-    ('27d8b276-4f88-4f3e-8950-a8a902a0ca8f', 'bido4779@gmail.com'),
-    ('d4cfb01c-8061-40e0-b7fe-6d5406debc72', 'maahm.gamal@gmail.com'),
-    ('edf2263b-8d24-4a9a-bca5-0edd345b701c', 'bido7432@gmail.com'),
-    ('9bae9918-05aa-463b-8027-14330a7e2b82', 'mahgamalx@gmail.com'),
-    ('6d6872cc-2624-4897-870f-a8606e4420c4', 'ammar.talat123@gmail.com'),
-    ('073573b5-c255-407b-a550-33b445108086', 'maahmooudg@gmail.com')
-ON CONFLICT (old_id) DO UPDATE SET email = EXCLUDED.email;
 
 CREATE OR REPLACE FUNCTION public._migration_map_auth_user(_old_id uuid)
 RETURNS uuid
@@ -65,7 +50,16 @@ BEGIN
     END IF;
 
     SELECT u.id INTO mapped_id
-    FROM _migration_user_map m
+    FROM (
+        VALUES
+            ('eb426053-88ff-4a02-9bc7-4219a4685608'::uuid, 'bidotito1@gmail.com'::text),
+            ('27d8b276-4f88-4f3e-8950-a8a902a0ca8f'::uuid, 'bido4779@gmail.com'::text),
+            ('d4cfb01c-8061-40e0-b7fe-6d5406debc72'::uuid, 'maahm.gamal@gmail.com'::text),
+            ('edf2263b-8d24-4a9a-bca5-0edd345b701c'::uuid, 'bido7432@gmail.com'::text),
+            ('9bae9918-05aa-463b-8027-14330a7e2b82'::uuid, 'mahgamalx@gmail.com'::text),
+            ('6d6872cc-2624-4897-870f-a8606e4420c4'::uuid, 'ammar.talat123@gmail.com'::text),
+            ('073573b5-c255-407b-a550-33b445108086'::uuid, 'maahmooudg@gmail.com'::text)
+    ) AS m(old_id, email)
     JOIN auth.users u ON lower(u.email) = lower(m.email)
     WHERE m.old_id = _old_id
     LIMIT 1;
@@ -613,7 +607,6 @@ DROP TRIGGER IF EXISTS _migration_remap_user_refs ON public.user_roles;
 
 DROP FUNCTION IF EXISTS public._migration_remap_public_user_refs();
 DROP FUNCTION IF EXISTS public._migration_map_auth_user(uuid);
-DROP TABLE IF EXISTS _migration_user_map;
 
 
 --
