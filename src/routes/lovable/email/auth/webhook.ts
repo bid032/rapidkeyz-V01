@@ -57,6 +57,14 @@ export const Route = createFileRoute('/lovable/email/auth/webhook')({
         }
 
         const secret = getWebhookSecret(rawSecret)
+        if (!secret) {
+          console.error('[auth-webhook] SEND_EMAIL_HOOK_SECRET is empty')
+          return Response.json(
+            { error: 'Webhook secret not configured' },
+            { status: 500 }
+          )
+        }
+
         const payload = await request.text()
         const wh = new Webhook(secret)
 
