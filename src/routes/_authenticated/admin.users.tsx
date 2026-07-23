@@ -530,11 +530,19 @@ function StockAccessDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  const { lang, notify } = useApp();
+  const { lang, notify, confirm } = useApp();
   const [access, setAccess] = useState<boolean>(!!user.stock_access);
   const [loading, setLoading] = useState(false);
 
   const save = async () => {
+    if (access !== !!user.stock_access) {
+      const name = user.display_name || user.email;
+      const msg = access
+        ? (lang === "ar" ? `منح صلاحية الاستوك للمستخدم ${name}؟` : `Grant stock access to ${name}?`)
+        : (lang === "ar" ? `إلغاء صلاحية الاستوك عن ${name}؟` : `Revoke stock access from ${name}?`);
+      const ok = await confirm({ message: msg, tone: access ? "default" : "danger" });
+      if (!ok) return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.rpc("admin_set_stock_access", {
