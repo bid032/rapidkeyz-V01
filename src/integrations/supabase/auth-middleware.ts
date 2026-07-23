@@ -32,10 +32,9 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
-    
-    // Hardcoded to external Supabase project (migrated from Lovable Cloud)
-    const SUPABASE_URL = 'https://efecpgxwbinhpfijqrzo.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_349vO3p4skvYFHMeAf4hQw_c_B_u80v';
+    const SUPABASE_URL = process.env.SUPABASE_URL as string;
+    const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY as string;
+
 
     
     const request = getRequest();
