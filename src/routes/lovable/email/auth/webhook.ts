@@ -92,12 +92,11 @@ export const Route = createFileRoute('/lovable/email/auth/webhook')({
             lang,
           })
 
-          await sendResendEmail({
+          await sendSmtpEmail({
             to,
             from: getFromEmail(),
             subject,
             html,
-            idempotencyKey: `auth-${action}-${user.id}-${emailData.token_hash}`,
           })
 
           return Response.json({ sent: true })
