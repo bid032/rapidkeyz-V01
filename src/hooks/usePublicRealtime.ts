@@ -30,8 +30,10 @@ export function usePublicRealtime() {
             flat.includes("product") ||
             flat.includes("related") ||
             flat.includes("shop") ||
-            flat.includes("bestseller") ||
+            flat.includes("seller") ||
             flat.includes("trending") ||
+            flat.includes("hero") ||
+            flat.includes("cats") ||
             flat.includes("new-arrivals")
           );
         },
