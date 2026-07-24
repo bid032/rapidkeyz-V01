@@ -201,6 +201,54 @@ function CheckoutPage() {
       return;
     }
 
+    // Re-check live stock right before charging so a customer who orders 4
+    // when someone else just bought 1 gets told "only 3 available" instead
+    // of failing after payment.
+    setStockIssues([]);
+    try {
+      const planIds = Array.from(new Set(cart.map((c) => c.planId)));
+      const { data: stockRows, error: stockErr } = await supabase
+        .from("product_plans")
+        .select("id, stock")
+        .in("id", planIds);
+      if (stockErr) throw stockErr;
+      const stockMap = new Map<string, number>(
+        (stockRows ?? []).map((r: any) => [
+          r.id as string,
+          Math.max(0, Number(r.stock ?? 0)),
+        ]),
+      );
+      const requestedMap = new Map<string, number>();
+      for (const c of cart) {
+        requestedMap.set(c.planId, (requestedMap.get(c.planId) ?? 0) + c.quantity);
+      }
+      const seen = new Set<string>();
+      const issues: typeof stockIssues = [];
+      for (const c of cart) {
+        if (seen.has(c.planId)) continue;
+        seen.add(c.planId);
+        const req = requestedMap.get(c.planId) ?? 0;
+        const avail = stockMap.get(c.planId) ?? 0;
+        if (req > avail) {
+          issues.push({
+            planId: c.planId,
+            productName: c.productName,
+            planLabel: c.planLabel,
+            requested: req,
+            available: avail,
+          });
+        }
+      }
+      if (issues.length > 0) {
+        setStockIssues(issues);
+        if (typeof window !== "undefined") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        return;
+      }
+    } catch (err) {
+      console.error("stock precheck failed", err);
+    }
 
     setSubmitting(true);
     try {
