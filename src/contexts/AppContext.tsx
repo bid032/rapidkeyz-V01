@@ -44,9 +44,9 @@ type AppState = {
   toggleTheme: () => void;
   themeMode: ThemeMode;
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: CartItem) => void | Promise<void>;
   removeFromCart: (productId: string, planId: string) => void;
-  updateQty: (productId: string, planId: string, qty: number) => void;
+  updateQty: (productId: string, planId: string, qty: number) => void | Promise<void>;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -175,18 +175,59 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch {}
   };
 
-  const addToCart = (item: CartItem) => {
+  const fetchPlanStock = async (planId: string): Promise<number | null> => {
+    try {
+      const { data } = await supabase
+        .from("product_plans")
+        .select("stock")
+        .eq("id", planId)
+        .maybeSingle();
+      if (data == null) return null;
+      const n = Number((data as any).stock ?? 0);
+      return Number.isFinite(n) ? Math.max(0, n) : 0;
+    } catch {
+      return null;
+    }
+  };
+
+  const addToCart = async (item: CartItem) => {
+    const stock = await fetchPlanStock(item.planId);
+    let notice: { msg: string; type: ToastMsg["type"] } | null = null as { msg: string; type: ToastMsg["type"] } | null;
     setCart((prev) => {
       const idx = prev.findIndex(
         (c) => c.productId === item.productId && c.planId === item.planId,
       );
+      const currentQty = idx >= 0 ? prev[idx].quantity : 0;
+      let requested = currentQty + item.quantity;
+      if (stock != null) {
+        if (stock <= 0) {
+          notice = {
+            msg: lang === "ar" ? "نفذ المخزون من هذه الخدمة" : "This item is sold out",
+            type: "error",
+          };
+          return prev;
+        }
+        if (requested > stock) {
+          requested = stock;
+          notice = {
+            msg:
+              lang === "ar"
+                ? `الحد الأقصى المتاح ${stock}`
+                : `Only ${stock} available in stock`,
+            type: "info",
+          };
+        }
+      }
+      const finalQty = Math.max(1, requested);
       if (idx >= 0) {
+        if (finalQty === currentQty) return prev;
         const copy = [...prev];
-        copy[idx] = { ...copy[idx], quantity: copy[idx].quantity + item.quantity };
+        copy[idx] = { ...copy[idx], quantity: finalQty };
         return copy;
       }
-      return [...prev, item];
+      return [...prev, { ...item, quantity: finalQty }];
     });
+    if (notice) notify(notice.msg, notice.type);
     playAddSound();
     setCartBumpKey((k) => k + 1);
   };
@@ -194,14 +235,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCart((prev) =>
       prev.filter((c) => !(c.productId === productId && c.planId === planId)),
     );
-  const updateQty = (productId: string, planId: string, qty: number) =>
+  const updateQty = async (productId: string, planId: string, qty: number) => {
+    const stock = await fetchPlanStock(planId);
+    let capped = Math.max(1, qty);
+    let notice: string | null = null;
+    if (stock != null) {
+      if (stock <= 0) {
+        setCart((prev) => prev.filter((c) => !(c.productId === productId && c.planId === planId)));
+        notify(lang === "ar" ? "نفذ المخزون من هذه الخدمة" : "This item is sold out", "error");
+        return;
+      }
+      if (capped > stock) {
+        capped = stock;
+        notice = lang === "ar" ? `الحد الأقصى المتاح ${stock}` : `Only ${stock} available in stock`;
+      }
+    }
     setCart((prev) =>
       prev.map((c) =>
-        c.productId === productId && c.planId === planId
-          ? { ...c, quantity: Math.max(1, qty) }
-          : c,
+        c.productId === productId && c.planId === planId ? { ...c, quantity: capped } : c,
       ),
     );
+    if (notice) notify(notice, "info");
+  };
   const clearCart = () => setCart([]);
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
