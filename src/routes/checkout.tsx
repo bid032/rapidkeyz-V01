@@ -39,6 +39,9 @@ function CheckoutPage() {
   const [gateway, setGateway] = useState<Gateway>("simulate");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stockIssues, setStockIssues] = useState<
+    { planId: string; productName: string; planLabel: string; requested: number; available: number }[]
+  >([]);
   
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
