@@ -192,7 +192,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addToCart = async (item: CartItem) => {
     const stock = await fetchPlanStock(item.planId);
-    let notice: { msg: string; type: ToastMsg["type"] } | null = null;
+    let notice: { msg: string; type: ToastMsg["type"] } | null = null as { msg: string; type: ToastMsg["type"] } | null;
     setCart((prev) => {
       const idx = prev.findIndex(
         (c) => c.productId === item.productId && c.planId === item.planId,
