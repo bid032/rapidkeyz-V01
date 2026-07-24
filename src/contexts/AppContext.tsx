@@ -44,9 +44,9 @@ type AppState = {
   toggleTheme: () => void;
   themeMode: ThemeMode;
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: CartItem) => void | Promise<void>;
   removeFromCart: (productId: string, planId: string) => void;
-  updateQty: (productId: string, planId: string, qty: number) => void;
+  updateQty: (productId: string, planId: string, qty: number) => void | Promise<void>;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
