@@ -39,6 +39,9 @@ function CheckoutPage() {
   const [gateway, setGateway] = useState<Gateway>("simulate");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [stockIssues, setStockIssues] = useState<
+    { planId: string; productName: string; planLabel: string; requested: number; available: number }[]
+  >([]);
   
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
@@ -198,6 +201,54 @@ function CheckoutPage() {
       return;
     }
 
+    // Re-check live stock right before charging so a customer who orders 4
+    // when someone else just bought 1 gets told "only 3 available" instead
+    // of failing after payment.
+    setStockIssues([]);
+    try {
+      const planIds = Array.from(new Set(cart.map((c) => c.planId)));
+      const { data: stockRows, error: stockErr } = await supabase
+        .from("product_plans")
+        .select("id, stock")
+        .in("id", planIds);
+      if (stockErr) throw stockErr;
+      const stockMap = new Map<string, number>(
+        (stockRows ?? []).map((r: any) => [
+          r.id as string,
+          Math.max(0, Number(r.stock ?? 0)),
+        ]),
+      );
+      const requestedMap = new Map<string, number>();
+      for (const c of cart) {
+        requestedMap.set(c.planId, (requestedMap.get(c.planId) ?? 0) + c.quantity);
+      }
+      const seen = new Set<string>();
+      const issues: typeof stockIssues = [];
+      for (const c of cart) {
+        if (seen.has(c.planId)) continue;
+        seen.add(c.planId);
+        const req = requestedMap.get(c.planId) ?? 0;
+        const avail = stockMap.get(c.planId) ?? 0;
+        if (req > avail) {
+          issues.push({
+            planId: c.planId,
+            productName: c.productName,
+            planLabel: c.planLabel,
+            requested: req,
+            available: avail,
+          });
+        }
+      }
+      if (issues.length > 0) {
+        setStockIssues(issues);
+        if (typeof window !== "undefined") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        return;
+      }
+    } catch (err) {
+      console.error("stock precheck failed", err);
+    }
 
     setSubmitting(true);
     try {
@@ -343,6 +394,85 @@ function CheckoutPage() {
         ) : (
           <form onSubmit={handleSubmit} className="grid md:grid-cols-[1fr_360px] gap-6 sm:gap-8">
             <div className="space-y-4 sm:space-y-6 min-w-0">
+              {stockIssues.length > 0 && (
+                <section className="p-4 sm:p-5 bg-destructive/10 border-2 border-destructive/40 rounded-2xl min-w-0">
+                  <h2 className="font-bold text-destructive mb-2">
+                    {lang === "ar" ? "تنبيه: المخزون تغيّر" : "Heads up: stock changed"}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {lang === "ar"
+                      ? "الكميات المطلوبة أكبر من المتاح الآن. عدّل سلتك ثم أعد المحاولة."
+                      : "Requested quantities exceed current availability. Adjust your cart and try again."}
+                  </p>
+                  <ul className="space-y-2 mb-3">
+                    {stockIssues.map((i) => (
+                      <li
+                        key={i.planId}
+                        className="flex flex-wrap items-center gap-2 bg-card border border-border rounded-lg p-3 text-sm"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold truncate">{i.productName}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {i.planLabel}
+                          </div>
+                          <div className="text-xs mt-1">
+                            {lang === "ar"
+                              ? `طلبت ${i.requested} — المتاح ${i.available}`
+                              : `You requested ${i.requested} — only ${i.available} available`}
+                          </div>
+                        </div>
+                        {i.available > 0 ? (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await updateQty(
+                                cart.find((c) => c.planId === i.planId)?.productId ?? "",
+                                i.planId,
+                                i.available,
+                              );
+                              setStockIssues((prev) => prev.filter((x) => x.planId !== i.planId));
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-brand text-brand-foreground text-xs font-bold hover:opacity-90"
+                          >
+                            {lang === "ar"
+                              ? `اشترِ المتاح (${i.available})`
+                              : `Buy available (${i.available})`}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const pid = cart.find((c) => c.planId === i.planId)?.productId;
+                              if (pid) removeFromCart(pid, i.planId);
+                              setStockIssues((prev) => prev.filter((x) => x.planId !== i.planId));
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-bold hover:opacity-90"
+                          >
+                            {lang === "ar" ? "إزالة من السلة" : "Remove from cart"}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        for (const i of stockIssues) {
+                          const pid = cart.find((c) => c.planId === i.planId)?.productId;
+                          if (!pid) continue;
+                          if (i.available > 0) await updateQty(pid, i.planId, i.available);
+                          else removeFromCart(pid, i.planId);
+                        }
+                        setStockIssues([]);
+                      }}
+                      className="px-4 py-2 rounded-lg border border-destructive/50 text-destructive text-sm font-bold hover:bg-destructive/10"
+                    >
+                      {lang === "ar" ? "تعديل السلة تلقائياً" : "Auto-adjust cart"}
+                    </button>
+                  </div>
+                </section>
+              )}
               <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
 
                 <h2 className="font-bold mb-4">{t.checkout.contact}</h2>

@@ -12,6 +12,12 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "@/contexts/AppContext";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { usePublicRealtime } from "@/hooks/usePublicRealtime";
+
+function PublicRealtime() {
+  usePublicRealtime();
+  return null;
+}
 
 import { lazyClient } from "@/components/ClientOnly";
 const GsapEffects = lazyClient(() => import("@/components/GsapEffects").then((m) => ({ default: m.GsapEffects })));
@@ -255,7 +261,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        
+        <PublicRealtime />
         <div key={pathname} className="route-transition">
           <Outlet />
         </div>
