@@ -354,14 +354,14 @@ function CheckoutPage() {
       // For guest users, we need to ensure notifications are sent immediately
       // as they might not be processed later due to recency checks
       try {
-        await notifyNewOrder({ data: { orderId: order.id } });
+        await notifyNewOrder({ data: { orderId } });
       } catch (e) {
         console.error("notifyNewOrder failed", e);
         // For guest users, try to send notification directly if the first attempt failed
         if (!user) {
           try {
             const { notifyNewOrderDirect } = await import('@/lib/notify-order.functions');
-            await notifyNewOrderDirect({ data: { orderId: order.id } });
+            await notifyNewOrderDirect({ data: { orderId } });
           } catch (directErr) {
             console.error("Direct notifyNewOrder failed", directErr);
           }
@@ -371,14 +371,14 @@ function CheckoutPage() {
       // Notify customer by email (non-blocking, best-effort)
       // This works for both guest and authenticated users
       try {
-        await notifyCustomerDelivery({ data: { orderId: order.id } });
+        await notifyCustomerDelivery({ data: { orderId } });
       } catch (e) {
         console.error("notifyCustomerDelivery failed", e);
         // For guest users, try to send notification directly if the first attempt failed
         if (!user) {
           try {
             const { notifyCustomerDeliveryDirect } = await import('@/lib/notify-order.functions');
-            await notifyCustomerDeliveryDirect({ data: { orderId: order.id } });
+            await notifyCustomerDeliveryDirect({ data: { orderId } });
           } catch (directErr) {
             console.error("Direct notifyCustomerDelivery failed", directErr);
           }
@@ -387,7 +387,7 @@ function CheckoutPage() {
 
       clearCart();
       setSuccessOrder({
-        number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
+        number: orderId.slice(0, 8).toUpperCase(),
         items: itemStatuses,
       });
      } catch (err: any) {
