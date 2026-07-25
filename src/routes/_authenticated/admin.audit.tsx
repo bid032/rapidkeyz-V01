@@ -20,9 +20,10 @@ export const Route = createFileRoute("/_authenticated/admin/audit")({
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", uid)
-      .eq("role", "admin");
-    if (!roles || roles.length === 0) throw redirect({ to: "/admin" });
+      .eq("user_id", uid);
+    // Only admin can access the audit log
+    const isAdmin = roles?.some(r => r.role === "admin");
+    if (!isAdmin) throw redirect({ to: "/admin" });
   },
   component: AdminAudit,
 });
@@ -352,7 +353,7 @@ function AdminAudit() {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-sm font-bold hover:bg-destructive/20 disabled:opacity-50"
           >
             <Trash2 className={`w-4 h-4 ${clearing ? "animate-pulse" : ""}`} />
-            {clearing ? "جارٍ المسح…" : "مسح كل السجل"}
+            {clearing ? "جارٍ المسح..." : "مسح كل السجل"}
           </button>
         </div>
       </div>
@@ -380,7 +381,7 @@ function AdminAudit() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="بحث برقم الطلب، الإيميل، الهاتف، المنتج، المستخدم، أو أي كلمة…"
+            placeholder="بحث برقم الطلب، الإيميل، الهاتف، المنتج، المستخدم، أو أي كلمة..."
             className="w-full ps-3 pe-9 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:border-brand"
           />
         </div>
@@ -416,7 +417,7 @@ function AdminAudit() {
       <div className="space-y-2">
         {rows.isLoading && (
           <div className="p-8 text-center text-sm text-muted-foreground bg-card border border-border rounded-2xl">
-            جاري التحميل…
+            جاري التحميل...
           </div>
         )}
         {!rows.isLoading && filtered.length === 0 && (
@@ -640,7 +641,7 @@ function GroupCard({
                       )}
                       {it.unit_price != null && (
                         <span className="ms-auto text-[11px] font-bold tabular-nums">
-                          {it.unit_price} EGP
+                          {it.frozen_unit_price ?? it.unit_price} EGP
                           {it.quantity && it.quantity > 1 ? ` × ${it.quantity}` : ""}
                         </span>
                       )}
@@ -754,10 +755,10 @@ function fmtVal(v: any): string {
       return [v.ar, v.en].filter(Boolean).join(" / ") || "—";
     }
     const s = JSON.stringify(v);
-    return s.length > 80 ? s.slice(0, 80) + "…" : s;
+    return s.length > 80 ? s.slice(0, 80) + "..." : s;
   }
   const s = String(v);
-  return s.length > 120 ? s.slice(0, 120) + "…" : s;
+  return s.length > 120 ? s.slice(0, 120) + "..." : s;
 }
 
 function ChangesView({ changes }: { changes: any }) {

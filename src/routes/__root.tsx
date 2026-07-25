@@ -22,8 +22,7 @@ function PublicRealtime() {
 import { lazyClient } from "@/components/ClientOnly";
 const GsapEffects = lazyClient(() => import("@/components/GsapEffects").then((m) => ({ default: m.GsapEffects })));
 import { supabase } from "@/integrations/supabase/client";
-import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import logoDark from "@/assets/white_logo_rapid.png.asset.json";
+// تم تعديل استخدام اللوجو من فولدر public بدلاً من assets
 
 function NotFoundComponent() {
   return (
@@ -67,13 +66,29 @@ function NotFoundComponent() {
   );
 }
 
-
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const { queryClient } = Route.useRouteContext();
+
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+
+  const handleRetry = () => {
+    // Clear query cache to force fresh data fetch
+    queryClient.clear();
+    // Invalidate all routes to force re-fetch
+    router.invalidate();
+    // Reset the error boundary
+    reset();
+    // Force a full page reload if the error persists after 500ms
+    setTimeout(() => {
+      if (router.state.status !== "idle") {
+        window.location.reload();
+      }
+    }, 500);
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -82,10 +97,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">Something went wrong. Try again.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
+            onClick={handleRetry}
             className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-brand-foreground"
           >
             Try again
@@ -184,11 +196,9 @@ function RootShell({ children }: { children: ReactNode }) {
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var el=document.getElementById('rk-pre-splash');if(!el)return;var t=localStorage.getItem('rk-theme');var isLight=t==='light';var bg=isLight?'#f5f7fb':'#0b1220';var logoSrc=isLight?${JSON.stringify(logoLight.url)}:${JSON.stringify(logoDark.url)};var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);el.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden;background:'+bg+';transition:opacity 260ms ease';el.innerHTML='<div style="position:absolute;top:50%;left:50%;width:520px;height:260px;transform:translate(-50%,-50%);border-radius:9999px;background:rgba(34,195,230,0.2);filter:blur(120px);opacity:.7"></div><div style="position:absolute;inset:0;background:radial-gradient(circle at center, transparent 0%, '+bg+' 72%)"></div><div style="position:relative;width:208px;height:208px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;inset:-24px;border-radius:9999px;border:2px solid transparent;border-top-color:#22c3e6;border-right-color:rgba(34,195,230,0.4);animation:rk-pre-spin 1.2s linear infinite"></div><div style="position:absolute;inset:-12px;border-radius:9999px;border:2px solid transparent;border-bottom-color:rgba(34,195,230,0.6);animation:rk-pre-spin 1.8s linear infinite reverse"></div><img src="'+logoSrc+'" alt="RapidKeyz" style="position:relative;width:70%;height:70%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(34,195,230,0.55));animation:rk-pre-pulse 1.8s ease-in-out infinite"/></div>';var hidden=false;var hide=function(){if(hidden)return;hidden=true;var e=document.getElementById('rk-pre-splash');if(!e)return;e.style.display='none';e.innerHTML='';};window.__rkHideSplash=function(){var start=window.__rkSplashStart||Date.now();var elapsed=Date.now()-start;var wait=Math.max(0,300-elapsed);setTimeout(function(){requestAnimationFrame(function(){requestAnimationFrame(hide);});},wait);};window.__rkSplashStart=Date.now();setTimeout(hide,6000);}catch(e){}})();`,
+            __html: `(function(){try{var el=document.getElementById('rk-pre-splash');if(!el)return;var t=localStorage.getItem('rk-theme');var isLight=t==='light';var bg=isLight?'#f5f7fb':'#0b1220';var logoSrc=isLight?'/black logo rapid.png':'/white logo rapid.png';var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);el.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden;background:'+bg+';transition:opacity 260ms ease';el.innerHTML='<div style="position:absolute;top:50%;left:50%;width:520px;height:260px;transform:translate(-50%,-50%);border-radius:9999px;background:rgba(34,195,230,0.2);filter:blur(120px);opacity:.7"></div><div style="position:absolute;inset:0;background:radial-gradient(circle at center, transparent 0%, '+bg+' 72%)"></div><div style="position:relative;width:208px;height:208px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;inset:-24px;border-radius:9999px;border:2px solid transparent;border-top-color:#22c3e6;border-right-color:rgba(34,195,230,0.4);animation:rk-pre-spin 1.2s linear infinite"></div><div style="position:absolute;inset:-12px;border-radius:9999px;border:2px solid transparent;border-bottom-color:rgba(34,195,230,0.6);animation:rk-pre-spin 1.8s linear infinite reverse"></div><img src="'+logoSrc+'" alt="RapidKeyz" style="position:relative;width:70%;height:70%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(34,195,230,0.55));animation:rk-pre-pulse 1.8s ease-in-out infinite"/></div>';var hidden=false;var hide=function(){if(hidden)return;hidden=true;var e=document.getElementById('rk-pre-splash');if(!e)return;e.style.display='none';e.innerHTML='';};window.__rkHideSplash=function(){var start=window.__rkSplashStart||Date.now();var elapsed=Date.now()-start;var wait=Math.max(0,300-elapsed);setTimeout(function(){requestAnimationFrame(function(){requestAnimationFrame(hide);});},wait);};window.__rkSplashStart=Date.now();setTimeout(hide,6000);}catch(e){}})();`,
           }}
         />
-
-
 
         {children}
         <Scripts />
@@ -197,7 +207,6 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
-
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -243,7 +252,6 @@ function RootComponent() {
     // Safety fallback
     const fallback = setTimeout(doHide, 2500);
 
-
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
@@ -255,8 +263,6 @@ function RootComponent() {
       sub.subscription.unsubscribe();
     };
   }, [router, queryClient]);
-
-
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -271,4 +277,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

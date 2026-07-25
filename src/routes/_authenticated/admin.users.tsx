@@ -15,13 +15,13 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
   beforeLoad: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw redirect({ to: "/auth" });
-    const { data: adminRow } = await supabase
+    const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!adminRow) throw redirect({ to: "/admin/products" });
+      .eq("user_id", userData.user.id);
+    // Only admin can access the users management page
+    const isAdmin = roles?.some(r => r.role === "admin");
+    if (!isAdmin) throw redirect({ to: "/admin/products" });
   },
   component: AdminUsers,
 });

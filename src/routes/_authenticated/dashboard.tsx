@@ -47,7 +47,6 @@ function buildCredentialRows(acc: any, lang: "ar" | "en"): CredRow[] {
   return rows;
 }
 
-
 function Dashboard() {
   const { t, lang } = useApp();
   const [user, setUser] = useState<User | null>(null);
@@ -82,7 +81,6 @@ function Dashboard() {
     const missing = !profile.data.phone?.trim() || !profile.data.country?.trim();
     if (missing) navigate({ to: "/account", search: { complete: "1" } });
   }, [user, profile.data, navigate]);
-
 
   const orders = useQuery({
     queryKey: ["my-orders", user?.id],
@@ -122,8 +120,6 @@ function Dashboard() {
     }
   });
 
-
-
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate({ to: "/" });
@@ -152,8 +148,6 @@ function Dashboard() {
             {t.nav.logout}
           </button>
         </div>
-
-
 
         <section className="mb-12">
           <h2 className="text-xl font-bold mb-4">{t.dashboard.myOrders}</h2>
@@ -224,7 +218,6 @@ function Dashboard() {
                   }
 
                   if (o.status === "processing") {
-
                     return (
                       <div className="p-4 bg-warning/5 border border-warning/20 rounded-lg text-center">
                         <div className="text-sm font-bold text-warning mb-1">
@@ -250,7 +243,7 @@ function Dashboard() {
                               <span className="font-bold">{it.product_name}</span>{" "}
                               <span className="text-muted-foreground">, {it.plan_label} × {it.quantity}</span>
                             </div>
-                            <div className="text-sm font-bold shrink-0">{it.unit_price * it.quantity} {t.common.currency}</div>
+                            <div className="text-sm font-bold shrink-0">{Number(it.frozen_unit_price ?? it.unit_price) * it.quantity} {t.common.currency}</div>
                           </div>
                           {itemRefund && itemRefund.type === "full" ? (
                             <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">

@@ -2,7 +2,6 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
 
-
 const inputSchema = z.object({
   orderId: z.string().uuid(),
 })
@@ -75,7 +74,7 @@ export const notifyNewOrder = createServerFn({ method: 'POST' })
           product_name: it.product_name,
           plan_label: it.plan_label,
           quantity: it.quantity,
-          unit_price: it.unit_price,
+          unit_price: Number(it.frozen_unit_price ?? it.unit_price),
           delivery_type: it.delivery_type,
           subscription_email: it.subscription_email,
         })),
@@ -221,4 +220,108 @@ async function resolveCustomerLang(supabaseAdmin: any, email: string): Promise<'
   }
 }
 
+// Direct notification functions without recency guard for guest users
+// These functions are used when the standard notification functions fail
+// due to recency checks for guest users
 
+export const notifyNewOrderDirect = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server')
+    const { sendTemplateEmail } = await import('./email-templates/send-email')
+
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select('*, coupons(code, discount_type, discount_value), order_items(*)')
+      .eq('id', data.orderId)
+      .single()
+    if (error || !order) throw new Error(error?.message || 'Order not found')
+
+    const origin = process.env.SITE_URL || 'https://rapidkeyz.com'
+    let proofUrl: string | null = null
+    if ((order as any).payment_proof_url) {
+      const { data: signed } = await supabaseAdmin.storage
+        .from('payment-proofs')
+        .createSignedUrl((order as any).payment_proof_url, 60 * 60 * 24 * 7)
+      proofUrl = signed?.signedUrl ?? null
+    }
+
+    const adminEmail = await getAdminEmail(supabaseAdmin)
+
+    await sendTemplateEmail('new-order', adminEmail, {
+      idempotencyKey: `new-order-${order.id}`,
+      templateData: {
+        orderNumber: order.order_number,
+        subtotal: (order as any).subtotal,
+        discountAmount: Number((order as any).discount_amount ?? 0),
+        couponCode: (order as any).coupons?.code ?? null,
+        couponDiscountType: (order as any).coupons?.discount_type ?? null,
+        couponDiscountValue: (order as any).coupons?.discount_value ?? null,
+        total: order.total,
+        currency: order.currency || 'EGP',
+        customerEmail: order.customer_email,
+        customerPhone: order.customer_phone,
+        paymentGateway: order.payment_gateway,
+        paymentSenderPhone: (order as any).payment_sender_phone,
+        paymentProofUrl: proofUrl,
+        items: (order.order_items ?? []).map((it: any) => ({
+          product_name: it.product_name,
+          plan_label: it.plan_label,
+          quantity: it.quantity,
+          unit_price: Number(it.frozen_unit_price ?? it.unit_price),
+          delivery_type: it.delivery_type,
+          subscription_email: it.subscription_email,
+        })),
+        adminUrl: `${origin}/admin/orders`,
+      },
+    })
+
+    return { ok: true }
+  })
+
+export const notifyCustomerDeliveryDirect = createServerFn({ method: 'POST' })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import('@/integrations/supabase/client.server')
+    const { sendTemplateEmail } = await import('./email-templates/send-email')
+
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select('id, order_number, total, subtotal, discount_amount, currency, customer_email, coupons(code), order_items(product_name, plan_label, delivered_accounts(account_email, account_username, account_password, extra_notes))')
+      .eq('id', data.orderId)
+      .single()
+    if (error || !order) throw new Error(error?.message || 'Order not found')
+    if (!order.customer_email) return { ok: false, reason: 'no_email' }
+
+    const accounts: any[] = []
+    for (const it of (order.order_items ?? []) as any[]) {
+      for (const acc of (it.delivered_accounts ?? [])) {
+        accounts.push({
+          product_name: it.product_name,
+          plan_label: it.plan_label,
+          account_email: acc.account_email,
+          account_username: acc.account_username,
+          account_password: acc.account_password,
+          extra_notes: acc.extra_notes,
+        })
+      }
+    }
+    if (accounts.length === 0) return { ok: false, reason: 'no_delivered_accounts' }
+
+    const lang = await resolveCustomerLang(supabaseAdmin, order.customer_email)
+
+    await sendTemplateEmail('order-delivered', order.customer_email, {
+      idempotencyKey: `order-delivered-${order.id}`,
+      templateData: {
+        orderNumber: order.order_number,
+        total: order.total,
+        subtotal: (order as any).subtotal,
+        discountAmount: Number((order as any).discount_amount ?? 0),
+        couponCode: (order as any).coupons?.code ?? null,
+        currency: order.currency || 'EGP',
+        accounts,
+        lang,
+      },
+    })
+    return { ok: true, count: accounts.length }
+  })

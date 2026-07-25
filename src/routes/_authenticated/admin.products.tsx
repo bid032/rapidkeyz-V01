@@ -31,9 +31,12 @@ type ProductForm = {
   slug: string;
   name_ar: string;
   name_en: string;
+  short_description_ar: string;
+  short_description_en: string;
   description_ar: string;
   description_en: string;
   icon_url: string;
+  loading_icon_url: string;
   category_id: string | null;
   category_ids: string[];
   delivery_type: "instant" | "manual";
@@ -50,9 +53,12 @@ const emptyForm: ProductForm = {
   slug: "",
   name_ar: "",
   name_en: "",
+  short_description_ar: "",
+  short_description_en: "",
   description_ar: "",
   description_en: "",
   icon_url: "",
+  loading_icon_url: "",
   category_id: null,
   category_ids: [],
   delivery_type: "instant",
@@ -103,7 +109,7 @@ function AdminProducts() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*, categories(name_ar, name_en), product_plans(id, label_ar, price, stock, is_active)")
+        .select("*, categories(name_ar, name_en), product_plans(id, label_ar, price, compare_price, stock, is_active)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -246,8 +252,9 @@ function AdminProducts() {
             : p.category_id ? [p.category_id] : [];
           setEditing({
             id: p.id, slug: p.slug, name_ar: p.name_ar, name_en: p.name_en,
+            short_description_ar: p.short_description_ar ?? "", short_description_en: p.short_description_en ?? "",
             description_ar: p.description_ar ?? "", description_en: p.description_en ?? "",
-            icon_url: p.icon_url ?? "", category_id: p.category_id,
+            icon_url: p.icon_url ?? "", loading_icon_url: p.loading_icon_url ?? "", category_id: p.category_id,
             category_ids: existingCats,
             delivery_type: p.delivery_type, account_type: p.account_type,
             account_types: initTypes,
@@ -398,8 +405,21 @@ function AdminProducts() {
                 className="flex-1 min-h-0 overflow-y-auto"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-x-reverse divide-border">
-                  {/* Main: names + descriptions + categories + settings */}
-                  <div className="lg:col-span-8 p-4 sm:p-6 space-y-5 min-w-0 order-2 lg:order-1">
+                     {/* Main: names + descriptions + categories + settings */}
+                     <div className="lg:col-span-8 p-4 sm:p-6 space-y-5 min-w-0 order-2 lg:order-1">
+                       {/* Loading Icon */}
+                       <section className="space-y-2">
+                         <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">أيقونة التحميل</h3>
+                         <ImageUpload
+                           bucket="product-images"
+                           label=""
+                           value={editing.loading_icon_url}
+                           onChange={(url) => setEditing({ ...editing, loading_icon_url: url })}
+                           size={0}
+                           requireAspectRatio={{ w: 1, h: 1 }}
+                         />
+                         <p className="text-[11px] text-muted-foreground">نسبة 1:1 مطلوبة. اختياري — تظهر أثناء تحميل الخدمة.</p>
+                       </section>
                     {/* Names + slug in one row */}
                     <section className="space-y-3">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">معلومات المنتج</h3>
@@ -437,9 +457,33 @@ function AdminProducts() {
                       </div>
                     </section>
 
-                    {/* Descriptions side-by-side */}
+                    {/* Short Descriptions */}
                     <section className="space-y-3">
-                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الوصف والتفاصيل</h3>
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الوصف القصير</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Field label="الوصف القصير بالعربي">
+                          <input
+                            value={editing.short_description_ar}
+                            onChange={(e) => setEditing({ ...editing, short_description_ar: e.target.value })}
+                            placeholder="وصف مختصر يظهر تحت الصورة..."
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg"
+                          />
+                        </Field>
+                        <Field label="Short Description (English)">
+                          <input
+                            value={editing.short_description_en}
+                            onChange={(e) => setEditing({ ...editing, short_description_en: e.target.value })}
+                            placeholder="Short description under the image..."
+                            className="w-full h-10 px-3 bg-background border border-border rounded-lg"
+                            dir="ltr"
+                          />
+                        </Field>
+                      </div>
+                    </section>
+
+                    {/* Full Descriptions */}
+                    <section className="space-y-3">
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">الوصف الكامل</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <Field label="الوصف بالعربي">
                           <RichTextEditor

@@ -18,29 +18,65 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
+    const fetchWithRetry = async (retryCount: number = 0) => {
+      try {
+        const { data } = await supabase
+          .from("products")
+          .select(
+            "slug, name_ar, name_en, description_ar, description_en, icon_url, loading_icon_url, delivery_type, account_type, discount_percent, product_plans(price, compare_price, is_active, label_ar, label_en, stock, duration_days)",
+          )
+          .eq("slug", params.slug)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (!data) return null;
+
+        // Type guard to ensure data has the expected structure
+        if (typeof data !== 'object' || !data || !('slug' in data)) {
+          return null;
+        }
+
+        const productData = data as {
+          slug: string;
+          name_ar: string;
+          name_en: string;
+          description_ar: string | null;
+          description_en: string | null;
+          icon_url: string | null;
+          loading_icon_url: string | null;
+          delivery_type: string;
+          account_type: string;
+          discount_percent: number | null;
+          product_plans: any[];
+        };
+
+        const active = (productData.product_plans ?? []).filter((p: any) => p.is_active);
+        const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+
+        return {
+          slug: productData.slug,
+          name_ar: productData.name_ar,
+          name_en: productData.name_en,
+          short_description_ar: null,
+          short_description_en: null,
+          description_ar: productData.description_ar,
+          description_en: productData.description_en,
+          icon_url: productData.icon_url,
+          minPrice: cheapest ? Number(cheapest.price) : null,
+        };
+      } catch (error) {
+        if (retryCount < 5) { // زيادة عدد المحاولات
+          await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1))); // تقليل التأخير
+          return fetchWithRetry(retryCount + 1);
+        }
+        throw error; // رمي الخطأ عشان يعرضه نظام التعامل مع الاخطاء
+      }
+    };
+
     try {
-      const { data } = await supabase
-        .from("products")
-        .select(
-          "slug, name_ar, name_en, description_ar, description_en, icon_url, product_plans(price, is_active)",
-        )
-        .eq("slug", params.slug)
-        .eq("status", "active")
-        .maybeSingle();
-      if (!data) return null;
-      const active = ((data as any).product_plans ?? []).filter((p: any) => p.is_active);
-      const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-      return {
-        slug: data.slug as string,
-        name_ar: data.name_ar as string,
-        name_en: data.name_en as string,
-        description_ar: (data as any).description_ar as string | null,
-        description_en: (data as any).description_en as string | null,
-        icon_url: (data as any).icon_url as string | null,
-        minPrice: cheapest ? Number(cheapest.price) : null,
-      };
+      return await fetchWithRetry();
     } catch {
-      return null;
+      throw notFound(); // استخدام notFound عشان يعرض صفحة الخطأ الصحيحة
     }
   },
   head: ({ params, loaderData }) => {
@@ -117,65 +153,67 @@ export const Route = createFileRoute("/product/$slug")({
   ),
 });
 
-
 function ProductPage() {
   const { slug } = Route.useParams();
   const { t, lang, addToCart } = useApp();
   const navigate = useNavigate();
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, product_plans(*)")
-        .eq("slug", slug)
-        .eq("status", "active")
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw notFound();
-      return data;
-    },
-  });
+   const { data: product, isLoading } = useQuery({
+     queryKey: ["product", slug],
+     queryFn: async () => {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, product_plans(id, price, compare_price, is_active, label_ar, label_en, stock, duration_days, account_type, plan_variant)")
+          .eq("slug", slug)
+          .eq("status", "active")
+          .maybeSingle();
+       if (error) throw error;
+       if (!data) throw notFound();
+       return data;
+     },
+   });
 
-  const related = useQuery({
-    queryKey: ["related", (product as any)?.category_id, (product as any)?.id],
-    enabled: !!product,
-    queryFn: async (): Promise<ProductCardData[]> => {
-      const p: any = product;
-      let q = supabase
-        .from("products")
-        .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, label_ar, label_en, is_active, sort_order)")
-        .eq("status", "active")
-        .neq("id", p.id)
-        .limit(8);
-      const cats: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
-      if (cats.length > 0) q = q.overlaps("category_ids", cats);
-      else if (p.category_id) q = q.eq("category_id", p.category_id);
-      const { data } = await q;
-      return (data ?? []).map((r: any) => {
-        const active = (r.product_plans ?? []).filter((pl: any) => pl.is_active);
-        const cheap = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-        return {
-          id: r.id, slug: r.slug, name_ar: r.name_ar, name_en: r.name_en,
-          description_ar: r.description_ar, description_en: r.description_en,
-          icon_url: r.icon_url, delivery_type: r.delivery_type, account_type: r.account_type,
-          discount_percent: r.discount_percent ?? 0,
-          minPrice: cheap ? Number(cheap.price) : null,
-          cheapestPlanId: cheap?.id ?? null,
-          planLabel_ar: cheap?.label_ar ?? null,
-          planLabel_en: cheap?.label_en ?? null,
-        };
-      });
-    },
-  });
+   const related = useQuery<ProductCardData[]>({
+     queryKey: ["related", (product as any)?.category_id, (product as any)?.id],
+     enabled: !!product,
+     queryFn: async (): Promise<ProductCardData[]> => {
+       const p: any = product;
+       let q = supabase
+         .from("products")
+         .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order)")
+         .eq("status", "active")
+         .neq("id", p.id)
+         .limit(8);
+       const cats: string[] = Array.isArray(p.category_ids) && p.category_ids.length > 0 ? p.category_ids : (p.category_id ? [p.category_id] : []);
+       if (cats.length > 0) q = q.overlaps("category_ids", cats);
+       else if (p.category_id) q = q.eq("category_id", p.category_id);
+       const { data } = await q;
+       return (data ?? []).map((r: any) => {
+         const active = (r.product_plans ?? []).filter((pl: any) => pl.is_active);
+         const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+         const cheap = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+         const cheapestPlanComparePrice = cheap ? Number(cheap.compare_price ?? 0) : 0;
+         return {
+           id: r.id, slug: r.slug, name_ar: r.name_ar, name_en: r.name_en,
+           short_description_ar: null, short_description_en: null,
+           description_ar: r.description_ar, description_en: r.description_en,
+           icon_url: r.icon_url, delivery_type: r.delivery_type, account_type: r.account_type,
+           discount_percent: r.discount_percent ?? 0,
+           minPrice: cheap ? Number(cheap.price) : null,
+           cheapestPlanId: cheap?.id ?? null,
+           planLabel_ar: cheap?.label_ar ?? null,
+           planLabel_en: cheap?.label_en ?? null,
+           totalStock,
+           cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
+         };
+       });
+     },
+   });
 
-  const [accountType, setAccountType] = useState<string | null>(null);
+   const [accountType, setAccountType] = useState<string | null>(null);
   const [planVariant, setPlanVariant] = useState<string | null>(null);
   const [planId, setPlanId] = useState<string | null>(null);
   const [confirmBuy, setConfirmBuy] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
-
-
 
   // Live viewers counter , seeded per-slug for stability, drifts every few seconds.
   const seed = useMemo(() => {
@@ -194,6 +232,38 @@ function ProductPage() {
     return () => clearInterval(id);
   }, []);
 
+  // Function to extract plan variants from plans
+  const getPlanVariants = (plansArray: any[]) => {
+    const variantsSet = new Set<string>();
+    plansArray.forEach(p => {
+      if (p.plan_variant) {
+        variantsSet.add(p.plan_variant);
+      } else {
+        // If no explicit plan_variant, try to extract from label
+        const en = String(p.label_en ?? "");
+        const ar = String(p.label_ar ?? "");
+
+        // Common plan variant patterns
+        const variantPatterns = [
+          "Premium Career", "Sales Navigator", "Premium Business", "Recruiter", "Creator",
+          "Pro", "Plus", "Basic", "Standard", "Enterprise", "Premium", "Lite", "Family",
+          "Teams", "Business", "Personal", "Max", "Ultimate", "Advanced", "Essential",
+          "بريميوم كاريير", "سيلز نافيجاتور", "بريميوم بيزنس", "ريكروتر", "كرييتور",
+          "برو", "بلس", "باسيك", "ستاندر", "انتربرايز", "بريميوم", "لايت", "فاميلي",
+          "تيمز", "بيزنس", "برسونال", "ماكس", "التميت", "أدفانسد", "أسنشال"
+        ];
+
+        for (const pattern of variantPatterns) {
+          if (en.includes(pattern) || ar.includes(pattern)) {
+            variantsSet.add(pattern);
+            break;
+          }
+        }
+      }
+    });
+    return Array.from(variantsSet).filter(Boolean);
+  };
+
   const parsePlan = (pl: any) => {
     const en = String(pl.label_en ?? "");
     const ar = String(pl.label_ar ?? "");
@@ -204,15 +274,21 @@ function ProductPage() {
     } else if (/private/i.test(en) || /خاص|برايفت/i.test(ar)) acct = "private";
     else if (/shared/i.test(en) || /مشترك|شير/i.test(ar)) acct = "shared";
     else if (/\bown\b|our own/i.test(en) || /من عندنا|من عندك|بحسابك|حسابك/i.test(ar)) acct = "own";
+
+    // Use explicit plan_variant if available, otherwise extract from label
+    let plan_variant = pl.plan_variant || null;
+
+    // Clean duration strings by removing account type only
     const durEn = en
       .replace(/^(private|shared|own|our own)\s*(account)?\s*[-–—:]?\s*/i, "")
       .trim() || en;
-    const durAr = ar
-      .replace(/^(حساب\s+)?(خاص|مشترك|من\s*عندنا|من\s*عندك|Private|Shared|Own)\s*(Account)?\s*[-–—:]?\s*/i, "")
-      .trim() || ar;
-    return { acct, durEn, durAr };
-  };
 
+    const durAr = ar
+      .replace(/^(حساب\s+)?(خاص|مشترك|من\s*عندنا|من\s*عندك|Private|Shared|Own)\s*[-–—:]?\s*/i, "")
+      .trim() || ar;
+
+    return { acct, durEn, durAr, plan_variant };
+  };
 
   if (isLoading) {
     return (
@@ -246,46 +322,131 @@ function ProductPage() {
     .sort((a: any, b: any) => parseDays(a) - parseDays(b));
   const enriched = plans.map((p: any) => ({ ...p, ...parsePlan(p) }));
 
-  // Plan variants (LinkedIn: Premium Career / Sales Navigator / …)
+  // Get all unique plan variants from the enriched plans
+  const allPlanVariants = getPlanVariants(enriched);
+
+  // Use productVariants from product data if available, otherwise use extracted variants
   const productVariants = Array.isArray((product as any).plan_variants)
     ? ((product as any).plan_variants as string[]).filter(Boolean)
-    : [];
+    : allPlanVariants;
+
+  // Determine effective variant - use selected variant or first available
   const effectiveVariant =
     productVariants.length > 0
       ? (planVariant && productVariants.includes(planVariant) ? planVariant : productVariants[0])
       : null;
-  const variantFiltered = effectiveVariant
-    ? enriched.filter((p: any) => !p.plan_variant || p.plan_variant === effectiveVariant)
-    : enriched;
 
+  // Get account types from product data or derive from all plans
   const productAcctTypes = (Array.isArray((product as any).account_types)
     ? ((product as any).account_types as string[]).filter((a) => a === "private" || a === "shared" || a === "own")
     : []) as ("private" | "shared" | "own")[];
-  const derivedFromPlans = Array.from(new Set(variantFiltered.map((p: any) => p.acct))).filter(
+
+  // Get account types from all plans (not just filtered ones)
+  const derivedFromPlans = Array.from(new Set(enriched.map((p: any) => p.acct))).filter(
     (a) => a === "private" || a === "shared" || a === "own",
   ) as ("private" | "shared" | "own")[];
+
   const accountTypes = (
     productAcctTypes.length > 0 ? productAcctTypes : derivedFromPlans
   ) as ("private" | "shared" | "own")[];
+
   const hasAcctChoice = accountTypes.length > 0;
   const effectiveAcct = (accountType as "private" | "shared" | "own" | undefined) ?? accountTypes[0];
-  // If there are multiple account types, filter plans by the selected one.
-  // Plans marked "any" (no explicit type) are always shown.
-  const filteredPlans = accountTypes.length > 1 && effectiveAcct
-    ? variantFiltered.filter((p: any) => p.acct === effectiveAcct || p.acct === "any")
-    : variantFiltered;
+
+  // Debug: log plan information
+  console.log("Plan Information:", {
+    allPlanVariants,
+    productVariants,
+    effectiveVariant,
+    accountTypes,
+    effectiveAcct,
+    enrichedPlans: enriched.map(p => ({
+      id: p.id,
+      label_en: p.label_en,
+      label_ar: p.label_ar,
+      acct: p.acct,
+      plan_variant: p.plan_variant
+    }))
+  });
+
+  // Filter plans based on both account type and plan variant
+  // Always filter from the full enriched plans, not from variantFiltered
+  const filteredPlans = enriched.filter((p: any) => {
+    // Account type filter - show if no effectiveAcct or matches account type
+    const acctMatch = !effectiveAcct || p.acct === effectiveAcct || p.acct === "any";
+
+    // Plan variant filter - show if no effectiveVariant or matches plan variant
+    const variantMatch = !effectiveVariant ||
+                         !p.plan_variant ||
+                         p.plan_variant === effectiveVariant;
+
+    // Debug log for each plan
+    console.log(`Filtering plan ${p.id}:`, {
+      plan: {
+        id: p.id,
+        label_en: p.label_en,
+        label_ar: p.label_ar,
+        acct: p.acct,
+        plan_variant: p.plan_variant
+      },
+      filters: {
+        effectiveAcct,
+        effectiveVariant,
+        acctMatch,
+        variantMatch
+      },
+      shouldInclude: acctMatch && variantMatch
+    });
+
+    return acctMatch && variantMatch;
+  });
+
+  // Debug: log final filtered plans
+  console.log("Final filtered plans:", {
+    filteredPlans: filteredPlans.map(p => ({
+      id: p.id,
+      label_en: p.label_en,
+      label_ar: p.label_ar,
+      acct: p.acct,
+      plan_variant: p.plan_variant
+    }))
+  });
+
+  // Reset planId when filteredPlans changes to avoid showing wrong prices
+  useEffect(() => {
+    setPlanId(null);
+  }, [accountType, planVariant]);
+
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
-
 
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
+  const loaderData = Route.useLoaderData();
+  const shortDesc = loaderData ? (lang === "ar" ? loaderData.short_description_ar : loaderData.short_description_en) : null;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
   const discount = Number((product as any).discount_percent ?? 0);
   const hasDiscount = discount > 0;
   const rawPrice = selected ? Number(selected.price) : 0;
+  const comparePrice = selected ? Number(selected.compare_price ?? 0) : 0;
+  const hasComparePrice = comparePrice > 0 && comparePrice > rawPrice;
   const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
+
+  const priceWithOriginal = (original: number, discounted: number) => {
+    // Always show original price if compare_price exists or if there's a discount
+    if (hasDiscount || hasComparePrice) {
+      const displayOriginal = hasComparePrice ? comparePrice : original;
+      return (
+        <div className="flex items-baseline gap-1">
+          <span className="text-muted-foreground line-through text-xs">{displayOriginal} {lang === "ar" ? "ج.م" : "EGP"}</span>
+          <span className="text-brand text-[11px] sm:text-xs font-bold font-mono">{discounted} {lang === "ar" ? "ج.م" : "EGP"}</span>
+        </div>
+      );
+    } else {
+      return `${discounted} ${lang === "ar" ? "ج.م" : "EGP"}`;
+    }
+  };
 
   const acctLabel = (a: string) =>
     a === "private"
@@ -293,9 +454,6 @@ function ProductPage() {
       : a === "own"
       ? (t.badges as any).own
       : t.badges.shared;
-
-
-
 
   const handleAdd = (goToCart: boolean) => {
     if (!selected) return;
@@ -309,7 +467,7 @@ function ProductPage() {
       productId: product.id,
       planId: selected.id,
       productName: name,
-      planLabel: `${lang === "ar" ? selected.label_ar : selected.label_en}${effectiveVariant ? ` — ${effectiveVariant}` : ""}`,
+      planLabel: `${lang === "ar" ? selected.durAr : selected.durEn}${effectiveVariant ? ` — ${effectiveVariant}` : ""}`,
       price: finalPrice,
       quantity: 1,
       iconUrl: product.icon_url,
@@ -356,8 +514,6 @@ function ProductPage() {
                         -{discount}%
                       </span>
                     )}
-
-
                   </div>
                 </div>
 
@@ -366,25 +522,11 @@ function ProductPage() {
                   <h1 className="text-base sm:text-xl md:text-[1.6rem] font-extrabold tracking-tight leading-tight break-words">
                     {name}
                   </h1>
-                  {desc && (
+                  {shortDesc && (
                     <div className="mt-1">
-                      <p
-                        className={`text-muted-foreground text-[11px] sm:text-[13px] leading-relaxed whitespace-pre-line ${
-                          descExpanded ? "" : "line-clamp-2"
-                        }`}
-                      >
-                        {stripMd(desc)}
+                      <p className="text-muted-foreground text-[11px] sm:text-[13px] leading-relaxed whitespace-pre-line">
+                        {stripMd(shortDesc)}
                       </p>
-                      {desc.length > 100 && (
-                        <button
-                          onClick={() => setDescExpanded((v) => !v)}
-                          className="mt-0.5 text-[11px] font-bold text-brand hover:underline"
-                        >
-                          {descExpanded
-                            ? lang === "ar" ? "أقل" : "Less"
-                            : lang === "ar" ? "المزيد" : "More"}
-                        </button>
-                      )}
                     </div>
                   )}
                   {/* Viewers chip , under description */}
@@ -413,12 +555,10 @@ function ProductPage() {
                   >
                     <span className="w-1 h-1 rounded-full bg-brand shrink-0" />
                     <span className="truncate">{lang === "ar" ? it.ar : it.en}</span>
-
                   </div>
                 ))}
               </div>
             </div>
-
 
             {/* RIGHT , configurator + actions */}
             <div className="md:col-span-7 lg:col-span-8 flex flex-col min-w-0 gap-3">
@@ -441,7 +581,6 @@ function ProductPage() {
                   setPlanId(null);
                 }}
               />
-
 
               <div className="hidden md:flex gap-2.5">
                 <button
@@ -467,9 +606,6 @@ function ProductPage() {
           </div>
         </div>
 
-
-
-
         {confirmBuy && typeof document !== "undefined" && createPortal(
           <div
             className="fixed inset-0 z-[100] grid place-items-center bg-background/70 backdrop-blur-sm p-4"
@@ -484,8 +620,8 @@ function ProductPage() {
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                 {lang === "ar"
-                  ? `هتشتري ${name} , ${lang === "ar" ? selected?.label_ar : selected?.label_en} بسعر ${finalPrice} ج.م. تتابع للدفع؟`
-                  : `You are about to buy ${name} , ${selected?.label_en} for ${finalPrice} EGP. Continue to checkout?`}
+                  ? `هتشتري ${name} , ${lang === "ar" ? selected?.durAr : selected?.durEn} بسعر ${finalPrice} ج.م. تتابع للدفع؟`
+                  : `You are about to buy ${name} , ${selected?.durEn} for ${finalPrice} EGP. Continue to checkout?`}
               </p>
               <div className="flex gap-3">
                 <button
@@ -516,9 +652,9 @@ function ProductPage() {
               <span className="text-[10px] text-brand font-black uppercase tracking-wider">
                 {lang === "ar" ? "الإجمالي" : "Total"}
               </span>
-              <span className={`text-xl font-black tabular-nums truncate ${selectedSoldOut ? "text-destructive line-through" : "text-brand"}`}>
-                {selectedSoldOut ? t.product.soldOut : `${finalPrice} ${t.common.currency}`}
-              </span>
+               <span className={`text-xl font-black tabular-nums truncate ${selectedSoldOut ? "text-destructive line-through" : "text-brand"}`}>
+                 {selectedSoldOut ? t.product.soldOut : priceWithOriginal(rawPrice, finalPrice)}
+               </span>
             </div>
             <div className="flex gap-2 shrink-0">
               <button

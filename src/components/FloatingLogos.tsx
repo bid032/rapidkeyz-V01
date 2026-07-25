@@ -5,11 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 async function fetchLogos(): Promise<string[]> {
   const { data } = await supabase
     .from("products")
-    .select("icon_url")
+    .select("loading_icon_url")
     .eq("status", "active")
-    .not("icon_url", "is", null)
+    .not("loading_icon_url", "is", null)
     .limit(12);
-  return (data ?? []).map((d: any) => d.icon_url).filter(Boolean);
+  return (data ?? []).map((d: any) => d.loading_icon_url).filter(Boolean);
 }
 
 type Pos = { top: string; left: string; size: number; delay: number; duration: number; factor: number };

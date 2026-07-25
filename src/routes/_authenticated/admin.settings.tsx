@@ -7,7 +7,6 @@ import { translations } from "@/lib/i18n";
 import { pageDefaults } from "@/lib/page-defaults";
 import { RichTextEditor } from "@/components/RichTextEditor";
 
-
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
 });
@@ -17,7 +16,15 @@ function AdminSettings() {
   const qc = useQueryClient();
   const [brand, setBrand] = useState<any>({ name_ar: "", name_en: "", tagline_ar: "", tagline_en: "" });
   const [contact, setContact] = useState<any>({ whatsapp: "", telegram: "", email: "" });
-  const [payments, setPayments] = useState<any>({ paymob_enabled: true, kashier_enabled: true, manual_enabled: true });
+  const [payments, setPayments] = useState<any>({
+    paymob_enabled: true,
+    kashier_enabled: true,
+    manual_enabled: true
+  });
+  const [manualPaymentDetails, setManualPaymentDetails] = useState<any>({
+    instapay_number: "",
+    wallet_number: ""
+  });
   const [checkout, setCheckout] = useState<any>({ require_login: true });
   const [socials, setSocials] = useState<any>({
     facebook: "", instagram: "", tiktok: "", youtube: "", x: "", linkedin: "", discord: "",
@@ -26,6 +33,9 @@ function AdminSettings() {
   const [stats, setStats] = useState<any>({
     years: 3, staff: 5, services: 30, orders: 12000, customers: 2100,
   });
+  const [adminPassword, setAdminPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [hero, setHero] = useState<any>({
     badge_ar: "", badge_en: "",
     title1_ar: "", title1_en: "",
@@ -56,8 +66,6 @@ function AdminSettings() {
     },
   });
 
-  
-
   const settings = useQuery({
     queryKey: ["site-settings"],
     queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
@@ -65,10 +73,28 @@ function AdminSettings() {
 
   useEffect(() => {
     if (!settings.data) return;
+    // إعداد القيم الافتراضية للأرقام
+    let walletNumber = "";
+    let instapayNumber = "";
+
     for (const s of settings.data) {
       if (s.key === "brand") setBrand(s.value);
       if (s.key === "contact") setContact(s.value);
-      if (s.key === "payments") setPayments(s.value);
+      if (s.key === "payments") {
+        // إزالة instant_payment_enabled من الإعدادات القديمة
+        const value = s.value as Record<string, any>;
+        const { instant_payment_enabled, ...rest } = value;
+        setPayments(rest);
+      }
+      // التعامل مع الأرقام الجديدة كمفاتيح فردية
+      if (s.key === "wallet_number") walletNumber = String(s.value || "");
+      if (s.key === "instapay_number") instapayNumber = String(s.value || "");
+      // التعامل مع البيانات القديمة في حالة الترحيل
+      if (s.key === "manual_payment_details" && typeof s.value === 'object' && s.value !== null && !Array.isArray(s.value)) {
+        const oldDetails = s.value as { wallet_number?: string; instapay_number?: string };
+        walletNumber = String(oldDetails.wallet_number || "") || walletNumber;
+        instapayNumber = String(oldDetails.instapay_number || "") || instapayNumber;
+      }
       if (s.key === "checkout") setCheckout((v: any) => ({ ...v, ...(s.value as any) }));
       if (s.key === "hero") setHero((h: any) => ({ ...h, ...(s.value as any) }));
       if (s.key === "socials") setSocials((v: any) => ({ ...v, ...(s.value as any) }));
@@ -77,6 +103,10 @@ function AdminSettings() {
         const m = (s.value as any)?.mode;
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
+      if (s.key === "admin_password") {
+        // لا نقوم بتحميل الباسورد في الحقل لتجنب عرضه في الواجهة
+        // سيتم استخدامه فقط عند التحقق من العمليات الحساسة
+      }
       if (["shop_intro", "page_about", "page_terms", "page_refund", "page_privacy"].includes(s.key)) {
         setPageContent((prev) => ({
           ...prev,
@@ -84,26 +114,47 @@ function AdminSettings() {
         }));
       }
     }
+
+    // تحديث حالة الأرقام بعد الانتهاء من الحلقة
+    setManualPaymentDetails({
+      wallet_number: walletNumber,
+      instapay_number: instapayNumber
+    });
   }, [settings.data]);
 
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("site_settings").upsert([
-        { key: "brand", value: brand },
-        { key: "contact", value: contact },
-        { key: "payments", value: payments },
-        { key: "checkout", value: checkout },
-        { key: "hero", value: hero },
-        { key: "socials", value: socials },
-        { key: "stats", value: stats },
-        { key: "theme_mode", value: { mode: themeMode } },
-        ...Object.entries(pageContent).map(([key, value]) => ({ key, value })),
-      ]);
+       // إعداد قائمة الإعدادات الأساسية
+        const settingsToSave = [
+          { key: "brand", value: brand },
+          { key: "contact", value: contact },
+          { key: "payments", value: payments },
+          { key: "wallet_number", value: manualPaymentDetails.wallet_number },
+          { key: "instapay_number", value: manualPaymentDetails.instapay_number },
+          { key: "checkout", value: checkout },
+          { key: "hero", value: hero },
+          { key: "socials", value: socials },
+          { key: "stats", value: stats },
+          { key: "theme_mode", value: { mode: themeMode } },
+          ...Object.entries(pageContent).map(([key, value]) => ({ key, value })),
+        ];
+
+      // إضافة الباسورد فقط إذا تم إدخاله وتأكيده
+      if (adminPassword && confirmPassword && adminPassword === confirmPassword) {
+        settingsToSave.push({ key: "admin_password", value: adminPassword });
+      } else if (adminPassword || confirmPassword) {
+        throw new Error(lang === "ar" ? "الباسورد غير متطابق" : "Passwords do not match");
+      }
+
+      const { error } = await supabase.from("site_settings").upsert(settingsToSave);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["site-settings"] });
       notify(lang === "ar" ? "تم حفظ الإعدادات" : "Settings saved", "success");
+      // إعادة تعيين حقول الباسورد بعد الحفظ الناجح
+      setAdminPassword("");
+      setConfirmPassword("");
     },
     onError: (e: any) => notify(e?.message ?? (lang === "ar" ? "فشل الحفظ" : "Save failed"), "error"),
   });
@@ -207,7 +258,6 @@ function AdminSettings() {
         </div>
       </Section>
 
-
       <Section title={"Brand"}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input placeholder="Name AR" value={brand.name_ar ?? ""}
@@ -239,7 +289,6 @@ function AdminSettings() {
         </div>
       </Section>
 
-
       <Section title={"إعدادات الشراء"}>
         <p className="text-xs text-muted-foreground mb-4">تحكم في تجربة الدفع للعملاء الجدد.</p>
         <label className="flex items-start gap-3 p-4 bg-background border border-border rounded-xl cursor-pointer">
@@ -257,6 +306,83 @@ function AdminSettings() {
             </div>
           </div>
         </label>
+       </Section>
+
+        <Section title={"الدفع اليدوي"}>
+          <p className="text-xs text-muted-foreground mb-4">
+            إعدادات الدفع اليدوي (التحويل البنكي والمحافظ الإلكترونية).
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] font-bold text-muted-foreground">رقم المحفظة (Wallet)</label>
+              <input
+                placeholder="رقم المحفظة"
+                value={manualPaymentDetails.wallet_number ?? ""}
+                onChange={(e) => setManualPaymentDetails({ ...manualPaymentDetails, wallet_number: e.target.value })}
+                className="px-3 py-2 bg-background border border-border rounded"
+              />
+            </div>
+            <div className="flex flexcol gap-1">
+              <label className="text-[11px] font-bold text-muted-foreground">رقم الانستاباي (Instapay)</label>
+              <input
+                placeholder="رقم الانستاباي"
+                value={manualPaymentDetails.instapay_number ?? ""}
+                onChange={(e) => setManualPaymentDetails({ ...manualPaymentDetails, instapay_number: e.target.value })}
+                className="px-3 py-2 bg-background border border-border rounded"
+              />
+            </div>
+          </div>
+        </Section>
+
+      <Section title={"إعدادات الأمان"}>
+        <p className="text-xs text-muted-foreground mb-4">
+          إعدادات الأمان لحماية عمليات الحذف الحساسة في الداشبورد.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">الباسورد الجديد</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="أدخل الباسورد الجديد"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 end-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                title={showPassword ? "إخفاء الباسورد" : "إظهار الباسورد"}
+              >
+                {showPassword ? "👁️" : "👁️🗨️"}
+              </button>
+            </div>
+          </div>
+          <div className="flex flexcol gap-1">
+            <label className="text-[11px] font-bold text-muted-foreground">تأكيد الباسورد</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="أعد إدخال الباسورد للتأكيد"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 bg-background border border-border rounded pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 end-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                title={showPassword ? "إخفاء الباسورد" : "إظهار الباسورد"}
+              >
+                {showPassword ? "👁️" : "👁️🗨️"}
+              </button>
+            </div>
+          </div>
+        </div>
+        {adminPassword && confirmPassword && adminPassword !== confirmPassword && (
+          <p className="text-xs text-destructive mt-2">الباسورد غير متطابق</p>
+        )}
       </Section>
 
       <Section title={"Social Media / حسابات السوشيال"}>
@@ -297,7 +423,7 @@ function AdminSettings() {
             ["orders",    "عمليات شراء"],
             ["customers", "عملاء"],
           ] as const).map(([k, ph]) => (
-            <div key={k} className="flex flex-col gap-1">
+            <div key={k} className="flex flexcol gap-1">
               <label className="text-[11px] font-bold text-muted-foreground">{ph}</label>
               <input
                 type="number"
@@ -339,7 +465,6 @@ function AdminSettings() {
         </div>
       </Section>
 
-
       <Section title={"محتوى الصفحات / Page Content"}>
         <div className="mb-4 rounded-xl border border-brand/30 bg-brand/5 p-3 text-xs leading-relaxed space-y-1">
           <p className="font-bold text-brand">👇 تحكم كامل في نصوص الصفحات</p>
@@ -373,7 +498,7 @@ function AdminSettings() {
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                   {/* Arabic */}
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flexcol gap-1">
                     <div className="flex items-center justify-between">
                       <label className="text-[11px] font-bold text-muted-foreground">النص بالعربي</label>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomAr ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
@@ -388,7 +513,7 @@ function AdminSettings() {
                       dir="rtl"
                       lang="ar"
                       minHeight={180}
-                      placeholder="اسيبها فاضية عشان تفضل النص الافتراضي…"
+                      placeholder="اسيبها فاضية عشان تفضل النص الافتراضي..."
                     />
 
                     <details className="mt-1 group">
@@ -408,7 +533,7 @@ function AdminSettings() {
                     </details>
                   </div>
                   {/* English */}
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flexcol gap-1">
                     <div className="flex items-center justify-between">
                       <label className="text-[11px] font-bold text-muted-foreground">English text</label>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomEn ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
@@ -423,7 +548,7 @@ function AdminSettings() {
                       dir="ltr"
                       lang="en"
                       minHeight={180}
-                      placeholder="Leave empty to keep the default text…"
+                      placeholder="Leave empty to keep the default text..."
                     />
 
                     <details className="mt-1 group">
@@ -448,7 +573,6 @@ function AdminSettings() {
           })}
         </div>
       </Section>
-
 
       <button onClick={() => save.mutate()} disabled={save.isPending}
         className="px-6 py-3 bg-brand text-brand-foreground rounded-lg font-bold hover:brand-glow">

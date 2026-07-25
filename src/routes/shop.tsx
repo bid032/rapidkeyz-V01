@@ -37,67 +37,86 @@ export const Route = createFileRoute("/shop")({
   component: ShopPage,
 });
 
-
 async function fetchProducts(filters: z.infer<typeof searchSchema>): Promise<ProductCardData[]> {
-  let categoryId: string | null = null;
-  if (filters.category) {
-    const { data: cat } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", filters.category)
-      .maybeSingle();
-    categoryId = cat?.id ?? null;
-  }
+  const fetchWithRetry = async (retryCount: number = 0): Promise<ProductCardData[]> => {
+    try {
+      let categoryId: string | null = null;
+      if (filters.category) {
+        const { data: cat } = await supabase
+          .from("categories")
+          .select("id")
+          .eq("slug", filters.category)
+          .maybeSingle();
+        categoryId = cat?.id ?? null;
+      }
 
-  let q = supabase
-    .from("products")
-    .select(
-      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, category_id, category_ids, product_plans(id, price, stock, label_ar, label_en, is_active)",
-    )
-    .eq("status", "active");
-  if (categoryId) q = q.or(`category_id.eq.${categoryId},category_ids.cs.{${categoryId}}`);
+      let q = supabase
+        .from("products")
+        .select(
+          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, is_active, label_ar, label_en, stock, sort_order)",
+        )
+        .eq("status", "active");
 
-  if (filters.account) q = q.eq("account_type", filters.account);
-  if (filters.q && filters.q.trim()) {
-    const term = filters.q.trim().replace(/[%,()]/g, " ");
-    q = q.or(
-      `name_ar.ilike.%${term}%,name_en.ilike.%${term}%,description_ar.ilike.%${term}%,description_en.ilike.%${term}%,slug.ilike.%${term}%`,
-    );
-  }
-  const { data, error } = await q.order("sort_order");
-  if (error) throw error;
-  return (data ?? []).map((p: any) => {
-    const active = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-    const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
-    const inStock = active.filter((pl: any) => Number(pl.stock ?? 0) > 0);
-    const cheapest = (inStock.length ? inStock : active).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-    return {
-      id: p.id,
-      slug: p.slug,
-      name_ar: p.name_ar,
-      name_en: p.name_en,
-      description_ar: p.description_ar,
-      description_en: p.description_en,
-      icon_url: p.icon_url,
-      delivery_type: p.delivery_type,
-      account_type: p.account_type,
-      discount_percent: p.discount_percent ?? 0,
-      minPrice: cheapest ? Number(cheapest.price) : null,
-      cheapestPlanId: cheapest?.id ?? null,
-      planLabel_ar: cheapest?.label_ar ?? null,
-      planLabel_en: cheapest?.label_en ?? null,
-      totalStock,
-    };
-  });
+      if (categoryId) q = q.eq("category_id", categoryId);
+      else if (filters.category) q = q.overlaps("category_ids", [filters.category]);
+
+      if (filters.account) q = q.eq("account_type", filters.account);
+      if (filters.q) q = q.or(`name_ar.ilike.%${filters.q}%,name_en.ilike.%${filters.q}%`);
+
+      const { data, error } = await q;
+
+      if (error) throw error;
+
+      return (data ?? []).map((p) => {
+        const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+        const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+        const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
+        const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
+
+        return {
+          id: p.id,
+          slug: p.slug,
+          name_ar: p.name_ar,
+          name_en: p.name_en,
+          short_description_ar: null,
+          short_description_en: null,
+          description_ar: p.description_ar,
+          description_en: p.description_en,
+          icon_url: p.icon_url,
+          delivery_type: p.delivery_type,
+          account_type: p.account_type,
+          discount_percent: (p as any).discount_percent ?? 0,
+          minPrice: cheapest ? Number(cheapest.price) : null,
+          cheapestPlanId: cheapest?.id ?? null,
+          planLabel_ar: cheapest?.label_ar ?? null,
+          planLabel_en: cheapest?.label_en ?? null,
+          totalStock,
+          cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null,
+        };
+      });
+    } catch (error) {
+      // Retry up to 5 times if there's an error
+      if (retryCount < 5) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
+        return fetchWithRetry(retryCount + 1);
+      }
+      throw error;
+    }
+  };
+
+  return fetchWithRetry();
 }
-
 
 function ShopPage() {
   const search = Route.useSearch();
   const { t, lang } = useApp();
-  const products = useQuery({
+  const products = useQuery<ProductCardData[]>({
     queryKey: ["products", search],
     queryFn: () => fetchProducts(search),
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const shopIntro = useQuery({
@@ -110,6 +129,9 @@ function ShopPage() {
         .maybeSingle();
       return (data?.value ?? null) as { ar?: string; en?: string } | null;
     },
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const category = useQuery({
@@ -123,6 +145,9 @@ function ShopPage() {
         .maybeSingle();
       return data as { slug: string; name_ar: string; name_en: string } | null;
     },
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const inCategory = !!search.category;
@@ -200,7 +225,6 @@ function ShopPage() {
             ))}
           </div>
         )}
-
 
         {inCategory && (
           <div className="mt-10 flex justify-center">

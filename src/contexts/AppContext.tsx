@@ -202,7 +202,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (stock != null) {
         if (stock <= 0) {
           notice = {
-            msg: lang === "ar" ? "نفذ المخزون من هذه الخدمة" : "This item is sold out",
+            msg: lang === "ar" ? "مفيش مخزون تاني فاضل" : "No more stock available",
             type: "error",
           };
           return prev;
@@ -242,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (stock != null) {
       if (stock <= 0) {
         setCart((prev) => prev.filter((c) => !(c.productId === productId && c.planId === planId)));
-        notify(lang === "ar" ? "نفذ المخزون من هذه الخدمة" : "This item is sold out", "error");
+        notify(lang === "ar" ? "مفيش مخزون تاني فاضل" : "No more stock available", "error");
         return;
       }
       if (capped > stock) {
@@ -257,7 +257,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
     if (notice) notify(notice, "info");
   };
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    if (isBrowser && hydrated) {
+      localStorage.setItem("rk-cart", JSON.stringify([]));
+    }
+  };
 
   const cartTotal = cart.reduce((s, c) => s + c.price * c.quantity, 0);
   const cartCount = cart.reduce((s, c) => s + c.quantity, 0);
@@ -280,7 +285,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     confirm,
     notify,
   };
-
 
   const isAr = lang === "ar";
 
@@ -335,23 +339,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      {/* All toasts: top-center below the header */}
+      {/* All toasts: center-top below the header */}
       {toasts.length > 0 && (
-        <div className="fixed top-[72px] sm:top-[88px] start-1/2 -translate-x-1/2 z-[110] flex w-[min(92vw,420px)] flex-col gap-2 pointer-events-none">
-          {toasts.map((tt) => (
-            <div
-              key={tt.id}
-              className={`px-4 py-3 rounded-xl border shadow-2xl text-center text-sm font-bold pointer-events-auto backdrop-blur animate-in fade-in slide-in-from-top-4 ${
-                tt.type === "success"
-                  ? "bg-success/15 border-success/30 text-success"
-                  : tt.type === "error"
-                    ? "bg-destructive/15 border-destructive/30 text-destructive"
-                    : "bg-card border-border text-foreground"
-              }`}
-            >
-              {tt.message}
-            </div>
-          ))}
+        <div className="fixed top-[72px] sm:top-[88px] left-1/2 -translate-x-1/2 z-[110] flex flex-col items-center w-full pointer-events-none">
+          <div className="w-[min(92vw,420px)] flex flex-col gap-2">
+            {toasts.map((tt) => (
+              <div
+                key={tt.id}
+                className={`px-4 py-3 rounded-xl border shadow-2xl text-center text-sm font-bold pointer-events-auto backdrop-blur animate-in fade-in slide-in-from-top-4 ${
+                  tt.type === "success"
+                    ? "bg-success/15 border-success/30 text-success"
+                    : tt.type === "error"
+                      ? "bg-destructive/15 border-destructive/30 text-destructive"
+                      : "bg-card border-border text-foreground"
+                }`}
+              >
+                {tt.message}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </AppContext.Provider>

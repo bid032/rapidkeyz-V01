@@ -24,7 +24,6 @@ import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -61,134 +60,211 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-
-
 async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select(
-      "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, stock, label_ar, label_en, is_active, sort_order)",
-    )
-    .eq("status", "active")
-    .order("is_featured", { ascending: false })
-    .order("sort_order", { ascending: true })
-    .limit(9);
-  if (error) throw error;
-  return (data ?? []).map((p) => {
-    const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-    const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
-    const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
-    const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-    return {
-      id: p.id,
-      slug: p.slug,
-      name_ar: p.name_ar,
-      name_en: p.name_en,
-      description_ar: p.description_ar,
-      description_en: p.description_en,
-      icon_url: p.icon_url,
-      delivery_type: p.delivery_type,
-      account_type: p.account_type,
-      discount_percent: (p as any).discount_percent ?? 0,
-      minPrice: cheapest ? Number(cheapest.price) : null,
-      cheapestPlanId: cheapest?.id ?? null,
-      planLabel_ar: cheapest?.label_ar ?? null,
-      planLabel_en: cheapest?.label_en ?? null,
-      totalStock,
-    };
-  });
+  const fetchWithRetry = async (retryCount: number = 0): Promise<ProductCardData[]> => {
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)",
+        )
+        .eq("status", "active")
+        .order("is_featured", { ascending: false })
+        .order("sort_order", { ascending: true })
+        .limit(9);
+      if (error) throw error;
+      return (data ?? []).map((p) => {
+        const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+        const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+        const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
+        const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
+
+        return {
+          id: p.id,
+          slug: p.slug,
+          name_ar: p.name_ar,
+          name_en: p.name_en,
+          short_description_ar: null,
+          short_description_en: null,
+          description_ar: p.description_ar,
+          description_en: p.description_en,
+          icon_url: p.icon_url,
+          delivery_type: p.delivery_type,
+          account_type: p.account_type,
+          discount_percent: (p as any).discount_percent ?? 0,
+          minPrice: cheapest ? Number(cheapest.price) : null,
+          cheapestPlanId: cheapest?.id ?? null,
+          planLabel_ar: cheapest?.label_ar ?? null,
+          planLabel_en: cheapest?.label_en ?? null,
+          totalStock,
+          cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
+        };
+      });
+    } catch (error) {
+      // Retry up to 2 times if there's an error
+      if (retryCount < 2) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+        return fetchWithRetry(retryCount + 1);
+      }
+      throw error;
+    }
+  };
+
+  return fetchWithRetry();
 }
 
 async function fetchBestSellers(): Promise<ProductCardData[]> {
-  const mapRow = (p: any): ProductCardData => {
-    const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-    const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
-    const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
-    const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-    return {
-      id: p.id,
-      slug: p.slug,
-      name_ar: p.name_ar,
-      name_en: p.name_en,
-      description_ar: p.description_ar,
-      description_en: p.description_en,
-      icon_url: p.icon_url,
-      delivery_type: p.delivery_type,
-      account_type: p.account_type,
-      discount_percent: p.discount_percent ?? 0,
-      minPrice: cheapest ? Number(cheapest.price) : null,
-      cheapestPlanId: cheapest?.id ?? null,
-      planLabel_ar: cheapest?.label_ar ?? null,
-      planLabel_en: cheapest?.label_en ?? null,
-      totalStock,
-    };
+  const fetchWithRetry = async (retryCount: number = 0): Promise<ProductCardData[]> => {
+    try {
+      const mapRow = (p: any): ProductCardData => {
+        const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+        const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+        const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
+        const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
+        return {
+          id: p.id,
+          slug: p.slug,
+          name_ar: p.name_ar,
+          name_en: p.name_en,
+          short_description_ar: null,
+          short_description_en: null,
+          description_ar: p.description_ar,
+          description_en: p.description_en,
+          icon_url: p.icon_url,
+          delivery_type: p.delivery_type,
+          account_type: p.account_type,
+          discount_percent: p.discount_percent ?? 0,
+          minPrice: cheapest ? Number(cheapest.price) : null,
+          cheapestPlanId: cheapest?.id ?? null,
+          planLabel_ar: cheapest?.label_ar ?? null,
+          planLabel_en: cheapest?.label_en ?? null,
+          totalStock,
+          cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
+        };
+      };
+
+      const productSelect =
+        "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, is_bestseller, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)";
+
+      // 1) Manually flagged products by admin
+      const { data: manual } = await supabase
+        .from("products")
+        .select(productSelect)
+        .eq("status", "active")
+        .eq("is_bestseller", true)
+        .order("sort_order", { ascending: true })
+        .limit(12);
+      const manualList = (manual ?? []).map(mapRow);
+      if (manualList.length >= 4) return manualList.slice(0, 8);
+
+      // 2) Fallback: auto-compute from paid/delivered order items
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id, quantity, orders!inner(status)")
+        .in("orders.status", ["paid", "delivered"]);
+      const counts = new Map<string, number>();
+      for (const it of (items ?? []) as any[]) {
+        if (!it.product_id) continue;
+        counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
+      }
+      const excludeIds = new Set(manualList.map((p) => p.id));
+      const topIds = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([id]) => id)
+        .filter((id) => !excludeIds.has(id))
+        .slice(0, 8 - manualList.length);
+      if (topIds.length === 0) return manualList;
+      const { data } = await supabase
+        .from("products")
+        .select(productSelect)
+        .in("id", topIds)
+        .eq("status", "active");
+      const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
+      const autoList = topIds.flatMap((id) => {
+        const p: any = byId.get(id);
+        return p ? [mapRow(p)] : [];
+      });
+      return [...manualList, ...autoList];
+    } catch (error) {
+      // Retry up to 5 times if there's an error
+      if (retryCount < 5) {
+        await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
+        return fetchWithRetry(retryCount + 1);
+      }
+      throw error;
+    }
   };
 
-  const productSelect =
-    "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, is_bestseller, product_plans(id, price, stock, label_ar, label_en, is_active, sort_order)";
-
-  // 1) Manually flagged products by admin
-  const { data: manual } = await supabase
-    .from("products")
-    .select(productSelect)
-    .eq("status", "active")
-    .eq("is_bestseller", true)
-    .order("sort_order", { ascending: true })
-    .limit(12);
-  const manualList = (manual ?? []).map(mapRow);
-  if (manualList.length >= 4) return manualList.slice(0, 8);
-
-  // 2) Fallback: auto-compute from paid/delivered order items
-  const { data: items } = await supabase
-    .from("order_items")
-    .select("product_id, quantity, orders!inner(status)")
-    .in("orders.status", ["paid", "delivered"]);
-  const counts = new Map<string, number>();
-  for (const it of (items ?? []) as any[]) {
-    if (!it.product_id) continue;
-    counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
-  }
-  const excludeIds = new Set(manualList.map((p) => p.id));
-  const topIds = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([id]) => id)
-    .filter((id) => !excludeIds.has(id))
-    .slice(0, 8 - manualList.length);
-  if (topIds.length === 0) return manualList;
-  const { data } = await supabase
-    .from("products")
-    .select(productSelect)
-    .in("id", topIds)
-    .eq("status", "active");
-  const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
-  const autoList = topIds.flatMap((id) => {
-    const p: any = byId.get(id);
-    return p ? [mapRow(p)] : [];
-  });
-  return [...manualList, ...autoList];
+  return fetchWithRetry();
 }
-
-
 
 function HomePage() {
   const { t, lang } = useApp();
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => { setHydrated(true); }, []);
 
-  const products = useQuery({ queryKey: ["featured-products"], queryFn: fetchFeaturedProducts });
-  const bestSellers = useQuery({ queryKey: ["best-sellers"], queryFn: fetchBestSellers });
+  const products = useQuery<ProductCardData[]>({
+    queryKey: ["featured-products"],
+    queryFn: fetchFeaturedProducts,
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  const bestSellers = useQuery<ProductCardData[]>({
+    queryKey: ["best-sellers"],
+    queryFn: fetchBestSellers,
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
   const priceOf = (p: any) => {
     if (!p || p.minPrice == null) return null;
     const d = Number(p.discount_percent ?? 0);
-    const v = d > 0 ? Math.round(p.minPrice * (100 - d)) / 100 : p.minPrice;
+    const originalPrice = p.minPrice;
+    const v = d > 0 ? Math.round(originalPrice * (100 - d)) / 100 : originalPrice;
     return `${v} ${lang === "ar" ? "ج.م" : "EGP"}`;
   };
+
+  const priceWithOriginal = (p: any) => {
+    if (!p || p.minPrice == null) return null;
+    const d = Number(p.discount_percent ?? 0);
+    const originalPrice = p.minPrice;
+    const v = d > 0 ? Math.round(originalPrice * (100 - d)) / 100 : originalPrice;
+
+    // Check if we have compare_price data for this product
+    const hasComparePrice = p.cheapestPlanComparePrice && p.cheapestPlanComparePrice > v;
+
+    if (d > 0 || hasComparePrice) {
+      const displayOriginal = hasComparePrice ? p.cheapestPlanComparePrice : originalPrice;
+      return (
+        <div className="flex items-baseline gap-1">
+          <span className="text-muted-foreground line-through text-xs">{displayOriginal} {lang === "ar" ? "ج.م" : "EGP"}</span>
+          <span className="text-brand text-[11px] sm:text-xs font-bold font-mono">{v} {lang === "ar" ? "ج.م" : "EGP"}</span>
+        </div>
+      );
+    } else {
+      return `${v} ${lang === "ar" ? "ج.م" : "EGP"}`;
+    }
+  };
   const heroSetting = useQuery({
-    queryKey: ["site-settings", "hero"],
+    queryKey: ["site-setting", "hero"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
-      return (data?.value as any) ?? {};
+      try {
+        const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
+        return (data?.value as any) ?? {};
+      } catch (error) {
+        // Retry once if there's an error
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
+        return (data?.value as any) ?? {};
+      }
     },
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   const h = hydrated ? (heroSetting.data ?? {}) : {};
   const pick = (ar: string, en: string, fallback: string) =>
@@ -207,14 +283,14 @@ function HomePage() {
   const trendingSlug = (h.trending_slug || "").toString().trim();
   const newSlug = (h.new_slug || "").toString().trim();
   const heroPicksNeeded = [trendingSlug, newSlug].filter(Boolean);
-  const heroPicks = useQuery({
+  const heroPicks = useQuery<ProductCardData[]>({
     queryKey: ["hero-picks", trendingSlug, newSlug],
     enabled: heroPicksNeeded.length > 0,
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
         .select(
-          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, stock, label_ar, label_en, is_active, sort_order)",
+          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)",
         )
         .in("slug", heroPicksNeeded);
       return (data ?? []).map((p: any) => {
@@ -222,11 +298,15 @@ function HomePage() {
         const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
         const inStock = active.filter((pl: any) => Number(pl.stock ?? 0) > 0);
         const cheapest = (inStock.length ? inStock : active).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+        const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
+
         return {
           id: p.id,
           slug: p.slug,
           name_ar: p.name_ar,
           name_en: p.name_en,
+          short_description_ar: null,
+          short_description_en: null,
           description_ar: p.description_ar,
           description_en: p.description_en,
           icon_url: p.icon_url,
@@ -238,19 +318,22 @@ function HomePage() {
           planLabel_ar: cheapest?.label_ar ?? null,
           planLabel_en: cheapest?.label_en ?? null,
           totalStock,
+          cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
         } as ProductCardData;
       });
     },
+    retry: 5,
+    retryDelay: 500,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   const featured = products.data ?? [];
+  const heroPicksData = heroPicks.data ?? [];
   const bySlug = (s: string) =>
-    (heroPicks.data ?? []).find((p) => p.slug === s) ?? featured.find((p) => p.slug === s);
+    heroPicksData.find((p) => p.slug === s) ?? featured.find((p) => p.slug === s);
   const trendingCard = (trendingSlug && bySlug(trendingSlug)) || featured[0];
   const newCard = (newSlug && bySlug(newSlug)) || featured.find((p) => p.slug !== trendingCard?.slug) || featured[1];
   const trending = [trendingCard, newCard].filter(Boolean) as ProductCardData[];
   const trendingLabels = ["TRENDING", "NEW", "HOT"];
-
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -271,7 +354,6 @@ function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center">
             {/* Content Side */}
             <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-start space-y-4 sm:space-y-5" dir={lang === "ar" ? "rtl" : "ltr"}>
-
 
               {/* Live pill */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
@@ -327,8 +409,8 @@ function HomePage() {
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
-                        {priceOf(trending[0]) && (
-                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
+                        {priceWithOriginal(trending[0]) && (
+                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceWithOriginal(trending[0])}</div>
                         )}
                       </div>
                     </div>
@@ -353,8 +435,8 @@ function HomePage() {
                         <div className="text-foreground text-[12px] font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
-                        {priceOf(trending[1]) && (
-                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                        {priceWithOriginal(trending[1]) && (
+                          <div className="text-brand text-[11px] font-bold font-mono mt-0.5">{priceWithOriginal(trending[1])}</div>
                         )}
                       </div>
                     </div>
@@ -427,8 +509,8 @@ function HomePage() {
                         <div className="text-foreground text-[11px] sm:text-xs font-bold truncate">
                           {lang === "ar" ? trending[1].name_ar : trending[1].name_en}
                         </div>
-                        {priceOf(trending[1]) && (
-                          <div className="text-brand text-[11px] sm:text-xs font-bold font-mono mt-0.5">{priceOf(trending[1])}</div>
+                        {priceWithOriginal(trending[1]) && (
+                          <div className="text-brand text-[11px] sm:text-xs font-bold font-mono mt-0.5">{priceWithOriginal(trending[1])}</div>
                         )}
                       </div>
                     </div>
@@ -456,20 +538,17 @@ function HomePage() {
                         <div className="text-foreground text-[12px] sm:text-sm font-bold truncate">
                           {lang === "ar" ? trending[0].name_ar : trending[0].name_en}
                         </div>
-                        {priceOf(trending[0]) && (
-                          <div className="text-brand text-[12px] sm:text-sm font-bold font-mono mt-0.5">{priceOf(trending[0])}</div>
-                        )}
+                         {priceWithOriginal(trending[0]) && (
+                           <div className="text-brand text-[12px] sm:text-sm font-bold font-mono mt-0.5">{priceWithOriginal(trending[0])}</div>
+                         )}
                       </div>
                     </div>
                   </Link>
                 )}
 
-
                 {/* 3D R Monolith card — on top */}
                 <div className="relative z-20 group w-44 h-44 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
                   <Logo3D className="w-32 sm:w-56 lg:w-64" />
-
-
 
                 </div>
 
@@ -518,7 +597,6 @@ function HomePage() {
       {/* AI Tools + Designers rows */}
       <CategoryRows slugs={["ai-tools", "design"]} />
 
-
       {/* CTA: Browse all subscriptions — hero-style button */}
       <section className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-5 flex justify-center">
         <Link
@@ -543,4 +621,3 @@ function HomePage() {
     </div>
   );
 }
-

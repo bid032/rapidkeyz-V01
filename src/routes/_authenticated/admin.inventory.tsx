@@ -57,6 +57,7 @@ function mapRows(rows: string[][]): { records: any[]; statusColIdx: number } {
   const iP = findIdx(["password", "pass", "pwd", "باسورد", "كلمة"]);
   const iK = findIdx(["key", "code", "license", "licence", "serial", "product", "مفتاح", "كود"]);
   const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
+  const iType = findIdx(["type", "account_type", "service_type", "نوع", "نوع_الحساب", "نوع_الخدمة"]);
   const iStatus = findIdx(["status", "state", "حالة"]);
 
   const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
@@ -72,11 +73,13 @@ function mapRows(rows: string[][]): { records: any[]; statusColIdx: number } {
       const email = clean(r, iE);
       const pass = clean(r, iP);
       const notes = clean(r, iN);
+      const accountType = clean(r, iType);
       const usernameOrKey = clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback);
       return {
         account_email: email,
         account_username: usernameOrKey,
         account_password: pass,
+        account_type: accountType,
         extra_notes: notes,
         _srcRowIndex: idx + 2, // header is row 1
       };
@@ -294,7 +297,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     queryFn: async () => {
       const { data } = await supabase
         .from("account_inventory")
-        .select("*")
+        .select("*, product_plans(plan_name_ar, plan_name_en, plan_duration_days, plan_type, account_type)")
         .eq("plan_id", planId)
         .order("created_at", { ascending: false })
         .limit(100);
@@ -588,12 +591,21 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
           { key: "account_email", label: "Email" },
           { key: "account_username", label: "Key / User" },
           { key: "account_password", label: "Pass", mask: true },
+          { key: "account_type", label: "نوع الخدمة" },
           { key: "extra_notes", label: "Notes" },
         ];
         const visible = COLS.filter((c) =>
           (rows.data ?? []).some((r: any) => r[c.key] != null && String(r[c.key]).trim() !== "")
         );
-        const colSpan = visible.length + 2;
+
+        // إضافة تفاصيل الخطة إذا كانت متاحة
+        const hasPlanDetails = (rows.data ?? []).some((r: any) =>
+          r.product_plans?.plan_name_ar || r.product_plans?.plan_name_en ||
+          r.product_plans?.plan_duration_days || r.product_plans?.plan_type ||
+          r.product_plans?.account_type || r.account_type
+        );
+
+        const colSpan = visible.length + 2 + (hasPlanDetails ? 1 : 0);
         return (
           <div className="max-h-64 overflow-y-auto border border-border rounded-lg">
             <table className="w-full text-xs">
@@ -602,6 +614,9 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
                   {visible.map((c) => (
                     <th key={c.key} className="p-2 text-start">{c.label}</th>
                   ))}
+                  {hasPlanDetails && (
+                    <th className="p-2 text-start">تفاصيل الخطة</th>
+                  )}
                   <th className="p-2 text-start">Status</th>
                   <th className="p-2"></th>
                 </tr>
@@ -614,6 +629,31 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
                         {c.mask ? (r[c.key] ? "••••" : "") : r[c.key]}
                       </td>
                     ))}
+                    {hasPlanDetails && (
+                      <td className="p-2 text-xs">
+                        {r.product_plans?.plan_name_ar && (
+                          <div className="font-bold">{r.product_plans.plan_name_ar}</div>
+                        )}
+                        {r.product_plans?.plan_name_en && (
+                          <div className="text-muted-foreground">{r.product_plans.plan_name_en}</div>
+                        )}
+                        {r.product_plans?.plan_duration_days && (
+                          <div className="text-muted-foreground">
+                            مدة: {r.product_plans.plan_duration_days} يوم
+                          </div>
+                        )}
+                        {r.product_plans?.plan_type && (
+                          <div className="text-muted-foreground">
+                            نوع الخطة: {r.product_plans.plan_type}
+                          </div>
+                        )}
+                        {r.product_plans?.account_type && (
+                          <div className="text-muted-foreground">
+                            نوع الحساب: {r.product_plans.account_type}
+                          </div>
+                        )}
+                      </td>
+                    )}
                     <td className="p-2">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${r.status === "available" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                         {r.status === "delivered" ? "تم البيع" : r.status}

@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import logoDark from "@/assets/white_logo_rapid.png.asset.json";
-import logoLight from "@/assets/black_logo_rapid.png.asset.json";
+import { useEffect, useRef } from "react";
+import { useApp } from "@/contexts/AppContext";
 
 /**
  * A CSS 3D tilted logo that follows the pointer for a lightweight
@@ -8,60 +7,40 @@ import logoLight from "@/assets/black_logo_rapid.png.asset.json";
  */
 export function Logo3D({ className = "" }: { className?: string }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const { theme } = useApp();
 
   useEffect(() => {
-    const html = document.documentElement;
-    const sync = () => setTheme(html.classList.contains("dark") ? "dark" : "light");
-    sync();
-    const mo = new MutationObserver(sync);
-    mo.observe(html, { attributes: true, attributeFilter: ["class"] });
-    return () => mo.disconnect();
-  }, []);
+    const wrap = wrapRef.current;
+    if (!wrap) return;
 
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    let rx = 0, ry = 0, tx = 0, ty = 0, raf = 0;
-    const onMove = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      tx = Math.max(-12, Math.min(12, (e.clientY - cy) / -42));
-      ty = Math.max(-12, Math.min(12, (e.clientX - cx) / 42));
+    const handleMove = (e: MouseEvent) => {
+      const rect = wrap.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      const tiltX = (y / rect.height) * 12;
+      const tiltY = -(x / rect.width) * 12;
+      wrap.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
     };
-    const loop = () => {
-      rx += (tx - rx) * 0.08;
-      ry += (ty - ry) * 0.08;
-      el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-      raf = requestAnimationFrame(loop);
+
+    const handleLeave = () => {
+      wrap.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
     };
-    window.addEventListener("pointermove", onMove);
-    loop();
+
+    wrap.addEventListener("mousemove", handleMove);
+    wrap.addEventListener("mouseleave", handleLeave);
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("pointermove", onMove);
+      wrap.removeEventListener("mousemove", handleMove);
+      wrap.removeEventListener("mouseleave", handleLeave);
     };
   }, []);
 
   return (
-    <div className={`relative ${className}`} style={{ perspective: "900px" }}>
-      <div
-        aria-hidden
-        className="absolute inset-0 rounded-full bg-brand/30 blur-3xl animate-pulse"
+    <div ref={wrapRef} className={`relative transition-transform duration-300 ${className}`}>
+      <img
+        src={theme === "dark" ? "/white logo rapid.png" : "/black logo rapid.png"}
+        alt="RapidKeyz"
+        className="w-full h-full object-contain drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]"
       />
-      <div
-        ref={wrapRef}
-        className="relative will-change-transform transition-transform"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        <img
-          src={theme === "dark" ? logoDark.url : logoLight.url}
-          alt="RapidKeyz"
-          className="w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(34,195,230,0.35)]"
-          draggable={false}
-        />
-      </div>
     </div>
   );
 }
