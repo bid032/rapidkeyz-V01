@@ -22,9 +22,10 @@ export const Route = createFileRoute("/_authenticated/admin")({
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", uid)
-      .in("role", ["admin", "moderator"]);
-    if (!roles || roles.length === 0) throw redirect({ to: "/dashboard" });
+      .eq("user_id", uid);
+    // Admin has full access to all admin pages
+    const isAdmin = roles?.some(r => r.role === "admin");
+    if (!isAdmin) throw redirect({ to: "/dashboard" });
   },
   errorComponent: ({ error, reset }) => (
     <div className="min-h-screen grid place-items-center p-6 text-center">
@@ -80,7 +81,8 @@ function AdminLayout() {
     { to: "/admin/settings", label: t.admin.settings, adminOnly: true },
   ];
 
-  const links = allLinks.filter((l) => (l.adminOnly ? isAdmin : canModerate));
+  // Admin has full access to all admin pages
+  const links = allLinks.filter((l) => isAdmin || !l.adminOnly);
 
   const title = "لوحة تحكم الأدمن";
   const words = title.split(" ");

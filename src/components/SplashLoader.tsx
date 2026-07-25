@@ -1,74 +1,54 @@
-import { useEffect, useState } from "react";
-import logoLight from "@/assets/black_logo_rapid.png.asset.json";
-import logoDark from "@/assets/white_logo_rapid.png.asset.json";
+import { useEffect, useRef, useState } from "react";
+import { useApp } from "@/contexts/AppContext";
 
 export function SplashLoader() {
-  const [visible, setVisible] = useState(true);
-  const [fading, setFading] = useState(false);
+  const { theme } = useApp();
   const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setMounted(true);
-    const root = document.documentElement;
-    const update = () => setIsDark(root.classList.contains("dark"));
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => setIsDark(mq.matches);
     update();
-    const obs = new MutationObserver(update);
-    obs.observe(root, { attributes: true, attributeFilter: ["class"] });
-
-    const hide = () => {
-      setFading(true);
-      setTimeout(() => setVisible(false), 500);
-    };
-
-    const minDelay = 600;
-    const start = Date.now();
-
-    const onReady = () => {
-      const remaining = Math.max(0, minDelay - (Date.now() - start));
-      setTimeout(hide, remaining);
-    };
-
-    if (document.readyState === "complete") {
-      onReady();
-    } else {
-      window.addEventListener("load", onReady, { once: true });
-    }
-
-    const fallback = setTimeout(hide, 4000);
-    return () => {
-      clearTimeout(fallback);
-      window.removeEventListener("load", onReady);
-      obs.disconnect();
-    };
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
-  if (!visible || !mounted) return null;
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    const onAnimationEnd = () => wrap.remove();
+    wrap.addEventListener("animationend", onAnimationEnd);
+    return () => wrap.removeEventListener("animationend", onAnimationEnd);
+  }, []);
 
-  const logo = isDark ? logoDark.url : logoLight.url;
+  const logo = isDark ? "/white logo rapid.png" : "/black logo rapid.png";
 
   return (
     <div
-      aria-hidden="true"
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-background transition-opacity duration-500 ${
-        fading ? "opacity-0" : "opacity-100"
-      }`}
+      ref={wrapRef}
+      id="rk-pre-splash"
+      className="rk-pre-splash"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 99998,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        background: isDark ? "#0b1220" : "#f5f7fb",
+        transition: "opacity 260ms ease",
+      }}
     >
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[260px] bg-brand/20 blur-[120px] rounded-full opacity-70" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0,hsl(var(--background))_70%)]" />
-      </div>
-
-      <div className="relative flex flex-col items-center">
-        <div className="relative size-48 sm:size-56 flex items-center justify-center">
-          {/* Rotating ring */}
-          <div className="absolute -inset-6 rounded-full border-2 border-transparent border-t-brand border-e-brand/40 animate-spin" style={{ animationDuration: "1.2s" }} />
-          {/* Reverse ring */}
-          <div className="absolute -inset-3 rounded-full border-2 border-transparent border-b-brand/60 animate-spin" style={{ animationDuration: "1.8s", animationDirection: "reverse" }} />
-          {/* Logo */}
-          <div className="relative flex items-center justify-center animate-pulse w-[70%] h-[70%]">
-            <img src={logo} alt="RapidKeyz" className="max-w-full max-h-full object-contain drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]" />
-          </div>
+      <div style={{ position: "absolute", top: "50%", left: "50%", width: "520px", height: "260px", transform: "translate(-50%, -50%)", borderRadius: "9999px", background: "rgba(34,195,230,0.2)", filter: "blur(120px)", opacity: 0.7 }} />
+      <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at center, transparent 0%, ${isDark ? "#0b1220" : "#f5f7fb"} 72%)` }} />
+      <div style={{ position: "relative", width: "208px", height: "208px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ position: "absolute", inset: "-24px", borderRadius: "9999px", border: "2px solid transparent", borderTopColor: "#22c3e6", borderRightColor: "rgba(34,195,230,0.4)", animation: "rk-pre-spin 1.2s linear infinite" }} />
+        <div style={{ position: "absolute", inset: "-12px", borderRadius: "9999px", border: "2px solid transparent", borderBottomColor: "rgba(34,195,230,0.6)", animation: "rk-pre-spin 1.8s linear infinite reverse" }} />
+        {/* Logo */}
+        <div className="relative flex items-center justify-center animate-pulse w-[70%] h-[70%]">
+          <img src={logo} alt="RapidKeyz" className="max-w-full max-h-full object-contain drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]" />
         </div>
       </div>
     </div>

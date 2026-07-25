@@ -45,10 +45,10 @@ function AdminRefunds() {
   const orders = useQuery({
     queryKey: ["admin-orders-for-refunds"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("id, order_number, customer_email, customer_phone, subtotal, total, discount_amount, coupon_id, status, user_id, created_at, order_items(id, product_name, plan_label, quantity, unit_price)")
-        .order("created_at", { ascending: false })
+       const { data, error } = await supabase
+         .from("orders")
+         .select("id, order_number, customer_email, customer_phone, subtotal, total, discount_amount, coupon_id, status, user_id, created_at, order_items(id, product_name, plan_label, quantity, frozen_unit_price, unit_price)")
+         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
       return data ?? [];
@@ -65,7 +65,6 @@ function AdminRefunds() {
       String(o.customer_phone ?? "").toLowerCase().includes(q)
     );
   }, [orders.data, search]);
-
 
   const totals = (refunds.data ?? []).reduce(
     (acc, r) => {
@@ -115,7 +114,7 @@ function AdminRefunds() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="ابحث برقم الطلب أو الإيميل أو رقم الواتساب…"
+            placeholder="ابحث برقم الطلب أو الإيميل أو رقم الواتساب..."
             className="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
           />
           <p className="text-xs text-muted-foreground mt-2">
@@ -272,7 +271,7 @@ function ItemRefundBlock({
   onRemove: (id: string) => void;
 }) {
   const { notify } = useApp();
-  const grossAmount = Number(item.unit_price) * Number(item.quantity);
+  const grossAmount = Number(item.frozen_unit_price ?? item.unit_price) * Number(item.quantity);
   // Apply proportional discount to this item's share of the order.
   const hasDiscount = orderDiscount > 0 && orderSubtotal > 0 && orderTotal > 0;
   const ratio = hasDiscount ? orderTotal / orderSubtotal : 1;
@@ -313,7 +312,7 @@ function ItemRefundBlock({
       <div className="flex items-start justify-between gap-2 mb-3 flex-wrap">
         <div className="min-w-0">
           <div className="font-bold text-sm">{item.product_name}</div>
-          <div className="text-xs text-muted-foreground">{item.plan_label} × {item.quantity} · {item.unit_price} EGP</div>
+          <div className="text-xs text-muted-foreground">{item.plan_label} × {item.quantity} · {item.frozen_unit_price ?? item.unit_price} EGP</div>
         </div>
         <div className="text-xs font-bold text-brand text-end">
           {hasDiscount ? (

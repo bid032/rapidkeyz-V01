@@ -9,6 +9,7 @@ import { showError } from "@/lib/error-handler";
 import { notifyItemDelivered } from "@/lib/notify-order.functions";
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 import { dialForCountry } from "@/lib/arab-countries";
+import { Input } from "@/components/ui/input";
 
 // Build a wa.me-safe number: prepend country dial code when the phone was
 // entered in local form (e.g. "010..." or "10..."). Handles cases where the
@@ -23,7 +24,6 @@ function buildWaNumber(phone: string, country?: string | null): string {
   return `${dial}${digits}`;
 }
 
-
 export const Route = createFileRoute("/_authenticated/admin/orders")({
   beforeLoad: async () => {
     const { data: userData } = await supabase.auth.getUser();
@@ -31,13 +31,14 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id)
-      .in("role", ["admin", "moderator"]);
-    if (!roles || roles.length === 0) throw redirect({ to: "/admin/products" });
+      .eq("user_id", userData.user.id);
+    // Only admin can access the orders page
+    const isAdmin = roles?.some(r => r.role === "admin");
+    if (!isAdmin) throw redirect({ to: "/admin/products" });
+    return { roles };
   },
   component: AdminOrders,
 });
-
 
 const STATUSES = ["pending", "paid", "processing", "delivered", "cancelled", "refunded"] as const;
 // "refunded" must not be set manually — it's driven by the refunds flow to keep totals consistent.
@@ -48,26 +49,55 @@ type Tab = "all" | "expiring";
 function AdminOrders() {
   const { t, lang, confirm, notify } = useApp();
   const qc = useQueryClient();
+  const { roles } = Route.useRouteContext();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [flagFilter, setFlagFilter] = useState<"all" | "coupon" | "refund" | "refund_partial" | "refund_full" | "clean">("all");
+  const [password, setPassword] = useState("");
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  const [currentAction, setCurrentAction] = useState<"clearAll" | "deleteOrder" | null>(null);
+  const currentOrderToDeleteRef = useRef<string | null>(null);
+  const isAdmin = roles?.some((r: { role: string }) => r.role === "admin") ?? false;
 
+    const orders = useQuery({
+      queryKey: ["admin-orders"],
+      queryFn: async () => {
+        console.log("Starting orders query...");
+        // First, check if there are any orders at all
+        const { data: countData, error: countError, count } = await supabase
+          .from("orders")
+          .select("id", { count: "exact", head: true });
 
+        console.log("Orders count:", { count, countError });
 
+        if (countError) {
+          console.error("Error counting orders:", countError);
+          throw countError;
+        }
 
-  const orders = useQuery({
-    queryKey: ["admin-orders"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*, coupons(code, discount_type, discount_value), order_items(*, product_plans(duration_days, plan_variant, price, compare_price, label_ar, label_en), products(slug, name_ar, name_en, cover_url, icon_url), delivered_accounts(*)), refunds(id, amount, type, order_item_id)")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+        if (count === 0) {
+          console.log("No orders found in database");
+          return [];
+        }
+
+        console.log(`Found ${count} orders in database`);
+
+        // Now do the full query
+        const { data, error } = await supabase
+          .from("orders")
+          .select("*, coupons(code, discount_type, discount_value), order_items(*, unit_price, frozen_unit_price, product_plans(duration_days, plan_variant, price, compare_price, label_ar, label_en), products(slug, name_ar, name_en, cover_url, icon_url), delivered_accounts(*)), refunds(id, amount, type, order_item_id)")
+          .order("created_at", { ascending: false });
+
+        console.log("Full query result:", { dataLength: data?.length, error });
+        if (error) {
+          console.error("Error in full query:", error);
+          throw error;
+        }
+        return data ?? [];
+      },
+    });
 
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [proofLoading, setProofLoading] = useState(false);
@@ -107,7 +137,10 @@ function AdminOrders() {
   }, [orders.data]);
 
   const visible = useMemo(() => {
+    // Start with all orders
     let list = expiring;
+
+    // Apply tab filter
     if (tab === "expiring") {
       list = list
         .filter(({ order: o, minDays }) =>
@@ -117,11 +150,17 @@ function AdminOrders() {
           o.status === "delivered"
         )
         .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
+    } else {
+      // For "all" tab, show all orders regardless of minDays
+      list = list.filter(({ order: o }) => o); // Show all orders
     }
 
+    // Apply status filter
     if (statusFilter !== "all") {
       list = list.filter(({ order: o }: any) => o.status === statusFilter);
     }
+
+    // Apply flag filter
     if (flagFilter !== "all") {
       list = list.filter(({ order: o }: any) => {
         const hasCoupon = Number(o.discount_amount ?? 0) > 0 || !!o.coupons?.code;
@@ -136,6 +175,8 @@ function AdminOrders() {
         return true;
       });
     }
+
+    // Apply search filter
     const q = search.trim().toLowerCase();
     if (q) {
       list = list.filter(({ order: o }: any) =>
@@ -145,6 +186,15 @@ function AdminOrders() {
         String(o.customer_name ?? "").toLowerCase().includes(q)
       );
     }
+
+    // Debug: log the visible orders count
+    console.log("Total orders:", expiring.length);
+    console.log("Visible orders:", list.length);
+    console.log("Tab:", tab);
+    console.log("Status filter:", statusFilter);
+    console.log("Flag filter:", flagFilter);
+    console.log("Search:", search);
+
     return list;
   }, [expiring, tab, search, statusFilter, flagFilter]);
 
@@ -201,17 +251,17 @@ function AdminOrders() {
       }
       // Compute proportional discount per item (matches refunds logic)
       const totalItemsValue = items.reduce(
-        (s: number, it: any) => s + Number(it.unit_price ?? 0) * Number(it.quantity ?? 1),
+        (s: number, it: any) => s + Number(it.frozen_unit_price ?? it.unit_price ?? 0) * Number(it.quantity ?? 1),
         0,
       );
       items.forEach((it: any) => {
-        const gross = Number(it.unit_price ?? 0) * Number(it.quantity ?? 1);
+        const gross = Number(it.frozen_unit_price ?? it.unit_price ?? 0) * Number(it.quantity ?? 1);
         const itemDiscount = totalItemsValue > 0 && discountAmount > 0
           ? Math.round((gross / totalItemsValue) * discountAmount * 100) / 100
           : 0;
         const netUnit = it.quantity > 0
           ? Math.round(((gross - itemDiscount) / Number(it.quantity)) * 100) / 100
-          : Number(it.unit_price ?? 0);
+          : Number(it.frozen_unit_price ?? it.unit_price ?? 0);
         rows.push({
           "رقم الطلب": o.order_number,
           "اسم العميل": o.customer_name ?? prof.display_name ?? "",
@@ -229,7 +279,7 @@ function AdminOrders() {
           "الخدمة": it.product_name,
           "الخطة": it.plan_label,
           "الكمية": it.quantity,
-          "سعر الوحدة قبل الخصم": Number(it.unit_price ?? 0),
+          "سعر الوحدة قبل الخصم": Number(it.frozen_unit_price ?? it.unit_price ?? 0),
           "سعر الوحدة بعد الخصم": netUnit,
           "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
           "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
@@ -248,7 +298,6 @@ function AdminOrders() {
     const suffix = statusFilter === "all" ? `all-${today}` : `${statusFilter}-${today}`;
     XLSX.writeFile(wb, `${siteName} - orders - ${suffix}.xlsx`);
   };
-
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -292,6 +341,18 @@ function AdminOrders() {
 
   const deliverInstant = useMutation({
     mutationFn: async ({ orderItemId, planId }: { orderItemId: string; planId: string }) => {
+      // التحقق من حالة الطلب قبل محاولة التسليم لمنع التكرار
+      const { data: orderItem, error: checkError } = await supabase
+        .from("order_items")
+        .select("status")
+        .eq("id", orderItemId)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+      if (orderItem?.status === "delivered") {
+        throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
+      }
+
       const { data: claimedId, error } = await supabase.rpc("claim_inventory_for_item", {
         _order_item_id: orderItemId,
         _plan_id: planId,
@@ -324,42 +385,105 @@ function AdminOrders() {
     onError: (e) => showError(e, notify, lang),
   });
 
-
-
   const deleteOrder = useMutation({
     mutationFn: async (id: string) => {
+      // Verify password before proceeding
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("User not authenticated");
+
+      // Get the stored admin password from site settings
+      const { data: passwordData, error: passwordError } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "admin_password")
+        .maybeSingle();
+
+      if (passwordError) throw passwordError;
+      if (!passwordData?.value) throw new Error(lang === "ar" ? "لم يتم تعيين باسورد إداري" : "Admin password not set");
+
+      // Verify the entered password
+      if (password !== passwordData.value) {
+        throw new Error(lang === "ar" ? "الباسورد غير صحيح" : "Incorrect password");
+      }
+
       const { error } = await supabase.from("orders").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
       notify(lang === "ar" ? "تم حذف الطلب" : "Order deleted", "success");
+      setShowPasswordInput(false);
+      setPassword("");
     },
-    onError: (e) => showError(e, notify, lang),
+    onError: (e) => {
+      showError(e, notify, lang);
+      setPassword("");
+    },
   });
 
   const clearAllOrders = useMutation({
     mutationFn: async () => {
+      // Verify password before proceeding
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("User not authenticated");
+
+      // Get the stored admin password from site settings
+      const { data: passwordData, error: passwordError } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "admin_password")
+        .maybeSingle();
+
+      if (passwordError) throw passwordError;
+      if (!passwordData?.value) throw new Error(lang === "ar" ? "لم يتم تعيين باسورد إداري" : "Admin password not set");
+
+      // Verify the entered password
+      if (password !== passwordData.value) {
+        throw new Error(lang === "ar" ? "الباسورد غير صحيح" : "Incorrect password");
+      }
+
       const { error } = await supabase.from("orders").delete().not("id", "is", null);
       if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-orders"] });
       notify(lang === "ar" ? "تم مسح كل الطلبات" : "All orders cleared", "success");
+      setPassword("");
+      setShowPasswordInput(false);
     },
-    onError: (e) => showError(e, notify, lang),
+    onError: (e) => {
+      showError(e, notify, lang);
+      setPassword("");
+    },
   });
+
+  const handlePasswordSubmit = async () => {
+    if (!password) {
+      notify(lang === "ar" ? "يجب إدخال الباسورد" : "Password is required", "error");
+      return;
+    }
+
+    if (currentAction === "clearAll") {
+      clearAllOrders.mutate();
+    } else if (currentAction === "deleteOrder" && currentOrderToDeleteRef.current) {
+      deleteOrder.mutate(currentOrderToDeleteRef.current);
+    }
+  };
 
   const askClearAll = async () => {
     const ok = await confirm({
-      message:
-        lang === "ar"
-          ? "سيتم حذف كل الطلبات نهائياً مع كل تفاصيلها. متأكد؟"
-          : "All orders and their details will be permanently deleted. Continue?",
+      title: lang === "ar" ? "مسح كل الطلبات" : "Clear all orders",
+      message: lang === "ar"
+        ? "سيتم حذف كل الطلبات نهائياً مع كل تفاصيلها. هذه العملية لا يمكن التراجع عنها. هل تريد المتابعة؟"
+        : "All orders and their details will be permanently deleted. This action cannot be undone. Do you want to continue?",
       tone: "danger",
     });
     if (!ok) return;
-    clearAllOrders.mutate();
+
+    // تعيين نوع العملية وإظهار مربع إدخال الباسورد
+    setCurrentAction("clearAll");
+    setShowPasswordInput(true);
+    setPassword("");
   };
 
   return (
@@ -384,14 +508,11 @@ function AdminOrders() {
         </div>
       </div>
 
-
-
-
       <div className="mb-4 flex flex-col sm:flex-row gap-2">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={lang === "ar" ? "بحث برقم الطلب أو الاسم أو الإيميل أو الواتساب…" : "Search by order #, name, email or phone…"}
+          placeholder={lang === "ar" ? "بحث برقم الطلب أو الاسم أو الإيميل أو الواتساب..." : "Search by order #, name, email or phone..."}
           className="flex-1 px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
         />
         <select
@@ -424,17 +545,66 @@ function AdminOrders() {
         >
           تحميل Excel
         </button>
-        <button
-          onClick={askClearAll}
-          disabled={clearAllOrders.isPending || !(orders.data?.length)}
-          className="px-4 py-2.5 rounded-lg font-bold text-sm border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50 whitespace-nowrap"
-        >
-          {clearAllOrders.isPending
-            ? (lang === "ar" ? "جارٍ المسح…" : "Clearing…")
-            : (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")}
-        </button>
-      </div>
+        {isAdmin && (
+        <>
+          <button
+            onClick={askClearAll}
+            disabled={clearAllOrders.isPending || !(orders.data?.length)}
+            className="px-4 py-2.5 rounded-lg font-bold text-sm border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50 whitespace-nowrap"
+          >
+            {clearAllOrders.isPending
+              ? (lang === "ar" ? "جارٍ المسح..." : "Clearing...")
+              : (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")}
+          </button>
 
+          {showPasswordInput && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+              <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
+                <h3 className="text-lg font-bold mb-4">{lang === "ar" ? "مسح كل الطلبات" : "Clear all orders"}</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {currentAction === "clearAll"
+                    ? (lang === "ar" ? "أدخل الباسورد الإداري لمسح كل الطلبات:" : "Enter admin password to clear all orders:")
+                    : (lang === "ar" ? "أدخل الباسورد الإداري لحذف الطلب:" : "Enter admin password to delete order:")}
+                </p>
+                <Input
+                  type="password"
+                  placeholder={lang === "ar" ? "الباسورد الإداري" : "Admin password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full mb-4"
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handlePasswordSubmit();
+                    }
+                  }}
+                />
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => {
+                      setShowPasswordInput(false);
+                      setPassword("");
+                      setCurrentAction(null);
+                    }}
+                    className="px-4 py-2 bg-muted text-muted-foreground rounded-lg font-bold text-sm hover:bg-muted/80"
+                  >
+                    {lang === "ar" ? "إلغاء" : "Cancel"}
+                  </button>
+                  <button
+                    onClick={handlePasswordSubmit}
+                    className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg font-bold text-sm hover:bg-destructive/80"
+                  >
+                    {currentAction === "clearAll"
+                      ? (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")
+                      : (lang === "ar" ? "حذف الطلب" : "Delete order")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      </div>
 
       {tab === "expiring" && (
         <p className="text-xs text-muted-foreground mb-4">
@@ -526,24 +696,26 @@ function AdminOrders() {
                   )}
                   <div><span className="text-muted-foreground">عدد الوحدات:</span> <span className="font-bold">{itemsCount}</span></div>
                   <div><span className="text-muted-foreground">الإجمالي:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
-                  {Number(o.discount_amount ?? 0) > 0 && (
-                    <div className="md:col-span-2 p-3 rounded-lg bg-success/5 border border-success/20 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-success">🎟️ كوبون خصم مُطبَّق</span>
-                        {o.coupons?.code && (
-                          <code className="text-xs font-mono bg-success/15 text-success px-2 py-0.5 rounded font-bold">{o.coupons.code}</code>
-                        )}
-                        {o.coupons?.discount_type === "percent" && (
-                          <span className="text-[11px] text-muted-foreground">({o.coupons.discount_value}%)</span>
-                        )}
-                      </div>
-                      <div className="text-xs grid grid-cols-3 gap-2 pt-1">
-                        <div><span className="text-muted-foreground">قبل الخصم:</span> <span className="font-bold line-through text-muted-foreground">{o.subtotal} EGP</span></div>
-                        <div><span className="text-muted-foreground">الخصم:</span> <span className="font-bold text-success">−{o.discount_amount} EGP</span></div>
-                        <div><span className="text-muted-foreground">بعد الخصم:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
-                      </div>
+                  <div className="md:col-span-2 p-3 rounded-lg bg-success/5 border border-success/20 space-y-1">
+                    <div className="text-xs grid grid-cols-3 gap-2 pt-1">
+                      <div><span className="text-muted-foreground">قبل الخصم:</span> <span className="font-bold line-through text-muted-foreground">{o.subtotal} EGP</span></div>
+                      {Number(o.discount_amount ?? 0) > 0 && (
+                        <>
+                          <div><span className="text-muted-foreground">الخصم:</span> <span className="font-bold text-success">−{o.discount_amount} EGP</span></div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-success">🎟️ كوبون خصم مُطبَّق</span>
+                            {o.coupons?.code && (
+                              <code className="text-xs font-mono bg-success/15 text-success px-2 py-0.5 rounded font-bold">{o.coupons.code}</code>
+                            )}
+                            {o.coupons?.discount_type === "percent" && (
+                              <span className="text-[11px] text-muted-foreground">({o.coupons.discount_value}%)</span>
+                            )}
+                          </div>
+                        </>
+                      )}
+                      <div><span className="text-muted-foreground">بعد الخصم:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
                     </div>
-                  )}
+                  </div>
                   <div><span className="text-muted-foreground">الحالة:</span> <span className="font-bold">{o.status}</span></div>
                   <div><span className="text-muted-foreground">طريقة الدفع:</span> <span className="font-bold">{o.payment_gateway}</span></div>
                   {o.payment_sender_phone && (
@@ -563,7 +735,6 @@ function AdminOrders() {
                     </div>
                   )}
                 </div>
-
 
                 {/* Approve / Cancel */}
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
@@ -587,27 +758,42 @@ function AdminOrders() {
                   >✗ إلغاء</button>
                   <button
                     onClick={async () => {
-                      const ok = await confirm({ title: "حذف الطلب نهائيًا", message: "حذف الطلب نهائيًا؟ لا يمكن التراجع.", tone: "danger", confirmLabel: "احذف نهائيًا" });
-                      if (ok) deleteOrder.mutate(o.id);
+                      const ok = await confirm({
+                        title: lang === "ar" ? "حذف الطلب نهائيًا" : "Delete order permanently",
+                        message: lang === "ar"
+                          ? "حذف الطلب نهائيًا؟ لا يمكن التراجع."
+                          : "Delete order permanently? This action cannot be undone.",
+                        tone: "danger",
+                        confirmLabel: lang === "ar" ? "احذف نهائيًا" : "Delete permanently"
+                      });
+                      if (!ok) return;
+
+                      // Set the order to be deleted and show password input
+                      setCurrentAction("deleteOrder");
+                      setShowPasswordInput(true);
+                      setPassword("");
+                      currentOrderToDeleteRef.current = o.id;
                     }}
                     className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
-                  >حذف نهائي</button>
+                  >{lang === "ar" ? "حذف نهائي" : "Delete permanently"}</button>
                 </div>
 
                 {/* Items */}
                 <div className="space-y-3 pt-2 border-t border-border">
-                  {o.order_items?.map((it: any) => (
-                    <ItemRow
-                      key={it.id}
-                      item={it}
-                      onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })}
-                      onDeliverInstant={
-                        it.delivery_type === "instant" && it.plan_id
-                          ? () => deliverInstant.mutate({ orderItemId: it.id, planId: it.plan_id })
-                          : undefined
-                      }
-                    />
-                  ))}
+                  {o.order_items?.map((it: any) => {
+                    return (
+                      <OrderItemRow
+                        key={it.id}
+                        item={it}
+                        onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })}
+                        deliverInstant={
+                          it.delivery_type === "instant" && it.plan_id
+                            ? deliverInstant
+                            : undefined
+                        }
+                      />
+                    );
+                  })}
                 </div>
               </div>
               );
@@ -634,11 +820,11 @@ function AdminOrders() {
   );
 }
 
-
-function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: (creds: any) => void; onDeliverInstant?: () => void }) {
+function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDeliver: (creds: { account_email: string; account_username: string; account_password: string; extra_notes: string }) => void; deliverInstant?: { mutateAsync: (params: { orderItemId: string; planId: string }) => Promise<any> } }) {
   const { lang, notify } = useApp();
   const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
   const [resending, setResending] = useState(false);
+  const [deliverInstantBusy, setDeliverInstantBusy] = useState(false);
   const itemStatus: "pending" | "delivered" | "refunded" = item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
   const delivered = itemStatus === "delivered";
   const refunded = itemStatus === "refunded";
@@ -655,12 +841,11 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
     }
   };
 
-
   const plan = item.product_plans;
   const prod = item.products;
-  const lineTotal = Number(item.unit_price) * Number(item.quantity);
+  const lineTotal = Number(item.frozen_unit_price ?? item.unit_price) * Number(item.quantity);
   const originalUnit = plan?.price ? Number(plan.price) : null;
-  const discounted = originalUnit !== null && Math.abs(originalUnit - Number(item.unit_price)) > 0.5;
+  const discounted = originalUnit !== null && Math.abs(originalUnit - Number(item.frozen_unit_price ?? item.unit_price)) > 0.5;
 
   return (
     <div className="p-4 bg-background border border-border rounded-xl">
@@ -716,7 +901,7 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
         </div>
         <div className="text-sm shrink-0 text-end" dir="ltr">
           <div className="text-xs text-muted-foreground">
-            {item.unit_price} EGP
+            {item.frozen_unit_price ?? item.unit_price} EGP
             {discounted && originalUnit !== null && (
               <span className="ms-1 line-through opacity-60">{originalUnit} EGP</span>
             )}
@@ -732,7 +917,6 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
         </div>
       )}
 
-
       {delivered ? (
         <div className="mt-2 p-3 bg-success/5 border border-success/20 rounded font-mono text-xs">
           <div className="flex items-center justify-between gap-2 mb-1">
@@ -743,7 +927,7 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
               disabled={resending}
               className="px-2 py-1 rounded bg-brand/10 border border-brand/30 text-brand text-[11px] font-bold hover:bg-brand hover:text-brand-foreground disabled:opacity-50"
             >
-              {resending ? (lang === "ar" ? "جاري…" : "Sending…") : (lang === "ar" ? "إعادة إرسال الإيميل" : "Resend email")}
+              {resending ? (lang === "ar" ? "جاري..." : "Sending...") : (lang === "ar" ? "إعادة إرسال الإيميل" : "Resend email")}
             </button>
           </div>
           {item.delivered_accounts.map((a: any) => {
@@ -787,15 +971,30 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
 
       ) : (
         <div className="mt-2 space-y-2">
-          {onDeliverInstant && (
-            <button
-              type="button"
-              onClick={onDeliverInstant}
-              className="w-full px-3 py-2 rounded bg-success/15 text-success border border-success/30 font-bold text-sm hover:bg-success hover:text-success-foreground transition"
-            >
-              {lang === "ar" ? "⚡ تسليم فوري من المخزون" : "⚡ Deliver from inventory"}
-            </button>
-          )}
+           {deliverInstant && (
+             <button
+               type="button"
+               onClick={async () => {
+                 setDeliverInstantBusy(true);
+                 try {
+                   await deliverInstant.mutateAsync({ orderItemId: item.id, planId: item.plan_id });
+                 } finally {
+                   setDeliverInstantBusy(false);
+                 }
+               }}
+               disabled={deliverInstantBusy}
+               className="w-full px-3 py-2 rounded bg-success/15 text-success border border-success/30 font-bold text-sm hover:bg-success hover:text-success-foreground transition disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+               {deliverInstantBusy ? (
+                 <>
+                   <span className="animate-spin">⏳</span>
+                   {lang === "ar" ? " جاري التسليم..." : " Delivering..."}
+                 </>
+               ) : (
+                 lang === "ar" ? "⚡ تسليم فوري من المخزون" : "⚡ Deliver from inventory"
+               )}
+             </button>
+           )}
           <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input placeholder="Account email" value={creds.account_email}
               onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
@@ -818,8 +1017,6 @@ function ItemRow({ item, onDeliver, onDeliverInstant }: { item: any; onDeliver: 
     </div>
   );
 }
-
-
 
 function ProofLightbox({ src, loading, onClose }: { src: string; loading: boolean; onClose: () => void }) {
   const [zoom, setZoom] = useState(1);

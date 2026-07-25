@@ -29,6 +29,7 @@ export type AuditRowEnriched = {
     plan_label: string | null;
     account_type: string | null;
     unit_price: number | null;
+    frozen_unit_price: number | null;
     status: string | null;
     quantity: number | null;
     delivered_accounts: Array<{
@@ -39,7 +40,6 @@ export type AuditRowEnriched = {
     }>;
   }>;
 };
-
 
 async function requireAdmin(context: any) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -128,7 +128,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
     if (orderItemIds.size) {
       const { data: itemsFromIds } = await supabaseAdmin
         .from("order_items")
-        .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
+        .select("id, order_id, product_name, plan_label, account_type, unit_price, frozen_unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
         .in("id", Array.from(orderItemIds));
       (itemsFromIds ?? []).forEach((it: any) => {
         itemById.set(it.id, it);
@@ -153,7 +153,6 @@ export const getAuditLog = createServerFn({ method: "GET" })
         }
       });
     }
-
 
     let ordersMap = new Map<string, any>();
     if (orderIds.size) {
@@ -180,7 +179,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
 
       const { data: allItems } = await supabaseAdmin
         .from("order_items")
-        .select("id, order_id, product_name, plan_label, account_type, unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
+        .select("id, order_id, product_name, plan_label, account_type, unit_price, frozen_unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
         .in("order_id", Array.from(orderIds));
       (allItems ?? []).forEach((it: any) => {
         itemById.set(it.id, it);
@@ -307,7 +306,8 @@ export const getAuditLog = createServerFn({ method: "GET" })
           product_name: it.product_name ?? null,
           plan_label: it.plan_label ?? null,
           account_type: it.account_type ?? null,
-          unit_price: it.unit_price ?? null,
+          unit_price: it.frozen_unit_price ?? it.unit_price ?? null,
+          frozen_unit_price: it.frozen_unit_price ?? null,
           status: it.status ?? null,
           quantity: it.quantity ?? null,
           delivered_accounts: (it.delivered_accounts ?? []).map((a: any) => ({

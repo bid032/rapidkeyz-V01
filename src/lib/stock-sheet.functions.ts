@@ -5,6 +5,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
 const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
+const STOCK_COLUMNS = {
+  STATUS: 5,       // F
+  ADDED_ON: 6,     // G
+  STAFF_NAME: 7,   // H
+  ORDER_ID: 8,     // I
+  ISSUE_TIME: 9,   // J
+  CUSTOMER_NAME: 10, // K
+  OPERATION_TIME: 13, // N - New column for precise operation timestamp
+} as const;
 
 function authHeaders() {
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -51,7 +60,7 @@ async function getAllSpreadsheetIds(): Promise<string[]> {
 
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
   const res = await fetch(
-    `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
+    `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`,
     { headers: authHeaders() },
   );
   if (!res.ok) throw new Error(`Sheets read ${res.status}: ${await res.text()}`);
@@ -121,7 +130,7 @@ export const getStockAppData = createServerFn({ method: "GET" }).handler(async (
 
   const [productsRaw, stockRaw] = await Promise.all([
     sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
-    sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
+    sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:N20000`),
   ]);
 
   const summary = new Map<string, { available: number; total: number }>();
@@ -216,7 +225,7 @@ export const issueStock = createServerFn({ method: "POST" })
     const spreadsheetId = await getSpreadsheetId();
     const [productsRaw, stockRaw] = await Promise.all([
       sheetsGet(spreadsheetId, `${TABS.PRODUCTS}!A1:H2000`),
-      sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`),
+      sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:N20000`),
     ]);
 
     let productNotes = "";
@@ -256,9 +265,10 @@ export const issueStock = createServerFn({ method: "POST" })
     const now = new Date();
     const nowStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
 
+    const operationTime = new Date().toISOString();
     const updates = picks.map((p) => ({
-      range: `${TABS.STOCK}!F${p.sheetRow}:K${p.sheetRow}`,
-      values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName]] as (string | number)[][],
+      range: `${TABS.STOCK}!F${p.sheetRow}:N${p.sheetRow}`,
+      values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName, "", "", operationTime]],
     }));
     // Write customer WhatsApp into any column named "Customer_Num" in the Stock sheet
     const stockHeader = stockRaw[0] ?? [];
@@ -335,7 +345,7 @@ export const revertIssue = createServerFn({ method: "POST" })
     if (!orderId) throw new Error("رقم العملية غير موجود");
 
     const spreadsheetId = await getSpreadsheetId();
-    const stockRaw = await sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:M20000`);
+    const stockRaw = await sheetsGet(spreadsheetId, `${TABS.STOCK}!A1:N20000`);
 
     const reverts: Array<{ sheetRow: number; addedOnRaw: string }> = [];
     for (let i = 1; i < stockRaw.length; i++) {
@@ -349,9 +359,10 @@ export const revertIssue = createServerFn({ method: "POST" })
     }
     if (!reverts.length) throw new Error("لا توجد أكواد مصروفة بهذا الرقم أو تم إرجاعها بالفعل");
 
+    const operationTime = new Date().toISOString();
     const updates = reverts.map((r) => ({
-      range: `${TABS.STOCK}!F${r.sheetRow}:K${r.sheetRow}`,
-      values: [["AVAILABLE", r.addedOnRaw, "", "", "", ""]] as (string | number)[][],
+      range: `${TABS.STOCK}!F${r.sheetRow}:N${r.sheetRow}`,
+      values: [["AVAILABLE", r.addedOnRaw, "", "", "", "", "", "", operationTime]],
     }));
     await sheetsBatchUpdate(spreadsheetId, updates);
     APP_DATA_CACHE.clear();

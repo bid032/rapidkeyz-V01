@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { notifyNewOrder } from "@/lib/notify-order.functions";
+import { notifyNewOrder, notifyCustomerDelivery } from "@/lib/notify-order.functions";
 
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
@@ -23,7 +23,6 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-
 type Gateway = "paymob" | "kashier" | "wallet_instapay" | "manual" | "simulate";
 
 const WHATSAPP_NUMBER = "01284234815";
@@ -36,20 +35,24 @@ function CheckoutPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
-  const [gateway, setGateway] = useState<Gateway>("simulate");
+  const [gateway, setGateway] = useState<Gateway>("wallet_instapay");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stockIssues, setStockIssues] = useState<
     { planId: string; productName: string; planLabel: string; requested: number; available: number }[]
   >([]);
-  
+
   const [senderPhone, setSenderPhone] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [successOrder, setSuccessOrder] = useState<{
     number: string;
     items: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[];
   } | null>(null);
-  const [copied, setCopied] = useState(false);
+  // New state for wallet and instapay numbers
+  const [walletNumber, setWalletNumber] = useState("");
+  const [instapayNumber, setInstapayNumber] = useState("");
+  const [walletCopied, setWalletCopied] = useState(false);
+  const [instapayCopied, setInstapayCopied] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -122,8 +125,8 @@ function CheckoutPage() {
   const copyNumber = async () => {
     try {
       await navigator.clipboard.writeText(WHATSAPP_NUMBER);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setWalletCopied(true);
+      setTimeout(() => setWalletCopied(false), 1500);
     } catch {
       /* ignore */
     }
@@ -134,7 +137,21 @@ function CheckoutPage() {
     queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
   });
   const checkoutSettings = (settings.data?.find((s: any) => s.key === "checkout")?.value ?? {}) as any;
-  const requireLogin = checkoutSettings.require_login ?? true;
+  const paymentSettings = (settings.data?.find((s: any) => s.key === "payments")?.value ?? {}) as any;
+  const requireLogin = checkoutSettings.require_login ?? false;
+  // تم إزالة خيار الدفع التجريبي نهائيًا
+  const instantPaymentEnabled = false;
+
+  // Get wallet and instapay numbers from settings
+  useEffect(() => {
+    if (settings.data) {
+      const walletNumberSetting = settings.data.find((s: any) => s.key === "wallet_number")?.value;
+      const instapayNumberSetting = settings.data.find((s: any) => s.key === "instapay_number")?.value;
+
+      if (walletNumberSetting) setWalletNumber(String(walletNumberSetting));
+      if (instapayNumberSetting) setInstapayNumber(String(instapayNumberSetting));
+    }
+  }, [settings.data]);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -165,10 +182,11 @@ function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (requireLogin && !user) {
-      navigate({ to: "/auth", search: { redirect: "/checkout" } });
-      return;
-    }
+    // Allow guest checkout regardless of requireLogin setting
+    // if (requireLogin && !user) {
+    //   setError(lang === "ar" ? "يجب تسجيل الدخول لإتمام عملية الشراء" : "You need to sign in to complete your purchase");
+    //   return;
+    // }
     if (cart.length === 0) return;
     if (gateway === "wallet_instapay") {
       if (!proofFile) {
@@ -264,7 +282,6 @@ function CheckoutPage() {
         proofUrl = path;
       }
 
-
       const { data: order, error: oErr } = await supabase
         .from("orders")
         .insert({
@@ -288,6 +305,7 @@ function CheckoutPage() {
 
       // Split every quantity>1 into individual order_items so each unit gets
       // its own delivery credentials (one account per unit) and its own status.
+      // Note: frozen_unit_price is automatically set by the trigger
       const items = cart.flatMap((c) =>
         Array.from({ length: Math.max(1, c.quantity) }, () => ({
           order_id: order.id,
@@ -330,26 +348,53 @@ function CheckoutPage() {
         }));
 
       // Notify admin by email (non-blocking, best-effort)
+      // For guest users, we need to ensure notifications are sent immediately
+      // as they might not be processed later due to recency checks
       try {
         await notifyNewOrder({ data: { orderId: order.id } });
       } catch (e) {
         console.error("notifyNewOrder failed", e);
+        // For guest users, try to send notification directly if the first attempt failed
+        if (!user) {
+          try {
+            const { notifyNewOrderDirect } = await import('@/lib/notify-order.functions');
+            await notifyNewOrderDirect({ data: { orderId: order.id } });
+          } catch (directErr) {
+            console.error("Direct notifyNewOrder failed", directErr);
+          }
+        }
       }
 
+      // Notify customer by email (non-blocking, best-effort)
+      // This works for both guest and authenticated users
+      try {
+        await notifyCustomerDelivery({ data: { orderId: order.id } });
+      } catch (e) {
+        console.error("notifyCustomerDelivery failed", e);
+        // For guest users, try to send notification directly if the first attempt failed
+        if (!user) {
+          try {
+            const { notifyCustomerDeliveryDirect } = await import('@/lib/notify-order.functions');
+            await notifyCustomerDeliveryDirect({ data: { orderId: order.id } });
+          } catch (directErr) {
+            console.error("Direct notifyCustomerDelivery failed", directErr);
+          }
+        }
+      }
 
       clearCart();
       setSuccessOrder({
         number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
         items: itemStatuses,
       });
-    } catch (err: any) {
-      console.error("checkout failed", err);
-      setError(friendlyErrorMessage(err, lang));
-    } finally {
+     } catch (err: any) {
+       console.error("checkout failed", err);
+       setError(friendlyErrorMessage(err, lang));
+       clearCart();
+     } finally {
       setSubmitting(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -537,34 +582,22 @@ function CheckoutPage() {
                 </div>
               </section>
 
-
-
-
               <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl min-w-0">
                 <h2 className="font-bold mb-4">{t.checkout.payment}</h2>
                 <div className="space-y-2">
                   {(
                     [
                       {
-                        id: "simulate",
-                        label: lang === "ar" ? "ادفع الآن ، محاكاة (تجريبي)" : "Pay Now ، Simulation (test)",
-                        hint: lang === "ar"
-                          ? "دفع فوري وهمي لعرض الشكل ، بيتبعت الإيميل تلقائي لو المنتج instant."
-                          : "Instant fake payment for demo , auto-emails credentials when the product is instant.",
-                      },
-                      {
                         id: "wallet_instapay",
                         label: lang === "ar" ? "محفظة / انستاباي (تحويل يدوي)" : "Wallet / Instapay (manual transfer)",
                       },
-                    ] as { id: Gateway; label: string; hint?: string }[]
+                    ].filter(Boolean) as { id: Gateway; label: string; hint?: string }[]
                   ).map((g) => (
                     <label
                       key={g.id}
                       className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition ${
                         gateway === g.id
-                          ? g.id === "simulate"
-                            ? "border-warning bg-warning/10"
-                            : "border-brand bg-brand/5"
+                          ? "border-brand bg-brand/5"
                           : "border-border bg-background"
                       }`}
                     >
@@ -578,11 +611,6 @@ function CheckoutPage() {
                       <div className="min-w-0">
                         <div className="font-medium">
                           {g.label}
-                          {g.id === "simulate" && (
-                            <span className="ms-2 text-[10px] px-2 py-0.5 bg-warning/20 text-warning rounded font-bold uppercase tracking-wider">
-                              TEST
-                            </span>
-                          )}
                         </div>
                         {g.hint && <div className="text-xs text-muted-foreground mt-1">{g.hint}</div>}
                       </div>
@@ -613,27 +641,95 @@ function CheckoutPage() {
                       </ol>
                     </div>
 
-                    {/* Copy-number pill */}
-                    <div className="rounded-xl bg-background border border-brand/40 p-3 space-y-2">
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center">
-                        {lang === "ar" ? "رقم التحويل" : "Transfer number"}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div dir="ltr" className="flex-1 min-w-0 text-center font-mono font-extrabold text-brand text-lg sm:text-xl tracking-widest truncate">
-                          {WHATSAPP_NUMBER}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={copyNumber}
-                          className={`shrink-0 text-xs px-3 py-2 rounded-lg font-bold transition ${copied ? "bg-success/20 text-success" : "bg-brand/15 text-brand hover:bg-brand/25"}`}
-                          title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
-                        >
-                          {copied
-                            ? (lang === "ar" ? "تم ✓" : "Copied ✓")
-                            : (lang === "ar" ? "نسخ" : "Copy")}
-                        </button>
-                      </div>
-                    </div>
+                    {/* Copy-number pill - show wallet and instapay numbers separately */}
+                     {((walletNumber && walletNumber.trim()) || (instapayNumber && instapayNumber.trim())) ? (
+                       // إذا كان فيه أرقام من الإعدادات، نظهر كل رقم في قسم منفصل
+                       <div className="space-y-3">
+                         {walletNumber && walletNumber.trim() && (
+                           <div className="rounded-xl bg-background border border-brand/40 p-3 space-y-2">
+                             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center">
+                               {lang === "ar" ? "رقم المحفظة" : "Wallet number"}
+                             </div>
+                             <div className="flex items-center gap-2">
+                               <div dir="ltr" className="flex-1 min-w-0 text-center font-mono font-extrabold text-brand text-lg sm:text-xl tracking-widest truncate">
+                                 {walletNumber.trim()}
+                               </div>
+                               <button
+                                 type="button"
+                                 onClick={async () => {
+                                   try {
+                                     await navigator.clipboard.writeText(walletNumber.trim());
+                                     setWalletCopied(true);
+                                     setTimeout(() => setWalletCopied(false), 1500);
+                                   } catch {
+                                     /* ignore */
+                                   }
+                                 }}
+                                 className={`shrink-0 text-xs px-3 py-2 rounded-lg font-bold transition ${walletCopied ? "bg-success/20 text-success" : "bg-brand/15 text-brand hover:bg-brand/25"}`}
+                                 title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
+                               >
+                                 {walletCopied
+                                   ? (lang === "ar" ? "تم ✓" : "Copied ✓")
+                                   : (lang === "ar" ? "نسخ" : "Copy")}
+                               </button>
+                             </div>
+                           </div>
+                         )}
+
+                         {instapayNumber && instapayNumber.trim() && (
+                           <div className="rounded-xl bg-background border border-brand/40 p-3 space-y-2">
+                             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center">
+                               {lang === "ar" ? "رقم انستاباي" : "Instapay number"}
+                             </div>
+                             <div className="flex items-center gap-2">
+                               <div dir="ltr" className="flex-1 min-w-0 text-center font-mono font-extrabold text-brand text-lg sm:text-xl tracking-widest truncate">
+                                 {instapayNumber.trim()}
+                               </div>
+                               <button
+                                 type="button"
+                                 onClick={async () => {
+                                   try {
+                                     await navigator.clipboard.writeText(instapayNumber.trim());
+                                     setInstapayCopied(true);
+                                     setTimeout(() => setInstapayCopied(false), 1500);
+                                   } catch {
+                                     /* ignore */
+                                   }
+                                 }}
+                                 className={`shrink-0 text-xs px-3 py-2 rounded-lg font-bold transition ${instapayCopied ? "bg-success/20 text-success" : "bg-brand/15 text-brand hover:bg-brand/25"}`}
+                                 title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
+                               >
+                                 {instapayCopied
+                                   ? (lang === "ar" ? "تم ✓" : "Copied ✓")
+                                   : (lang === "ar" ? "نسخ" : "Copy")}
+                               </button>
+                             </div>
+                           </div>
+                         )}
+                       </div>
+                     ) : (
+                       // إذا ما كانش فيه أرقام من الإعدادات، نظهر الرقم الافتراضي
+                       <div className="rounded-xl bg-background border border-brand/40 p-3 space-y-2">
+                         <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold text-center">
+                           {lang === "ar" ? "رقم التحويل" : "Transfer number"}
+                         </div>
+                         <div className="flex items-center gap-2">
+                           <div dir="ltr" className="flex-1 min-w-0 text-center font-mono font-extrabold text-brand text-lg sm:text-xl tracking-widest truncate">
+                             {WHATSAPP_NUMBER}
+                           </div>
+                           <button
+                             type="button"
+                             onClick={copyNumber}
+                             className={`shrink-0 text-xs px-3 py-2 rounded-lg font-bold transition ${walletCopied ? "bg-success/20 text-success" : "bg-brand/15 text-brand hover:bg-brand/25"}`}
+                             title={lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
+                           >
+                             {walletCopied
+                               ? (lang === "ar" ? "تم ✓" : "Copied ✓")
+                               : (lang === "ar" ? "نسخ" : "Copy")}
+                           </button>
+                         </div>
+                       </div>
+                     )}
 
                     <div className="grid gap-2">
                       <label className="text-xs font-bold text-muted-foreground">
@@ -671,30 +767,6 @@ function CheckoutPage() {
                       </label>
                     </div>
 
-                  </div>
-                ) : gateway === "simulate" ? (
-                  <div className="mt-4 p-4 rounded-xl bg-warning/10 border border-warning/30 text-sm leading-relaxed">
-                    {lang === "ar" ? (
-                      <>
-                        <p className="font-bold mb-2">وضع المحاكاة</p>
-                        <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
-                          <li>هيتم إنشاء الطلب بحالة <b>paid</b> فورًا بدون بوابة دفع حقيقية.</li>
-                          <li>لو المنتج تسليمه <b>instant</b>: هيتم سحب حساب متاح من المخزون تلقائيًا.</li>
-                          <li>الحساب هيتعلّم <b>sold</b> في شيت جوجل المربوط بيه.</li>
-                          <li>بيانات الحساب هتتبعت للعميل على الإيميل تلقائيًا.</li>
-                        </ol>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-bold mb-2">Simulation mode</p>
-                        <ol className="list-decimal ps-5 space-y-1 text-muted-foreground">
-                          <li>Order is created as <b>paid</b> instantly , no real gateway involved.</li>
-                          <li>Instant products auto-claim an account from inventory.</li>
-                          <li>The row is marked <b>sold</b> in its linked Google Sheet.</li>
-                          <li>Credentials are emailed to the customer automatically.</li>
-                        </ol>
-                      </>
-                    )}
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-4">
@@ -807,7 +879,7 @@ function CheckoutPage() {
                       disabled={couponApplying || !couponCode.trim()}
                       className="shrink-0 px-4 py-2.5 rounded-lg bg-brand text-brand-foreground text-sm font-bold disabled:opacity-50"
                     >
-                      {couponApplying ? "…" : (lang === "ar" ? "تطبيق" : "Apply")}
+                      {couponApplying ? "..." : (lang === "ar" ? "تطبيق" : "Apply")}
                     </button>
                   </div>
                 )}
@@ -839,7 +911,7 @@ function CheckoutPage() {
               </div>
               <button
                 type="submit"
-                disabled={submitting || (requireLogin && !user)}
+                disabled={submitting}
                 className="w-full mt-6 px-6 py-3 bg-brand text-brand-foreground rounded-xl font-bold hover:brand-glow disabled:opacity-50"
               >
                 {submitting ? t.common.loading : t.checkout.placeOrder}

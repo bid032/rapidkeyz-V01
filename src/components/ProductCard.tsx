@@ -10,17 +10,20 @@ export type ProductCardData = {
   slug: string;
   name_ar: string;
   name_en: string;
+  short_description_ar: string | null;
+  short_description_en: string | null;
   description_ar: string | null;
   description_en: string | null;
   icon_url: string | null;
-  delivery_type: "instant" | "manual";
-  account_type: "private" | "shared" | "both" | "own";
+  delivery_type: string;
+  account_type: string;
+  discount_percent: number;
   minPrice: number | null;
-  cheapestPlanId?: string | null;
-  discount_percent?: number | null;
-  planLabel_ar?: string | null;
-  planLabel_en?: string | null;
-  totalStock?: number | null;
+  cheapestPlanId: string | null;
+  planLabel_ar: string | null;
+  planLabel_en: string | null;
+  totalStock: number;
+  cheapestPlanComparePrice?: number | null;
 };
 
 function flyToCart(fromEl: HTMLElement, iconUrl: string | null, name: string) {
@@ -71,6 +74,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     hasDiscount && p.minPrice !== null
       ? Math.round(p.minPrice * (100 - discount)) / 100
       : p.minPrice;
+  // Note: ProductCard doesn't currently support compare_price, but we can add it if needed
   const soldOut = p.totalStock != null && p.totalStock <= 0;
 
   const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -91,11 +95,11 @@ export function ProductCard({ p }: { p: ProductCardData }) {
       planLabel: planLabel ?? "",
       price: finalPrice,
       quantity: 1,
-      iconUrl: p.icon_url ?? null,
+      iconUrl: p.icon_url ?? p.icon_url ?? null,
       deliveryType: p.delivery_type,
       accountType: p.account_type,
     });
-    flyToCart(e.currentTarget, p.icon_url ?? null, name);
+    flyToCart(e.currentTarget, p.icon_url ?? p.icon_url ?? null, name);
   };
 
   const openBuy = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -108,7 +112,6 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     setBuyOpen(true);
   };
 
-
   return (
     <>
       <Link
@@ -116,21 +119,28 @@ export function ProductCard({ p }: { p: ProductCardData }) {
         params={{ slug: p.slug }}
         className="group bg-card border border-border rounded-2xl overflow-hidden hover:border-brand/50 hover:shadow-[0_10px_40px_-12px_color-mix(in_oklab,var(--brand)_35%,transparent)] transition-all flex flex-col h-full"
       >
-        <div className="relative aspect-square w-full overflow-hidden bg-muted">
-          {p.icon_url ? (
-            <img
-              src={p.icon_url}
-              alt={name}
-              loading="lazy"
-              className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="size-full grid place-items-center">
-              <span className="text-4xl sm:text-5xl font-black text-brand/70">
-                {name.slice(0, 2).toUpperCase()}
-              </span>
-            </div>
-          )}
+         <div className="relative aspect-square w-full overflow-hidden bg-muted">
+           {p.icon_url ? (
+             <img
+               src={p.icon_url}
+               alt={name}
+               loading="lazy"
+               className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+             />
+           ) : p.icon_url ? (
+             <img
+               src={p.icon_url}
+               alt={name}
+               loading="lazy"
+               className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+             />
+           ) : (
+             <div className="size-full grid place-items-center">
+               <span className="text-4xl sm:text-5xl font-black text-brand/70">
+                 {name.slice(0, 2).toUpperCase()}
+               </span>
+             </div>
+           )}
           {hasDiscount && !soldOut && (
             <span
               className={`absolute top-2 sm:top-3 ${lang === "ar" ? "start-2 sm:start-3" : "end-2 sm:end-3"} bg-destructive text-destructive-foreground text-[9px] font-black px-1.5 py-0.5 rounded-md shadow-lg`}
@@ -153,27 +163,33 @@ export function ProductCard({ p }: { p: ProductCardData }) {
             <h3 className="text-sm sm:text-lg font-bold mb-1 text-foreground line-clamp-1">
               {name}
             </h3>
-            <p className="text-muted-foreground text-[11px] sm:text-sm line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] whitespace-pre-line">
-              {stripMd(desc) || " "}
-            </p>
+            {/* <p className="text-muted-foreground text-[11px] sm:text-sm line-clamp-1 min-h-0">
+              {desc || planLabel || " "}
+            </p> */}
           </div>
 
           <div className="flex flex-col min-w-0 pt-2 border-t border-border/60">
             <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
               {planLabel || t.product.priceStarting}
             </span>
-            {finalPrice !== null ? (
-              <div className="flex items-baseline gap-1.5 sm:gap-2">
-                <span className="text-base sm:text-xl font-extrabold text-foreground">
-                  {finalPrice} <span className="text-[10px] sm:text-xs font-bold text-muted-foreground">{t.common.currency}</span>
-                </span>
-                {hasDiscount && (
-                  <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
-                    {p.minPrice}
-                  </span>
-                )}
-              </div>
-            ) : (
+             {finalPrice !== null ? (
+               <div className="flex items-baseline gap-1.5 sm:gap-2">
+                 {(hasDiscount || (p.cheapestPlanComparePrice && p.cheapestPlanComparePrice > finalPrice)) ? (
+                   <>
+                     <span className="text-muted-foreground line-through text-[10px] sm:text-xs">
+                       {p.cheapestPlanComparePrice && p.cheapestPlanComparePrice > finalPrice ? p.cheapestPlanComparePrice : p.minPrice} {t.common.currency}
+                     </span>
+                     <span className="text-base sm:text-xl font-extrabold text-foreground">
+                       {finalPrice} <span className="text-[10px] sm:text-xs font-bold text-muted-foreground">{t.common.currency}</span>
+                     </span>
+                   </>
+                 ) : (
+                   <span className="text-base sm:text-xl font-extrabold text-foreground">
+                     {finalPrice} <span className="text-[10px] sm:text-xs font-bold text-muted-foreground">{t.common.currency}</span>
+                   </span>
+                 )}
+               </div>
+             ) : (
               <span className="text-base sm:text-xl font-extrabold text-foreground">,</span>
             )}
           </div>
@@ -206,6 +222,5 @@ export function ProductCard({ p }: { p: ProductCardData }) {
 
       <QuickBuyDialog open={buyOpen} onOpenChange={setBuyOpen} product={p} />
     </>
-
   );
 }

@@ -42,6 +42,7 @@ function mapSheetRows(values: string[][]) {
   const iP = findIdx(["password", "pass", "pwd", "باسورد", "كلمة"]);
   const iK = findIdx(["key", "code", "license", "licence", "serial", "product", "مفتاح", "كود"]);
   const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
+  const iType = findIdx(["type", "account_type", "service_type", "نوع", "نوع_الحساب", "نوع_الخدمة"]);
   const iStatus = findIdx(["status", "state", "حالة"]);
 
   const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
@@ -56,6 +57,7 @@ function mapSheetRows(values: string[][]) {
       account_email: clean(r, iE),
       account_username: clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback),
       account_password: clean(r, iP),
+      account_type: clean(r, iType),
       extra_notes: clean(r, iN),
       _srcRowIndex: idx + 2,
       _statusValue: iStatus >= 0 ? (r[iStatus] ?? "").trim().toLowerCase() : "",
@@ -232,12 +234,14 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
         account_email: string | null;
         account_username: string | null;
         account_password: string | null;
+        account_type: string | null;
         extra_notes: string | null;
       }) =>
         [
           (r.account_email ?? "").trim().toLowerCase(),
           (r.account_username ?? "").trim().toLowerCase(),
           (r.account_password ?? "").trim(),
+          (r.account_type ?? "").trim().toLowerCase(),
           (r.extra_notes ?? "").trim().toLowerCase(),
         ].join("|");
 
@@ -246,7 +250,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       // Load existing DB rows for this plan+spreadsheet+tab
       const { data: existing } = await context.supabase
         .from("account_inventory")
-        .select("id, status, account_email, account_username, account_password, extra_notes")
+        .select("id, status, account_email, account_username, account_password, account_type, extra_notes")
         .eq("plan_id", pl.id)
         .eq("spreadsheet_id", data.spreadsheetId)
         .eq("sheet_title", tabTitle);
@@ -277,6 +281,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
           account_email: r.account_email,
           account_username: r.account_username,
           account_password: r.account_password,
+          account_type: r.account_type,
           extra_notes: r.extra_notes,
           source: "sheet",
           import_batch_id: batchId,

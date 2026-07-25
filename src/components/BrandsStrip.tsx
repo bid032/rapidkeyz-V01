@@ -8,15 +8,15 @@ type BrandItem = {
   slug: string;
   name_ar: string;
   name_en: string;
-  icon_url: string | null;
+  loading_icon_url: string | null;
 };
 
 async function fetchBrands(): Promise<BrandItem[]> {
   const { data, error } = await supabase
     .from("products")
-    .select("id, slug, name_ar, name_en, icon_url")
+    .select("id, slug, name_ar, name_en, loading_icon_url")
     .eq("status", "active")
-    .not("icon_url", "is", null)
+    .not("loading_icon_url", "is", null)
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true })
     .limit(40);
@@ -38,7 +38,7 @@ export function BrandsStrip() {
     <section className="relative -mt-2 py-6 sm:py-8 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center mb-4 sm:mb-5">
         <div className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-brand mb-2">
-          {lang === "ar" ? "شركاؤنا الرقميون" : "Our digital lineup"}
+          {lang === "ar" ? "" : "Our digital lineup"}
         </div>
         <h2
           data-gsap="split-words"
@@ -80,9 +80,9 @@ export function BrandsStrip() {
                   className="brands-item group shrink-0 flex flex-col items-center justify-center gap-2 mx-2 sm:mx-3"
                 >
                   <div className="size-16 sm:size-20 rounded-2xl bg-card/70 backdrop-blur border border-border/60 grid place-items-center overflow-hidden transition-all duration-300 group-hover:border-brand/70 group-hover:brand-glow group-hover:-translate-y-1">
-                    {p.icon_url ? (
+                    {p.loading_icon_url ? (
                       <img
-                        src={p.icon_url}
+                        src={p.loading_icon_url}
                         alt={name}
                         loading="lazy"
                         className="w-full h-full object-cover"

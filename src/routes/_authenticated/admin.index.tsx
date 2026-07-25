@@ -21,17 +21,16 @@ export const Route = createFileRoute("/_authenticated/admin/")({
   beforeLoad: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw redirect({ to: "/auth" });
-    const { data: adminRow } = await supabase
+    const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userData.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!adminRow) throw redirect({ to: "/admin/products" });
+      .eq("user_id", userData.user.id);
+    // Only admin can access the overview page
+    const isAdmin = roles?.some(r => r.role === "admin");
+    if (!isAdmin) throw redirect({ to: "/admin/products" });
   },
   component: AdminOverview,
 });
-
 
 type MonthKey = string; // YYYY-MM or "all"
 
@@ -146,10 +145,6 @@ function AdminOverview() {
     },
   });
 
-
-
-
-
   const monthly = useQuery({
     queryKey: ["admin-revenue-monthly"],
     queryFn: async () => {
@@ -175,16 +170,12 @@ function AdminOverview() {
     },
   });
 
-
-
-
-
   const sales = useQuery({
     queryKey: ["admin-sales-details", month],
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total, subtotal, discount_amount, coupon_id)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, frozen_unit_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total, subtotal, discount_amount, coupon_id)")
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -231,17 +222,17 @@ function AdminOverview() {
       // both the coupon discount AND order-level refunds across line items.
       const orderGross = new Map<string, number>();
       items.forEach((r) => {
-        const t = Number(r.unit_price) * Number(r.quantity);
+        const t = Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity);
         orderGross.set(r.order_id, (orderGross.get(r.order_id) ?? 0) + t);
       });
       return items.map((r) => {
         const cost = costMap.get(r.plan_id) ?? 0;
-        const grossProfit = (Number(r.unit_price) - cost) * Number(r.quantity);
+        const grossProfit = (Number(r.frozen_unit_price ?? r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
         const itemRefs = refundsByItem.get(r.id) ?? [];
         const orderRefs = refundsByOrder.get(r.order_id) ?? [];
         const itemAmount = itemRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0);
-        const lineTotal = Number(r.unit_price) * Number(r.quantity);
+        const lineTotal = Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity);
         const gross = orderGross.get(r.order_id) ?? 0;
         const share = gross > 0 ? lineTotal / gross : 0;
         const orderAmount = orderRefs.reduce((s: number, x: any) => s + Number(x.amount ?? 0), 0) * share;
@@ -255,7 +246,6 @@ function AdminOverview() {
         const coupon = couponMap.get(r.orders?.coupon_id) ?? null;
         return { ...r, _cost: cost, _profit: profit, _grossProfit: grossProfit, _lineDiscount: lineDiscount, _netRevenue: netRevenue, _profile: prof, _refunds: refs, _refundAmount: refundAmount, _coupon: coupon };
       });
-
     },
   });
 
@@ -292,7 +282,7 @@ function AdminOverview() {
       const d = new Date(it.orders?.created_at ?? it.created_at);
       if (d.getFullYear() !== y || d.getMonth() + 1 !== m) return;
       const idx = d.getDate() - 1;
-      rows[idx].revenue += Math.round(Number(it._netRevenue ?? (Number(it.unit_price) * Number(it.quantity))));
+      rows[idx].revenue += Math.round(Number(it._netRevenue ?? (Number(it.frozen_unit_price ?? it.unit_price) * Number(it.quantity))));
       rows[idx].profit += Math.round(Number(it._profit ?? 0));
     });
 
@@ -307,13 +297,10 @@ function AdminOverview() {
     return rows;
   }, [monthly.data, refundsAll.data, sales.data, month]);
 
-
-
-
   const exportSalesXlsx = () => {
     const rows = (sales.data ?? []).map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
-      const gross = Number(r.unit_price) * Number(r.quantity);
+      const gross = Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity);
       const lineDiscount = Number(r._lineDiscount ?? 0);
       const netRevenue = Number(r._netRevenue ?? gross);
       const p = r._profile ?? {};
@@ -334,12 +321,12 @@ function AdminOverview() {
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
         "الكمية": r.quantity,
-        "سعر الوحدة": Number(r.unit_price),
+        "سعر الوحدة": Number(r.frozen_unit_price ?? r.unit_price),
         "الإجمالي قبل الخصم": gross,
         "كود الخصم": r._coupon?.code ?? "",
         "نوع الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? "نسبة %" : "مبلغ ثابت") : "",
         "قيمة الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? `${r._coupon.discount_value}%` : `${r._coupon.discount_value} EGP`) : "",
-        
+
         "قيمة الخصم على الطلب كامل": Math.round(Number(r.orders?.discount_amount ?? 0)),
         "الإجمالي بعد الخصم": Math.round(netRevenue),
         "سعر الشراء": r._cost ?? 0,
@@ -371,8 +358,6 @@ function AdminOverview() {
     XLSX.writeFile(wb, `${siteName} - ${suffix}.xlsx`);
   };
 
-
-
   const monthOptions = useMemo(() => {
     const arr = (monthly.data ?? []).map((r) => r.month.slice(0, 7));
     // ensure current month present
@@ -390,7 +375,6 @@ function AdminOverview() {
     { label: t.admin.totalProducts, value: stats.data?.products ?? 0, tone: "default" },
     { label: t.admin.totalUsers, value: stats.data?.users ?? 0, tone: "default" },
   ];
-
 
   return (
     <div>
@@ -421,7 +405,6 @@ function AdminOverview() {
           )}
         </div>
       </div>
-
 
       <section className="relative overflow-hidden p-4 sm:p-6 bg-card border border-border rounded-3xl mb-6 shadow-xl">
         <div className="absolute inset-0 pointer-events-none opacity-60" style={{
@@ -495,7 +478,6 @@ function AdminOverview() {
             })()}
           </div>
 
-
           <div className="w-full h-80 sm:h-[420px]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
@@ -552,7 +534,6 @@ function AdminOverview() {
           </div>
         ))}
       </div>
-
 
       <section className="p-4 sm:p-6 bg-card border border-border rounded-2xl mt-6">
 
@@ -638,7 +619,7 @@ function AdminOverview() {
                         <div className="text-xs text-muted-foreground truncate max-w-[180px]">{r.plan_label}</div>
                       </td>
                       <td className="p-2">{r.quantity}</td>
-                      <td className="p-2 font-bold text-brand">{Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</td>
+                      <td className="p-2 font-bold text-brand">{Math.round(Number(r._netRevenue ?? Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity)))} {t.common.currency}</td>
                       <td className={`p-2 font-bold ${netProfit >= 0 ? "text-success" : "text-destructive"}`}>
                         {Math.round(netProfit)} {t.common.currency}
                       </td>
@@ -679,8 +660,8 @@ function AdminOverview() {
                             </div>
                             <div>
                               <div className="font-bold text-muted-foreground mb-1">التفاصيل المالية</div>
-                              <div>سعر الوحدة: {Math.round(Number(r.unit_price))} {t.common.currency}</div>
-                              <div>الإجمالي قبل الخصم: {Math.round(Number(r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
+                              <div>سعر الوحدة: {Math.round(Number(r.frozen_unit_price ?? r.unit_price))} {t.common.currency}</div>
+                              <div>الإجمالي قبل الخصم: {Math.round(Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity))} {t.common.currency}</div>
                               {r._coupon && (
                                 <div className="text-success">
                                   كود الخصم: <span className="font-mono font-bold">{r._coupon.code}</span>
@@ -693,7 +674,7 @@ function AdminOverview() {
                               {Number(r.orders?.discount_amount ?? 0) > 0 && (
                                 <div className="text-success text-[11px]">خصم الطلب كامل: -{Math.round(Number(r.orders.discount_amount))} {t.common.currency}</div>
                               )}
-                              <div className="font-bold">الإجمالي بعد الخصم: {Math.round(Number(r._netRevenue ?? Number(r.unit_price) * Number(r.quantity)))} {t.common.currency}</div>
+                              <div className="font-bold">الإجمالي بعد الخصم: {Math.round(Number(r._netRevenue ?? Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity)))} {t.common.currency}</div>
                               <div>سعر الشراء: {Math.round(Number(r._cost ?? 0))} {t.common.currency}</div>
                               <div className="text-success">الربح: {Math.round(profit)} {t.common.currency}</div>
                               {refundAmount > 0 && (

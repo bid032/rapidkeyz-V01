@@ -69,6 +69,8 @@ export function PricingConfigurator({
 
   const selected = plans.find((p) => p.id === selectedId) ?? plans[0];
   const rawPrice = selected ? Number(selected.price) : 0;
+  const comparePrice = selected ? Number(selected.compare_price ?? 0) : 0;
+  const hasComparePrice = comparePrice > 0 && comparePrice > rawPrice;
   const finalPrice = hasDiscount ? Math.round(rawPrice * (100 - discount)) / 100 : rawPrice;
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
@@ -259,31 +261,31 @@ export function PricingConfigurator({
                     </span>
                   </motion.div>
                 ) : (
-                  <motion.div
-                    key={`${selected.id}-${finalPrice}-m`}
-                    initial={{ y: 8, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -8, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 320, damping: 26 }}
-                    className="flex items-center justify-between gap-3"
-                  >
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
-                        {isAr ? "الإجمالي" : "Total"}
-                      </span>
-                      {hasDiscount && (
-                        <span className="text-[11px] text-muted-foreground line-through tabular-nums mt-0.5">
-                          {rawPrice} {t.common.currency}
+                    <motion.div
+                      key={`${selected.id}-${finalPrice}-m`}
+                      initial={{ y: 8, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -8, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">
+                          {isAr ? "الإجمالي" : "Total"}
                         </span>
-                      )}
-                    </div>
-                    <div className="flex items-baseline gap-1 shrink-0">
-                      <span className="text-3xl font-black text-brand tabular-nums leading-none">
-                        {finalPrice}
-                      </span>
-                      <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
-                    </div>
-                  </motion.div>
+                        {(hasDiscount || hasComparePrice) && (
+                          <span className="text-[11px] text-muted-foreground line-through tabular-nums mt-0.5">
+                            {hasComparePrice ? comparePrice : rawPrice} {t.common.currency}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-1 shrink-0">
+                        <span className="text-3xl font-black text-brand tabular-nums leading-none">
+                          {finalPrice}
+                        </span>
+                        <span className="text-xs font-black text-brand/80">{t.common.currency}</span>
+                      </div>
+                    </motion.div>
                 )}
               </AnimatePresence>
 
@@ -340,17 +342,17 @@ export function PricingConfigurator({
                       transition={{ type: "spring", stiffness: 320, damping: 26 }}
                       className="flex flex-col"
                     >
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-3xl font-black text-brand tabular-nums leading-none">
-                          {finalPrice}
-                        </span>
-                        <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
-                      </div>
-                      {hasDiscount && (
-                        <span className="text-sm text-muted-foreground line-through tabular-nums">
-                          {rawPrice} {t.common.currency}
-                        </span>
-                      )}
+                       <div className="flex items-baseline gap-2 flex-wrap">
+                         <span className="text-3xl font-black text-brand tabular-nums leading-none">
+                           {finalPrice}
+                         </span>
+                         <span className="text-sm font-black text-brand/80">{t.common.currency}</span>
+                       </div>
+                       {(hasDiscount || hasComparePrice) && (
+                         <span className="text-sm text-muted-foreground line-through tabular-nums">
+                           {hasComparePrice ? comparePrice : rawPrice} {t.common.currency}
+                         </span>
+                       )}
                     </motion.div>
                   )}
                 </AnimatePresence>
