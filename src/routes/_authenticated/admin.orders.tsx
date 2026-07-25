@@ -59,7 +59,7 @@ function AdminOrders() {
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [currentAction, setCurrentAction] = useState<"clearAll" | "deleteOrder" | null>(null);
   const currentOrderToDeleteRef = useRef<string | null>(null);
-  const isAdmin = roles?.some(r => r.role === "admin") ?? false;
+  const isAdmin = roles?.some((r: { role: string }) => r.role === "admin") ?? false;
 
     const orders = useQuery({
       queryKey: ["admin-orders"],
