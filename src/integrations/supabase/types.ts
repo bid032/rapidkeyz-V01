@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           account_email: string | null
           account_password: string | null
+          account_type: string | null
           account_username: string | null
           created_at: string
           delivered_at: string | null
@@ -36,6 +37,7 @@ export type Database = {
         Insert: {
           account_email?: string | null
           account_password?: string | null
+          account_type?: string | null
           account_username?: string | null
           created_at?: string
           delivered_at?: string | null
@@ -54,6 +56,7 @@ export type Database = {
         Update: {
           account_email?: string | null
           account_password?: string | null
+          account_type?: string | null
           account_username?: string | null
           created_at?: string
           delivered_at?: string | null
@@ -634,6 +637,7 @@ export type Database = {
           id: string
           is_bestseller: boolean
           is_featured: boolean
+          loading_icon_url: string | null
           name_ar: string
           name_en: string
           plan_variants: string[]
@@ -658,6 +662,7 @@ export type Database = {
           id?: string
           is_bestseller?: boolean
           is_featured?: boolean
+          loading_icon_url?: string | null
           name_ar: string
           name_en: string
           plan_variants?: string[]
@@ -682,6 +687,7 @@ export type Database = {
           id?: string
           is_bestseller?: boolean
           is_featured?: boolean
+          loading_icon_url?: string | null
           name_ar?: string
           name_en?: string
           plan_variants?: string[]
