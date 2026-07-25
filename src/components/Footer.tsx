@@ -70,7 +70,7 @@ export function Footer() {
 
           {/* Social */}
           <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-sm">{t.footer.followUs}</h3>
+            <h3 className="font-bold text-sm">{t.footer.support}</h3>
             <div className="flex flex-col gap-3">
               {socials.map((s) => (
                 <a
