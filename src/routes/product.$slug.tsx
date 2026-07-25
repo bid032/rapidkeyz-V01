@@ -232,6 +232,13 @@ function ProductPage() {
     return () => clearInterval(id);
   }, []);
 
+  // Reset planId when filters change (must run on every render — keep above early returns)
+  useEffect(() => {
+    setPlanId(null);
+  }, [accountType, planVariant]);
+
+  const loaderData = Route.useLoaderData();
+
   // Function to extract plan variants from plans
   const getPlanVariants = (plansArray: any[]) => {
     const variantsSet = new Set<string>();
