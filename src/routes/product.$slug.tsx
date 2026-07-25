@@ -419,18 +419,12 @@ function ProductPage() {
     }))
   });
 
-  // Reset planId when filteredPlans changes to avoid showing wrong prices
-  useEffect(() => {
-    setPlanId(null);
-  }, [accountType, planVariant]);
-
   const selected =
     filteredPlans.find((p: any) => p.id === planId) ?? filteredPlans[0];
 
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
-  const loaderData = Route.useLoaderData();
   const shortDesc = loaderData ? (lang === "ar" ? loaderData.short_description_ar : loaderData.short_description_en) : null;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
   const discount = Number((product as any).discount_percent ?? 0);
