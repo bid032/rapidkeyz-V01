@@ -253,9 +253,33 @@ function AdminInventory() {
                 return (
                   <div key={pl.id} className="p-3 bg-background border border-border rounded-xl">
                     <div className="flex items-center justify-between gap-3 flex-wrap">
-                      <div>
-                        <div className="font-bold text-sm">{pl.label_ar}</div>
-                        <div className="text-xs text-muted-foreground">
+                      <div className="min-w-0">
+                        <div className="font-bold text-sm flex items-center gap-2 flex-wrap">
+                          <span>{pl.label_ar}</span>
+                          {pl.label_en && (
+                            <span className="text-[10px] font-mono text-muted-foreground" dir="ltr">
+                              {pl.label_en}
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                          {pl.plan_variant && (
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-brand/10 text-brand">
+                              نوع الخطة: {pl.plan_variant}
+                            </span>
+                          )}
+                          {pl.account_type && (
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary">
+                              نوع الحساب: {pl.account_type}
+                            </span>
+                          )}
+                          {pl.duration_days ? (
+                            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-muted text-muted-foreground">
+                              مدة: {pl.duration_days} يوم
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
                           <span className="text-success font-bold">متاح: {c.available}</span>
                           <span className="mx-2">·</span>
                           <span>تم تسليمها: {c.delivered}</span>
