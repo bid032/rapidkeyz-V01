@@ -89,7 +89,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-xs text-muted-foreground">
-          {t.footer.copyright}
+          © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}
         </div>
       </div>
     </footer>
