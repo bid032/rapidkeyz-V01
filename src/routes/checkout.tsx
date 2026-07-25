@@ -282,9 +282,15 @@ function CheckoutPage() {
         proofUrl = path;
       }
 
-      const { data: order, error: oErr } = await supabase
+      // Generate the order id client-side so guest checkout doesn't rely on a
+      // post-insert SELECT (guest / anon has no SELECT policy on orders).
+      const orderId =
+        (globalThis.crypto as any)?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+
+      const { error: oErr } = await supabase
         .from("orders")
         .insert({
+          id: orderId,
           user_id: user?.id ?? null,
           status: "pending",
           payment_gateway: (gateway === "simulate" ? "manual" : gateway) as any,
@@ -298,32 +304,29 @@ function CheckoutPage() {
           payment_proof_url: proofUrl,
           payment_sender_phone: gateway === "wallet_instapay" ? senderPhone.replace(/\D/g, "") : null,
           payment_reference: gateway === "simulate" ? "SIMULATION" : null,
-        })
-        .select()
-        .single();
+        });
       if (oErr) throw oErr;
 
       // Split every quantity>1 into individual order_items so each unit gets
       // its own delivery credentials (one account per unit) and its own status.
-      // Note: frozen_unit_price is automatically set by the trigger
+      // frozen_unit_price is set explicitly here so historical revenue is not
+      // affected by future plan price changes.
       const items = cart.flatMap((c) =>
         Array.from({ length: Math.max(1, c.quantity) }, () => ({
-          order_id: order.id,
+          order_id: orderId,
           product_id: c.productId,
           plan_id: c.planId,
           product_name: c.productName,
           plan_label: c.planLabel,
           unit_price: c.price,
+          frozen_unit_price: c.price,
           quantity: 1,
           delivery_type: c.deliveryType,
           account_type: c.accountType,
           subscription_email: null,
         })),
       );
-      const { data: insertedItems, error: iErr } = await supabase
-        .from("order_items")
-        .insert(items)
-        .select();
+      const { error: iErr } = await supabase.from("order_items").insert(items);
       if (iErr) throw iErr;
 
       // Redeem coupon (best-effort, non-blocking for order success)
@@ -331,7 +334,7 @@ function CheckoutPage() {
         try {
           await supabase.rpc("redeem_coupon", {
             _coupon_id: appliedCoupon.id,
-            _order_id: order.id,
+            _order_id: orderId,
             _amount: appliedCoupon.discount,
           });
         } catch (e) {
@@ -342,7 +345,7 @@ function CheckoutPage() {
       // Every order starts as pending. Admin reviews and delivers each item manually
       // (either by claiming instant inventory or entering credentials for manual items).
       const itemStatuses: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[] =
-        (insertedItems ?? []).map((it: any) => ({
+        items.map((it) => ({
           name: it.product_name,
           mode: it.delivery_type === "instant" ? "instant_pending" : "manual",
         }));
@@ -351,14 +354,14 @@ function CheckoutPage() {
       // For guest users, we need to ensure notifications are sent immediately
       // as they might not be processed later due to recency checks
       try {
-        await notifyNewOrder({ data: { orderId: order.id } });
+        await notifyNewOrder({ data: { orderId } });
       } catch (e) {
         console.error("notifyNewOrder failed", e);
         // For guest users, try to send notification directly if the first attempt failed
         if (!user) {
           try {
             const { notifyNewOrderDirect } = await import('@/lib/notify-order.functions');
-            await notifyNewOrderDirect({ data: { orderId: order.id } });
+            await notifyNewOrderDirect({ data: { orderId } });
           } catch (directErr) {
             console.error("Direct notifyNewOrder failed", directErr);
           }
@@ -368,14 +371,14 @@ function CheckoutPage() {
       // Notify customer by email (non-blocking, best-effort)
       // This works for both guest and authenticated users
       try {
-        await notifyCustomerDelivery({ data: { orderId: order.id } });
+        await notifyCustomerDelivery({ data: { orderId } });
       } catch (e) {
         console.error("notifyCustomerDelivery failed", e);
         // For guest users, try to send notification directly if the first attempt failed
         if (!user) {
           try {
             const { notifyCustomerDeliveryDirect } = await import('@/lib/notify-order.functions');
-            await notifyCustomerDeliveryDirect({ data: { orderId: order.id } });
+            await notifyCustomerDeliveryDirect({ data: { orderId } });
           } catch (directErr) {
             console.error("Direct notifyCustomerDelivery failed", directErr);
           }
@@ -384,7 +387,7 @@ function CheckoutPage() {
 
       clearCart();
       setSuccessOrder({
-        number: order.order_number ?? order.id.slice(0, 8).toUpperCase(),
+        number: orderId.slice(0, 8).toUpperCase(),
         items: itemStatuses,
       });
      } catch (err: any) {

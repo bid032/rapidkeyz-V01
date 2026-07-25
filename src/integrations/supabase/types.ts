@@ -342,6 +342,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           created_at: string
           delivery_type: Database["public"]["Enums"]["delivery_type"]
+          frozen_unit_price: number
           id: string
           order_id: string
           plan_id: string | null
@@ -357,6 +358,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           created_at?: string
           delivery_type: Database["public"]["Enums"]["delivery_type"]
+          frozen_unit_price: number
           id?: string
           order_id: string
           plan_id?: string | null
@@ -372,6 +374,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           created_at?: string
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          frozen_unit_price?: number
           id?: string
           order_id?: string
           plan_id?: string | null
