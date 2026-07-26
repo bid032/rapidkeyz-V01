@@ -337,6 +337,42 @@ export type Database = {
         }
         Relationships: []
       }
+      google_sheet_integrations: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          name: string
+          slug: string
+          spreadsheet_id: string
+          updated_at: string
+          worksheet_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name: string
+          slug: string
+          spreadsheet_id: string
+          updated_at?: string
+          worksheet_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          name?: string
+          slug?: string
+          spreadsheet_id?: string
+          updated_at?: string
+          worksheet_name?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
