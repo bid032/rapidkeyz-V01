@@ -6,17 +6,13 @@ import { ShieldAlert, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { getSheetInfo } from "@/lib/sheet-sync.functions";
-import {
-  previewProductSheetTabs,
-  importAllTabsForProduct,
-} from "@/lib/sheet-product-import.functions";
+import { previewProductSheetTabs, importAllTabsForProduct } from "@/lib/sheet-product-import.functions";
 import { getInventoryDuplicatesAdmin, type DuplicatesResult } from "@/lib/stock-sheet.functions";
 import { friendlyErrorMessage, showError } from "@/lib/error-handler";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   component: AdminInventory,
 });
-
 
 // Very small CSV parser (handles quoted fields with commas & escaped quotes)
 function parseCsv(text: string): string[][] {
@@ -27,67 +23,215 @@ function parseCsv(text: string): string[][] {
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (inQuotes) {
-      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
-      else if (c === '"') inQuotes = false;
+      if (c === '"' && text[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else if (c === '"') inQuotes = false;
       else field += c;
     } else {
       if (c === '"') inQuotes = true;
-      else if (c === ",") { row.push(field); field = ""; }
-      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
-      else if (c === "\r") { /* skip */ }
-      else field += c;
+      else if (c === ",") {
+        row.push(field);
+        field = "";
+      } else if (c === "\n") {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = "";
+      } else if (c === "\r") {
+        /* skip */
+      } else field += c;
     }
   }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
   return rows.filter((r) => r.some((c) => c.trim() !== ""));
 }
 
-/** Map CSV rows → inventory records. Recognizes any of:
- * email, username/user, password/pass, key/code/license/product, notes/note (case-insensitive).
- * "status" column is ignored (managed by the system).
- * If a column doesn't match any known header, it's kept as a fallback. */
+/** Normalizes an Arabic/English header cell so different spellings, hamza
+ * variants, diacritics, spaces, underscores and dashes all collapse to the
+ * same key (e.g. "البريد الإلكتروني", "البريد_الالكتروني", "Email " → same). */
+function normalizeHeader(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, "") // strip Arabic diacritics
+    .replace(/[إأآا]/g, "ا")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[\s_\-\.]+/g, "")
+    .trim();
+}
+
+// Order matters: more specific fields are matched first so a generic word
+// (e.g. "حساب") doesn't steal a column meant for another field.
+const FIELD_MATCHERS: Array<{ field: string; matchers: string[] }> = [
+  {
+    field: "key",
+    matchers: [
+      "activationkey",
+      "activation",
+      "licensekey",
+      "license",
+      "licence",
+      "serialkey",
+      "serial",
+      "productkey",
+      "redeemcode",
+      "redeem",
+      "key",
+      "code",
+      "مفتاحالتفعيل",
+      "مفتاح",
+      "كودالتفعيل",
+      "الكود",
+      "كود",
+      "الرمز",
+      "رمز",
+    ],
+  },
+  {
+    field: "password",
+    matchers: [
+      "password",
+      "passwrd",
+      "pass",
+      "pwd",
+      "الباسورد",
+      "باسورد",
+      "كلمهالسر",
+      "كلمهالمرور",
+      "كلمهسر",
+      "كلمهمرور",
+      "السر",
+    ],
+  },
+  {
+    field: "username",
+    matchers: [
+      "username",
+      "user_name",
+      "userid",
+      "user",
+      "login",
+      "account",
+      "اليوزر",
+      "يوزر",
+      "اسمالمستخدم",
+      "المستخدم",
+      "الحساب",
+    ],
+  },
+  {
+    field: "email",
+    matchers: [
+      "email",
+      "e-mail",
+      "mail",
+      "الايميل",
+      "ايميل",
+      "البريدالالكتروني",
+      "بريدالكتروني",
+      "بريد",
+      "جيميل",
+      "gmail",
+    ],
+  },
+  {
+    field: "type",
+    matchers: ["accounttype", "servicetype", "type", "نوعالحساب", "نوعالخدمه", "نوع"],
+  },
+  {
+    field: "notes",
+    matchers: [
+      "notes",
+      "note",
+      "comment",
+      "comments",
+      "remark",
+      "description",
+      "الملاحظات",
+      "ملاحظات",
+      "ملاحظه",
+      "ملحوظه",
+    ],
+  },
+  {
+    field: "status",
+    matchers: ["status", "state", "الحاله", "حاله"],
+  },
+];
+
+/** Map CSV rows → inventory records. Recognizes many English/Arabic spellings
+ * of email, username, password, activation key/code, notes, type (case- and
+ * hamza/diacritic-insensitive). Any column that doesn't match a known field
+ * is never dropped — it's folded into notes as "header: value" so no data
+ * from the file is ever lost, whatever the column names look like. */
 function mapRows(rows: string[][]): { records: any[]; statusColIdx: number } {
   if (rows.length === 0) return { records: [], statusColIdx: -1 };
-  const header = rows[0].map((h) => h.trim().toLowerCase());
-  const findIdx = (matchers: string[]) =>
-    header.findIndex((h) => matchers.some((m) => h === m || h.includes(m)));
+  const rawHeader = rows[0].map((h) => h.trim());
+  const header = rawHeader.map(normalizeHeader);
+  const used = new Set<number>();
+  const idx: Record<string, number> = {};
 
-  const iE = findIdx(["email", "mail", "ايميل"]);
-  const iU = findIdx(["username", "user", "login", "يوزر"]);
-  const iP = findIdx(["password", "pass", "pwd", "باسورد", "كلمة"]);
-  const iK = findIdx(["key", "code", "license", "licence", "serial", "product", "مفتاح", "كود"]);
-  const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
-  const iType = findIdx(["type", "account_type", "service_type", "نوع", "نوع_الحساب", "نوع_الخدمة"]);
-  const iStatus = findIdx(["status", "state", "حالة"]);
+  for (const { field, matchers } of FIELD_MATCHERS) {
+    let found = -1;
+    for (let i = 0; i < header.length; i++) {
+      if (used.has(i)) continue;
+      const h = header[i];
+      if (!h) continue;
+      if (matchers.some((m) => h === m || h.includes(m))) {
+        found = i;
+        break;
+      }
+    }
+    if (found >= 0) {
+      idx[field] = found;
+      used.add(found);
+    }
+  }
 
-  const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
-  const iFallback = iE < 0 && iU < 0 && iP < 0 && iK < 0
-    ? header.findIndex((_, i) => !used.has(i))
-    : -1;
+  // No recognized identity column at all → fall back to the first unused
+  // column as the username/key, so a completely differently-named sheet
+  // still imports something instead of silently importing nothing.
+  if (idx.key === undefined && idx.username === undefined && idx.email === undefined) {
+    const fallback = header.findIndex((_, i) => !used.has(i));
+    if (fallback >= 0) {
+      idx.username = fallback;
+      used.add(fallback);
+    }
+  }
 
-  const clean = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() || null : null);
+  const extraColIdxs = header.map((_, i) => i).filter((i) => !used.has(i));
+  const clean = (r: string[], i: number | undefined) =>
+    i !== undefined && i >= 0 ? (r[i] ?? "").trim() || null : null;
 
   const records = rows
     .slice(1)
-    .map((r, idx) => {
-      const email = clean(r, iE);
-      const pass = clean(r, iP);
-      const notes = clean(r, iN);
-      const accountType = clean(r, iType);
-      const usernameOrKey = clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback);
+    .map((r, rIdx) => {
+      const baseNotes = clean(r, idx.notes);
+      const extraParts = extraColIdxs
+        .map((i) => {
+          const label = rawHeader[i] || `col${i + 1}`;
+          const val = (r[i] ?? "").trim();
+          return val ? `${label}: ${val}` : null;
+        })
+        .filter(Boolean);
+      const extra_notes = [baseNotes, ...extraParts].filter(Boolean).join(" | ") || null;
+
       return {
-        account_email: email,
-        account_username: usernameOrKey,
-        account_password: pass,
-        account_type: accountType,
-        extra_notes: notes,
-        _srcRowIndex: idx + 2, // header is row 1
+        account_email: clean(r, idx.email),
+        account_username: clean(r, idx.username) ?? clean(r, idx.key),
+        account_password: clean(r, idx.password),
+        account_type: clean(r, idx.type),
+        extra_notes,
+        _srcRowIndex: rIdx + 2, // header is row 1
       };
     })
-    .filter((rec) =>
-      rec.account_email || rec.account_username || rec.account_password || rec.extra_notes
-    );
-  return { records, statusColIdx: iStatus };
+    .filter((rec) => rec.account_email || rec.account_username || rec.account_password || rec.extra_notes);
+  return { records, statusColIdx: idx.status ?? -1 };
 }
 
 /** Convert 0-based column index to A1 letter (0=A, 25=Z, 26=AA...). */
@@ -101,7 +245,6 @@ function colIdxToLetter(idx: number): string {
   return s;
 }
 
-
 function AdminInventory() {
   const { notify } = useApp();
   const qc = useQueryClient();
@@ -114,7 +257,9 @@ function AdminInventory() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name_ar, delivery_type, google_spreadsheet_id, product_plans(id, label_ar, label_en, duration_days, plan_variant, account_type, sheet_csv_url)")
+        .select(
+          "id, name_ar, delivery_type, google_spreadsheet_id, product_plans(id, label_ar, label_en, duration_days, plan_variant, account_type, sheet_csv_url)",
+        )
         .eq("delivery_type", "instant");
       if (error) throw error;
       return data ?? [];
@@ -206,9 +351,11 @@ function AdminInventory() {
         </button>
       </div>
       <p className="text-sm text-muted-foreground mb-6">
-        كل خدمة "تسليم فوري" لازم يكون لها مخزون حسابات جاهزة. لما العميل يشتري، النظام هيسحب أول حساب متاح تلقائيًا ويثبّت الطلب "تم التسليم".
+        كل خدمة "تسليم فوري" لازم يكون لها مخزون حسابات جاهزة. لما العميل يشتري، النظام هيسحب أول حساب متاح تلقائيًا
+        ويثبّت الطلب "تم التسليم".
         <br />
-        <b>طرق الرفع:</b> ملف CSV من عندك، أو لينك Google Sheets منشور على شكل CSV (File → Share → Publish to web → CSV).
+        <b>طرق الرفع:</b> ملف CSV من عندك، أو لينك Google Sheets منشور على شكل CSV (File → Share → Publish to web →
+        CSV).
       </p>
 
       {plans.data?.length === 0 && (
@@ -227,9 +374,6 @@ function AdminInventory() {
         />
       </div>
 
-
-
-
       <div className="space-y-4">
         {plans.data?.map((p: any) => (
           <div key={p.id} className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -247,7 +391,6 @@ function AdminInventory() {
               }}
             />
             <div className="p-4 space-y-3">
-
               {(p.product_plans ?? []).map((pl: any) => {
                 const c = invStats.data?.[pl.id] ?? { available: 0, delivered: 0 };
                 return (
@@ -293,11 +436,15 @@ function AdminInventory() {
                       </button>
                     </div>
                     {selected === pl.id && (
-                      <PlanInventoryPanel planId={pl.id} initialSheetUrl={pl.sheet_csv_url ?? ""} onChange={() => {
-                        qc.invalidateQueries({ queryKey: ["inventory-counts"] });
-                        qc.invalidateQueries({ queryKey: ["instant-plans"] });
-                        notify("تم التحديث", "success");
-                      }} />
+                      <PlanInventoryPanel
+                        planId={pl.id}
+                        initialSheetUrl={pl.sheet_csv_url ?? ""}
+                        onChange={() => {
+                          qc.invalidateQueries({ queryKey: ["inventory-counts"] });
+                          qc.invalidateQueries({ queryKey: ["instant-plans"] });
+                          notify("تم التحديث", "success");
+                        }}
+                      />
                     )}
                   </div>
                 );
@@ -310,7 +457,15 @@ function AdminInventory() {
   );
 }
 
-function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: string; initialSheetUrl: string; onChange: () => void }) {
+function PlanInventoryPanel({
+  planId,
+  initialSheetUrl,
+  onChange,
+}: {
+  planId: string;
+  initialSheetUrl: string;
+  onChange: () => void;
+}) {
   const { notify, confirm, lang } = useApp();
   const qc = useQueryClient();
   const [sheetUrl, setSheetUrl] = useState(initialSheetUrl);
@@ -330,7 +485,10 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
   });
 
   const insertRows = async (records: any[], source: string) => {
-    if (records.length === 0) { notify(lang === "ar" ? "مفيش صفوف صالحة في الملف" : "No valid rows in the file", "error"); return; }
+    if (records.length === 0) {
+      notify(lang === "ar" ? "مفيش صفوف صالحة في الملف" : "No valid rows in the file", "error");
+      return;
+    }
     setBusy(true);
     try {
       const batchId = (crypto as any).randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
@@ -340,7 +498,14 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       });
       const { error } = await supabase.from("account_inventory").insert(payload);
       if (error) throw error;
-      const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
+      const available =
+        (
+          await supabase
+            .from("account_inventory")
+            .select("id", { count: "exact", head: true })
+            .eq("plan_id", planId)
+            .eq("status", "available")
+        ).count ?? 0;
       await supabase.from("product_plans").update({ stock: available }).eq("id", planId);
       notify(`تمت إضافة ${records.length} حساب`, "success");
       qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
@@ -391,7 +556,9 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
       const text = await res.text();
       if (/^\s*<(!doctype|html)/i.test(text)) {
-        throw new Error("اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link ، Viewer، أو File → Share → Publish to web → CSV.");
+        throw new Error(
+          "اللينك بيرجّع HTML مش CSV. خلي الشيت Shared: Anyone with link ، Viewer، أو File → Share → Publish to web → CSV.",
+        );
       }
       const { records, statusColIdx } = mapRows(parseCsv(text));
 
@@ -426,18 +593,31 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
       await insertRows(enriched, "sheet");
 
       if (!canSync) {
-        notify("تم الاستيراد بدون مزامنة تلقائية. أضف عمود اسمه 'status' في الشيت عشان يتحدّث تلقائيًا لما يتباع.", "info");
+        notify(
+          "تم الاستيراد بدون مزامنة تلقائية. أضف عمود اسمه 'status' في الشيت عشان يتحدّث تلقائيًا لما يتباع.",
+          "info",
+        );
       }
     } catch (e: any) {
       console.error("sheet import failed", e);
-      notify((lang === "ar" ? "تعذر قراءة الشيت: " : "Failed to read the sheet: ") + friendlyErrorMessage(e, lang), "error");
+      notify(
+        (lang === "ar" ? "تعذر قراءة الشيت: " : "Failed to read the sheet: ") + friendlyErrorMessage(e, lang),
+        "error",
+      );
     } finally {
       setBusy(false);
     }
   };
 
   const syncStock = async () => {
-    const available = (await supabase.from("account_inventory").select("id", { count: "exact", head: true }).eq("plan_id", planId).eq("status", "available")).count ?? 0;
+    const available =
+      (
+        await supabase
+          .from("account_inventory")
+          .select("id", { count: "exact", head: true })
+          .eq("plan_id", planId)
+          .eq("status", "available")
+      ).count ?? 0;
     await supabase.from("product_plans").update({ stock: available }).eq("id", planId);
   };
 
@@ -459,10 +639,20 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         .select("import_batch_id, source, created_at, status")
         .eq("plan_id", planId)
         .not("import_batch_id", "is", null);
-      const map = new Map<string, { id: string; source: string; created_at: string; total: number; available: number; delivered: number }>();
+      const map = new Map<
+        string,
+        { id: string; source: string; created_at: string; total: number; available: number; delivered: number }
+      >();
       (data ?? []).forEach((r: any) => {
         const k = r.import_batch_id as string;
-        const cur = map.get(k) ?? { id: k, source: r.source, created_at: r.created_at, total: 0, available: 0, delivered: 0 };
+        const cur = map.get(k) ?? {
+          id: k,
+          source: r.source,
+          created_at: r.created_at,
+          total: 0,
+          available: 0,
+          delivered: 0,
+        };
         cur.total++;
         if (r.status === "available") cur.available++;
         else if (r.status === "delivered") cur.delivered++;
@@ -486,15 +676,16 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
     let q = supabase.from("account_inventory").delete().eq("plan_id", planId).eq("import_batch_id", batchId);
     if (opts.onlyAvailable) q = q.eq("status", "available");
     const { error } = await q;
-    if (error) { showError(error, notify, lang); return; }
+    if (error) {
+      showError(error, notify, lang);
+      return;
+    }
     await syncStock();
     notify("تم حذف عملية الاسترداد", "success");
     qc.invalidateQueries({ queryKey: ["inventory-rows", planId] });
     qc.invalidateQueries({ queryKey: ["inventory-batches", planId] });
     onChange();
   };
-
-
 
   return (
     <div className="mt-3 pt-3 border-t border-border space-y-4">
@@ -534,7 +725,8 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
               onClick={async () => {
                 const ok = await confirm({
                   title: "إلغاء الاسترداد من الشيت",
-                  message: "هيتم مسح اللينك وحذف كل الحسابات المتاحة اللي جت من الشيت ده. (الحسابات اللي اتسلمت للعملاء هتفضل محفوظة). متأكد؟",
+                  message:
+                    "هيتم مسح اللينك وحذف كل الحسابات المتاحة اللي جت من الشيت ده. (الحسابات اللي اتسلمت للعملاء هتفضل محفوظة). متأكد؟",
                   tone: "danger",
                   confirmLabel: "ألغِ الاسترداد",
                 });
@@ -580,8 +772,7 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
                   <div className="font-mono truncate">{new Date(b.created_at).toLocaleString("ar-EG")}</div>
                   <div className="text-muted-foreground text-[11px]">
                     {b.source === "sheet" ? "Google Sheet" : "CSV"} · {b.total} حساب ·
-                    <span className="text-success"> متاح {b.available}</span> ·
-                    <span> مسلَّم {b.delivered}</span>
+                    <span className="text-success"> متاح {b.available}</span> ·<span> مسلَّم {b.delivered}</span>
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0">
@@ -608,8 +799,6 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
         </div>
       )}
 
-
-
       {(() => {
         const COLS: { key: string; label: string; mask?: boolean }[] = [
           { key: "account_email", label: "Email" },
@@ -619,14 +808,18 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
           { key: "extra_notes", label: "Notes" },
         ];
         const visible = COLS.filter((c) =>
-          (rows.data ?? []).some((r: any) => r[c.key] != null && String(r[c.key]).trim() !== "")
+          (rows.data ?? []).some((r: any) => r[c.key] != null && String(r[c.key]).trim() !== ""),
         );
 
         // إضافة تفاصيل الخطة إذا كانت متاحة
-        const hasPlanDetails = (rows.data ?? []).some((r: any) =>
-          r.product_plans?.plan_name_ar || r.product_plans?.plan_name_en ||
-          r.product_plans?.plan_duration_days || r.product_plans?.plan_type ||
-          r.product_plans?.account_type || r.account_type
+        const hasPlanDetails = (rows.data ?? []).some(
+          (r: any) =>
+            r.product_plans?.plan_name_ar ||
+            r.product_plans?.plan_name_en ||
+            r.product_plans?.plan_duration_days ||
+            r.product_plans?.plan_type ||
+            r.product_plans?.account_type ||
+            r.account_type,
         );
 
         const colSpan = visible.length + 2 + (hasPlanDetails ? 1 : 0);
@@ -636,11 +829,11 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
               <thead className="bg-muted sticky top-0">
                 <tr className="text-start">
                   {visible.map((c) => (
-                    <th key={c.key} className="p-2 text-start">{c.label}</th>
+                    <th key={c.key} className="p-2 text-start">
+                      {c.label}
+                    </th>
                   ))}
-                  {hasPlanDetails && (
-                    <th className="p-2 text-start">تفاصيل الخطة</th>
-                  )}
+                  {hasPlanDetails && <th className="p-2 text-start">تفاصيل الخطة</th>}
                   <th className="p-2 text-start">Status</th>
                   <th className="p-2"></th>
                 </tr>
@@ -662,41 +855,42 @@ function PlanInventoryPanel({ planId, initialSheetUrl, onChange }: { planId: str
                           <div className="text-muted-foreground">{r.product_plans.plan_name_en}</div>
                         )}
                         {r.product_plans?.plan_duration_days && (
-                          <div className="text-muted-foreground">
-                            مدة: {r.product_plans.plan_duration_days} يوم
-                          </div>
+                          <div className="text-muted-foreground">مدة: {r.product_plans.plan_duration_days} يوم</div>
                         )}
                         {r.product_plans?.plan_type && (
-                          <div className="text-muted-foreground">
-                            نوع الخطة: {r.product_plans.plan_type}
-                          </div>
+                          <div className="text-muted-foreground">نوع الخطة: {r.product_plans.plan_type}</div>
                         )}
                         {r.product_plans?.account_type && (
-                          <div className="text-muted-foreground">
-                            نوع الحساب: {r.product_plans.account_type}
-                          </div>
+                          <div className="text-muted-foreground">نوع الحساب: {r.product_plans.account_type}</div>
                         )}
                       </td>
                     )}
                     <td className="p-2">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${r.status === "available" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${r.status === "available" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}
+                      >
                         {r.status === "delivered" ? "تم البيع" : r.status}
                       </span>
                     </td>
                     <td className="p-2 text-end">
-                      <button onClick={() => delRow(r.id)} className="text-destructive hover:underline">مسح</button>
+                      <button onClick={() => delRow(r.id)} className="text-destructive hover:underline">
+                        مسح
+                      </button>
                     </td>
                   </tr>
                 ))}
                 {!rows.data?.length && (
-                  <tr><td colSpan={colSpan} className="p-4 text-center text-muted-foreground">مفيش حسابات</td></tr>
+                  <tr>
+                    <td colSpan={colSpan} className="p-4 text-center text-muted-foreground">
+                      مفيش حسابات
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           </div>
         );
       })()}
-
     </div>
   );
 }
@@ -780,7 +974,8 @@ function ProductSheetPanel({
       {open && (
         <div className="p-4 space-y-3 text-sm">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            الصق لينك الملف. النظام هيدور على tab اسمه مطابق لاسم كل خطة (زي "1 شهر", "3 شهور") ويستورد الحسابات من كل tab للخطة اللي بتخصها. كل tab لازم يكون فيه عمود اسمه <b>status</b> علشان المزامنة التلقائية تشتغل.
+            الصق لينك الملف. النظام هيدور على tab اسمه مطابق لاسم كل خطة (زي "1 شهر", "3 شهور") ويستورد الحسابات من كل
+            tab للخطة اللي بتخصها. كل tab لازم يكون فيه عمود اسمه <b>status</b> علشان المزامنة التلقائية تشتغل.
           </p>
           <div className="flex gap-2 flex-wrap">
             <input
@@ -825,9 +1020,7 @@ function ProductSheetPanel({
                                 setPreview({
                                   ...preview,
                                   matches: preview.matches.map((x) =>
-                                    x.plan_id === m.plan_id
-                                      ? { ...x, tab_title: e.target.value || null }
-                                      : x,
+                                    x.plan_id === m.plan_id ? { ...x, tab_title: e.target.value || null } : x,
                                   ),
                                 });
                               }}
@@ -863,7 +1056,11 @@ function ProductSheetPanel({
 }
 
 function DuplicatesAlert({
-  data, isFetching, isLoading, error, onRefresh,
+  data,
+  isFetching,
+  isLoading,
+  error,
+  onRefresh,
 }: {
   data: DuplicatesResult | undefined;
   isFetching: boolean;
@@ -924,7 +1121,8 @@ function DuplicatesAlert({
             <div>
               <h3 className="text-base sm:text-lg font-extrabold text-brand">مفيش تكرار — كل حاجه نضيفة</h3>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                اتفحص <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b> فايل — <b>{data.totalCodes}</b> كود، مفيش أي تكرار.
+                اتفحص <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b> فايل — <b>{data.totalCodes}</b> كود،
+                مفيش أي تكرار.
               </p>
             </div>
           </div>
@@ -955,7 +1153,8 @@ function DuplicatesAlert({
               تنبيه: بيانات مكررة في المخزون
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              في <b>{data.duplicateCount}</b> كود مكرر بين <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b> فايل — راجع الأكواد التالية عشان تمنع التسليم المزدوج.
+              في <b>{data.duplicateCount}</b> كود مكرر بين <b>{data.scannedTabs}</b> تاب في <b>{data.scannedFiles}</b>{" "}
+              فايل — راجع الأكواد التالية عشان تمنع التسليم المزدوج.
             </p>
           </div>
         </div>
@@ -972,7 +1171,10 @@ function DuplicatesAlert({
         {shown.map((g) => (
           <div key={g.code} className="rounded-xl border border-amber-500/30 bg-background/60 p-3">
             <div className="flex items-center gap-2 flex-wrap min-w-0">
-              <code className="text-xs sm:text-sm font-mono bg-muted px-2 py-1 rounded-md truncate max-w-[240px] sm:max-w-[420px]" dir="ltr">
+              <code
+                className="text-xs sm:text-sm font-mono bg-muted px-2 py-1 rounded-md truncate max-w-[240px] sm:max-w-[420px]"
+                dir="ltr"
+              >
                 {g.code}
               </code>
               <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
@@ -1019,5 +1221,3 @@ function DuplicatesAlert({
     </div>
   );
 }
-
-
