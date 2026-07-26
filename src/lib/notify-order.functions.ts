@@ -37,7 +37,16 @@ async function getAdminEmails(supabaseAdmin: any): Promise<string[]> {
       .filter((u: any) => adminIds.has(u.id) && typeof u.email === "string" && u.email.includes("@"))
       .map((u: any) => u.email as string);
 
-    const unique = Array.from(new Set(emails));
+    // Dedupe case-insensitively (mailboxes are case-insensitive) while keeping
+    // the first-seen casing, so e.g. Admin@x.com and admin@x.com don't both fire.
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const email of emails) {
+      const key = email.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(email);
+    }
     if (unique.length > 0) return unique;
     throw new Error("no admin emails resolved from auth users");
   } catch (err) {
