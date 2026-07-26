@@ -59,6 +59,26 @@ async function getFallbackAdminEmail(supabaseAdmin: any): Promise<string> {
   return "bidotito1@gmail.com";
 }
 
+// Atomically claims the right to send a given (order, kind) notification exactly once.
+// Backed by notification_locks' primary key: the first caller's insert succeeds and
+// gets `true`; any later caller for the same order+kind hits a unique-violation and
+// gets `false`, so duplicate/parallel send attempts (e.g. the guest-checkout "Direct"
+// fallback firing after the primary call already succeeded) become no-ops instead of
+// duplicate emails. Intentionally NOT used for the admin "resend" action, which must
+// always be allowed to re-send on purpose.
+async function claimNotification(supabaseAdmin: any, orderId: string, kind: string): Promise<boolean> {
+  const { error } = await supabaseAdmin.from("notification_locks").insert({ order_id: orderId, kind });
+  if (!error) return true;
+  if ((error as any).code === "23505") {
+    console.log(`[notify-order] skipping duplicate '${kind}' notification for order ${orderId}`);
+    return false;
+  }
+  // Unexpected DB error: fail open (still send) so a lock-table hiccup never
+  // silently swallows a real notification, but log it loudly.
+  console.error("[notify-order] claimNotification error, sending anyway:", error);
+  return true;
+}
+
 // Sends the 'new-order' template to every current admin. Uses Promise.allSettled
 // so one bad/unreachable admin mailbox doesn't stop the others from being notified.
 async function sendNewOrderEmailToAdmins(
@@ -68,6 +88,9 @@ async function sendNewOrderEmailToAdmins(
   origin: string,
   proofUrl: string | null,
 ) {
+  const claimed = await claimNotification(supabaseAdmin, order.id, "new-order");
+  if (!claimed) return;
+
   const adminEmails = await getAdminEmails(supabaseAdmin);
 
   const templateData = {
@@ -180,6 +203,9 @@ export const notifyCustomerDelivery = createServerFn({ method: "POST" })
       }
     }
     if (accounts.length === 0) return { ok: false, reason: "no_delivered_accounts" };
+
+    const claimed = await claimNotification(supabaseAdmin, order.id, "delivery");
+    if (!claimed) return { ok: true, count: accounts.length, skipped: true };
 
     const lang = await resolveCustomerLang(supabaseAdmin, order.customer_email);
 
@@ -344,6 +370,9 @@ export const notifyCustomerDeliveryDirect = createServerFn({ method: "POST" })
       }
     }
     if (accounts.length === 0) return { ok: false, reason: "no_delivered_accounts" };
+
+    const claimed = await claimNotification(supabaseAdmin, order.id, "delivery");
+    if (!claimed) return { ok: true, count: accounts.length, skipped: true };
 
     const lang = await resolveCustomerLang(supabaseAdmin, order.customer_email);
 
