@@ -31,7 +31,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { filterName, filterPhone } from "@/lib/input-filters";
 
-export const Route = createFileRoute("/stock")({
+export const Route = createFileRoute("/shop")({
   component: StockPage,
 });
 

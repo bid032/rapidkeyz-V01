@@ -1,8 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-
-
 const GATEWAY = "https://sheets.googleapis.com/v4";
 
 /** fetch with Google service-account auth (no Lovable connector). */
@@ -12,11 +10,11 @@ async function gfetch(url: string, init: RequestInit = {}) {
 }
 const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
 const STOCK_COLUMNS = {
-  STATUS: 5,       // F
-  ADDED_ON: 6,     // G
-  STAFF_NAME: 7,   // H
-  ORDER_ID: 8,     // I
-  ISSUE_TIME: 9,   // J
+  STATUS: 5, // F
+  ADDED_ON: 6, // G
+  STAFF_NAME: 7, // H
+  ORDER_ID: 8, // I
+  ISSUE_TIME: 9, // J
   CUSTOMER_NAME: 10, // K
   OPERATION_TIME: 13, // N - New column for precise operation timestamp
 } as const;
@@ -32,7 +30,9 @@ async function getSpreadsheetId(): Promise<string> {
     const { findSheetIntegration } = await import("@/lib/google-sheets-manager.server");
     const it = await findSheetIntegration("stock");
     if (it?.spreadsheet_id) return it.spreadsheet_id;
-  } catch { /* fall through to legacy */ }
+  } catch {
+    /* fall through to legacy */
+  }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
   const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
@@ -51,7 +51,9 @@ async function getAllSpreadsheetIds(): Promise<string[]> {
         ids.push(r.spreadsheet_id);
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // 2) Legacy site_settings.stock_sheet
   const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
@@ -71,8 +73,6 @@ async function getAllSpreadsheetIds(): Promise<string[]> {
   }
   return ids;
 }
-
-
 
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
   const res = await gfetch(
@@ -102,11 +102,15 @@ async function sheetsAppend(spreadsheetId: string, range: string, values: (strin
 }
 
 function norm(v: unknown) {
-  return String(v ?? "").trim().toUpperCase();
+  return String(v ?? "")
+    .trim()
+    .toUpperCase();
 }
 function toBool(v: unknown) {
   if (v === true) return true;
-  const t = String(v ?? "").trim().toLowerCase();
+  const t = String(v ?? "")
+    .trim()
+    .toLowerCase();
   return t === "true" || t === "1" || t === "yes" || t === "نعم";
 }
 
@@ -130,7 +134,7 @@ export type StockAppData = {
 
 type CacheEntry = { at: number; data: StockAppData };
 const APP_DATA_CACHE = new Map<string, CacheEntry>();
-const APP_DATA_TTL_MS = 45_000;
+const APP_DATA_TTL_MS = 1000;
 
 export const getStockAppData = createServerFn({ method: "GET" }).handler(async (): Promise<StockAppData> => {
   const { requireStockStaff } = await import("@/lib/stock-auth.server");
@@ -189,7 +193,7 @@ export const getStockAppData = createServerFn({ method: "GET" }).handler(async (
     staffName: session.staffName,
     totalAvailable,
     lowStockCount,
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: getEgyptISO(),
   };
   APP_DATA_CACHE.set(cacheKey, { at: Date.now(), data: result });
   return result;
@@ -223,11 +227,49 @@ function createOrderId() {
   return `ORD-${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
 }
 
+function getEgyptDate() {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(new Date());
+
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
+}
+
+function getEgyptISO() {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(new Date());
+
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")}`;
+}
+
 export const issueStock = createServerFn({ method: "POST" })
   .inputValidator((d: { customerName: string; productName: string; qty: number; customerWhatsapp?: string }) => d)
   .handler(async ({ data }): Promise<IssueResult> => {
     const { requireStockStaff } = await import("@/lib/stock-auth.server");
-  const session = await requireStockStaff();
+    const session = await requireStockStaff();
     const staffName = session.staffName;
     const customerName = (data.customerName ?? "").trim();
     const productName = (data.productName ?? "").trim();
@@ -278,10 +320,8 @@ export const issueStock = createServerFn({ method: "POST" })
     if (picks.length < qty) throw new Error("المتاح أقل من الكمية المطلوبة");
 
     const orderId = createOrderId();
-    const now = new Date();
-    const nowStr = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())} ${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
-
-    const operationTime = new Date().toISOString();
+    const nowStr = getEgyptDate();
+    const operationTime = getEgyptISO();
     const updates = picks.map((p) => ({
       range: `${TABS.STOCK}!F${p.sheetRow}:N${p.sheetRow}`,
       values: [["ISSUED", p.addedOnRaw, staffName, orderId, nowStr, customerName, "", "", operationTime]],
@@ -301,11 +341,25 @@ export const issueStock = createServerFn({ method: "POST" })
     await sheetsBatchUpdate(spreadsheetId, updates);
     APP_DATA_CACHE.clear();
 
-    const deliveredText = picks.map((p) => p.code).filter(Boolean).join("\n\n");
+    const deliveredText = picks
+      .map((p) => p.code)
+      .filter(Boolean)
+      .join("\n\n");
     // Orders: append base row, then patch Customer_Num column if it exists
-    await sheetsAppend(spreadsheetId, `${TABS.ORDERS}!A1`, [[
-      orderId, nowStr, staffName, customerName, productName, qty, deliveredText, productNotes, "DONE", customerWhatsapp,
-    ]]);
+    await sheetsAppend(spreadsheetId, `${TABS.ORDERS}!A1`, [
+      [
+        orderId,
+        nowStr,
+        staffName,
+        customerName,
+        productName,
+        qty,
+        deliveredText,
+        productNotes,
+        "DONE",
+        customerWhatsapp,
+      ],
+    ]);
     if (customerWhatsapp) {
       try {
         const ordersHeader = (await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:Z1`))[0] ?? [];
@@ -314,16 +368,23 @@ export const issueStock = createServerFn({ method: "POST" })
           const ordersAll = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:A20000`);
           let targetRow = -1;
           for (let i = ordersAll.length - 1; i >= 1; i--) {
-            if ((ordersAll[i][0] ?? "").trim() === orderId) { targetRow = i + 1; break; }
+            if ((ordersAll[i][0] ?? "").trim() === orderId) {
+              targetRow = i + 1;
+              break;
+            }
           }
           if (targetRow > 0) {
-            await sheetsBatchUpdate(spreadsheetId, [{
-              range: `${TABS.ORDERS}!${colToLetter(ordersCustNumIdx + 1)}${targetRow}`,
-              values: [[customerWhatsapp]],
-            }]);
+            await sheetsBatchUpdate(spreadsheetId, [
+              {
+                range: `${TABS.ORDERS}!${colToLetter(ordersCustNumIdx + 1)}${targetRow}`,
+                values: [[customerWhatsapp]],
+              },
+            ]);
           }
         }
-      } catch { /* non-fatal */ }
+      } catch {
+        /* non-fatal */
+      }
     }
 
     let availableAfter = 0;
@@ -375,7 +436,7 @@ export const revertIssue = createServerFn({ method: "POST" })
     }
     if (!reverts.length) throw new Error("لا توجد أكواد مصروفة بهذا الرقم أو تم إرجاعها بالفعل");
 
-    const operationTime = new Date().toISOString();
+    const operationTime = getEgyptISO();
     const updates = reverts.map((r) => ({
       range: `${TABS.STOCK}!F${r.sheetRow}:N${r.sheetRow}`,
       values: [["AVAILABLE", r.addedOnRaw, "", "", "", "", "", "", operationTime]],
@@ -386,9 +447,7 @@ export const revertIssue = createServerFn({ method: "POST" })
     const ordersRaw = await sheetsGet(spreadsheetId, `${TABS.ORDERS}!A1:J20000`);
     for (let i = 1; i < ordersRaw.length; i++) {
       if ((ordersRaw[i][0] ?? "").trim() === orderId) {
-        await sheetsBatchUpdate(spreadsheetId, [
-          { range: `${TABS.ORDERS}!I${i + 1}`, values: [["REVERTED"]] },
-        ]);
+        await sheetsBatchUpdate(spreadsheetId, [{ range: `${TABS.ORDERS}!I${i + 1}`, values: [["REVERTED"]] }]);
         break;
       }
     }
@@ -401,20 +460,18 @@ export const revertIssue = createServerFn({ method: "POST" })
 // ============================================================
 
 async function listSheetTitles(spreadsheetId: string): Promise<string[]> {
-  const res = await gfetch(
-    `${GATEWAY}/spreadsheets/${spreadsheetId}?fields=sheets.properties(title)`,
-    { headers: authHeaders() },
-  );
+  const res = await gfetch(`${GATEWAY}/spreadsheets/${spreadsheetId}?fields=sheets.properties(title)`, {
+    headers: authHeaders(),
+  });
   if (!res.ok) throw new Error(`Sheets meta ${res.status}: ${await res.text()}`);
   const j = (await res.json()) as { sheets?: Array<{ properties?: { title?: string } }> };
   return (j.sheets ?? []).map((s) => s.properties?.title ?? "").filter(Boolean);
 }
 
 async function getSpreadsheetTitle(spreadsheetId: string): Promise<string> {
-  const res = await gfetch(
-    `${GATEWAY}/spreadsheets/${spreadsheetId}?fields=properties.title`,
-    { headers: authHeaders() },
-  );
+  const res = await gfetch(`${GATEWAY}/spreadsheets/${spreadsheetId}?fields=properties.title`, {
+    headers: authHeaders(),
+  });
   if (!res.ok) return spreadsheetId.slice(0, 8);
   const j = (await res.json()) as { properties?: { title?: string } };
   return j.properties?.title ?? spreadsheetId.slice(0, 8);
@@ -431,8 +488,8 @@ export type DuplicateGroup = {
   code: string;
   count: number;
   locations: DuplicateLocation[];
-  crossTab: boolean;   // appears in more than one tab or file
-  crossFile: boolean;  // appears in more than one spreadsheet file
+  crossTab: boolean; // appears in more than one tab or file
+  crossFile: boolean; // appears in more than one spreadsheet file
 };
 
 export type DuplicatesResult = {
@@ -463,10 +520,7 @@ async function scanDuplicates(force = false): Promise<DuplicatesResult> {
     let titles: string[] = [];
     let bookTitle = spreadsheetId.slice(0, 8);
     try {
-      [titles, bookTitle] = await Promise.all([
-        listSheetTitles(spreadsheetId),
-        getSpreadsheetTitle(spreadsheetId),
-      ]);
+      [titles, bookTitle] = await Promise.all([listSheetTitles(spreadsheetId), getSpreadsheetTitle(spreadsheetId)]);
     } catch {
       continue;
     }
@@ -490,15 +544,49 @@ async function scanDuplicates(force = false): Promise<DuplicatesResult> {
       // other columns (product name, notes, status, dates, staff, order id,
       // customer info, etc.) so unrelated repeats don't get flagged.
       const KEY_HEADERS = [
-        "code", "codes", "activation", "activation code", "activation key",
-        "key", "keys", "license", "licence", "license key", "serial", "serial number",
-        "email", "e-mail", "mail", "gmail",
-        "username", "user name", "user", "login", "account",
-        "password", "pass", "pwd",
-        "كود", "الكود", "مفتاح", "مفتاح التفعيل", "التفعيل", "سيريال",
-        "ايميل", "إيميل", "البريد", "بريد", "بريد الكتروني",
-        "يوزر", "يوزرنيم", "اسم المستخدم", "المستخدم",
-        "باسورد", "الباسورد", "كلمة السر", "كلمة المرور",
+        "code",
+        "codes",
+        "activation",
+        "activation code",
+        "activation key",
+        "key",
+        "keys",
+        "license",
+        "licence",
+        "license key",
+        "serial",
+        "serial number",
+        "email",
+        "e-mail",
+        "mail",
+        "gmail",
+        "username",
+        "user name",
+        "user",
+        "login",
+        "account",
+        "password",
+        "pass",
+        "pwd",
+        "كود",
+        "الكود",
+        "مفتاح",
+        "مفتاح التفعيل",
+        "التفعيل",
+        "سيريال",
+        "ايميل",
+        "إيميل",
+        "البريد",
+        "بريد",
+        "بريد الكتروني",
+        "يوزر",
+        "يوزرنيم",
+        "اسم المستخدم",
+        "المستخدم",
+        "باسورد",
+        "الباسورد",
+        "كلمة السر",
+        "كلمة المرور",
       ];
       const keyCols: number[] = [];
       header.forEach((h, idx) => {
@@ -508,7 +596,6 @@ async function scanDuplicates(force = false): Promise<DuplicatesResult> {
         if (KEY_HEADERS.some((k) => h.includes(k))) keyCols.push(idx);
       });
       if (keyCols.length === 0) continue;
-
 
       // Track duplicates within the same tab+column (row indices) so we
       // don't double-count when the same code repeats in the same cell path.
@@ -561,12 +648,10 @@ async function scanDuplicates(force = false): Promise<DuplicatesResult> {
   return result;
 }
 
-export const getStockDuplicates = createServerFn({ method: "GET" }).handler(
-  async (): Promise<DuplicatesResult> => {
-    await (await import("@/lib/stock-auth.server")).requireStockStaff();
-    return scanDuplicates();
-  },
-);
+export const getStockDuplicates = createServerFn({ method: "GET" }).handler(async (): Promise<DuplicatesResult> => {
+  await (await import("@/lib/stock-auth.server")).requireStockStaff();
+  return scanDuplicates();
+});
 
 export const getInventoryDuplicatesAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -583,7 +668,6 @@ export const getInventoryDuplicatesAdmin = createServerFn({ method: "POST" })
     }
     return scanDuplicates(!!data?.force);
   });
-
 
 // Back-compat
 
