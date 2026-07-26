@@ -7,9 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 import { showError } from "@/lib/error-handler";
 import { notifyItemDelivered } from "@/lib/notify-order.functions";
+import { deliverItemManual, deliverItemFromStock } from "@/lib/deliver-order.functions";
+
 import { markInventorySoldOnSheet } from "@/lib/sheet-sync.functions";
 import { dialForCountry } from "@/lib/arab-countries";
 import { Input } from "@/components/ui/input";
+import { deliveredList } from "@/lib/delivered";
 
 // Build a wa.me-safe number: prepend country dial code when the phone was
 // entered in local form (e.g. "010..." or "10..."). Handles cases where the
@@ -125,7 +128,7 @@ function AdminOrders() {
       let minDays = Infinity;
       for (const it of o.order_items ?? []) {
         const dur = Number(it.product_plans?.duration_days ?? 0);
-        const dAcc = it.delivered_accounts?.[0];
+        const dAcc = deliveredList(it.delivered_accounts)[0];
         // Only count items that were actually delivered to the customer
         if (!dAcc) continue;
         const startAt = new Date(dAcc.delivered_at).getTime();
@@ -332,92 +335,64 @@ function AdminOrders() {
     onError: (e) => showError(e, notify, lang),
   });
 
+  const translateDeliverError = (e: any) => {
+    const msg = String(e?.message ?? "");
+    if (msg.includes("ALREADY_DELIVERED"))
+      return new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
+    if (msg.includes("NO_INVENTORY"))
+      return new Error(lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually");
+    return e;
+  };
+
+  // Both delivery paths run entirely server-side (service role), so writing the
+  // credentials, flipping the item status and emailing the customer can't be
+  // blocked by browser-side table grants / RLS.
   const deliver = useMutation({
     mutationFn: async ({ orderItemId, creds }: { orderItemId: string; creds: any }) => {
-      // نفس فحص منع التكرار المستخدم في التسليم الفوري، عشان الضغط المزدوج
-      // أو إعادة المحاولة متأخرًا مايعملش تسليم/إيميل تاني لنفس الطلب.
-      const { data: orderItem, error: checkError } = await supabase
-        .from("order_items")
-        .select("status")
-        .eq("id", orderItemId)
-        .maybeSingle();
-      if (checkError) throw checkError;
-      if (orderItem?.status === "delivered") {
-        throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
-      }
-
-      const { error } = await supabase.from("delivered_accounts").insert({
-        order_item_id: orderItemId,
-        ...creds,
-      });
-      if (error) throw error;
-      // Flip the per-item status. Order-level status auto-flips via DB trigger.
-      const { error: sErr } = await supabase
-        .from("order_items")
-        .update({ status: "delivered" as any })
-        .eq("id", orderItemId);
-      if (sErr) throw sErr;
-      // Fire-and-await customer email with the delivered credentials.
       try {
-        await notifyItemDelivered({ data: { orderItemId } });
+        return await deliverItemManual({ data: { orderItemId, creds } });
       } catch (e) {
-        console.error("notifyItemDelivered failed", e);
-        notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
+        throw translateDeliverError(e);
       }
     },
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
-      notify(lang === "ar" ? "تم التسليم وإرسال الإيميل" : "Delivered & emailed", "success");
+      if (res?.emailSent) {
+        notify(lang === "ar" ? "تم التسليم وإرسال الإيميل" : "Delivered & emailed", "success");
+      } else {
+        notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
+      }
     },
     onError: (e) => showError(e, notify, lang),
   });
 
   const deliverInstant = useMutation({
     mutationFn: async ({ orderItemId, planId }: { orderItemId: string; planId: string }) => {
-      // التحقق من حالة الطلب قبل محاولة التسليم لمنع التكرار
-      const { data: orderItem, error: checkError } = await supabase
-        .from("order_items")
-        .select("status")
-        .eq("id", orderItemId)
-        .maybeSingle();
-
-      if (checkError) throw checkError;
-      if (orderItem?.status === "delivered") {
-        throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
-      }
-
-      const { data: claimedId, error } = await supabase.rpc("claim_inventory_for_item", {
-        _order_item_id: orderItemId,
-        _plan_id: planId,
-      });
-      if (error) throw error;
-      if (!claimedId) {
-        throw new Error(
-          lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually",
-        );
-      }
-      const { error: sErr } = await supabase
-        .from("order_items")
-        .update({ status: "delivered" as any })
-        .eq("id", orderItemId);
-      if (sErr) throw sErr;
+      let res: any;
       try {
-        await markInventorySoldOnSheet({ data: { inventoryId: claimedId as string } });
+        res = await deliverItemFromStock({ data: { orderItemId, planId } });
       } catch (e) {
-        console.error("markInventorySoldOnSheet failed", e);
+        throw translateDeliverError(e);
       }
-      try {
-        await notifyItemDelivered({ data: { orderItemId } });
-      } catch (e) {
-        console.error("notifyItemDelivered failed", e);
+      if (res?.inventoryId) {
+        try {
+          await markInventorySoldOnSheet({ data: { inventoryId: res.inventoryId as string } });
+        } catch (e) {
+          console.error("markInventorySoldOnSheet failed", e);
+        }
+      }
+      return res;
+    },
+    onSuccess: (res: any) => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      if (res?.emailSent) {
+        notify(lang === "ar" ? "تم التسليم الفوري وإرسال الإيميل" : "Delivered from inventory & emailed", "success");
+      } else {
         notify(lang === "ar" ? "تم التسليم لكن الإيميل فشل" : "Delivered but email failed", "error");
       }
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-orders"] });
-      notify(lang === "ar" ? "تم التسليم الفوري من المخزون" : "Delivered from inventory", "success");
-    },
     onError: (e) => showError(e, notify, lang),
+
   });
 
   const deleteOrder = useMutation({
@@ -999,8 +974,10 @@ function OrderItemRow({
   const [deliverInstantBusy, setDeliverInstantBusy] = useState(false);
   const [deliverBusy, setDeliverBusy] = useState(false);
   const itemStatus: "pending" | "delivered" | "refunded" =
-    item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
+    item.status ?? (deliveredList(item.delivered_accounts).length > 0 ? "delivered" : "pending");
   const delivered = itemStatus === "delivered";
+  const deliveredAccounts: any[] = deliveredList(item.delivered_accounts);
+
   const refunded = itemStatus === "refunded";
 
   const resend = async () => {
@@ -1133,7 +1110,16 @@ function OrderItemRow({
       {delivered ? (
         <div className="mt-2 p-3 bg-success/5 border border-success/20 rounded font-mono text-xs">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <span>✓ Delivered</span>
+            <span className="font-sans font-bold text-success">
+              {deliveredAccounts.length > 0
+                ? lang === "ar"
+                  ? "بيانات الحساب المُسلَّم"
+                  : "Delivered account details"
+                : lang === "ar"
+                  ? "لا توجد بيانات حساب مسجّلة لهذا العنصر"
+                  : "No account details recorded for this item"}
+            </span>
+
             <button
               type="button"
               onClick={resend}
@@ -1149,7 +1135,7 @@ function OrderItemRow({
                   : "Resend email"}
             </button>
           </div>
-          {(Array.isArray(item.delivered_accounts) ? item.delivered_accounts : []).map((a: any) => {
+          {deliveredAccounts.map((a: any) => {
             const dur = Number(item.product_plans?.duration_days ?? 0);
             const startAt = a.delivered_at ? new Date(a.delivered_at) : null;
             const endAt = startAt && dur > 0 ? new Date(startAt.getTime() + dur * 86400_000) : null;
@@ -1160,6 +1146,8 @@ function OrderItemRow({
                 {a.account_email && <div>Email: {a.account_email}</div>}
                 {a.account_username && <div>User: {a.account_username}</div>}
                 {a.account_password && <div>Pass: {a.account_password}</div>}
+                {a.extra_notes && <div className="whitespace-pre-wrap">Notes: {a.extra_notes}</div>}
+
                 {startAt && (
                   <div className="mt-2 pt-2 border-t border-success/20 grid grid-cols-1 sm:grid-cols-2 gap-1 font-sans">
                     <div>

@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { deliveredList } from "@/lib/delivered";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -322,7 +323,7 @@ function AdminOverview() {
       const totalCost = unitCost * qty;
       const grossProfit = Number(r._profit ?? (netRevenue - totalCost));
       const netProfit = grossProfit - refundAmount;
-      const delivered = (r.delivered_accounts ?? [])[0];
+      const delivered = deliveredList(r.delivered_accounts)[0];
       const deliveredAt = delivered?.delivered_at ? new Date(delivered.delivered_at) : null;
       return {
         "رقم الطلب": r.orders?.order_number,
@@ -590,9 +591,9 @@ function AdminOverview() {
                 const profit = Number(r._profit ?? 0);
                 const refundAmount = Number(r._refundAmount ?? 0);
                 const netProfit = profit - refundAmount;
-                const delivered = (r.delivered_accounts ?? [])[0];
+                const delivered = deliveredList(r.delivered_accounts)[0];
                 const p = r._profile ?? {};
-                const itemDelivered = r.status === "delivered" || (r.delivered_accounts?.length ?? 0) > 0;
+                const itemDelivered = r.status === "delivered" || deliveredList(r.delivered_accounts).length > 0;
                 const itemRefunded = r.status === "refunded";
                 const status = itemRefunded
                   ? "refunded"

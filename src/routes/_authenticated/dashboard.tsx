@@ -7,7 +7,10 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyOrders } from "@/lib/my-orders.functions";
+
 import type { User } from "@supabase/supabase-js";
+import { deliveredList } from "@/lib/delivered";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -83,18 +86,17 @@ function Dashboard() {
   }, [user, profile.data, navigate]);
 
   const orders = useQuery({
-    queryKey: ["my-orders", user?.id],
+    queryKey: ["my-orders", user?.id, user?.email],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*, coupons(code, discount_type, discount_value), order_items(*, delivered_accounts(*))")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
+      // Loaded server-side so guest-checkout orders placed with the same email
+      // (user_id = NULL) also show up in the customer's account.
+      const data = await getMyOrders();
+      return (data as any[]) ?? [];
     },
   });
+
+
 
   const refunds = useQuery({
     queryKey: ["my-refunds", user?.id],
@@ -286,8 +288,8 @@ function Dashboard() {
                                   </div>
                                 )}
                                 {it.status === "delivered" &&
-                                (Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).length > 0 ? (
-                                  (Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).map(
+                                deliveredList(it.delivered_accounts).length > 0 ? (
+                                  deliveredList(it.delivered_accounts).map(
                                     (acc: any) => {
                                       const rows = buildCredentialRows(acc, lang);
                                       return (
