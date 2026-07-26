@@ -13,55 +13,19 @@ function authHeaders() {
   return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
-/** Strips characters that are invisible in a spreadsheet cell but survive a
- * copy/paste from an Arabic-locale Google Sheet (RTL/LTR marks, zero-width
- * space, BOM, non-breaking space) and would otherwise make a value like
- * "available" fail a strict string match for no visible reason. */
-function stripInvisible(s: string): string {
-  return (s || "")
-    .replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00A0]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-// Values that mean the row is NOT available for import. We treat anything
-// else — including blank, "available", or wording we don't recognize — as
-// available, rather than requiring an exact "available" match. A strict
-// whitelist silently drops every row on any spelling/locale mismatch (e.g.
-// "Available" with a trailing space or a stray RTL mark) and reports
-// "0 accounts imported" with no indication why; a blacklist of "already
-// gone" statuses fails safe instead — worst case it imports a row that
-// still needed a manual check, which is a lot easier to spot than accounts
-// that quietly never made it into inventory at all.
-const SOLD_STATUS_KEYWORDS = [
-  "sold",
-  "used",
-  "delivered",
-  "taken",
-  "unavailable",
-  "not available",
-  "issued",
-  "gone",
-  "تم البيع",
-  "مباع",
-  "مستخدم",
-  "تم التسليم",
-  "تم الاستخدام",
-  "غير متاح",
-  "خلص",
-  "منتهي",
-];
-
-function isSoldStatus(raw: string): boolean {
-  const v = stripInvisible(raw).toLowerCase();
-  if (!v) return false;
-  return SOLD_STATUS_KEYWORDS.some((k) => v.includes(k));
-}
-
+/** Normalizes a plan-label / sheet-tab title so tab matching survives the
+ * same spelling differences normalizeHeader tolerates (hamza forms, ta-marbuta,
+ * spacing) — without this, a tab named "الباقة الشهرية" would fail to match
+ * a plan labeled "الباقه الشهريه" and the whole tab would be skipped on
+ * import (0 accounts imported) even though the sheet data is perfectly readable. */
 function normalizeTitle(s: string): string {
   return (s || "")
     .toLowerCase()
-    .replace(/[\u064B-\u065F\u0670]/g, "")
+    .replace(/[\u064B-\u065F\u0670]/g, "") // strip Arabic diacritics
+    .replace(/[إأآا]/g, "ا")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
     .replace(/[\s_\-\.]+/g, "")
     .trim();
 }
@@ -230,7 +194,7 @@ function mapSheetRows(values: string[][]) {
   const extraColIdxs = header.map((_, i) => i).filter((i) => !used.has(i));
 
   const clean = (r: string[], i: number | undefined) =>
-    i !== undefined && i >= 0 ? stripInvisible(r[i] ?? "") || null : null;
+    i !== undefined && i >= 0 ? (r[i] ?? "").trim() || null : null;
 
   const records = values
     .slice(1)
@@ -252,7 +216,7 @@ function mapSheetRows(values: string[][]) {
         account_type: clean(r, idx.type),
         extra_notes,
         _srcRowIndex: rIdx + 2,
-        _statusValue: idx.status !== undefined ? stripInvisible(r[idx.status] ?? "").toLowerCase() : "",
+        _statusValue: idx.status !== undefined ? (r[idx.status] ?? "").trim().toLowerCase() : "",
       };
     })
     .filter((rec) => rec.account_email || rec.account_username || rec.account_password || rec.extra_notes);
@@ -391,13 +355,32 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       const vj = (await valuesRes.json()) as { values?: string[][] };
       const { records, statusColIdx } = mapSheetRows(vj.values ?? []);
 
-      // Skip rows already sold/delivered on the sheet itself. See isSoldStatus
-      // for why this is a blacklist (known "gone" words) rather than a
-      // whitelist requiring the literal word "available" — a whitelist used
-      // to silently drop every row whenever the status text didn't match
-      // exactly (different wording, stray invisible characters, etc.),
-      // reporting "0 accounts imported" with no visible cause.
-      const availableRecords = records.filter((r) => !isSoldStatus(r._statusValue));
+      // Skip rows already sold/delivered on the sheet itself. We use a
+      // blacklist of "not available" wordings (rather than a whitelist of
+      // just the literal word "available") because status columns are
+      // often in Arabic ("متاح" / "مباع" / "تم البيع" / ...) or use other
+      // English synonyms — a whitelist-only check silently excluded every
+      // row whose status didn't spell "available" exactly, which is what
+      // made imports report "0 accounts imported" even for perfectly valid
+      // files.
+      const SOLD_STATUS_WORDS = [
+        "sold",
+        "delivered",
+        "used",
+        "taken",
+        "issued",
+        "expired",
+        "مباع",
+        "تمالبيع",
+        "تمالتسليم",
+        "مستخدم",
+        "منتهي",
+        "منتهيه",
+        "محجوز",
+      ];
+      const availableRecords = records.filter(
+        (r) => !r._statusValue || !SOLD_STATUS_WORDS.some((w) => r._statusValue.replace(/\s+/g, "").includes(w)),
+      );
 
       if (availableRecords.length === 0) {
         results.push({
