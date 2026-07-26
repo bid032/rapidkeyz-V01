@@ -19,12 +19,9 @@ export const Route = createFileRoute("/_authenticated/admin")({
       if (!userData.user) throw redirect({ to: "/auth" });
     }
     const uid = user?.id ?? (await supabase.auth.getUser()).data.user!.id;
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", uid);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
     // Admin has full access to all admin pages
-    const isAdmin = roles?.some(r => r.role === "admin");
+    const isAdmin = roles?.some((r) => r.role === "admin");
     if (!isAdmin) throw redirect({ to: "/dashboard" });
   },
   errorComponent: ({ error, reset }) => (
@@ -78,7 +75,7 @@ function AdminLayout() {
     { to: "/admin/staff", label: "الاستوك", adminOnly: true },
     { to: "/admin/coupons", label: "أكواد الخصم" },
     { to: "/admin/audit", label: "سجل الأعمال", adminOnly: true },
-    { to: "/admin/settings/integrations", label: "التكاملات", adminOnly: true },
+    // { to: "/admin/settings/integrations", label: "التكاملات", adminOnly: true },
     { to: "/admin/settings", label: t.admin.settings, adminOnly: true },
   ];
 
