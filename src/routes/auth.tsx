@@ -4,7 +4,6 @@ import { z } from "zod";
 import { Header } from "@/components/Header";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { friendlyErrorMessage } from "@/lib/error-handler";
 import { ARAB_COUNTRIES, dialForCountry } from "@/lib/arab-countries";
 import { filterName, filterDigits, filterEmail } from "@/lib/input-filters";
@@ -99,16 +98,20 @@ function AuthPage() {
 
   const handleGoogle = async () => {
     setError(null);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    // Google sign-in straight through Supabase's own Google provider
+    // (no Lovable auth wrapper). Configure the Google OAuth client in
+    // Supabase → Authentication → Providers → Google.
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${redirect ?? "/dashboard"}`,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
-      console.error("google oauth failed", result.error);
-      setError(friendlyErrorMessage(result.error, lang));
-      return;
+    if (err) {
+      console.error("google oauth failed", err);
+      setError(friendlyErrorMessage(err, lang));
     }
-    if (result.redirected) return;
-    navigate({ to: redirect ?? "/dashboard" });
   };
 
   return (

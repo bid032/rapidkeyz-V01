@@ -407,19 +407,6 @@ function AdminProducts() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 lg:divide-x lg:divide-x-reverse divide-border">
                      {/* Main: names + descriptions + categories + settings */}
                      <div className="lg:col-span-8 p-4 sm:p-6 space-y-5 min-w-0 order-2 lg:order-1">
-                       {/* Loading Icon */}
-                       <section className="space-y-2">
-                         <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">أيقونة التحميل</h3>
-                         <ImageUpload
-                           bucket="product-images"
-                           label=""
-                           value={editing.loading_icon_url}
-                           onChange={(url) => setEditing({ ...editing, loading_icon_url: url })}
-                           size={0}
-                           requireAspectRatio={{ w: 1, h: 1 }}
-                         />
-                         <p className="text-[11px] text-muted-foreground">نسبة 1:1 مطلوبة. اختياري — تظهر أثناء تحميل الخدمة.</p>
-                       </section>
                     {/* Names + slug in one row */}
                     <section className="space-y-3">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">معلومات المنتج</h3>
@@ -690,17 +677,36 @@ function AdminProducts() {
 
                   {/* Sidebar (left in RTL): large image + flags */}
                   <div className="lg:col-span-4 bg-muted/30 p-4 sm:p-6 space-y-5 order-1 lg:order-2">
-                    <section className="space-y-2">
-                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">صورة المنتج</h3>
-                      <ImageUpload
-                        bucket="product-images"
-                        label=""
-                        value={editing.icon_url}
-                        onChange={(url) => setEditing({ ...editing, icon_url: url })}
-                        size={0}
-                        requireAspectRatio={{ w: 1, h: 1 }}
-                      />
-                      <p className="text-[11px] text-muted-foreground">نسبة 1:1 مطلوبة. اختياري — لو مفيش صورة هيظهر أول حرفين من الاسم.</p>
+                    <section className="space-y-3">
+                      <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">صور الخدمة</h3>
+                      <div className="p-3 bg-background border border-border rounded-xl space-y-3">
+                        <div className="space-y-1.5">
+                          <p className="text-[11px] font-bold">صورة / أيقونة الخدمة</p>
+                          <ImageUpload
+                            bucket="product-images"
+                            label=""
+                            compact
+                            value={editing.icon_url}
+                            onChange={(url) => setEditing({ ...editing, icon_url: url })}
+                            size={0}
+                            requireAspectRatio={{ w: 1, h: 1 }}
+                          />
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">نسبة 1:1 — اختياري، لو مفيش صورة هيظهر أول حرفين من الاسم.</p>
+                        </div>
+                        <div className="pt-3 border-t border-border space-y-1.5">
+                          <p className="text-[11px] font-bold">أيقونة التحميل</p>
+                          <ImageUpload
+                            bucket="product-images"
+                            label=""
+                            compact
+                            value={editing.loading_icon_url}
+                            onChange={(url) => setEditing({ ...editing, loading_icon_url: url })}
+                            size={0}
+                            requireAspectRatio={{ w: 1, h: 1 }}
+                          />
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">نسبة 1:1 — اختياري، تظهر أثناء تحميل الخدمة.</p>
+                        </div>
+                      </div>
                     </section>
 
                     <section className="space-y-2">
@@ -807,7 +813,7 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
   });
 
   // Local edits map keyed by plan id , apply on save
-  const [edits, setEdits] = useState<Record<string, { price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null; plan_variant?: string | null }>>({});
+  const [edits, setEdits] = useState<Record<string, { label_ar?: string; label_en?: string; duration_days?: number; price?: number; compare_price?: number | null; stock?: number; cost_price?: number; account_type?: "private" | "shared" | "own" | null; plan_variant?: string | null }>>({});
 
   const patch = (id: string, k: string, v: any) =>
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [k]: v } }));
@@ -852,6 +858,9 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
         const patchData = edits[id];
         if (!patchData) continue;
         const clean: any = {};
+        if (patchData.label_ar !== undefined) clean.label_ar = patchData.label_ar;
+        if (patchData.label_en !== undefined) clean.label_en = patchData.label_en;
+        if (patchData.duration_days !== undefined) clean.duration_days = patchData.duration_days;
         if (patchData.price !== undefined) clean.price = patchData.price;
         if (patchData.compare_price !== undefined) clean.compare_price = patchData.compare_price;
         if (patchData.stock !== undefined) clean.stock = patchData.stock;
@@ -1028,7 +1037,9 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                     const stock = e.stock ?? p.stock;
                     const cost = e.cost_price !== undefined ? e.cost_price : (costs.data?.[p.id] ?? 0);
                     const dirty = !!edits[p.id];
-                    const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
+                    const labelAr = e.label_ar !== undefined ? e.label_ar : (p.label_ar ?? "");
+                    const labelEn = e.label_en !== undefined ? e.label_en : (p.label_en ?? "");
+                    const months = Math.max(1, Math.round(((e.duration_days ?? p.duration_days) ?? 30) / 30));
                     const margin = Number(price) - Number(cost);
                     const currentAcct = (e.account_type !== undefined ? e.account_type : p.account_type) ?? "";
                     const currentVariant = (e.plan_variant !== undefined ? e.plan_variant : p.plan_variant) ?? "";
@@ -1036,11 +1047,20 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                       <tr key={p.id} className={`transition ${dirty ? "bg-brand/5" : "hover:bg-muted/30"}`}>
                         <td className="px-3 py-2 border-b border-border/60 relative">
                           {dirty && <span className="absolute inset-y-0 start-0 w-1 bg-brand rounded-e" />}
-                          <div className="font-black leading-tight truncate max-w-[220px]">{p.label_ar}</div>
-                          <div className="text-[11px] text-muted-foreground truncate max-w-[220px]">{p.label_en}</div>
+                          <input value={labelAr}
+                            onChange={(ev) => patch(p.id, "label_ar", ev.target.value)}
+                            className="w-full min-w-[150px] px-2 py-1 bg-card border border-border rounded text-sm font-black focus:outline-none focus:border-brand" />
+                          <input value={labelEn} dir="ltr"
+                            onChange={(ev) => patch(p.id, "label_en", ev.target.value)}
+                            className="mt-1 w-full min-w-[150px] px-2 py-1 bg-card border border-border rounded text-[11px] text-muted-foreground focus:outline-none focus:border-brand" />
                         </td>
                         <td className="px-2 py-2 border-b border-border/60">
-                          <span className="px-2 py-0.5 rounded bg-muted text-xs font-bold whitespace-nowrap">{months} شهر</span>
+                          <div className="flex items-center gap-1">
+                            <input type="number" min={1} value={months}
+                              onChange={(ev) => patch(p.id, "duration_days", Math.max(1, +ev.target.value || 1) * 30)}
+                              className="w-16 px-2 py-1 bg-card border border-border rounded text-sm font-bold focus:outline-none focus:border-brand" />
+                            <span className="text-[11px] text-muted-foreground">شهر</span>
+                          </div>
                         </td>
                         {showAcctPicker && (
                           <td className="px-2 py-2 border-b border-border/60">
@@ -1126,18 +1146,27 @@ function PlanEditor({ productId, onClose }: { productId: string; onClose: () => 
                 const stock = e.stock ?? p.stock;
                 const cost = e.cost_price !== undefined ? e.cost_price : (costs.data?.[p.id] ?? 0);
                 const dirty = !!edits[p.id];
-                const months = Math.max(1, Math.round((p.duration_days ?? 30) / 30));
+                const labelAr = e.label_ar !== undefined ? e.label_ar : (p.label_ar ?? "");
+                const labelEn = e.label_en !== undefined ? e.label_en : (p.label_en ?? "");
+                const months = Math.max(1, Math.round(((e.duration_days ?? p.duration_days) ?? 30) / 30));
                 const margin = Number(price) - Number(cost);
                 const currentAcct = (e.account_type !== undefined ? e.account_type : p.account_type) ?? "";
                 const currentVariant = (e.plan_variant !== undefined ? e.plan_variant : p.plan_variant) ?? "";
                 return (
                   <div key={p.id} className={`p-3 bg-background rounded-xl border-2 transition ${dirty ? "border-brand" : "border-border"}`}>
                     <div className="flex justify-between items-start mb-2 pb-2 border-b border-border gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-black text-sm truncate">{p.label_ar}</div>
-                        <div className="text-[11px] text-muted-foreground truncate">{p.label_en}</div>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <input value={labelAr} onChange={(ev) => patch(p.id, "label_ar", ev.target.value)}
+                          className="w-full px-2 py-1 bg-card border border-border rounded text-sm font-black" />
+                        <input value={labelEn} dir="ltr" onChange={(ev) => patch(p.id, "label_en", ev.target.value)}
+                          className="w-full px-2 py-1 bg-card border border-border rounded text-[11px]" />
+                        <div className="flex items-center gap-1">
+                          <input type="number" min={1} value={months}
+                            onChange={(ev) => patch(p.id, "duration_days", Math.max(1, +ev.target.value || 1) * 30)}
+                            className="w-16 px-2 py-1 bg-card border border-border rounded text-xs font-bold" />
+                          <span className="text-[10px] text-muted-foreground">شهر</span>
+                        </div>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-bold">{months} شهر</span>
                           {p.account_type && <span className="px-1.5 py-0.5 rounded bg-brand/10 text-brand text-[10px] font-bold">{acctLabel(p.account_type)}</span>}
                           {p.plan_variant && <span className="px-1.5 py-0.5 rounded bg-warning/10 text-warning text-[10px] font-bold">{p.plan_variant}</span>}
                           {dirty && <span className="px-1.5 py-0.5 rounded bg-brand text-brand-foreground text-[10px] font-bold">معدّل</span>}

@@ -1,16 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+const GATEWAY = "https://sheets.googleapis.com/v4";
+
+/** fetch with Google service-account auth (no Lovable connector). */
+async function gfetch(url: string, init: RequestInit = {}) {
+  const { googleSheetsFetch } = await import("@/lib/google-sheets.server");
+  return googleSheetsFetch(url, init);
+}
 
 function authHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const gsKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !gsKey) throw new Error("Google Sheets connector not configured");
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": gsKey,
-  } as Record<string, string>;
+  return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
 /** Admin-only: fetch sheet titles for a spreadsheet so we can resolve gid → title. */
@@ -24,7 +24,7 @@ export const getSheetInfo = createServerFn({ method: "POST" })
     ]);
     if (!isAdmin && !isMod) throw new Error("Forbidden");
     const url = `${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`;
-    const res = await fetch(url, { headers: authHeaders() });
+    const res = await gfetch(url, { headers: authHeaders() });
     if (!res.ok) {
       const t = await res.text();
       throw new Error(`Sheets API ${res.status}: ${t}`);
@@ -55,7 +55,7 @@ export const markInventorySoldOnSheet = createServerFn({ method: "POST" })
     const range = `${row.sheet_title}!${row.status_column_letter}${row.sheet_row_index}`;
     const url = `${GATEWAY}/spreadsheets/${row.spreadsheet_id}/values/${encodeURIComponent(range).replace(/%3A/g, ":").replace(/%21/g, "!")}?valueInputOption=USER_ENTERED`;
     try {
-      const res = await fetch(url, {
+      const res = await gfetch(url, {
         method: "PUT",
         headers: { ...authHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify({ range, majorDimension: "ROWS", values: [["sold"]] }),

@@ -995,23 +995,51 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
                )}
              </button>
            )}
-          <form onSubmit={(e) => { e.preventDefault(); onDeliver(creds); }} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input placeholder="Account email" value={creds.account_email}
-              onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
-              className="px-3 py-2 bg-card border border-border rounded text-sm" />
-            <input placeholder="Username" value={creds.account_username}
-              onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
-              className="px-3 py-2 bg-card border border-border rounded text-sm" />
-            <input placeholder="Password" value={creds.account_password}
-              onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
-              className="px-3 py-2 bg-card border border-border rounded text-sm" />
-            <input placeholder="Notes" value={creds.extra_notes}
-              onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
-              className="px-3 py-2 bg-card border border-border rounded text-sm" />
-            <button type="submit" className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm">
-              {lang === "ar" ? "تسليم يدوي وإرسال إيميل" : "Deliver manually & email"}
-            </button>
-          </form>
+          {(() => {
+            const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(creds.account_email.trim());
+            const userOk = creds.account_username.trim().length > 0;
+            const passOk = creds.account_password.trim().length > 0;
+            const canDeliver = emailOk && userOk && passOk;
+            const box = (ok: boolean) =>
+              `px-3 py-2 bg-card border rounded text-sm ${ok ? "border-border" : "border-destructive/50"}`;
+            return (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!canDeliver) return;
+                  onDeliver(creds);
+                }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+              >
+                <input required type="email" placeholder="Account email *" value={creds.account_email}
+                  onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
+                  className={box(emailOk || creds.account_email.length === 0)} />
+                <input required placeholder="Username *" value={creds.account_username}
+                  onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
+                  className={box(userOk || creds.account_username.length === 0)} />
+                <input required placeholder="Password *" value={creds.account_password}
+                  onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
+                  className={box(passOk || creds.account_password.length === 0)} />
+                <input placeholder={lang === "ar" ? "Notes (اختياري)" : "Notes (optional)"} value={creds.extra_notes}
+                  onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
+                  className="px-3 py-2 bg-card border border-border rounded text-sm" />
+                {!canDeliver && (
+                  <p className="sm:col-span-2 text-[11px] text-warning">
+                    {lang === "ar"
+                      ? "لازم تملأ الإيميل واليوزر نيم والباسورد (النوتس اختياري)."
+                      : "Email, username and password are required (notes optional)."}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={!canDeliver}
+                  className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {lang === "ar" ? "تسليم يدوي وإرسال إيميل" : "Deliver manually & email"}
+                </button>
+              </form>
+            );
+          })()}
         </div>
       )}
     </div>

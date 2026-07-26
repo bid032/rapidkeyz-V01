@@ -36,6 +36,8 @@ function AdminSettings() {
   const [adminPassword, setAdminPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [storedPassword, setStoredPassword] = useState<string>("");
   const [hero, setHero] = useState<any>({
     badge_ar: "", badge_en: "",
     title1_ar: "", title1_en: "",
@@ -104,8 +106,8 @@ function AdminSettings() {
         if (m === "light" || m === "dark" || m === "both") setThemeMode(m);
       }
       if (s.key === "admin_password") {
-        // لا نقوم بتحميل الباسورد في الحقل لتجنب عرضه في الواجهة
-        // سيتم استخدامه فقط عند التحقق من العمليات الحساسة
+        // ما بنعرضهوش في الواجهة — بنستخدمه فقط للتحقق قبل التغيير
+        setStoredPassword(typeof s.value === "string" ? s.value : String((s.value as any) ?? ""));
       }
       if (["shop_intro", "page_about", "page_terms", "page_refund", "page_privacy"].includes(s.key)) {
         setPageContent((prev) => ({
@@ -139,11 +141,21 @@ function AdminSettings() {
           ...Object.entries(pageContent).map(([key, value]) => ({ key, value })),
         ];
 
-      // إضافة الباسورد فقط إذا تم إدخاله وتأكيده
-      if (adminPassword && confirmPassword && adminPassword === confirmPassword) {
+      // تغيير باسورد الأمان: لازم الباسورد الحالي (لو موجود) + تأكيد مطابق
+      if (adminPassword || confirmPassword || currentPassword) {
+        if (!adminPassword || !confirmPassword) {
+          throw new Error(lang === "ar" ? "اكتب الباسورد الجديد وأكّده" : "Enter and confirm the new password");
+        }
+        if (adminPassword !== confirmPassword) {
+          throw new Error(lang === "ar" ? "الباسورد غير متطابق" : "Passwords do not match");
+        }
+        if (adminPassword.length < 6) {
+          throw new Error(lang === "ar" ? "الباسورد لازم 6 حروف على الأقل" : "Password must be at least 6 characters");
+        }
+        if (storedPassword && currentPassword !== storedPassword) {
+          throw new Error(lang === "ar" ? "الباسورد الحالي غير صحيح" : "Current password is incorrect");
+        }
         settingsToSave.push({ key: "admin_password", value: adminPassword });
-      } else if (adminPassword || confirmPassword) {
-        throw new Error(lang === "ar" ? "الباسورد غير متطابق" : "Passwords do not match");
       }
 
       const { error } = await supabase.from("site_settings").upsert(settingsToSave);
@@ -155,6 +167,7 @@ function AdminSettings() {
       // إعادة تعيين حقول الباسورد بعد الحفظ الناجح
       setAdminPassword("");
       setConfirmPassword("");
+      setCurrentPassword("");
     },
     onError: (e: any) => notify(e?.message ?? (lang === "ar" ? "فشل الحفظ" : "Save failed"), "error"),
   });
@@ -308,81 +321,118 @@ function AdminSettings() {
         </label>
        </Section>
 
-        <Section title={"الدفع اليدوي"}>
-          <p className="text-xs text-muted-foreground mb-4">
-            إعدادات الدفع اليدوي (التحويل البنكي والمحافظ الإلكترونية).
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold text-muted-foreground">رقم المحفظة (Wallet)</label>
-              <input
-                placeholder="رقم المحفظة"
-                value={manualPaymentDetails.wallet_number ?? ""}
-                onChange={(e) => setManualPaymentDetails({ ...manualPaymentDetails, wallet_number: e.target.value })}
-                className="px-3 py-2 bg-background border border-border rounded"
-              />
-            </div>
-            <div className="flex flexcol gap-1">
-              <label className="text-[11px] font-bold text-muted-foreground">رقم الانستاباي (Instapay)</label>
-              <input
-                placeholder="رقم الانستاباي"
-                value={manualPaymentDetails.instapay_number ?? ""}
-                onChange={(e) => setManualPaymentDetails({ ...manualPaymentDetails, instapay_number: e.target.value })}
-                className="px-3 py-2 bg-background border border-border rounded"
-              />
-            </div>
-          </div>
-        </Section>
+      <Section title={"الدفع اليدوي"}>
+        <p className="text-xs text-muted-foreground mb-4">
+          الأرقام اللي بتظهر للعميل في صفحة الدفع. اكتب أرقام فقط بدون مسافات.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {([
+            ["wallet_number", "رقم المحفظة الإلكترونية", "فودافون كاش / اتصالات / أورنج", "01xxxxxxxxx", "📱"],
+            ["instapay_number", "رقم أو عنوان الانستاباي", "InstaPay", "01xxxxxxxxx", "🏦"],
+          ] as const).map(([k, title, hint, ph, icon]) => {
+            const val = (manualPaymentDetails as any)[k] ?? "";
+            return (
+              <div key={k} className="p-4 rounded-2xl bg-background border border-border space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-9 h-9 grid place-items-center rounded-xl bg-brand/10 text-base">{icon}</span>
+                  <div className="min-w-0">
+                    <div className="font-bold text-sm truncate">{title}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{hint}</div>
+                  </div>
+                </div>
+                <input
+                  dir="ltr"
+                  inputMode="tel"
+                  placeholder={ph}
+                  value={val}
+                  onChange={(e) =>
+                    setManualPaymentDetails({ ...manualPaymentDetails, [k]: e.target.value.replace(/[^\d+]/g, "") })
+                  }
+                  className="w-full px-3 py-2.5 bg-card border border-border rounded-xl font-mono tracking-wider focus:outline-none focus:border-brand"
+                />
+                <div className="text-[11px] text-muted-foreground">
+                  {val ? <>هيظهر للعميل: <b className="text-foreground font-mono">{val}</b></> : "الخانة فاضية — مش هتظهر للعميل."}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Section>
 
       <Section title={"إعدادات الأمان"}>
         <p className="text-xs text-muted-foreground mb-4">
-          إعدادات الأمان لحماية عمليات الحذف الحساسة في الداشبورد.
+          باسورد الحماية للعمليات الحساسة (الحذف) في الداشبورد.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-bold text-muted-foreground">الباسورد الجديد</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="أدخل الباسورد الجديد"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 end-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
-                title={showPassword ? "إخفاء الباسورد" : "إظهار الباسورد"}
-              >
-                {showPassword ? "👁️" : "👁️🗨️"}
-              </button>
+        <div className="max-w-xl p-4 rounded-2xl bg-background border border-border space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="w-9 h-9 grid place-items-center rounded-xl bg-brand/10">🔒</span>
+              <div>
+                <div className="font-bold text-sm">باسورد العمليات الحساسة</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {storedPassword ? "متعيّن حالياً — لازم الباسورد الحالي للتغيير" : "لسه مش متعيّن"}
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="text-[11px] font-bold text-brand hover:underline shrink-0"
+            >
+              {showPassword ? "إخفاء" : "إظهار"}
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {storedPassword && (
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-bold text-muted-foreground">الباسورد الحالي</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="الباسورد المستخدم حالياً"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="px-3 py-2.5 bg-card border border-border rounded-xl focus:outline-none focus:border-brand"
+                />
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-bold text-muted-foreground">الباسورد الجديد</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="6 حروف على الأقل"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="px-3 py-2.5 bg-card border border-border rounded-xl focus:outline-none focus:border-brand"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-bold text-muted-foreground">تأكيد الباسورد الجديد</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder="أعد إدخال الباسورد"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="px-3 py-2.5 bg-card border border-border rounded-xl focus:outline-none focus:border-brand"
+                />
+              </div>
             </div>
           </div>
-          <div className="flex flexcol gap-1">
-            <label className="text-[11px] font-bold text-muted-foreground">تأكيد الباسورد</label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="أعد إدخال الباسورد للتأكيد"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-background border border-border rounded pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 end-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
-                title={showPassword ? "إخفاء الباسورد" : "إظهار الباسورد"}
-              >
-                {showPassword ? "👁️" : "👁️🗨️"}
-              </button>
-            </div>
-          </div>
+
+          {adminPassword && confirmPassword && adminPassword !== confirmPassword && (
+            <p className="text-xs text-destructive">الباسورد غير متطابق</p>
+          )}
+          {adminPassword && adminPassword.length < 6 && (
+            <p className="text-xs text-warning">الباسورد قصير — لازم 6 حروف على الأقل</p>
+          )}
+          <p className="text-[11px] text-muted-foreground">
+            سيب الخانات فاضية لو مش عايز تغيّر الباسورد — الحفظ مش هيلمسه.
+          </p>
         </div>
-        {adminPassword && confirmPassword && adminPassword !== confirmPassword && (
-          <p className="text-xs text-destructive mt-2">الباسورد غير متطابق</p>
-        )}
       </Section>
 
       <Section title={"Social Media / حسابات السوشيال"}>
@@ -415,22 +465,23 @@ function AdminSettings() {
         <p className="text-xs text-muted-foreground mb-4">
           الأرقام اللي بتظهر في سيكشن "ليه العملاء بيثقوا فينا" على الصفحة الرئيسية.
         </p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {([
-            ["years",     "سنين خبرة"],
-            ["staff",     "موظفين دعم"],
-            ["services",  "خدمات"],
-            ["orders",    "عمليات شراء"],
-            ["customers", "عملاء"],
-          ] as const).map(([k, ph]) => (
-            <div key={k} className="flex flexcol gap-1">
-              <label className="text-[11px] font-bold text-muted-foreground">{ph}</label>
+            ["years",     "سنين خبرة",   "📅"],
+            ["staff",     "موظفين دعم",  "🎧"],
+            ["services",  "خدمات",       "🧩"],
+            ["orders",    "عمليات شراء", "🛒"],
+            ["customers", "عملاء",       "👥"],
+          ] as const).map(([k, label, icon]) => (
+            <div key={k} className="p-3 rounded-2xl bg-background border border-border text-center space-y-2">
+              <div className="w-9 h-9 mx-auto grid place-items-center rounded-xl bg-brand/10">{icon}</div>
+              <label className="block text-[11px] font-bold text-muted-foreground">{label}</label>
               <input
                 type="number"
                 min={0}
                 value={stats[k] ?? 0}
-                onChange={(e) => setStats({ ...stats, [k]: Number(e.target.value) || 0 })}
-                className="px-3 py-2 bg-background border border-border rounded"
+                onChange={(e) => setStats({ ...stats, [k]: Math.max(0, Number(e.target.value) || 0) })}
+                className="w-full px-2 py-2 bg-card border border-border rounded-xl text-center font-black text-lg focus:outline-none focus:border-brand"
                 dir="ltr"
               />
             </div>
@@ -492,13 +543,23 @@ function AdminSettings() {
             const usingCustomAr = valAr.trim().length > 0;
             const usingCustomEn = valEn.trim().length > 0;
             return (
-              <div key={key} className="p-4 rounded-xl bg-background/60 border border-border">
-                <h4 className="font-bold text-sm mb-1">
-                  {labelAr} <span className="text-muted-foreground font-normal">/ {labelEn}</span>
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+              <details key={key} className="rounded-2xl bg-background/60 border border-border overflow-hidden [&[open]>summary_.chev]:rotate-180">
+                <summary className="list-none cursor-pointer select-none flex items-center gap-3 p-4 hover:bg-muted/30 transition">
+                  <span className="w-8 h-8 shrink-0 grid place-items-center rounded-xl bg-brand/10 text-xs">📄</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-bold text-sm truncate">{labelAr}</span>
+                    <span className="block text-[11px] text-muted-foreground truncate">{labelEn}</span>
+                  </span>
+                  <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomAr || usingCustomEn ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
+                    {usingCustomAr || usingCustomEn ? "مخصص ✓" : "افتراضي"}
+                  </span>
+                  <svg className="chev shrink-0 w-4 h-4 text-muted-foreground transition-transform" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </summary>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 pt-0 border-t border-border">
                   {/* Arabic */}
-                  <div className="flex flexcol gap-1">
+                  <div className="flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <label className="text-[11px] font-bold text-muted-foreground">النص بالعربي</label>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomAr ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
@@ -533,7 +594,7 @@ function AdminSettings() {
                     </details>
                   </div>
                   {/* English */}
-                  <div className="flex flexcol gap-1">
+                  <div className="flex flex-col gap-1">
                     <div className="flex items-center justify-between">
                       <label className="text-[11px] font-bold text-muted-foreground">English text</label>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${usingCustomEn ? "bg-brand/15 text-brand" : "bg-muted text-muted-foreground"}`}>
@@ -568,7 +629,7 @@ function AdminSettings() {
                     </details>
                   </div>
                 </div>
-              </div>
+              </details>
             );
           })}
         </div>
