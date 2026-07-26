@@ -28,12 +28,9 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
   beforeLoad: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw redirect({ to: "/auth" });
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userData.user.id);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userData.user.id);
     // Only admin can access the orders page
-    const isAdmin = roles?.some(r => r.role === "admin");
+    const isAdmin = roles?.some((r) => r.role === "admin");
     if (!isAdmin) throw redirect({ to: "/admin/products" });
     return { roles };
   },
@@ -54,50 +51,56 @@ function AdminOrders() {
   const [tab, setTab] = useState<Tab>("all");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [flagFilter, setFlagFilter] = useState<"all" | "coupon" | "refund" | "refund_partial" | "refund_full" | "clean">("all");
+  const [flagFilter, setFlagFilter] = useState<
+    "all" | "coupon" | "refund" | "refund_partial" | "refund_full" | "clean"
+  >("all");
   const [password, setPassword] = useState("");
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [currentAction, setCurrentAction] = useState<"clearAll" | "deleteOrder" | null>(null);
   const currentOrderToDeleteRef = useRef<string | null>(null);
   const isAdmin = roles?.some((r: { role: string }) => r.role === "admin") ?? false;
 
-    const orders = useQuery({
-      queryKey: ["admin-orders"],
-      queryFn: async () => {
-        console.log("Starting orders query...");
-        // First, check if there are any orders at all
-        const { data: countData, error: countError, count } = await supabase
-          .from("orders")
-          .select("id", { count: "exact", head: true });
+  const orders = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: async () => {
+      console.log("Starting orders query...");
+      // First, check if there are any orders at all
+      const {
+        data: countData,
+        error: countError,
+        count,
+      } = await supabase.from("orders").select("id", { count: "exact", head: true });
 
-        console.log("Orders count:", { count, countError });
+      console.log("Orders count:", { count, countError });
 
-        if (countError) {
-          console.error("Error counting orders:", countError);
-          throw countError;
-        }
+      if (countError) {
+        console.error("Error counting orders:", countError);
+        throw countError;
+      }
 
-        if (count === 0) {
-          console.log("No orders found in database");
-          return [];
-        }
+      if (count === 0) {
+        console.log("No orders found in database");
+        return [];
+      }
 
-        console.log(`Found ${count} orders in database`);
+      console.log(`Found ${count} orders in database`);
 
-        // Now do the full query
-        const { data, error } = await supabase
-          .from("orders")
-          .select("*, coupons(code, discount_type, discount_value), order_items(*, unit_price, frozen_unit_price, product_plans(duration_days, plan_variant, price, compare_price, label_ar, label_en), products(slug, name_ar, name_en, cover_url, icon_url), delivered_accounts(*)), refunds(id, amount, type, order_item_id)")
-          .order("created_at", { ascending: false });
+      // Now do the full query
+      const { data, error } = await supabase
+        .from("orders")
+        .select(
+          "*, coupons(code, discount_type, discount_value), order_items(*, unit_price, frozen_unit_price, product_plans(duration_days, plan_variant, price, compare_price, label_ar, label_en), products(slug, name_ar, name_en, cover_url, icon_url), delivered_accounts(*)), refunds(id, amount, type, order_item_id)",
+        )
+        .order("created_at", { ascending: false });
 
-        console.log("Full query result:", { dataLength: data?.length, error });
-        if (error) {
-          console.error("Error in full query:", error);
-          throw error;
-        }
-        return data ?? [];
-      },
-    });
+      console.log("Full query result:", { dataLength: data?.length, error });
+      if (error) {
+        console.error("Error in full query:", error);
+        throw error;
+      }
+      return data ?? [];
+    },
+  });
 
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [proofLoading, setProofLoading] = useState(false);
@@ -143,11 +146,8 @@ function AdminOrders() {
     // Apply tab filter
     if (tab === "expiring") {
       list = list
-        .filter(({ order: o, minDays }) =>
-          minDays !== null &&
-          minDays <= 30 &&
-          minDays > -365 &&
-          o.status === "delivered"
+        .filter(
+          ({ order: o, minDays }) => minDays !== null && minDays <= 30 && minDays > -365 && o.status === "delivered",
         )
         .sort((a, b) => (a.minDays ?? 0) - (b.minDays ?? 0));
     } else {
@@ -179,11 +179,20 @@ function AdminOrders() {
     // Apply search filter
     const q = search.trim().toLowerCase();
     if (q) {
-      list = list.filter(({ order: o }: any) =>
-        String(o.order_number ?? "").toLowerCase().includes(q) ||
-        String(o.customer_email ?? "").toLowerCase().includes(q) ||
-        String(o.customer_phone ?? "").toLowerCase().includes(q) ||
-        String(o.customer_name ?? "").toLowerCase().includes(q)
+      list = list.filter(
+        ({ order: o }: any) =>
+          String(o.order_number ?? "")
+            .toLowerCase()
+            .includes(q) ||
+          String(o.customer_email ?? "")
+            .toLowerCase()
+            .includes(q) ||
+          String(o.customer_phone ?? "")
+            .toLowerCase()
+            .includes(q) ||
+          String(o.customer_name ?? "")
+            .toLowerCase()
+            .includes(q),
       );
     }
 
@@ -199,7 +208,13 @@ function AdminOrders() {
   }, [expiring, tab, search, statusFilter, flagFilter]);
 
   const profilesMap = useQuery({
-    queryKey: ["admin-orders-profiles", (orders.data ?? []).map((o: any) => o.user_id).filter(Boolean).join(",")],
+    queryKey: [
+      "admin-orders-profiles",
+      (orders.data ?? [])
+        .map((o: any) => o.user_id)
+        .filter(Boolean)
+        .join(","),
+    ],
     enabled: !!orders.data?.length,
     queryFn: async () => {
       const ids = Array.from(new Set((orders.data ?? []).map((o: any) => o.user_id).filter(Boolean)));
@@ -219,19 +234,20 @@ function AdminOrders() {
       const subtotal = Number(o.subtotal ?? 0);
       const discountAmount = Number(o.discount_amount ?? 0);
       const couponCode = o.coupons?.code ?? "";
-      const couponInfo = o.coupons?.discount_type === "percent"
-        ? `${o.coupons?.discount_value ?? ""}%`
-        : o.coupons?.discount_type === "fixed"
-          ? `${o.coupons?.discount_value ?? ""} EGP`
-          : "";
+      const couponInfo =
+        o.coupons?.discount_type === "percent"
+          ? `${o.coupons?.discount_value ?? ""}%`
+          : o.coupons?.discount_type === "fixed"
+            ? `${o.coupons?.discount_value ?? ""} EGP`
+            : "";
       if (!items.length) {
         rows.push({
           "رقم الطلب": o.order_number,
           "اسم العميل": o.customer_name ?? prof.display_name ?? "",
-          "البريد": o.customer_email ?? "",
+          البريد: o.customer_email ?? "",
           "رقم الواتساب": o.customer_phone ?? prof.phone ?? "",
-          "الدولة": prof.country ?? "",
-          "الحالة": o.status,
+          الدولة: prof.country ?? "",
+          الحالة: o.status,
           "الإجمالي قبل الخصم": subtotal,
           "كود الخصم": couponCode,
           "نوع/قيمة الكود": couponInfo,
@@ -239,13 +255,13 @@ function AdminOrders() {
           "الإجمالي بعد الخصم": Number(o.total ?? 0),
           "طريقة الدفع": o.payment_gateway ?? "",
           "رقم المرسل": o.payment_sender_phone ?? "",
-          "الخدمة": "",
-          "الخطة": "",
-          "الكمية": "",
+          الخدمة: "",
+          الخطة: "",
+          الكمية: "",
           "سعر الوحدة": "",
-          "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
-          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
-          "ملاحظات": o.notes ?? "",
+          التاريخ: new Date(o.created_at).toLocaleDateString("en-GB"),
+          الوقت: new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
+          ملاحظات: o.notes ?? "",
         });
         return;
       }
@@ -256,19 +272,21 @@ function AdminOrders() {
       );
       items.forEach((it: any) => {
         const gross = Number(it.frozen_unit_price ?? it.unit_price ?? 0) * Number(it.quantity ?? 1);
-        const itemDiscount = totalItemsValue > 0 && discountAmount > 0
-          ? Math.round((gross / totalItemsValue) * discountAmount * 100) / 100
-          : 0;
-        const netUnit = it.quantity > 0
-          ? Math.round(((gross - itemDiscount) / Number(it.quantity)) * 100) / 100
-          : Number(it.frozen_unit_price ?? it.unit_price ?? 0);
+        const itemDiscount =
+          totalItemsValue > 0 && discountAmount > 0
+            ? Math.round((gross / totalItemsValue) * discountAmount * 100) / 100
+            : 0;
+        const netUnit =
+          it.quantity > 0
+            ? Math.round(((gross - itemDiscount) / Number(it.quantity)) * 100) / 100
+            : Number(it.frozen_unit_price ?? it.unit_price ?? 0);
         rows.push({
           "رقم الطلب": o.order_number,
           "اسم العميل": o.customer_name ?? prof.display_name ?? "",
-          "البريد": o.customer_email ?? "",
+          البريد: o.customer_email ?? "",
           "رقم الواتساب": o.customer_phone ?? prof.phone ?? "",
-          "الدولة": prof.country ?? "",
-          "الحالة": o.status,
+          الدولة: prof.country ?? "",
+          الحالة: o.status,
           "الإجمالي قبل الخصم": subtotal,
           "كود الخصم": couponCode,
           "نوع/قيمة الكود": couponInfo,
@@ -276,14 +294,14 @@ function AdminOrders() {
           "الإجمالي بعد الخصم": Number(o.total ?? 0),
           "طريقة الدفع": o.payment_gateway ?? "",
           "رقم المرسل": o.payment_sender_phone ?? "",
-          "الخدمة": it.product_name,
-          "الخطة": it.plan_label,
-          "الكمية": it.quantity,
+          الخدمة: it.product_name,
+          الخطة: it.plan_label,
+          الكمية: it.quantity,
           "سعر الوحدة قبل الخصم": Number(it.frozen_unit_price ?? it.unit_price ?? 0),
           "سعر الوحدة بعد الخصم": netUnit,
-          "التاريخ": new Date(o.created_at).toLocaleDateString("en-GB"),
-          "الوقت": new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
-          "ملاحظات": o.notes ?? "",
+          التاريخ: new Date(o.created_at).toLocaleDateString("en-GB"),
+          الوقت: new Date(o.created_at).toLocaleTimeString("en-GB", { hour12: true }),
+          ملاحظات: o.notes ?? "",
         });
       });
     });
@@ -301,7 +319,10 @@ function AdminOrders() {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from("orders").update({ status: status as any }).eq("id", id);
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: status as any })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -313,11 +334,32 @@ function AdminOrders() {
 
   const deliver = useMutation({
     mutationFn: async ({ orderItemId, creds }: { orderItemId: string; creds: any }) => {
+      // Guard against a duplicate submit (double click / retry) racing in
+      // before the UI re-renders: bail out early if this item was already
+      // delivered by another in-flight call.
+      const { data: orderItem, error: checkError } = await supabase
+        .from("order_items")
+        .select("status")
+        .eq("id", orderItemId)
+        .maybeSingle();
+      if (checkError) throw checkError;
+      if (orderItem?.status === "delivered") {
+        throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
+      }
+
       const { error } = await supabase.from("delivered_accounts").insert({
         order_item_id: orderItemId,
         ...creds,
       });
-      if (error) throw error;
+      if (error) {
+        // Unique constraint on delivered_accounts.order_item_id — a second
+        // insert for the same item (race) fails here instead of creating a
+        // duplicate delivery / duplicate email.
+        if ((error as any).code === "23505") {
+          throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
+        }
+        throw error;
+      }
       // Flip the per-item status. Order-level status auto-flips via DB trigger.
       const { error: sErr } = await supabase
         .from("order_items")
@@ -357,9 +399,16 @@ function AdminOrders() {
         _order_item_id: orderItemId,
         _plan_id: planId,
       });
-      if (error) throw error;
+      if (error) {
+        if (/already delivered/i.test(error.message ?? "")) {
+          throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
+        }
+        throw error;
+      }
       if (!claimedId) {
-        throw new Error(lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually");
+        throw new Error(
+          lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually",
+        );
       }
       const { error: sErr } = await supabase
         .from("order_items")
@@ -473,9 +522,10 @@ function AdminOrders() {
   const askClearAll = async () => {
     const ok = await confirm({
       title: lang === "ar" ? "مسح كل الطلبات" : "Clear all orders",
-      message: lang === "ar"
-        ? "سيتم حذف كل الطلبات نهائياً مع كل تفاصيلها. هذه العملية لا يمكن التراجع عنها. هل تريد المتابعة؟"
-        : "All orders and their details will be permanently deleted. This action cannot be undone. Do you want to continue?",
+      message:
+        lang === "ar"
+          ? "سيتم حذف كل الطلبات نهائياً مع كل تفاصيلها. هذه العملية لا يمكن التراجع عنها. هل تريد المتابعة؟"
+          : "All orders and their details will be permanently deleted. This action cannot be undone. Do you want to continue?",
       tone: "danger",
     });
     if (!ok) return;
@@ -491,10 +541,12 @@ function AdminOrders() {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h1 className="text-xl sm:text-3xl font-extrabold">{t.admin.orders}</h1>
         <div className="flex bg-muted rounded-lg p-1 w-full sm:w-auto overflow-x-auto">
-          {([
-            { k: "all", label: "كل الطلبات" },
-            { k: "expiring", label: "خدمات شارفت على الانتهاء" },
-          ] as const).map((x) => (
+          {(
+            [
+              { k: "all", label: "كل الطلبات" },
+              { k: "expiring", label: "خدمات شارفت على الانتهاء" },
+            ] as const
+          ).map((x) => (
             <button
               key={x.k}
               onClick={() => setTab(x.k)}
@@ -512,7 +564,11 @@ function AdminOrders() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={lang === "ar" ? "بحث برقم الطلب أو الاسم أو الإيميل أو الواتساب..." : "Search by order #, name, email or phone..."}
+          placeholder={
+            lang === "ar"
+              ? "بحث برقم الطلب أو الاسم أو الإيميل أو الواتساب..."
+              : "Search by order #, name, email or phone..."
+          }
           className="flex-1 px-4 py-2.5 bg-background border border-border rounded-lg text-sm"
         />
         <select
@@ -522,7 +578,9 @@ function AdminOrders() {
         >
           <option value="all">كل الحالات</option>
           {STATUSES.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
         <select
@@ -546,69 +604,82 @@ function AdminOrders() {
           تحميل Excel
         </button>
         {isAdmin && (
-        <>
-          <button
-            onClick={askClearAll}
-            disabled={clearAllOrders.isPending || !(orders.data?.length)}
-            className="px-4 py-2.5 rounded-lg font-bold text-sm border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50 whitespace-nowrap"
-          >
-            {clearAllOrders.isPending
-              ? (lang === "ar" ? "جارٍ المسح..." : "Clearing...")
-              : (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")}
-          </button>
+          <>
+            <button
+              onClick={askClearAll}
+              disabled={clearAllOrders.isPending || !orders.data?.length}
+              className="px-4 py-2.5 rounded-lg font-bold text-sm border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-50 whitespace-nowrap"
+            >
+              {clearAllOrders.isPending
+                ? lang === "ar"
+                  ? "جارٍ المسح..."
+                  : "Clearing..."
+                : lang === "ar"
+                  ? "مسح كل الطلبات"
+                  : "Clear all orders"}
+            </button>
 
-          {showPasswordInput && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-              <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
-                <h3 className="text-lg font-bold mb-4">{lang === "ar" ? "مسح كل الطلبات" : "Clear all orders"}</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {currentAction === "clearAll"
-                    ? (lang === "ar" ? "أدخل الباسورد الإداري لمسح كل الطلبات:" : "Enter admin password to clear all orders:")
-                    : (lang === "ar" ? "أدخل الباسورد الإداري لحذف الطلب:" : "Enter admin password to delete order:")}
-                </p>
-                <Input
-                  type="password"
-                  placeholder={lang === "ar" ? "الباسورد الإداري" : "Admin password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full mb-4"
-                  autoFocus
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handlePasswordSubmit();
-                    }
-                  }}
-                />
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => {
-                      setShowPasswordInput(false);
-                      setPassword("");
-                      setCurrentAction(null);
-                    }}
-                    className="px-4 py-2 bg-muted text-muted-foreground rounded-lg font-bold text-sm hover:bg-muted/80"
-                  >
-                    {lang === "ar" ? "إلغاء" : "Cancel"}
-                  </button>
-                  <button
-                    onClick={handlePasswordSubmit}
-                    className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg font-bold text-sm hover:bg-destructive/80"
-                  >
+            {showPasswordInput && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
+                  <h3 className="text-lg font-bold mb-4">{lang === "ar" ? "مسح كل الطلبات" : "Clear all orders"}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
                     {currentAction === "clearAll"
-                      ? (lang === "ar" ? "مسح كل الطلبات" : "Clear all orders")
-                      : (lang === "ar" ? "حذف الطلب" : "Delete order")}
-                  </button>
+                      ? lang === "ar"
+                        ? "أدخل الباسورد الإداري لمسح كل الطلبات:"
+                        : "Enter admin password to clear all orders:"
+                      : lang === "ar"
+                        ? "أدخل الباسورد الإداري لحذف الطلب:"
+                        : "Enter admin password to delete order:"}
+                  </p>
+                  <Input
+                    type="password"
+                    placeholder={lang === "ar" ? "الباسورد الإداري" : "Admin password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full mb-4"
+                    autoFocus
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        handlePasswordSubmit();
+                      }
+                    }}
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => {
+                        setShowPasswordInput(false);
+                        setPassword("");
+                        setCurrentAction(null);
+                      }}
+                      className="px-4 py-2 bg-muted text-muted-foreground rounded-lg font-bold text-sm hover:bg-muted/80"
+                    >
+                      {lang === "ar" ? "إلغاء" : "Cancel"}
+                    </button>
+                    <button
+                      onClick={handlePasswordSubmit}
+                      className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg font-bold text-sm hover:bg-destructive/80"
+                    >
+                      {currentAction === "clearAll"
+                        ? lang === "ar"
+                          ? "مسح كل الطلبات"
+                          : "Clear all orders"
+                        : lang === "ar"
+                          ? "حذف الطلب"
+                          : "Delete order"}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
       </div>
 
       {tab === "expiring" && (
         <p className="text-xs text-muted-foreground mb-4">
-          كل خدمة فاضل عليها شهر أو أقل قبل الانتهاء. الحساب بيبدأ من تاريخ التسليم الفعلي، أو من تاريخ الطلب لو لسه ما اتسلمش.
+          كل خدمة فاضل عليها شهر أو أقل قبل الانتهاء. الحساب بيبدأ من تاريخ التسليم الفعلي، أو من تاريخ الطلب لو لسه ما
+          اتسلمش.
         </p>
       )}
       <div className="space-y-3">
@@ -617,190 +688,285 @@ function AdminOrders() {
           const hasRefund = refundTotal > 0;
           const isFullRefund = hasRefund && refundTotal >= Number(o.total ?? 0) - 0.001;
           const hasCoupon = Number(o.discount_amount ?? 0) > 0 || !!o.coupons?.code;
-          const accentClass = hasRefund && hasCoupon
-            ? "border-r-4 border-r-destructive ring-1 ring-success/40"
-            : hasRefund
-              ? "border-r-4 border-r-destructive"
-              : hasCoupon
-                ? "border-r-4 border-r-success"
-                : "";
+          const accentClass =
+            hasRefund && hasCoupon
+              ? "border-r-4 border-r-destructive ring-1 ring-success/40"
+              : hasRefund
+                ? "border-r-4 border-r-destructive"
+                : hasCoupon
+                  ? "border-r-4 border-r-success"
+                  : "";
           return (
-          <div key={o.id} className={`bg-card border border-border rounded-2xl overflow-hidden ${accentClass}`}>
-            <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
-              <div className="min-w-0">
-                <div className="font-bold flex items-center gap-2 flex-wrap">
-                  #{o.order_number}
-                  {hasRefund && (
-                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${isFullRefund ? "bg-destructive text-destructive-foreground" : "bg-destructive/15 text-destructive"}`}>
-                      {isFullRefund ? "↩️ تعويض كلي" : "↩️ تعويض جزئي"} -{refundTotal} EGP
-                    </span>
-                  )}
-                  {hasCoupon && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-success/15 text-success font-bold">
-                      🎟️ كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""} {Number(o.discount_amount ?? 0) > 0 ? `−${o.discount_amount} EGP` : ""}
-                    </span>
+            <div key={o.id} className={`bg-card border border-border rounded-2xl overflow-hidden ${accentClass}`}>
+              <div className="p-4 flex flex-col sm:flex-row sm:flex-wrap sm:justify-between sm:items-center gap-3">
+                <div className="min-w-0">
+                  <div className="font-bold flex items-center gap-2 flex-wrap">
+                    #{o.order_number}
+                    {hasRefund && (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded font-bold ${isFullRefund ? "bg-destructive text-destructive-foreground" : "bg-destructive/15 text-destructive"}`}
+                      >
+                        {isFullRefund ? "↩️ تعويض كلي" : "↩️ تعويض جزئي"} -{refundTotal} EGP
+                      </span>
+                    )}
+                    {hasCoupon && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-success/15 text-success font-bold">
+                        🎟️ كوبون {o.coupons?.code ? `· ${o.coupons.code}` : ""}{" "}
+                        {Number(o.discount_amount ?? 0) > 0 ? `−${o.discount_amount} EGP` : ""}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground break-all">
+                    {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true })} ·{" "}
+                    {o.customer_email}
+                  </div>
+                  {minDays !== null && (
+                    <div
+                      className={`text-xs font-bold mt-1 ${
+                        minDays < 0
+                          ? "text-destructive"
+                          : minDays <= 7
+                            ? "text-destructive"
+                            : minDays <= 30
+                              ? "text-warning"
+                              : "text-muted-foreground"
+                      }`}
+                    >
+                      {minDays < 0 ? ` انتهت من ${Math.abs(minDays)} يوم` : ` باقي ${minDays} يوم`}
+                    </div>
                   )}
                 </div>
-                <div className="text-xs text-muted-foreground break-all">
-                  {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true })} · {o.customer_email}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <select
+                    value={o.status}
+                    onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
+                    className="px-3 py-1.5 bg-background border border-border rounded text-sm"
+                  >
+                    {MANUAL_STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                    {o.status === "refunded" && <option value="refunded">refunded</option>}
+                  </select>
+                  <span className="font-extrabold text-brand">{o.total} EGP</span>
+                  <button
+                    onClick={() => setExpanded(expanded === o.id ? null : o.id)}
+                    className="text-brand text-sm hover:underline"
+                  >
+                    {expanded === o.id ? "Hide" : "Manage"}
+                  </button>
                 </div>
-                {minDays !== null && (
-                  <div className={`text-xs font-bold mt-1 ${
-                    minDays < 0 ? "text-destructive" : minDays <= 7 ? "text-destructive" : minDays <= 30 ? "text-warning" : "text-muted-foreground"
-                  }`}>
-                    {minDays < 0 ? ` انتهت من ${Math.abs(minDays)} يوم` : ` باقي ${minDays} يوم`}
-                  </div>
-                )}
               </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <select value={o.status}
-                  onChange={(e) => updateStatus.mutate({ id: o.id, status: e.target.value })}
-                  className="px-3 py-1.5 bg-background border border-border rounded text-sm">
-                  {MANUAL_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-                  {o.status === "refunded" && <option value="refunded">refunded</option>}
-                </select>
-                <span className="font-extrabold text-brand">{o.total} EGP</span>
-                <button onClick={() => setExpanded(expanded === o.id ? null : o.id)}
-                  className="text-brand text-sm hover:underline">
-                  {expanded === o.id ? "Hide" : "Manage"}
-                </button>
-              </div>
-            </div>
-            {expanded === o.id && (() => {
-              const prof = profilesMap.data?.get(o.user_id) ?? {};
-              const itemsCount = (o.order_items ?? []).reduce((s: number, it: any) => s + Number(it.quantity ?? 0), 0);
-              return (
-              <div className="p-4 border-t border-border space-y-4 bg-muted/30">
-                {/* Order details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">اسم العميل:</span> <span className="font-bold">{o.customer_name || prof.display_name || "—"}</span></div>
-                  <div><span className="text-muted-foreground">الحساب:</span> {o.user_id ? <span className="text-xs px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">مسجّل</span> : <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-bold">زائر</span>}</div>
-                  <div><span className="text-muted-foreground">البريد:</span> <span className="font-mono">{o.customer_email}</span></div>
-                  <div>
-                    <span className="text-muted-foreground">الهاتف:</span>{" "}
-                    <span className="font-mono">{o.customer_phone || "—"}</span>
-                    {o.customer_phone && (() => {
-                      const wa = buildWaNumber(o.customer_phone, prof.country);
-                      return (
-                        <a
-                          href={`https://wa.me/${wa}`}
-                          target="_blank" rel="noreferrer"
-                          title={`wa.me/${wa}`}
-                          className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
-                        >واتساب (+{wa})</a>
-                      );
-                    })()}
-                  </div>
-                  {prof.country && (
-                    <div><span className="text-muted-foreground">الدولة:</span> <span className="font-bold">{prof.country}</span></div>
-                  )}
-                  <div><span className="text-muted-foreground">عدد الوحدات:</span> <span className="font-bold">{itemsCount}</span></div>
-                  <div><span className="text-muted-foreground">الإجمالي:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
-                  <div className="md:col-span-2 p-3 rounded-lg bg-success/5 border border-success/20 space-y-1">
-                    <div className="text-xs grid grid-cols-3 gap-2 pt-1">
-                      <div><span className="text-muted-foreground">قبل الخصم:</span> <span className="font-bold line-through text-muted-foreground">{o.subtotal} EGP</span></div>
-                      {Number(o.discount_amount ?? 0) > 0 && (
-                        <>
-                          <div><span className="text-muted-foreground">الخصم:</span> <span className="font-bold text-success">−{o.discount_amount} EGP</span></div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-bold text-success">🎟️ كوبون خصم مُطبَّق</span>
-                            {o.coupons?.code && (
-                              <code className="text-xs font-mono bg-success/15 text-success px-2 py-0.5 rounded font-bold">{o.coupons.code}</code>
-                            )}
-                            {o.coupons?.discount_type === "percent" && (
-                              <span className="text-[11px] text-muted-foreground">({o.coupons.discount_value}%)</span>
-                            )}
+              {expanded === o.id &&
+                (() => {
+                  const prof = profilesMap.data?.get(o.user_id) ?? {};
+                  const itemsCount = (o.order_items ?? []).reduce(
+                    (s: number, it: any) => s + Number(it.quantity ?? 0),
+                    0,
+                  );
+                  return (
+                    <div className="p-4 border-t border-border space-y-4 bg-muted/30">
+                      {/* Order details */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">اسم العميل:</span>{" "}
+                          <span className="font-bold">{o.customer_name || prof.display_name || "—"}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">الحساب:</span>{" "}
+                          {o.user_id ? (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-brand/10 text-brand font-bold">
+                              مسجّل
+                            </span>
+                          ) : (
+                            <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-bold">
+                              زائر
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">البريد:</span>{" "}
+                          <span className="font-mono">{o.customer_email}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">الهاتف:</span>{" "}
+                          <span className="font-mono">{o.customer_phone || "—"}</span>
+                          {o.customer_phone &&
+                            (() => {
+                              const wa = buildWaNumber(o.customer_phone, prof.country);
+                              return (
+                                <a
+                                  href={`https://wa.me/${wa}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  title={`wa.me/${wa}`}
+                                  className="ms-2 text-xs px-2 py-0.5 bg-success/15 text-success rounded font-bold"
+                                >
+                                  واتساب (+{wa})
+                                </a>
+                              );
+                            })()}
+                        </div>
+                        {prof.country && (
+                          <div>
+                            <span className="text-muted-foreground">الدولة:</span>{" "}
+                            <span className="font-bold">{prof.country}</span>
                           </div>
-                        </>
-                      )}
-                      <div><span className="text-muted-foreground">بعد الخصم:</span> <span className="font-extrabold text-brand">{o.total} EGP</span></div>
+                        )}
+                        <div>
+                          <span className="text-muted-foreground">عدد الوحدات:</span>{" "}
+                          <span className="font-bold">{itemsCount}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">الإجمالي:</span>{" "}
+                          <span className="font-extrabold text-brand">{o.total} EGP</span>
+                        </div>
+                        <div className="md:col-span-2 p-3 rounded-lg bg-success/5 border border-success/20 space-y-1">
+                          <div className="text-xs grid grid-cols-3 gap-2 pt-1">
+                            <div>
+                              <span className="text-muted-foreground">قبل الخصم:</span>{" "}
+                              <span className="font-bold line-through text-muted-foreground">{o.subtotal} EGP</span>
+                            </div>
+                            {Number(o.discount_amount ?? 0) > 0 && (
+                              <>
+                                <div>
+                                  <span className="text-muted-foreground">الخصم:</span>{" "}
+                                  <span className="font-bold text-success">−{o.discount_amount} EGP</span>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs font-bold text-success">🎟️ كوبون خصم مُطبَّق</span>
+                                  {o.coupons?.code && (
+                                    <code className="text-xs font-mono bg-success/15 text-success px-2 py-0.5 rounded font-bold">
+                                      {o.coupons.code}
+                                    </code>
+                                  )}
+                                  {o.coupons?.discount_type === "percent" && (
+                                    <span className="text-[11px] text-muted-foreground">
+                                      ({o.coupons.discount_value}%)
+                                    </span>
+                                  )}
+                                </div>
+                              </>
+                            )}
+                            <div>
+                              <span className="text-muted-foreground">بعد الخصم:</span>{" "}
+                              <span className="font-extrabold text-brand">{o.total} EGP</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">الحالة:</span>{" "}
+                          <span className="font-bold">{o.status}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">طريقة الدفع:</span>{" "}
+                          <span className="font-bold">{o.payment_gateway}</span>
+                        </div>
+                        {o.payment_sender_phone && (
+                          <div>
+                            <span className="text-muted-foreground">رقم المُحوَّل منه:</span>{" "}
+                            <span className="font-mono">{o.payment_sender_phone}</span>
+                          </div>
+                        )}
+                        {o.payment_reference && (
+                          <div className="md:col-span-2">
+                            <span className="text-muted-foreground">مرجع الدفع:</span>{" "}
+                            <span className="font-mono">{o.payment_reference}</span>
+                          </div>
+                        )}
+                        {o.notes && (
+                          <div className="md:col-span-2">
+                            <span className="text-muted-foreground">ملاحظات:</span> {o.notes}
+                          </div>
+                        )}
+                        {o.payment_proof_url && (
+                          <div className="md:col-span-2">
+                            <button
+                              onClick={() => openProof(o.payment_proof_url)}
+                              className="text-sm px-3 py-1.5 bg-brand text-brand-foreground rounded font-bold"
+                            >
+                              عرض إثبات الدفع
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Approve / Cancel */}
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                        <button
+                          onClick={() => updateStatus.mutate({ id: o.id, status: "paid" })}
+                          disabled={o.status === "paid" || o.status === "delivered"}
+                          className="px-4 py-2 bg-success text-white rounded font-bold text-sm disabled:opacity-50"
+                        >
+                          ✓ تأكيد الدفع (Paid)
+                        </button>
+                        <button
+                          onClick={() => updateStatus.mutate({ id: o.id, status: "delivered" })}
+                          disabled={o.status === "delivered"}
+                          className="px-4 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50"
+                        >
+                          تم التسليم
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: "إلغاء الطلب",
+                              message: "متأكد إنك عاوز تلغي الطلب ده؟",
+                              tone: "danger",
+                              confirmLabel: "ألغِ الطلب",
+                            });
+                            if (ok) updateStatus.mutate({ id: o.id, status: "cancelled" });
+                          }}
+                          disabled={o.status === "cancelled"}
+                          className="px-4 py-2 bg-destructive text-white rounded font-bold text-sm disabled:opacity-50"
+                        >
+                          ✗ إلغاء
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: lang === "ar" ? "حذف الطلب نهائيًا" : "Delete order permanently",
+                              message:
+                                lang === "ar"
+                                  ? "حذف الطلب نهائيًا؟ لا يمكن التراجع."
+                                  : "Delete order permanently? This action cannot be undone.",
+                              tone: "danger",
+                              confirmLabel: lang === "ar" ? "احذف نهائيًا" : "Delete permanently",
+                            });
+                            if (!ok) return;
+
+                            // Set the order to be deleted and show password input
+                            setCurrentAction("deleteOrder");
+                            setShowPasswordInput(true);
+                            setPassword("");
+                            currentOrderToDeleteRef.current = o.id;
+                          }}
+                          className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
+                        >
+                          {lang === "ar" ? "حذف نهائي" : "Delete permanently"}
+                        </button>
+                      </div>
+
+                      {/* Items */}
+                      <div className="space-y-3 pt-2 border-t border-border">
+                        {o.order_items?.map((it: any) => {
+                          return (
+                            <OrderItemRow
+                              key={it.id}
+                              item={it}
+                              onDeliver={(creds) => deliver.mutateAsync({ orderItemId: it.id, creds })}
+                              deliverInstant={it.delivery_type === "instant" && it.plan_id ? deliverInstant : undefined}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  <div><span className="text-muted-foreground">الحالة:</span> <span className="font-bold">{o.status}</span></div>
-                  <div><span className="text-muted-foreground">طريقة الدفع:</span> <span className="font-bold">{o.payment_gateway}</span></div>
-                  {o.payment_sender_phone && (
-                    <div><span className="text-muted-foreground">رقم المُحوَّل منه:</span> <span className="font-mono">{o.payment_sender_phone}</span></div>
-                  )}
-                  {o.payment_reference && (
-                    <div className="md:col-span-2"><span className="text-muted-foreground">مرجع الدفع:</span> <span className="font-mono">{o.payment_reference}</span></div>
-                  )}
-                  {o.notes && (
-                    <div className="md:col-span-2"><span className="text-muted-foreground">ملاحظات:</span> {o.notes}</div>
-                  )}
-                  {o.payment_proof_url && (
-                    <div className="md:col-span-2">
-                      <button onClick={() => openProof(o.payment_proof_url)} className="text-sm px-3 py-1.5 bg-brand text-brand-foreground rounded font-bold">
-                        عرض إثبات الدفع
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Approve / Cancel */}
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-                  <button
-                    onClick={() => updateStatus.mutate({ id: o.id, status: "paid" })}
-                    disabled={o.status === "paid" || o.status === "delivered"}
-                    className="px-4 py-2 bg-success text-white rounded font-bold text-sm disabled:opacity-50"
-                  >✓ تأكيد الدفع (Paid)</button>
-                  <button
-                    onClick={() => updateStatus.mutate({ id: o.id, status: "delivered" })}
-                    disabled={o.status === "delivered"}
-                    className="px-4 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50"
-                  >تم التسليم</button>
-                  <button
-                    onClick={async () => {
-                      const ok = await confirm({ title: "إلغاء الطلب", message: "متأكد إنك عاوز تلغي الطلب ده؟", tone: "danger", confirmLabel: "ألغِ الطلب" });
-                      if (ok) updateStatus.mutate({ id: o.id, status: "cancelled" });
-                    }}
-                    disabled={o.status === "cancelled"}
-                    className="px-4 py-2 bg-destructive text-white rounded font-bold text-sm disabled:opacity-50"
-                  >✗ إلغاء</button>
-                  <button
-                    onClick={async () => {
-                      const ok = await confirm({
-                        title: lang === "ar" ? "حذف الطلب نهائيًا" : "Delete order permanently",
-                        message: lang === "ar"
-                          ? "حذف الطلب نهائيًا؟ لا يمكن التراجع."
-                          : "Delete order permanently? This action cannot be undone.",
-                        tone: "danger",
-                        confirmLabel: lang === "ar" ? "احذف نهائيًا" : "Delete permanently"
-                      });
-                      if (!ok) return;
-
-                      // Set the order to be deleted and show password input
-                      setCurrentAction("deleteOrder");
-                      setShowPasswordInput(true);
-                      setPassword("");
-                      currentOrderToDeleteRef.current = o.id;
-                    }}
-                    className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/30 rounded font-bold text-sm hover:bg-destructive hover:text-white transition"
-                  >{lang === "ar" ? "حذف نهائي" : "Delete permanently"}</button>
-                </div>
-
-                {/* Items */}
-                <div className="space-y-3 pt-2 border-t border-border">
-                  {o.order_items?.map((it: any) => {
-                    return (
-                      <OrderItemRow
-                        key={it.id}
-                        item={it}
-                        onDeliver={(creds) => deliver.mutate({ orderItemId: it.id, creds })}
-                        deliverInstant={
-                          it.delivery_type === "instant" && it.plan_id
-                            ? deliverInstant
-                            : undefined
-                        }
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-              );
-            })()}
-
-          </div>
-        );})}
+                  );
+                })()}
+            </div>
+          );
+        })}
         {visible.length === 0 && (
           <p className="text-muted-foreground text-center py-16">
             {tab === "expiring" ? "مفيش خدمات قربت تنتهي" : "No orders yet"}
@@ -808,24 +974,46 @@ function AdminOrders() {
         )}
       </div>
 
-      {proofPreview && typeof document !== "undefined" && createPortal(
-        <ProofLightbox
-          src={proofPreview}
-          loading={proofLoading || proofPreview === "__loading__"}
-          onClose={() => setProofPreview(null)}
-        />,
-        document.body,
-      )}
+      {proofPreview &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <ProofLightbox
+            src={proofPreview}
+            loading={proofLoading || proofPreview === "__loading__"}
+            onClose={() => setProofPreview(null)}
+          />,
+          document.body,
+        )}
     </div>
   );
 }
 
-function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDeliver: (creds: { account_email: string; account_username: string; account_password: string; extra_notes: string }) => void; deliverInstant?: { mutateAsync: (params: { orderItemId: string; planId: string }) => Promise<any> } }) {
+function OrderItemRow({
+  item,
+  onDeliver,
+  deliverInstant,
+}: {
+  item: any;
+  onDeliver: (creds: {
+    account_email: string;
+    account_username: string;
+    account_password: string;
+    extra_notes: string;
+  }) => Promise<any>;
+  deliverInstant?: { mutateAsync: (params: { orderItemId: string; planId: string }) => Promise<any> };
+}) {
   const { lang, notify } = useApp();
-  const [creds, setCreds] = useState({ account_email: "", account_username: "", account_password: "", extra_notes: "" });
+  const [creds, setCreds] = useState({
+    account_email: "",
+    account_username: "",
+    account_password: "",
+    extra_notes: "",
+  });
   const [resending, setResending] = useState(false);
   const [deliverInstantBusy, setDeliverInstantBusy] = useState(false);
-  const itemStatus: "pending" | "delivered" | "refunded" = item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
+  const [deliverManualBusy, setDeliverManualBusy] = useState(false);
+  const itemStatus: "pending" | "delivered" | "refunded" =
+    item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
   const delivered = itemStatus === "delivered";
   const refunded = itemStatus === "refunded";
 
@@ -845,23 +1033,35 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
   const prod = item.products;
   const lineTotal = Number(item.frozen_unit_price ?? item.unit_price) * Number(item.quantity);
   const originalUnit = plan?.price ? Number(plan.price) : null;
-  const discounted = originalUnit !== null && Math.abs(originalUnit - Number(item.frozen_unit_price ?? item.unit_price)) > 0.5;
+  const discounted =
+    originalUnit !== null && Math.abs(originalUnit - Number(item.frozen_unit_price ?? item.unit_price)) > 0.5;
 
   return (
     <div className="p-4 bg-background border border-border rounded-xl">
       <div className="flex justify-between mb-2 gap-3 flex-wrap">
         <div className="flex items-start gap-3 min-w-0 flex-1">
           {(prod?.cover_url || prod?.icon_url) && (
-            <img src={prod.cover_url || prod.icon_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0" />
+            <img
+              src={prod.cover_url || prod.icon_url}
+              alt=""
+              className="w-12 h-12 rounded-lg object-cover border border-border shrink-0"
+            />
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap" dir={lang === "ar" ? "rtl" : "ltr"}>
               {prod?.slug ? (
-                <a href={`/product/${prod.slug}`} target="_blank" rel="noreferrer" className="font-bold hover:text-brand underline-offset-2 hover:underline">
+                <a
+                  href={`/product/${prod.slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold hover:text-brand underline-offset-2 hover:underline"
+                >
                   <bdi>{item.product_name}</bdi>
                 </a>
               ) : (
-                <span className="font-bold"><bdi>{item.product_name}</bdi></span>
+                <span className="font-bold">
+                  <bdi>{item.product_name}</bdi>
+                </span>
               )}
               <span className="text-sm font-bold text-muted-foreground">
                 {lang === "ar" ? "الكمية:" : "Qty:"} {item.quantity}
@@ -873,7 +1073,16 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
               </span>
               {item.account_type && (
                 <span className="text-[10px] px-2 py-0.5 rounded bg-brand/10 text-brand font-bold">
-                  {lang === "ar" ? "نوع الحساب:" : "Account:"} {item.account_type === "private" ? (lang === "ar" ? "خاص" : "Private") : item.account_type === "shared" ? (lang === "ar" ? "مشترك" : "Shared") : item.account_type}
+                  {lang === "ar" ? "نوع الحساب:" : "Account:"}{" "}
+                  {item.account_type === "private"
+                    ? lang === "ar"
+                      ? "خاص"
+                      : "Private"
+                    : item.account_type === "shared"
+                      ? lang === "ar"
+                        ? "مشترك"
+                        : "Shared"
+                      : item.account_type}
                 </span>
               )}
               {plan?.plan_variant && (
@@ -883,18 +1092,36 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
               )}
               {plan?.duration_days > 0 && (
                 <span className="text-[10px] px-2 py-0.5 rounded bg-muted text-muted-foreground font-bold">
-                  {lang === "ar" ? "المدة:" : "Duration:"} {lang === "ar" ? `${plan.duration_days} يوم` : `${plan.duration_days} days`}
+                  {lang === "ar" ? "المدة:" : "Duration:"}{" "}
+                  {lang === "ar" ? `${plan.duration_days} يوم` : `${plan.duration_days} days`}
                 </span>
               )}
-              <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                {lang === "ar" ? "التسليم:" : "Delivery:"} {item.delivery_type === "instant" ? (lang === "ar" ? "فوري" : "Instant") : (lang === "ar" ? "يدوي" : "Manual")}
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded font-bold ${item.delivery_type === "instant" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}
+              >
+                {lang === "ar" ? "التسليم:" : "Delivery:"}{" "}
+                {item.delivery_type === "instant"
+                  ? lang === "ar"
+                    ? "فوري"
+                    : "Instant"
+                  : lang === "ar"
+                    ? "يدوي"
+                    : "Manual"}
               </span>
-              <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : refunded ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded font-bold ${delivered ? "bg-success/15 text-success" : refunded ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}
+              >
                 {delivered
-                  ? (lang === "ar" ? "✓ تم التسليم" : "✓ Delivered")
+                  ? lang === "ar"
+                    ? "✓ تم التسليم"
+                    : "✓ Delivered"
                   : refunded
-                  ? (lang === "ar" ? "↺ تم الاسترداد" : "↺ Refunded")
-                  : (lang === "ar" ? "⏳ قيد المراجعة" : "⏳ Pending review")}
+                    ? lang === "ar"
+                      ? "↺ تم الاسترداد"
+                      : "↺ Refunded"
+                    : lang === "ar"
+                      ? "⏳ قيد المراجعة"
+                      : "⏳ Pending review"}
               </span>
             </div>
           </div>
@@ -927,7 +1154,13 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
               disabled={resending}
               className="px-2 py-1 rounded bg-brand/10 border border-brand/30 text-brand text-[11px] font-bold hover:bg-brand hover:text-brand-foreground disabled:opacity-50"
             >
-              {resending ? (lang === "ar" ? "جاري..." : "Sending...") : (lang === "ar" ? "إعادة إرسال الإيميل" : "Resend email")}
+              {resending
+                ? lang === "ar"
+                  ? "جاري..."
+                  : "Sending..."
+                : lang === "ar"
+                  ? "إعادة إرسال الإيميل"
+                  : "Resend email"}
             </button>
           </div>
           {item.delivered_accounts.map((a: any) => {
@@ -950,17 +1183,29 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
                     {endAt ? (
                       <div>
                         <span className="text-muted-foreground">{lang === "ar" ? "تاريخ الانتهاء:" : "Expires:"}</span>{" "}
-                        <span className={`font-bold ${daysLeft !== null && daysLeft < 0 ? "text-destructive" : daysLeft !== null && daysLeft <= 7 ? "text-destructive" : daysLeft !== null && daysLeft <= 30 ? "text-warning" : ""}`}>
+                        <span
+                          className={`font-bold ${daysLeft !== null && daysLeft < 0 ? "text-destructive" : daysLeft !== null && daysLeft <= 7 ? "text-destructive" : daysLeft !== null && daysLeft <= 30 ? "text-warning" : ""}`}
+                        >
                           {fmt(endAt)}
                           {daysLeft !== null && (
                             <span className="ms-1 text-[10px]">
-                              ({daysLeft < 0 ? (lang === "ar" ? `انتهت من ${Math.abs(daysLeft)} يوم` : `expired ${Math.abs(daysLeft)}d ago`) : (lang === "ar" ? `باقي ${daysLeft} يوم` : `${daysLeft}d left`)})
+                              (
+                              {daysLeft < 0
+                                ? lang === "ar"
+                                  ? `انتهت من ${Math.abs(daysLeft)} يوم`
+                                  : `expired ${Math.abs(daysLeft)}d ago`
+                                : lang === "ar"
+                                  ? `باقي ${daysLeft} يوم`
+                                  : `${daysLeft}d left`}
+                              )
                             </span>
                           )}
                         </span>
                       </div>
                     ) : (
-                      <div className="text-muted-foreground">{lang === "ar" ? "المدة: غير محددة" : "Duration: N/A"}</div>
+                      <div className="text-muted-foreground">
+                        {lang === "ar" ? "المدة: غير محددة" : "Duration: N/A"}
+                      </div>
                     )}
                   </div>
                 )}
@@ -968,33 +1213,34 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
             );
           })}
         </div>
-
       ) : (
         <div className="mt-2 space-y-2">
-           {deliverInstant && (
-             <button
-               type="button"
-               onClick={async () => {
-                 setDeliverInstantBusy(true);
-                 try {
-                   await deliverInstant.mutateAsync({ orderItemId: item.id, planId: item.plan_id });
-                 } finally {
-                   setDeliverInstantBusy(false);
-                 }
-               }}
-               disabled={deliverInstantBusy}
-               className="w-full px-3 py-2 rounded bg-success/15 text-success border border-success/30 font-bold text-sm hover:bg-success hover:text-success-foreground transition disabled:opacity-50 disabled:cursor-not-allowed"
-             >
-               {deliverInstantBusy ? (
-                 <>
-                   <span className="animate-spin">⏳</span>
-                   {lang === "ar" ? " جاري التسليم..." : " Delivering..."}
-                 </>
-               ) : (
-                 lang === "ar" ? "⚡ تسليم فوري من المخزون" : "⚡ Deliver from inventory"
-               )}
-             </button>
-           )}
+          {deliverInstant && (
+            <button
+              type="button"
+              onClick={async () => {
+                setDeliverInstantBusy(true);
+                try {
+                  await deliverInstant.mutateAsync({ orderItemId: item.id, planId: item.plan_id });
+                } finally {
+                  setDeliverInstantBusy(false);
+                }
+              }}
+              disabled={deliverInstantBusy}
+              className="w-full px-3 py-2 rounded bg-success/15 text-success border border-success/30 font-bold text-sm hover:bg-success hover:text-success-foreground transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deliverInstantBusy ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  {lang === "ar" ? " جاري التسليم..." : " Delivering..."}
+                </>
+              ) : lang === "ar" ? (
+                "⚡ تسليم فوري من المخزون"
+              ) : (
+                "⚡ Deliver from inventory"
+              )}
+            </button>
+          )}
           {(() => {
             const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(creds.account_email.trim());
             const userOk = creds.account_username.trim().length > 0;
@@ -1004,25 +1250,58 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
               `px-3 py-2 bg-card border rounded text-sm ${ok ? "border-border" : "border-destructive/50"}`;
             return (
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  if (!canDeliver) return;
-                  onDeliver(creds);
+                  if (!canDeliver || deliverManualBusy) return;
+                  setDeliverManualBusy(true);
+                  try {
+                    await onDeliver(creds);
+                    // On success the item flips to "delivered" and this form
+                    // unmounts via the parent re-render, so no need to reset
+                    // busy here — but do it anyway in case delivery already
+                    // happened moments earlier (e.g. via the other tab) and
+                    // the row hasn't re-rendered yet.
+                  } catch {
+                    // Error is already surfaced by the mutation's onError;
+                    // re-enable the form so the admin can retry or fix input.
+                  } finally {
+                    setDeliverManualBusy(false);
+                  }
                 }}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-2"
               >
-                <input required type="email" placeholder="Account email *" value={creds.account_email}
+                <input
+                  required
+                  type="email"
+                  placeholder="Account email *"
+                  value={creds.account_email}
                   onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
-                  className={box(emailOk || creds.account_email.length === 0)} />
-                <input required placeholder="Username *" value={creds.account_username}
+                  disabled={deliverManualBusy}
+                  className={box(emailOk || creds.account_email.length === 0)}
+                />
+                <input
+                  required
+                  placeholder="Username *"
+                  value={creds.account_username}
                   onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
-                  className={box(userOk || creds.account_username.length === 0)} />
-                <input required placeholder="Password *" value={creds.account_password}
+                  disabled={deliverManualBusy}
+                  className={box(userOk || creds.account_username.length === 0)}
+                />
+                <input
+                  required
+                  placeholder="Password *"
+                  value={creds.account_password}
                   onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
-                  className={box(passOk || creds.account_password.length === 0)} />
-                <input placeholder={lang === "ar" ? "Notes (اختياري)" : "Notes (optional)"} value={creds.extra_notes}
+                  disabled={deliverManualBusy}
+                  className={box(passOk || creds.account_password.length === 0)}
+                />
+                <input
+                  placeholder={lang === "ar" ? "Notes (اختياري)" : "Notes (optional)"}
+                  value={creds.extra_notes}
                   onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
-                  className="px-3 py-2 bg-card border border-border rounded text-sm" />
+                  disabled={deliverManualBusy}
+                  className="px-3 py-2 bg-card border border-border rounded text-sm"
+                />
                 {!canDeliver && (
                   <p className="sm:col-span-2 text-[11px] text-warning">
                     {lang === "ar"
@@ -1032,10 +1311,16 @@ function OrderItemRow({ item, onDeliver, deliverInstant }: { item: any; onDelive
                 )}
                 <button
                   type="submit"
-                  disabled={!canDeliver}
+                  disabled={!canDeliver || deliverManualBusy}
                   className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {lang === "ar" ? "تسليم يدوي وإرسال إيميل" : "Deliver manually & email"}
+                  {deliverManualBusy
+                    ? lang === "ar"
+                      ? "⏳ جاري التسليم..."
+                      : "⏳ Delivering..."
+                    : lang === "ar"
+                      ? "تسليم يدوي وإرسال إيميل"
+                      : "Deliver manually & email"}
                 </button>
               </form>
             );
@@ -1070,9 +1355,14 @@ function ProofLightbox({ src, loading, onClose }: { src: string; loading: boolea
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragRef.current) return;
-    setPos({ x: dragRef.current.ox + (e.clientX - dragRef.current.x), y: dragRef.current.oy + (e.clientY - dragRef.current.y) });
+    setPos({
+      x: dragRef.current.ox + (e.clientX - dragRef.current.x),
+      y: dragRef.current.oy + (e.clientY - dragRef.current.y),
+    });
   };
-  const onPointerUp = () => { dragRef.current = null; };
+  const onPointerUp = () => {
+    dragRef.current = null;
+  };
   const onTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -1088,20 +1378,54 @@ function ProofLightbox({ src, loading, onClose }: { src: string; loading: boolea
       setZ(pinchRef.current.zoom * (nd / pinchRef.current.dist));
     }
   };
-  const onTouchEnd = (e: React.TouchEvent) => { if (e.touches.length < 2) pinchRef.current = null; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) pinchRef.current = null;
+  };
 
   return (
-    <div className="fixed inset-0 z-[10080] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <button onClick={onClose} aria-label="إغلاق" className="absolute top-4 end-4 grid place-items-center size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl leading-none z-20">×</button>
+    <div
+      className="fixed inset-0 z-[10080] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        aria-label="إغلاق"
+        className="absolute top-4 end-4 grid place-items-center size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-2xl leading-none z-20"
+      >
+        ×
+      </button>
       <div className="absolute top-4 start-4 flex gap-2 z-20" onClick={(e) => e.stopPropagation()}>
-        <button onClick={() => setZ(zoom - 0.3)} className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold">−</button>
-        <button onClick={() => setZ(1)} className="h-10 px-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold">{Math.round(zoom * 100)}%</button>
-        <button onClick={() => setZ(zoom + 0.3)} className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold">+</button>
+        <button
+          onClick={() => setZ(zoom - 0.3)}
+          className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold"
+        >
+          −
+        </button>
+        <button
+          onClick={() => setZ(1)}
+          className="h-10 px-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold"
+        >
+          {Math.round(zoom * 100)}%
+        </button>
+        <button
+          onClick={() => setZ(zoom + 0.3)}
+          className="size-10 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl font-bold"
+        >
+          +
+        </button>
       </div>
       <div
         className="relative flex items-center justify-center overflow-hidden select-none"
-        style={{ width: "min(90vw, 520px)", height: "min(80vh, 640px)", cursor: zoom > 1 ? "grab" : "zoom-in", touchAction: "none" }}
-        onClick={(e) => { e.stopPropagation(); if (zoom === 1) setZ(2); }}
+        style={{
+          width: "min(90vw, 520px)",
+          height: "min(80vh, 640px)",
+          cursor: zoom > 1 ? "grab" : "zoom-in",
+          touchAction: "none",
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (zoom === 1) setZ(2);
+        }}
         onWheel={onWheel}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
