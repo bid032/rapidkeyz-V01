@@ -26,9 +26,7 @@ export function Footer() {
               />
               <BrandName className="text-xl font-bold" />
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t.footer.tagline}
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{t.footer.tagline}</p>
           </div>
 
           {/* Contact */}
@@ -39,7 +37,10 @@ export function Footer() {
                 <Phone className="size-4" />
                 <span>+20 128 4234 815</span>
               </a>
-              <a href="mailto:support@rapidkeyz.com" className="flex items-center gap-2 hover:text-brand transition-colors">
+              <a
+                href="mailto:support@rapidkeyz.com"
+                className="flex items-center gap-2 hover:text-brand transition-colors"
+              >
                 <Mail className="size-4" />
                 <span>support@rapidkeyz.com</span>
               </a>
@@ -70,7 +71,7 @@ export function Footer() {
 
           {/* Social */}
           <div className="flex flex-col gap-4">
-            <h3 className="font-bold text-sm">{t.footer.support}</h3>
+            <h3 className="font-bold text-sm">{t.footer.followUs}</h3>
             <div className="flex flex-col gap-3">
               {socials.map((s) => (
                 <a
@@ -89,7 +90,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} RapidKeyz. {t.footer.rights}
+          {t.footer.copyright}
         </div>
       </div>
     </footer>
