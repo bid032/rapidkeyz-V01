@@ -1149,7 +1149,7 @@ function OrderItemRow({
                   : "Resend email"}
             </button>
           </div>
-          {item.delivered_accounts.map((a: any) => {
+          {(Array.isArray(item.delivered_accounts) ? item.delivered_accounts : []).map((a: any) => {
             const dur = Number(item.product_plans?.duration_days ?? 0);
             const startAt = a.delivered_at ? new Date(a.delivered_at) : null;
             const endAt = startAt && dur > 0 ? new Date(startAt.getTime() + dur * 86400_000) : null;
