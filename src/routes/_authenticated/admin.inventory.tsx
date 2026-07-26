@@ -948,12 +948,37 @@ function ProductSheetPanel({
         data: { productId, spreadsheetId: id, overrides },
       });
       const totalInserted = res.results.reduce((s, r) => s + r.inserted, 0);
-      notify(
+      const matchedTabs = res.results.filter((r) => r.tab_title).length;
+      const summary =
         lang === "ar"
-          ? `تم استيراد ${totalInserted} حساب من ${res.results.filter((r) => r.tab_title).length} tab`
-          : `Imported ${totalInserted} accounts from ${res.results.filter((r) => r.tab_title).length} tabs`,
-        "success",
-      );
+          ? `تم استيراد ${totalInserted} حساب من ${matchedTabs} tab`
+          : `Imported ${totalInserted} accounts from ${matchedTabs} tabs`;
+
+      // If nothing (or fewer than expected) got imported, tell the admin
+      // WHY per plan/tab instead of just showing a number — previously the
+      // reason (no_matching_tab / no_available_rows / insert_failed) was
+      // computed but never shown, so "0 imported" looked unexplainable even
+      // though the server knew exactly what happened.
+      const NOTE_LABELS_AR: Record<string, string> = {
+        no_matching_tab: "مفيش تاب في الشيت باسم يطابق اسم الخطة",
+        no_available_rows: "كل الصفوف متعلّم عليها إنها مش متاحة (status)",
+      };
+      const problems = res.results
+        .filter((r) => r.inserted === 0)
+        .map((r) => {
+          const reasonKey = r.note?.split("_failed")[0] === "insert" ? "insert_failed" : r.note;
+          const reason =
+            (reasonKey && NOTE_LABELS_AR[reasonKey]) ??
+            (r.note?.startsWith("insert_failed") ? r.note : null) ??
+            (lang === "ar" ? "بدون تفاصيل" : "no details");
+          return `• ${r.plan_label}${r.tab_title ? ` (${r.tab_title})` : ""}: ${reason}`;
+        });
+
+      if (totalInserted === 0 && problems.length > 0) {
+        notify(`${summary}\n${problems.join("\n")}`, "error");
+      } else {
+        notify(summary, "success");
+      }
       onChange();
     } catch (e: any) {
       showError(e, notify, lang);
