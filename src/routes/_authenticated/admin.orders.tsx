@@ -334,9 +334,8 @@ function AdminOrders() {
 
   const deliver = useMutation({
     mutationFn: async ({ orderItemId, creds }: { orderItemId: string; creds: any }) => {
-      // Guard against a duplicate submit (double click / retry) racing in
-      // before the UI re-renders: bail out early if this item was already
-      // delivered by another in-flight call.
+      // نفس فحص منع التكرار المستخدم في التسليم الفوري، عشان الضغط المزدوج
+      // أو إعادة المحاولة متأخرًا مايعملش تسليم/إيميل تاني لنفس الطلب.
       const { data: orderItem, error: checkError } = await supabase
         .from("order_items")
         .select("status")
@@ -351,15 +350,7 @@ function AdminOrders() {
         order_item_id: orderItemId,
         ...creds,
       });
-      if (error) {
-        // Unique constraint on delivered_accounts.order_item_id — a second
-        // insert for the same item (race) fails here instead of creating a
-        // duplicate delivery / duplicate email.
-        if ((error as any).code === "23505") {
-          throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
-        }
-        throw error;
-      }
+      if (error) throw error;
       // Flip the per-item status. Order-level status auto-flips via DB trigger.
       const { error: sErr } = await supabase
         .from("order_items")
@@ -399,12 +390,7 @@ function AdminOrders() {
         _order_item_id: orderItemId,
         _plan_id: planId,
       });
-      if (error) {
-        if (/already delivered/i.test(error.message ?? "")) {
-          throw new Error(lang === "ar" ? "تم تسليم هذا العنصر بالفعل" : "This item has already been delivered");
-        }
-        throw error;
-      }
+      if (error) throw error;
       if (!claimedId) {
         throw new Error(
           lang === "ar" ? "لا يوجد مخزون متاح — سلّم يدويًا" : "No inventory available — deliver manually",
@@ -1011,7 +997,7 @@ function OrderItemRow({
   });
   const [resending, setResending] = useState(false);
   const [deliverInstantBusy, setDeliverInstantBusy] = useState(false);
-  const [deliverManualBusy, setDeliverManualBusy] = useState(false);
+  const [deliverBusy, setDeliverBusy] = useState(false);
   const itemStatus: "pending" | "delivered" | "refunded" =
     item.status ?? (item.delivered_accounts?.length > 0 ? "delivered" : "pending");
   const delivered = itemStatus === "delivered";
@@ -1250,23 +1236,11 @@ function OrderItemRow({
               `px-3 py-2 bg-card border rounded text-sm ${ok ? "border-border" : "border-destructive/50"}`;
             return (
               <form
-                onSubmit={async (e) => {
+                onSubmit={(e) => {
                   e.preventDefault();
-                  if (!canDeliver || deliverManualBusy) return;
-                  setDeliverManualBusy(true);
-                  try {
-                    await onDeliver(creds);
-                    // On success the item flips to "delivered" and this form
-                    // unmounts via the parent re-render, so no need to reset
-                    // busy here — but do it anyway in case delivery already
-                    // happened moments earlier (e.g. via the other tab) and
-                    // the row hasn't re-rendered yet.
-                  } catch {
-                    // Error is already surfaced by the mutation's onError;
-                    // re-enable the form so the admin can retry or fix input.
-                  } finally {
-                    setDeliverManualBusy(false);
-                  }
+                  if (!canDeliver || deliverBusy) return;
+                  setDeliverBusy(true);
+                  onDeliver(creds).finally(() => setDeliverBusy(false));
                 }}
                 className="grid grid-cols-1 sm:grid-cols-2 gap-2"
               >
@@ -1276,7 +1250,6 @@ function OrderItemRow({
                   placeholder="Account email *"
                   value={creds.account_email}
                   onChange={(e) => setCreds({ ...creds, account_email: e.target.value })}
-                  disabled={deliverManualBusy}
                   className={box(emailOk || creds.account_email.length === 0)}
                 />
                 <input
@@ -1284,7 +1257,6 @@ function OrderItemRow({
                   placeholder="Username *"
                   value={creds.account_username}
                   onChange={(e) => setCreds({ ...creds, account_username: e.target.value })}
-                  disabled={deliverManualBusy}
                   className={box(userOk || creds.account_username.length === 0)}
                 />
                 <input
@@ -1292,14 +1264,12 @@ function OrderItemRow({
                   placeholder="Password *"
                   value={creds.account_password}
                   onChange={(e) => setCreds({ ...creds, account_password: e.target.value })}
-                  disabled={deliverManualBusy}
                   className={box(passOk || creds.account_password.length === 0)}
                 />
                 <input
                   placeholder={lang === "ar" ? "Notes (اختياري)" : "Notes (optional)"}
                   value={creds.extra_notes}
                   onChange={(e) => setCreds({ ...creds, extra_notes: e.target.value })}
-                  disabled={deliverManualBusy}
                   className="px-3 py-2 bg-card border border-border rounded text-sm"
                 />
                 {!canDeliver && (
@@ -1311,13 +1281,13 @@ function OrderItemRow({
                 )}
                 <button
                   type="submit"
-                  disabled={!canDeliver || deliverManualBusy}
+                  disabled={!canDeliver || deliverBusy}
                   className="sm:col-span-2 px-3 py-2 bg-brand text-brand-foreground rounded font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {deliverManualBusy
+                  {deliverBusy
                     ? lang === "ar"
-                      ? "⏳ جاري التسليم..."
-                      : "⏳ Delivering..."
+                      ? "جاري التسليم..."
+                      : "Delivering..."
                     : lang === "ar"
                       ? "تسليم يدوي وإرسال إيميل"
                       : "Deliver manually & email"}
