@@ -26,6 +26,13 @@ function authHeaders() {
 }
 
 async function getSpreadsheetId(): Promise<string> {
+  // Prefer the new `google_sheet_integrations` registry (slug = "stock"),
+  // fall back to the legacy `site_settings.stock_sheet` row for older setups.
+  try {
+    const { findSheetIntegration } = await import("@/lib/google-sheets-manager.server");
+    const it = await findSheetIntegration("stock");
+    if (it?.spreadsheet_id) return it.spreadsheet_id;
+  } catch { /* fall through to legacy */ }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
   const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
