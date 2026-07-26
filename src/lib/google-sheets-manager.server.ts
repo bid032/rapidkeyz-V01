@@ -34,7 +34,7 @@ async function loadAll(): Promise<SheetIntegration[]> {
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw new Error(`Failed to load Google Sheet integrations: ${error.message}`);
-  const rows = (data ?? []) as SheetIntegration[];
+  const rows = (data ?? []) as unknown as SheetIntegration[];
   cache = { rows, exp: now + CACHE_TTL_MS };
   return rows;
 }
