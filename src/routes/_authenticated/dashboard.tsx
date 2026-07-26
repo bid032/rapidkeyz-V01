@@ -135,10 +135,7 @@ function Dashboard() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-8 sm:pb-12">
         <div className="flex justify-end gap-2 mb-6">
-          <Link
-            to="/account"
-            className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-muted"
-          >
+          <Link to="/account" className="px-4 py-2 border border-border rounded-lg text-sm font-bold hover:bg-muted">
             {lang === "ar" ? "معلومات الحساب" : "Account info"}
           </Link>
           <button
@@ -165,21 +162,32 @@ function Dashboard() {
               <div key={o.id} className="p-4 sm:p-6 bg-card border border-border rounded-2xl">
                 <div className="flex justify-between items-start mb-4 gap-3 flex-wrap">
                   <div className="min-w-0">
-                    <div className="font-bold">{t.dashboard.order} #{o.order_number}</div>
+                    <div className="font-bold">
+                      {t.dashboard.order} #{o.order_number}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(o.created_at).toLocaleString(lang === "ar" ? "ar-EG" : "en-US", { hour12: true })}
                     </div>
                   </div>
                   <div className="text-end shrink-0">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                      o.status === "delivered" || o.status === "paid" ? "bg-success/10 text-success" :
-                      o.status === "pending" ? "bg-warning/10 text-warning" :
-                      "bg-muted text-muted-foreground"
-                    }`}>{o.status}</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+                        o.status === "delivered" || o.status === "paid"
+                          ? "bg-success/10 text-success"
+                          : o.status === "pending"
+                            ? "bg-warning/10 text-warning"
+                            : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {o.status}
+                    </span>
                     {Number(o.discount_amount ?? 0) > 0 && (
                       <div className="mt-1 text-[11px] leading-tight">
                         <div className="text-muted-foreground">
-                          {lang === "ar" ? "قبل الخصم" : "Before"}: <span className="line-through">{o.subtotal} {t.common.currency}</span>
+                          {lang === "ar" ? "قبل الخصم" : "Before"}:{" "}
+                          <span className="line-through">
+                            {o.subtotal} {t.common.currency}
+                          </span>
                         </div>
                         <div className="text-success font-bold">
                           {lang === "ar" ? "خصم" : "Discount"} −{o.discount_amount} {t.common.currency}
@@ -200,19 +208,21 @@ function Dashboard() {
                     const reason = fullRefund?.notes?.trim();
                     const refundedFlag = !!fullRefund || isRefunded;
                     const title = refundedFlag
-                      ? (lang === "ar" ? "تم استرداد قيمة الطلب" : "Order refunded")
-                      : (lang === "ar" ? "تم إلغاء الطلب" : "Order cancelled");
-                    const fallback = lang === "ar"
-                      ? "لا يمكن عرض بيانات الحساب لأن الطلب "
-                        + (refundedFlag ? "تم استرداده." : "تم إلغاؤه.")
-                      : "Account details are unavailable because the order has been "
-                        + (refundedFlag ? "refunded." : "cancelled.");
+                      ? lang === "ar"
+                        ? "تم استرداد قيمة الطلب"
+                        : "Order refunded"
+                      : lang === "ar"
+                        ? "تم إلغاء الطلب"
+                        : "Order cancelled";
+                    const fallback =
+                      lang === "ar"
+                        ? "لا يمكن عرض بيانات الحساب لأن الطلب " + (refundedFlag ? "تم استرداده." : "تم إلغاؤه.")
+                        : "Account details are unavailable because the order has been " +
+                          (refundedFlag ? "refunded." : "cancelled.");
                     return (
                       <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg text-center">
                         <div className="text-sm font-bold text-destructive mb-1">{title}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {reason || fallback}
-                        </div>
+                        <div className="text-xs text-muted-foreground">{reason || fallback}</div>
                       </div>
                     );
                   }
@@ -237,75 +247,84 @@ function Dashboard() {
                       {o.order_items?.map((it: any) => {
                         const itemRefund = refundByItem.get(it.id);
                         return (
-                        <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
-                          <div className="flex justify-between items-center gap-2 flex-wrap">
-                            <div className="text-sm min-w-0">
-                              <span className="font-bold">{it.product_name}</span>{" "}
-                              <span className="text-muted-foreground">, {it.plan_label} × {it.quantity}</span>
-                            </div>
-                            <div className="text-sm font-bold shrink-0">{Number(it.frozen_unit_price ?? it.unit_price) * it.quantity} {t.common.currency}</div>
-                          </div>
-                          {itemRefund && itemRefund.type === "full" ? (
-                            <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">
-                              <div className="text-xs font-bold text-destructive mb-1">
-                                {lang === "ar" ? "تم استرداد قيمة هذه الخدمة" : "This item has been refunded"}
+                          <div key={it.id} className="p-3 bg-muted/50 rounded-lg">
+                            <div className="flex justify-between items-center gap-2 flex-wrap">
+                              <div className="text-sm min-w-0">
+                                <span className="font-bold">{it.product_name}</span>{" "}
+                                <span className="text-muted-foreground">
+                                  , {it.plan_label} × {it.quantity}
+                                </span>
                               </div>
-                              <div className="text-[11px] text-muted-foreground">
-                                {itemRefund.notes?.trim() || (lang === "ar"
-                                  ? "بيانات الحساب لم تعد متاحة."
-                                  : "Account details are no longer available.")}
+                              <div className="text-sm font-bold shrink-0">
+                                {Number(it.frozen_unit_price ?? it.unit_price) * it.quantity} {t.common.currency}
                               </div>
                             </div>
-                          ) : (
-                            <>
-                              {itemRefund && itemRefund.type === "partial" && (
-                                <div className="mt-2 p-2.5 bg-warning/5 border border-warning/30 rounded text-center">
-                                  <div className="text-xs font-bold text-warning mb-0.5">
-                                    {lang === "ar"
-                                      ? `تم استرداد جزئي بمبلغ ${itemRefund.amount} ${t.common.currency}`
-                                      : `Partial refund of ${itemRefund.amount} ${t.common.currency}`}
-                                  </div>
-                                  {itemRefund.notes?.trim() && (
-                                    <div className="text-[11px] text-muted-foreground">{itemRefund.notes}</div>
-                                  )}
+                            {itemRefund && itemRefund.type === "full" ? (
+                              <div className="mt-2 p-3 bg-destructive/5 border border-destructive/20 rounded text-center">
+                                <div className="text-xs font-bold text-destructive mb-1">
+                                  {lang === "ar" ? "تم استرداد قيمة هذه الخدمة" : "This item has been refunded"}
                                 </div>
-                              )}
-                              {it.status === "delivered" && it.delivered_accounts?.length > 0 ? (
-                                it.delivered_accounts.map((acc: any) => {
-                                  const rows = buildCredentialRows(acc, lang);
-                                  return (
-                                    <div key={acc.id} className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5">
-                                      <div className="text-[11px] font-bold text-success mb-1">
-                                        {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
-                                      </div>
-                                      {rows.map((r, i) => (
-                                        <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
-                                      ))}
-                                      {acc.extra_notes && (
-                                        <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
-                                          {acc.extra_notes}
-                                        </div>
-                                      )}
+                                <div className="text-[11px] text-muted-foreground">
+                                  {itemRefund.notes?.trim() ||
+                                    (lang === "ar"
+                                      ? "بيانات الحساب لم تعد متاحة."
+                                      : "Account details are no longer available.")}
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {itemRefund && itemRefund.type === "partial" && (
+                                  <div className="mt-2 p-2.5 bg-warning/5 border border-warning/30 rounded text-center">
+                                    <div className="text-xs font-bold text-warning mb-0.5">
+                                      {lang === "ar"
+                                        ? `تم استرداد جزئي بمبلغ ${itemRefund.amount} ${t.common.currency}`
+                                        : `Partial refund of ${itemRefund.amount} ${t.common.currency}`}
                                     </div>
-                                  );
-                                })
-                              ) : (
-                                <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
-                                  {lang === "ar"
-                                    ? "⏳ طلبك قيد المراجعة، سيتم عرض بيانات الحساب هنا فور اعتماد التسليم"
-                                    : "⏳ Your order is under review. Credentials will appear here once delivered."}
-                                </div>
-                              )}
-                            </>
-                          )}
-                        </div>
+                                    {itemRefund.notes?.trim() && (
+                                      <div className="text-[11px] text-muted-foreground">{itemRefund.notes}</div>
+                                    )}
+                                  </div>
+                                )}
+                                {it.status === "delivered" &&
+                                (Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).length > 0 ? (
+                                  (Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).map(
+                                    (acc: any) => {
+                                      const rows = buildCredentialRows(acc, lang);
+                                      return (
+                                        <div
+                                          key={acc.id}
+                                          className="mt-2 p-3 bg-success/5 border border-success/20 rounded space-y-1.5"
+                                        >
+                                          <div className="text-[11px] font-bold text-success mb-1">
+                                            {lang === "ar" ? "✓ تم التسليم" : "✓ Delivered"}
+                                          </div>
+                                          {rows.map((r, i) => (
+                                            <CopyRow key={i} label={r.label} value={r.value} lang={lang} />
+                                          ))}
+                                          {acc.extra_notes && (
+                                            <div className="text-xs text-muted-foreground pt-1 border-t border-success/10">
+                                              {acc.extra_notes}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    },
+                                  )
+                                ) : (
+                                  <div className="mt-2 p-3 bg-warning/5 border border-warning/20 rounded text-xs text-muted-foreground text-center">
+                                    {lang === "ar"
+                                      ? "⏳ طلبك قيد المراجعة، سيتم عرض بيانات الحساب هنا فور اعتماد التسليم"
+                                      : "⏳ Your order is under review. Credentials will appear here once delivered."}
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
                         );
                       })}
-
                     </div>
                   );
                 })()}
-
               </div>
             ))}
           </div>
@@ -316,14 +335,23 @@ function Dashboard() {
             <h2 className="text-xl font-bold mb-4">{lang === "ar" ? "التعويضات" : "Compensations"}</h2>
             <div className="space-y-3">
               {refunds.data.map((r: any) => (
-                <div key={r.id} className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between gap-3 flex-wrap">
+                <div
+                  key={r.id}
+                  className="p-4 bg-card border border-border rounded-2xl flex items-center justify-between gap-3 flex-wrap"
+                >
                   <div className="min-w-0">
                     <div className="font-bold text-sm">
                       {r.type === "full"
-                        ? (lang === "ar" ? "ريفاند كامل" : "Full refund")
+                        ? lang === "ar"
+                          ? "ريفاند كامل"
+                          : "Full refund"
                         : r.type === "partial"
-                        ? (lang === "ar" ? "ريفاند جزئي" : "Partial refund")
-                        : (lang === "ar" ? "حساب بديل" : "Replacement account")}
+                          ? lang === "ar"
+                            ? "ريفاند جزئي"
+                            : "Partial refund"
+                          : lang === "ar"
+                            ? "حساب بديل"
+                            : "Replacement account"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {new Date(r.created_at).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US")}
@@ -370,7 +398,7 @@ function CopyRow({ label, value, lang }: { label: string; value: string; lang: s
         aria-label={lang === "ar" ? "نسخ" : "Copy"}
       >
         {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-        <span>{copied ? (lang === "ar" ? "تم" : "Copied") : (lang === "ar" ? "نسخ" : "Copy")}</span>
+        <span>{copied ? (lang === "ar" ? "تم" : "Copied") : lang === "ar" ? "نسخ" : "Copy"}</span>
       </button>
     </div>
   );
