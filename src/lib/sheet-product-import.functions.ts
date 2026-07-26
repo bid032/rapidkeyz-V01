@@ -1,16 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+const GATEWAY = "https://sheets.googleapis.com/v4";
+
+/** fetch with Google service-account auth (no Lovable connector). */
+async function gfetch(url: string, init: RequestInit = {}) {
+  const { googleSheetsFetch } = await import("@/lib/google-sheets.server");
+  return googleSheetsFetch(url, init);
+}
 
 function authHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const gsKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !gsKey) throw new Error("Google Sheets connector not configured");
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": gsKey,
-  } as Record<string, string>;
+  return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
 function normalizeTitle(s: string): string {
@@ -80,7 +80,7 @@ export const previewProductSheetTabs = createServerFn({ method: "POST" })
     });
     if (!isAdmin) throw new Error("Forbidden");
 
-    const infoRes = await fetch(
+    const infoRes = await gfetch(
       `${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`,
       { headers: authHeaders() },
     );
@@ -139,7 +139,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       .eq("product_id", data.productId);
     if (pErr) throw pErr;
 
-    const infoRes = await fetch(
+    const infoRes = await gfetch(
       `${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`,
       { headers: authHeaders() },
     );
@@ -189,7 +189,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
 
       // Fetch that tab's values
       const range = `${tabTitle}!A1:Z10000`;
-      const valuesRes = await fetch(
+      const valuesRes = await gfetch(
         `${GATEWAY}/spreadsheets/${data.spreadsheetId}/values/${range}`,
         { headers: authHeaders() },
       );

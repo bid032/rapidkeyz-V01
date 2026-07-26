@@ -179,7 +179,7 @@ function ProductPage() {
        const p: any = product;
        let q = supabase
          .from("products")
-         .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order)")
+         .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)")
          .eq("status", "active")
          .neq("id", p.id)
          .limit(8);

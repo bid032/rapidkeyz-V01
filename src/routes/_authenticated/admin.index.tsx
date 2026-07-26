@@ -175,7 +175,7 @@ function AdminOverview() {
     queryFn: async () => {
       let q = supabase
         .from("order_items")
-        .select("id, product_name, plan_label, plan_id, quantity, unit_price, frozen_unit_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total, subtotal, discount_amount, coupon_id)")
+        .select("id, product_name, plan_label, plan_id, quantity, unit_price, frozen_unit_price, frozen_cost_price, status, created_at, order_id, delivered_accounts(id, account_email, account_username, delivered_at), orders!inner(id, order_number, status, customer_email, customer_name, customer_phone, notes, user_id, created_at, payment_gateway, payment_sender_phone, payment_reference, payment_proof_url, total, subtotal, discount_amount, coupon_id)")
         .order("created_at", { ascending: false });
       if (range.start) q = q.gte("orders.created_at", range.start);
       if (range.end) q = q.lt("orders.created_at", range.end);
@@ -184,6 +184,7 @@ function AdminOverview() {
       const items = (data ?? []) as any[];
       const planIds = Array.from(new Set(items.map((r) => r.plan_id).filter(Boolean)));
       const costMap = new Map<string, number>();
+      // Fallback only: used for legacy rows that don't yet have frozen_cost_price.
       if (planIds.length) {
         const { data: costs } = await supabase.from("plan_costs").select("plan_id, cost_price").in("plan_id", planIds);
         (costs ?? []).forEach((c: any) => costMap.set(c.plan_id, Number(c.cost_price ?? 0)));
@@ -226,7 +227,9 @@ function AdminOverview() {
         orderGross.set(r.order_id, (orderGross.get(r.order_id) ?? 0) + t);
       });
       return items.map((r) => {
-        const cost = costMap.get(r.plan_id) ?? 0;
+        // Prefer per-order frozen cost so historical profit is stable when
+        // an admin edits plan_costs later. Fall back to live cost for legacy rows.
+        const cost = r.frozen_cost_price != null ? Number(r.frozen_cost_price) : (costMap.get(r.plan_id) ?? 0);
         const grossProfit = (Number(r.frozen_unit_price ?? r.unit_price) - cost) * Number(r.quantity);
         const prof = profileMap.get(r.orders?.user_id) ?? {};
         const itemRefs = refundsByItem.get(r.id) ?? [];
@@ -298,9 +301,15 @@ function AdminOverview() {
   }, [monthly.data, refundsAll.data, sales.data, month]);
 
   const exportSalesXlsx = () => {
+    const fmtDate = (dt: Date) =>
+      `${String(dt.getDate()).padStart(2, "0")}/${String(dt.getMonth() + 1).padStart(2, "0")}/${dt.getFullYear()}`;
+    const fmtTime = (dt: Date) =>
+      dt.toLocaleTimeString("en-GB", { hour12: true });
     const rows = (sales.data ?? []).map((r: any) => {
       const d = new Date(r.orders?.created_at ?? r.created_at);
-      const gross = Number(r.frozen_unit_price ?? r.unit_price) * Number(r.quantity);
+      const unitPrice = Number(r.frozen_unit_price ?? r.unit_price);
+      const qty = Number(r.quantity);
+      const gross = unitPrice * qty;
       const lineDiscount = Number(r._lineDiscount ?? 0);
       const netRevenue = Number(r._netRevenue ?? gross);
       const p = r._profile ?? {};
@@ -309,8 +318,12 @@ function AdminOverview() {
       const refundTypes = Array.from(new Set(applicable.map((x: any) => x.type).filter(Boolean))).join(", ");
       const refundNotes = applicable.map((x: any) => x.notes).filter(Boolean).join(" | ");
       const refundDates = applicable.map((x: any) => new Date(x.created_at).toLocaleDateString("en-GB")).join(", ");
-      const netProfit = Number(r._profit ?? 0) - refundAmount;
+      const unitCost = Number(r._cost ?? 0);
+      const totalCost = unitCost * qty;
+      const grossProfit = Number(r._profit ?? (netRevenue - totalCost));
+      const netProfit = grossProfit - refundAmount;
       const delivered = (r.delivered_accounts ?? [])[0];
+      const deliveredAt = delivered?.delivered_at ? new Date(delivered.delivered_at) : null;
       return {
         "رقم الطلب": r.orders?.order_number,
         "اسم العميل": r.orders?.customer_name ?? p.display_name ?? "",
@@ -320,29 +333,30 @@ function AdminOverview() {
         "طريقة الدفع": r.orders?.payment_gateway ?? "",
         "الخدمة": r.product_name,
         "الخطة": r.plan_label,
-        "الكمية": r.quantity,
-        "سعر الوحدة": Number(r.frozen_unit_price ?? r.unit_price),
+        "الكمية": qty,
+        "سعر الوحدة": unitPrice,
         "الإجمالي قبل الخصم": gross,
         "كود الخصم": r._coupon?.code ?? "",
         "نوع الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? "نسبة %" : "مبلغ ثابت") : "",
         "قيمة الخصم": r._coupon ? (r._coupon.discount_type === "percent" ? `${r._coupon.discount_value}%` : `${r._coupon.discount_value} EGP`) : "",
-
-        "قيمة الخصم على الطلب كامل": Math.round(Number(r.orders?.discount_amount ?? 0)),
-        "الإجمالي بعد الخصم": Math.round(netRevenue),
-        "سعر الشراء": r._cost ?? 0,
-        "الربح (بعد الخصم)": Math.round(Number(r._profit ?? 0)),
+        "قيمة الخصم على الطلب كامل": Number(r.orders?.discount_amount ?? 0),
+        "الإجمالي بعد الخصم": netRevenue,
+        "سعر شراء الوحدة": unitCost,
+        "إجمالي سعر الشراء": totalCost,
+        "الربح (بعد الخصم)": grossProfit,
         "تم التسليم؟": delivered ? "نعم" : "لا",
-        "تاريخ التسليم": delivered?.delivered_at ? new Date(delivered.delivered_at).toLocaleString("en-GB", { hour12: true }) : "",
+        "تاريخ التسليم": deliveredAt ? fmtDate(deliveredAt) : "",
+        "وقت التسليم": deliveredAt ? fmtTime(deliveredAt) : "",
         "الحساب المُسلَّم": delivered?.account_email ?? delivered?.account_username ?? "",
         "تم عمل استرداد؟": refundAmount > 0 ? "نعم" : "لا",
         "قيمة الاسترداد": refundAmount,
         "نوع الاسترداد": refundTypes,
         "تاريخ الاسترداد": refundDates,
         "ملاحظات الاسترداد": refundNotes,
-        "صافي الربح بعد الاسترداد": Math.round(netProfit),
-        "التاريخ": d.toLocaleDateString("en-GB"),
-        "الوقت": d.toLocaleTimeString("en-GB", { hour12: true }),
-
+        "صافي الربح بعد الاسترداد": netProfit,
+        "تاريخ الطلب": fmtDate(d),
+        "وقت الطلب": fmtTime(d),
+        "التاريخ ISO": d.toISOString(),
         "الحالة": r.orders?.status,
         "ملاحظات": r.orders?.notes ?? "",
       };
@@ -422,21 +436,22 @@ function AdminOverview() {
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-5">
             {(() => {
-              // Source of truth: SQL RPC (admin_revenue_stats). It filters by
-              // status IN (paid, delivered, refunded) and subtracts refunds
-              // from profit, so KPIs stay consistent with the daily/monthly chart.
-              const totRev = Math.round(stats.data?.revenue ?? 0);
-              const totProf = Math.round(stats.data?.profit ?? 0);
-              const totRef = Math.round(stats.data?.refunds ?? 0);
-              const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
-
-              // Total cost = sum of purchase prices for delivered/paid/refunded items in range.
+              // Source of truth: order_items sales details with FROZEN prices
+              // (frozen_unit_price / frozen_cost_price). This keeps KPIs stable
+              // even if plan prices or costs change later in the dashboard.
               const validStatuses = new Set(["paid", "delivered", "refunded"]);
-              const totCost = Math.round(
-                (sales.data ?? [])
-                  .filter((it: any) => validStatuses.has(it.orders?.status))
-                  .reduce((s: number, it: any) => s + Number(it._cost ?? 0) * Number(it.quantity ?? 0), 0),
+              const validRows = (sales.data ?? []).filter((it: any) => validStatuses.has(it.orders?.status));
+              const totRev = Math.round(
+                validRows.reduce((s: number, it: any) => s + Number(it._netRevenue ?? 0), 0),
               );
+              const totCost = Math.round(
+                validRows.reduce((s: number, it: any) => s + Number(it._cost ?? 0) * Number(it.quantity ?? 0), 0),
+              );
+              const totRef = Math.round(
+                validRows.reduce((s: number, it: any) => s + Number(it._refundAmount ?? 0), 0),
+              );
+              const totProf = totRev - totCost - totRef;
+              const margin = totRev ? Math.round((totProf / totRev) * 100) : 0;
               const prevCost = 0; // no previous-period cost available; skip delta
 
               const p = prevStats.data;

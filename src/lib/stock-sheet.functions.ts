@@ -3,7 +3,13 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
 
-const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+const GATEWAY = "https://sheets.googleapis.com/v4";
+
+/** fetch with Google service-account auth (no Lovable connector). */
+async function gfetch(url: string, init: RequestInit = {}) {
+  const { googleSheetsFetch } = await import("@/lib/google-sheets.server");
+  return googleSheetsFetch(url, init);
+}
 const TABS = { PRODUCTS: "Products", STOCK: "Stock", ORDERS: "Orders", STAFF: "Staff" } as const;
 const STOCK_COLUMNS = {
   STATUS: 5,       // F
@@ -16,14 +22,7 @@ const STOCK_COLUMNS = {
 } as const;
 
 function authHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const gsKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !gsKey) throw new Error("Google Sheets connector not configured");
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": gsKey,
-    "Content-Type": "application/json",
-  } as Record<string, string>;
+  return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
 async function getSpreadsheetId(): Promise<string> {
@@ -59,7 +58,7 @@ async function getAllSpreadsheetIds(): Promise<string[]> {
 
 
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
-  const res = await fetch(
+  const res = await gfetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=SERIAL_NUMBER`,
     { headers: authHeaders() },
   );
@@ -69,7 +68,7 @@ async function sheetsGet(spreadsheetId: string, range: string): Promise<string[]
 }
 
 async function sheetsBatchUpdate(spreadsheetId: string, data: Array<{ range: string; values: (string | number)[][] }>) {
-  const res = await fetch(`${GATEWAY}/spreadsheets/${spreadsheetId}/values:batchUpdate`, {
+  const res = await gfetch(`${GATEWAY}/spreadsheets/${spreadsheetId}/values:batchUpdate`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ valueInputOption: "USER_ENTERED", data }),
@@ -78,7 +77,7 @@ async function sheetsBatchUpdate(spreadsheetId: string, data: Array<{ range: str
 }
 
 async function sheetsAppend(spreadsheetId: string, range: string, values: (string | number)[][]) {
-  const res = await fetch(
+  const res = await gfetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
     { method: "POST", headers: authHeaders(), body: JSON.stringify({ values }) },
   );
@@ -385,7 +384,7 @@ export const revertIssue = createServerFn({ method: "POST" })
 // ============================================================
 
 async function listSheetTitles(spreadsheetId: string): Promise<string[]> {
-  const res = await fetch(
+  const res = await gfetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}?fields=sheets.properties(title)`,
     { headers: authHeaders() },
   );
@@ -395,7 +394,7 @@ async function listSheetTitles(spreadsheetId: string): Promise<string[]> {
 }
 
 async function getSpreadsheetTitle(spreadsheetId: string): Promise<string> {
-  const res = await fetch(
+  const res = await gfetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}?fields=properties.title`,
     { headers: authHeaders() },
   );

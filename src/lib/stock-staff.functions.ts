@@ -2,20 +2,19 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fetchStaffFromSheet, type StaffRecord } from "@/lib/stock-auth.functions";
 
-const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+const GATEWAY = "https://sheets.googleapis.com/v4";
+
+/** fetch with Google service-account auth (no Lovable connector). */
+async function gfetch(url: string, init: RequestInit = {}) {
+  const { googleSheetsFetch } = await import("@/lib/google-sheets.server");
+  return googleSheetsFetch(url, init);
+}
 const STAFF_TAB = "Staff";
 const HEADER = ["Name", "Username", "Password", "Active"];
 const MAX_ROWS = 1000;
 
 function authHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const gsKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !gsKey) throw new Error("Google Sheets connector not configured");
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": gsKey,
-    "Content-Type": "application/json",
-  } as Record<string, string>;
+  return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
 async function requireAdminOrModerator(context: any) {
@@ -78,7 +77,7 @@ export const saveStockStaff = createServerFn({ method: "POST" })
 
     const range = `${STAFF_TAB}!A1:D${MAX_ROWS}`;
     const url = `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
-    const res = await fetch(url, {
+    const res = await gfetch(url, {
       method: "PUT",
       headers: authHeaders(),
       body: JSON.stringify({ range, majorDimension: "ROWS", values: rows }),
@@ -122,7 +121,7 @@ export const syncUserStockStaff = createServerFn({ method: "POST" })
 
     const range = `${STAFF_TAB}!A1:D${MAX_ROWS}`;
     const url = `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
-    const res = await fetch(url, {
+    const res = await gfetch(url, {
       method: "PUT",
       headers: authHeaders(),
       body: JSON.stringify({ range, majorDimension: "ROWS", values: rows }),

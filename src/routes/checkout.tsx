@@ -393,7 +393,11 @@ function CheckoutPage() {
      } catch (err: any) {
        console.error("checkout failed", err);
        setError(friendlyErrorMessage(err, lang));
-       clearCart();
+       // Do NOT clear the cart on failure — the customer needs to be able to
+       // retry (fix the payment proof, phone, etc.) without re-adding items.
+       if (typeof window !== "undefined") {
+         window.scrollTo({ top: 0, behavior: "smooth" });
+       }
      } finally {
       setSubmitting(false);
     }

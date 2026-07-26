@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
-const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+const GATEWAY = "https://sheets.googleapis.com/v4";
+
+/** fetch with Google service-account auth (no Lovable connector). */
+async function gfetch(url: string, init: RequestInit = {}) {
+  const { googleSheetsFetch } = await import("@/lib/google-sheets.server");
+  return googleSheetsFetch(url, init);
+}
 const STAFF_TAB = "Staff";
 
 export type StaffRecord = {
@@ -11,14 +17,7 @@ export type StaffRecord = {
 };
 
 function authHeaders() {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const gsKey = process.env.GOOGLE_SHEETS_API_KEY;
-  if (!lovableKey || !gsKey) throw new Error("Google Sheets connector not configured");
-  return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": gsKey,
-    "Content-Type": "application/json",
-  } as Record<string, string>;
+  return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
 async function getSpreadsheetId(): Promise<string> {
@@ -30,7 +29,7 @@ async function getSpreadsheetId(): Promise<string> {
 }
 
 async function sheetsGet(spreadsheetId: string, range: string): Promise<string[][]> {
-  const res = await fetch(
+  const res = await gfetch(
     `${GATEWAY}/spreadsheets/${spreadsheetId}/values/${range}?valueRenderOption=UNFORMATTED_VALUE&dateTimeRenderOption=FORMATTED_STRING`,
     { headers: authHeaders() },
   );
