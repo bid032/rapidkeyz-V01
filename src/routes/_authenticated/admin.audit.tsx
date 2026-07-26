@@ -3,9 +3,22 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Search, Filter, Download, RefreshCw, ChevronDown, ChevronRight,
-  User as UserIcon, Package, ShoppingCart, Clock, Mail, Phone, KeyRound, Activity,
-  Trash2, Radio,
+  Search,
+  Filter,
+  Download,
+  RefreshCw,
+  ChevronDown,
+  ChevronRight,
+  User as UserIcon,
+  Package,
+  ShoppingCart,
+  Clock,
+  Mail,
+  Phone,
+  KeyRound,
+  Activity,
+  Trash2,
+  Radio,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
@@ -17,12 +30,9 @@ export const Route = createFileRoute("/_authenticated/admin/audit")({
     const user = (context as { user?: { id: string } } | undefined)?.user;
     const uid = user?.id ?? (await supabase.auth.getUser()).data.user?.id;
     if (!uid) throw redirect({ to: "/auth" });
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", uid);
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
     // Only admin can access the audit log
-    const isAdmin = roles?.some(r => r.role === "admin");
+    const isAdmin = roles?.some((r) => r.role === "admin");
     if (!isAdmin) throw redirect({ to: "/admin" });
   },
   component: AdminAudit,
@@ -69,24 +79,59 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const FIELD_LABELS: Record<string, string> = {
-  name_ar: "الاسم بالعربية", name_en: "الاسم بالإنجليزية",
-  slug: "الرابط (Slug)", description_ar: "الوصف بالعربية", description_en: "الوصف بالإنجليزية",
-  icon_url: "أيقونة", cover_url: "صورة الغلاف", status: "الحالة",
-  is_featured: "مميز", is_bestseller: "الأكثر مبيعاً", sort_order: "الترتيب",
-  discount_percent: "نسبة الخصم", account_type: "نوع الحساب", account_types: "أنواع الحساب",
-  category_id: "القسم", category_ids: "الأقسام", plan_variants: "أنواع الخطط",
-  delivery_type: "نوع التسليم", google_spreadsheet_id: "معرّف Google Sheet",
-  label_ar: "التسمية بالعربية", label_en: "التسمية بالإنجليزية",
-  duration_days: "المدة (يوم)", price: "السعر", compare_price: "السعر قبل الخصم",
-  stock: "المخزون", is_active: "نشط", plan_variant: "نوع الخطة", sheet_csv_url: "رابط CSV",
-  cost_price: "التكلفة", question_ar: "السؤال بالعربية", question_en: "السؤال بالإنجليزية",
-  answer_ar: "الإجابة بالعربية", answer_en: "الإجابة بالإنجليزية",
-  reviewer_name: "اسم المُقيّم", rating: "التقييم", body: "النص", lang: "اللغة",
-  image_url: "الصورة", caption: "التعليق", value: "القيمة", key: "المفتاح",
-  amount: "المبلغ", notes: "ملاحظات", type: "النوع",
-  code: "الكود", discount_type: "نوع الخصم", discount_value: "قيمة الخصم",
-  applies_to: "يطبّق على", max_uses: "أقصى استخدام", used_count: "عدد الاستخدامات",
-  expires_at: "ينتهي في", min_order_amount: "أدنى قيمة للطلب", product_ids: "المنتجات المحددة",
+  name_ar: "الاسم بالعربية",
+  name_en: "الاسم بالإنجليزية",
+  slug: "الرابط (Slug)",
+  description_ar: "الوصف بالعربية",
+  description_en: "الوصف بالإنجليزية",
+  icon_url: "أيقونة",
+  cover_url: "صورة الغلاف",
+  status: "الحالة",
+  is_featured: "مميز",
+  is_bestseller: "الأكثر مبيعاً",
+  sort_order: "الترتيب",
+  discount_percent: "نسبة الخصم",
+  account_type: "نوع الحساب",
+  account_types: "أنواع الحساب",
+  category_id: "القسم",
+  category_ids: "الأقسام",
+  plan_variants: "أنواع الخطط",
+  delivery_type: "نوع التسليم",
+  google_spreadsheet_id: "معرّف Google Sheet",
+  label_ar: "التسمية بالعربية",
+  label_en: "التسمية بالإنجليزية",
+  duration_days: "المدة (يوم)",
+  price: "السعر",
+  compare_price: "السعر قبل الخصم",
+  stock: "المخزون",
+  is_active: "نشط",
+  plan_variant: "نوع الخطة",
+  sheet_csv_url: "رابط CSV",
+  cost_price: "التكلفة",
+  question_ar: "السؤال بالعربية",
+  question_en: "السؤال بالإنجليزية",
+  answer_ar: "الإجابة بالعربية",
+  answer_en: "الإجابة بالإنجليزية",
+  reviewer_name: "اسم المُقيّم",
+  rating: "التقييم",
+  body: "النص",
+  lang: "اللغة",
+  image_url: "الصورة",
+  caption: "التعليق",
+  value: "القيمة",
+  key: "المفتاح",
+  amount: "المبلغ",
+  notes: "ملاحظات",
+  type: "النوع",
+  code: "الكود",
+  discount_type: "نوع الخصم",
+  discount_value: "قيمة الخصم",
+  applies_to: "يطبّق على",
+  max_uses: "أقصى استخدام",
+  used_count: "عدد الاستخدامات",
+  expires_at: "ينتهي في",
+  min_order_amount: "أدنى قيمة للطلب",
+  product_ids: "المنتجات المحددة",
 };
 
 const TARGET_LABELS: Record<string, string> = {
@@ -141,8 +186,8 @@ function orderKey(r: AuditRowEnriched): string | null {
 
 type Group = {
   key: string;
-  order: AuditRowEnriched | null;   // canonical row carrying order+items snapshot
-  events: AuditRowEnriched[];        // all events, newest first
+  order: AuditRowEnriched | null; // canonical row carrying order+items snapshot
+  events: AuditRowEnriched[]; // all events, newest first
   latestAt: string;
 };
 
@@ -168,13 +213,9 @@ function AdminAudit() {
   useEffect(() => {
     const channel = supabase
       .channel("audit-log-live")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "audit_log" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["audit-log-enriched"] });
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "audit_log" }, () => {
+        qc.invalidateQueries({ queryKey: ["audit-log-enriched"] });
+      })
       .subscribe((status) => {
         setLive(status === "SUBSCRIBED");
       });
@@ -186,10 +227,7 @@ function AdminAudit() {
   const clearAll = async () => {
     if (!window.confirm("سيتم مسح كل حركات سجل الأعمال نهائياً. متأكد؟")) return;
     setClearing(true);
-    const { error } = await supabase
-      .from("audit_log")
-      .delete()
-      .not("id", "is", null);
+    const { error } = await supabase.from("audit_log").delete().not("id", "is", null);
     setClearing(false);
     if (error) {
       toast.error("تعذّر مسح السجل: " + error.message);
@@ -238,9 +276,7 @@ function AdminAudit() {
     // Newest activity first across groups
     all.sort((a, b) => Date.parse(b.latestAt) - Date.parse(a.latestAt));
     // Newest event first inside each group
-    all.forEach((g) =>
-      g.events.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)),
-    );
+    all.forEach((g) => g.events.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)));
     return all;
   }, [rows.data]);
 
@@ -258,12 +294,23 @@ function AdminAudit() {
         canon.order_customer_phone,
         canon.order_status,
         ...canon.items.flatMap((it) => [
-          it.product_name, it.plan_label, it.account_type, it.status,
-          ...it.delivered_accounts.flatMap((a) => [a.account_email, a.account_username]),
+          it.product_name,
+          it.plan_label,
+          it.account_type,
+          it.status,
+          ...(Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).flatMap((a) => [
+            a.account_email,
+            a.account_username,
+          ]),
         ]),
         ...g.events.flatMap((r) => [
-          r.actor_display, r.actor_email, r.actor_name, r.action_type,
-          ACTION_LABELS[r.action_type], r.target_type, r.target_id,
+          r.actor_display,
+          r.actor_email,
+          r.actor_name,
+          r.action_type,
+          ACTION_LABELS[r.action_type],
+          r.target_type,
+          r.target_id,
           JSON.stringify(r.meta ?? {}),
         ]),
       ]
@@ -295,10 +342,10 @@ function AdminAudit() {
           "اسم العميل": canon.order_customer_name ?? "",
           "إيميل العميل": canon.order_customer_email ?? "",
           "هاتف العميل": canon.order_customer_phone ?? "",
-          "التاريخ": fmtTime(r.created_at),
-          "الحركة": ACTION_LABELS[r.action_type] || r.action_type,
+          التاريخ: fmtTime(r.created_at),
+          الحركة: ACTION_LABELS[r.action_type] || r.action_type,
           "نوع الهدف": TARGET_LABELS[r.target_type] || r.target_type,
-          "المستخدم": r.actor_display,
+          المستخدم: r.actor_display,
           "بريد المستخدم": r.actor_email ?? "",
         });
       });
@@ -394,7 +441,9 @@ function AdminAudit() {
           >
             <option value="">كل الأنواع</option>
             {Object.entries(TARGET_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
+              <option key={k} value={k}>
+                {v}
+              </option>
             ))}
           </select>
         </div>
@@ -407,7 +456,9 @@ function AdminAudit() {
           >
             <option value="">كل الحركات</option>
             {actionOptions.map((a) => (
-              <option key={a} value={a}>{ACTION_LABELS[a] || a}</option>
+              <option key={a} value={a}>
+                {ACTION_LABELS[a] || a}
+              </option>
             ))}
           </select>
         </div>
@@ -426,12 +477,7 @@ function AdminAudit() {
           </div>
         )}
         {filtered.map((g) => (
-          <GroupCard
-            key={g.key}
-            group={g}
-            expanded={expanded.has(g.key)}
-            onToggle={() => toggle(g.key)}
-          />
+          <GroupCard key={g.key} group={g} expanded={expanded.has(g.key)} onToggle={() => toggle(g.key)} />
         ))}
       </div>
     </div>
@@ -447,21 +493,11 @@ function Kpi({ label, value, tone }: { label: string; value: number; tone?: stri
   );
 }
 
-function GroupCard({
-  group,
-  expanded,
-  onToggle,
-}: {
-  group: Group;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function GroupCard({ group, expanded, onToggle }: { group: Group; expanded: boolean; onToggle: () => void }) {
   const canon = group.order ?? group.events[0];
   const isOrder = !!canon.order_number || canon.items.length > 0;
   const HIDDEN_ACTIONS = new Set(["order.created", "coupon.redeemed"]);
-  const visibleEvents = isOrder
-    ? group.events.filter((r) => !HIDDEN_ACTIONS.has(r.action_type))
-    : group.events;
+  const visibleEvents = isOrder ? group.events.filter((r) => !HIDDEN_ACTIONS.has(r.action_type)) : group.events;
 
   // Any refund/compensation events on this order?
   const refundEvents = group.events.filter((r) => r.action_type.startsWith("refund."));
@@ -552,7 +588,6 @@ function GroupCard({
 
       {expanded && (
         <div className="border-t border-border p-3 sm:p-4 space-y-3 bg-background/40">
-
           {/* Order details */}
           {isOrder && (
             <div className="rounded-xl border border-border bg-card p-3 space-y-2">
@@ -570,23 +605,18 @@ function GroupCard({
                 {canon.order_customer_phone && (
                   <InfoChip icon={<Phone className="w-3 h-3" />} label="الهاتف" value={canon.order_customer_phone} />
                 )}
-                {canon.order_total != null && (
-                  <InfoChip label="الإجمالي" value={`${canon.order_total} EGP`} />
-                )}
-                {canon.order_status && (
-                  <InfoChip label="الحالة" value={canon.order_status} />
-                )}
+                {canon.order_total != null && <InfoChip label="الإجمالي" value={`${canon.order_total} EGP`} />}
+                {canon.order_status && <InfoChip label="الحالة" value={canon.order_status} />}
               </div>
 
-              {(canon.order_coupon_code || (canon.order_discount_amount != null && canon.order_discount_amount > 0)) && (
+              {(canon.order_coupon_code ||
+                (canon.order_discount_amount != null && canon.order_discount_amount > 0)) && (
                 <div className="rounded-lg border border-brand/30 bg-brand/5 p-2.5 space-y-1">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-brand">
                     <span>🎟️</span> كوبون خصم مُستخدم
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
-                    {canon.order_coupon_code && (
-                      <InfoChip label="الكود" value={canon.order_coupon_code} mono />
-                    )}
+                    {canon.order_coupon_code && <InfoChip label="الكود" value={canon.order_coupon_code} mono />}
                     {canon.order_subtotal != null && (
                       <InfoChip label="قبل الخصم" value={`${canon.order_subtotal} EGP`} />
                     )}
@@ -619,7 +649,9 @@ function GroupCard({
                 {canon.items.map((it) => (
                   <div key={it.id} className="rounded-lg border border-border/70 bg-background/50 p-2.5 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                      <span className="font-bold text-sm"><bdi>{it.product_name ?? "—"}</bdi></span>
+                      <span className="font-bold text-sm">
+                        <bdi>{it.product_name ?? "—"}</bdi>
+                      </span>
                       {it.plan_label && (
                         <span className="px-1.5 py-0.5 rounded-md border border-border text-[10px]">
                           <bdi>{it.plan_label}</bdi>
@@ -646,26 +678,25 @@ function GroupCard({
                         </span>
                       )}
                     </div>
-                    {it.delivered_accounts.length > 0 && (
+                    {(Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).length > 0 && (
                       <div className="rounded-md border border-emerald-500/25 bg-emerald-500/5 p-2 space-y-1.5">
                         <div className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                           <KeyRound className="w-3 h-3" />
-                          بيانات مُسلَّمة ({it.delivered_accounts.length})
+                          بيانات مُسلَّمة ({(Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).length})
                         </div>
-                        {it.delivered_accounts.map((a, i) => (
+                        {(Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).map((a, i) => (
                           <div key={i} className="text-[11px] flex flex-wrap gap-x-3 gap-y-0.5">
                             {a.account_email && (
-                              <InfoChip icon={<Mail className="w-3 h-3" />} label="إيميل" value={a.account_email} mono />
+                              <InfoChip
+                                icon={<Mail className="w-3 h-3" />}
+                                label="إيميل"
+                                value={a.account_email}
+                                mono
+                              />
                             )}
-                            {a.account_username && (
-                              <InfoChip label="يوزر" value={a.account_username} mono />
-                            )}
-                            {a.account_password && (
-                              <InfoChip label="باسورد" value={a.account_password} mono />
-                            )}
-                            {a.extra_notes && (
-                              <InfoChip label="ملاحظات" value={a.extra_notes} />
-                            )}
+                            {a.account_username && <InfoChip label="يوزر" value={a.account_username} mono />}
+                            {a.account_password && <InfoChip label="باسورد" value={a.account_password} mono />}
+                            {a.extra_notes && <InfoChip label="ملاحظات" value={a.extra_notes} />}
                           </div>
                         ))}
                       </div>
@@ -773,9 +804,7 @@ function ChangesView({ changes }: { changes: any }) {
       <div className="grid gap-1">
         {entries.map(([field, val]: any) => (
           <div key={field} className="text-[11px] flex flex-wrap items-start gap-x-2 gap-y-0.5">
-            <span className="font-bold min-w-[110px]">
-              {FIELD_LABELS[field] || field}:
-            </span>
+            <span className="font-bold min-w-[110px]">{FIELD_LABELS[field] || field}:</span>
             <span className="inline-flex flex-wrap items-center gap-1">
               <span className="px-1.5 py-0.5 rounded bg-destructive/10 text-destructive line-through max-w-[380px] truncate">
                 <bdi>{fmtVal(val.from)}</bdi>
@@ -823,20 +852,13 @@ function MetaSummary({ meta }: { meta: any }) {
   const productIds = snap.product_ids;
   push("الكود", code);
   if (dValue != null) {
-    push(
-      "الخصم",
-      dType === "percent" ? `${dValue}%` : `${dValue} EGP`,
-    );
+    push("الخصم", dType === "percent" ? `${dValue}%` : `${dValue} EGP`);
   }
-  push(
-    "يطبّق على",
-    applies === "all" ? "كل الخدمات" : applies === "products" ? "خدمات محددة" : applies,
-  );
+  push("يطبّق على", applies === "all" ? "كل الخدمات" : applies === "products" ? "خدمات محددة" : applies);
   push("أقصى استخدام", maxUses);
   push("أدنى قيمة للطلب", minOrder != null ? `${minOrder} EGP` : undefined);
   push("ينتهي في", expires ? fmtTime(expires) : undefined);
-  if (Array.isArray(productIds) && productIds.length)
-    push("عدد المنتجات المحددة", productIds.length);
+  if (Array.isArray(productIds) && productIds.length) push("عدد المنتجات المحددة", productIds.length);
 
   if (chips.length === 0) return null;
   return (
