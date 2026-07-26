@@ -13,6 +13,51 @@ function authHeaders() {
   return { "Content-Type": "application/json" } as Record<string, string>;
 }
 
+/** Strips characters that are invisible in a spreadsheet cell but survive a
+ * copy/paste from an Arabic-locale Google Sheet (RTL/LTR marks, zero-width
+ * space, BOM, non-breaking space) and would otherwise make a value like
+ * "available" fail a strict string match for no visible reason. */
+function stripInvisible(s: string): string {
+  return (s || "")
+    .replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00A0]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Values that mean the row is NOT available for import. We treat anything
+// else — including blank, "available", or wording we don't recognize — as
+// available, rather than requiring an exact "available" match. A strict
+// whitelist silently drops every row on any spelling/locale mismatch (e.g.
+// "Available" with a trailing space or a stray RTL mark) and reports
+// "0 accounts imported" with no indication why; a blacklist of "already
+// gone" statuses fails safe instead — worst case it imports a row that
+// still needed a manual check, which is a lot easier to spot than accounts
+// that quietly never made it into inventory at all.
+const SOLD_STATUS_KEYWORDS = [
+  "sold",
+  "used",
+  "delivered",
+  "taken",
+  "unavailable",
+  "not available",
+  "issued",
+  "gone",
+  "تم البيع",
+  "مباع",
+  "مستخدم",
+  "تم التسليم",
+  "تم الاستخدام",
+  "غير متاح",
+  "خلص",
+  "منتهي",
+];
+
+function isSoldStatus(raw: string): boolean {
+  const v = stripInvisible(raw).toLowerCase();
+  if (!v) return false;
+  return SOLD_STATUS_KEYWORDS.some((k) => v.includes(k));
+}
+
 function normalizeTitle(s: string): string {
   return (s || "")
     .toLowerCase()
@@ -185,7 +230,7 @@ function mapSheetRows(values: string[][]) {
   const extraColIdxs = header.map((_, i) => i).filter((i) => !used.has(i));
 
   const clean = (r: string[], i: number | undefined) =>
-    i !== undefined && i >= 0 ? (r[i] ?? "").trim() || null : null;
+    i !== undefined && i >= 0 ? stripInvisible(r[i] ?? "") || null : null;
 
   const records = values
     .slice(1)
@@ -207,7 +252,7 @@ function mapSheetRows(values: string[][]) {
         account_type: clean(r, idx.type),
         extra_notes,
         _srcRowIndex: rIdx + 2,
-        _statusValue: idx.status !== undefined ? (r[idx.status] ?? "").trim().toLowerCase() : "",
+        _statusValue: idx.status !== undefined ? stripInvisible(r[idx.status] ?? "").toLowerCase() : "",
       };
     })
     .filter((rec) => rec.account_email || rec.account_username || rec.account_password || rec.extra_notes);
@@ -346,8 +391,13 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       const vj = (await valuesRes.json()) as { values?: string[][] };
       const { records, statusColIdx } = mapSheetRows(vj.values ?? []);
 
-      // Skip rows already sold/delivered on the sheet itself
-      const availableRecords = records.filter((r) => !r._statusValue || ["available", ""].includes(r._statusValue));
+      // Skip rows already sold/delivered on the sheet itself. See isSoldStatus
+      // for why this is a blacklist (known "gone" words) rather than a
+      // whitelist requiring the literal word "available" — a whitelist used
+      // to silently drop every row whenever the status text didn't match
+      // exactly (different wording, stray invisible characters, etc.),
+      // reporting "0 accounts imported" with no visible cause.
+      const availableRecords = records.filter((r) => !isSoldStatus(r._statusValue));
 
       if (availableRecords.length === 0) {
         results.push({
