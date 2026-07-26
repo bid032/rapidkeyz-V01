@@ -76,9 +76,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 1) Actor emails via Admin API (unique actors only)
-    const actorIds = Array.from(
-      new Set(auditRows.map((r: any) => r.actor_id).filter(Boolean)),
-    ) as string[];
+    const actorIds = Array.from(new Set(auditRows.map((r: any) => r.actor_id).filter(Boolean))) as string[];
     const actorMap = new Map<string, { email: string | null; name: string | null }>();
     await Promise.all(
       actorIds.map(async (uid) => {
@@ -100,10 +98,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
 
     // Also try profiles.display_name to enrich when metadata is empty
     if (actorIds.length) {
-      const { data: profs } = await supabaseAdmin
-        .from("profiles")
-        .select("id, display_name")
-        .in("id", actorIds);
+      const { data: profs } = await supabaseAdmin.from("profiles").select("id, display_name").in("id", actorIds);
       (profs ?? []).forEach((p: any) => {
         const prev = actorMap.get(p.id) ?? { email: null, name: null };
         if (!prev.name && p.display_name) prev.name = p.display_name;
@@ -128,7 +123,9 @@ export const getAuditLog = createServerFn({ method: "GET" })
     if (orderItemIds.size) {
       const { data: itemsFromIds } = await supabaseAdmin
         .from("order_items")
-        .select("id, order_id, product_name, plan_label, account_type, unit_price, frozen_unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
+        .select(
+          "id, order_id, product_name, plan_label, account_type, unit_price, frozen_unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)",
+        )
         .in("id", Array.from(orderItemIds));
       (itemsFromIds ?? []).forEach((it: any) => {
         itemById.set(it.id, it);
@@ -142,10 +139,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
       .filter((r: any) => r.target_type === "refund" && r.target_id)
       .map((r: any) => r.target_id as string);
     if (refundIds.length) {
-      const { data: refs } = await supabaseAdmin
-        .from("refunds")
-        .select("id, order_id")
-        .in("id", refundIds);
+      const { data: refs } = await supabaseAdmin.from("refunds").select("id, order_id").in("id", refundIds);
       (refs ?? []).forEach((rf: any) => {
         if (rf.order_id) {
           refundOrderMap.set(rf.id, rf.order_id);
@@ -158,19 +152,16 @@ export const getAuditLog = createServerFn({ method: "GET" })
     if (orderIds.size) {
       const { data: orders } = await supabaseAdmin
         .from("orders")
-        .select("id, order_number, status, total, subtotal, discount_amount, coupon_id, customer_name, customer_email, customer_phone")
+        .select(
+          "id, order_number, status, total, subtotal, discount_amount, coupon_id, customer_name, customer_email, customer_phone",
+        )
         .in("id", Array.from(orderIds));
       (orders ?? []).forEach((o: any) => ordersMap.set(o.id, o));
 
-      const couponIds = Array.from(
-        new Set((orders ?? []).map((o: any) => o.coupon_id).filter(Boolean)),
-      ) as string[];
+      const couponIds = Array.from(new Set((orders ?? []).map((o: any) => o.coupon_id).filter(Boolean))) as string[];
       const couponCodeMap = new Map<string, string>();
       if (couponIds.length) {
-        const { data: cps } = await supabaseAdmin
-          .from("coupons")
-          .select("id, code")
-          .in("id", couponIds);
+        const { data: cps } = await supabaseAdmin.from("coupons").select("id, code").in("id", couponIds);
         (cps ?? []).forEach((c: any) => couponCodeMap.set(c.id, c.code));
       }
       (orders ?? []).forEach((o: any) => {
@@ -179,7 +170,9 @@ export const getAuditLog = createServerFn({ method: "GET" })
 
       const { data: allItems } = await supabaseAdmin
         .from("order_items")
-        .select("id, order_id, product_name, plan_label, account_type, unit_price, frozen_unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)")
+        .select(
+          "id, order_id, product_name, plan_label, account_type, unit_price, frozen_unit_price, status, quantity, delivered_accounts(account_email, account_username, account_password, extra_notes)",
+        )
         .in("order_id", Array.from(orderIds));
       (allItems ?? []).forEach((it: any) => {
         itemById.set(it.id, it);
@@ -218,9 +211,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
         .from("categories")
         .select("id, name_ar, name_en")
         .in("id", Array.from(categoryIdSet));
-      (cats ?? []).forEach((c: any) =>
-        catNameMap.set(c.id, c.name_ar || c.name_en || c.id),
-      );
+      (cats ?? []).forEach((c: any) => catNameMap.set(c.id, c.name_ar || c.name_en || c.id));
     }
     const prodNameMap = new Map<string, string>();
     if (productIdSet.size) {
@@ -228,9 +219,7 @@ export const getAuditLog = createServerFn({ method: "GET" })
         .from("products")
         .select("id, name_ar, name_en")
         .in("id", Array.from(productIdSet));
-      (prods ?? []).forEach((p: any) =>
-        prodNameMap.set(p.id, p.name_ar || p.name_en || p.id),
-      );
+      (prods ?? []).forEach((p: any) => prodNameMap.set(p.id, p.name_ar || p.name_en || p.id));
     }
     const replaceIds = (val: any, map: Map<string, string>): any => {
       if (val == null) return val;
@@ -310,14 +299,13 @@ export const getAuditLog = createServerFn({ method: "GET" })
           frozen_unit_price: it.frozen_unit_price ?? null,
           status: it.status ?? null,
           quantity: it.quantity ?? null,
-          delivered_accounts: (it.delivered_accounts ?? []).map((a: any) => ({
+          delivered_accounts: (Array.isArray(it.delivered_accounts) ? it.delivered_accounts : []).map((a: any) => ({
             account_email: a.account_email ?? null,
             account_username: a.account_username ?? null,
             account_password: a.account_password ?? null,
             extra_notes: a.extra_notes ?? null,
           })),
         })),
-
       };
     });
   });
