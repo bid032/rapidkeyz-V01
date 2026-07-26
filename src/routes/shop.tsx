@@ -1,553 +1,256 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-
-import {
-  Lock,
-  RefreshCw,
-  Boxes,
-  PackageCheck,
-  AlertTriangle,
-  Send,
-  StickyNote,
-  Copy,
-  Undo2,
-  Minus,
-  Plus,
-  UserCircle2,
-  Package,
-  Sparkles,
-  CheckCircle2,
-  Phone,
-} from "lucide-react";
-
-import { useApp } from "@/contexts/AppContext";
-import { getStockAppData, issueStock, revertIssue, type IssueResult } from "@/lib/stock-sheet.functions";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useEffect } from "react";
+import { Search, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useApp } from "@/contexts/AppContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { filterName, filterPhone } from "@/lib/input-filters";
+import { PageHero } from "@/components/PageHero";
+import { CategoriesShowcase } from "@/components/CategoriesShowcase";
+import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+
+type ShopSearch = { q?: string; category?: string };
 
 export const Route = createFileRoute("/shop")({
-  component: StockPage,
+  validateSearch: (search: Record<string, unknown>): ShopSearch => ({
+    q: typeof search.q === "string" && search.q.trim() ? String(search.q) : undefined,
+    category:
+      typeof search.category === "string" && search.category.trim() ? String(search.category) : undefined,
+  }),
+  head: () => ({
+    meta: [
+      { title: "المتجر ,  كل الاشتراكات والخدمات | RapidKeyz" },
+      {
+        name: "description",
+        content:
+          "تصفح كل اشتراكات وخدمات RapidKeyz حسب القسم أو ابحث عن الخدمة اللي محتاجها ، تسليم فوري وأسعار مناسبة.",
+      },
+      { property: "og:title", content: "المتجر ,  كل الاشتراكات والخدمات | RapidKeyz" },
+      {
+        property: "og:description",
+        content: "تصفح كل اشتراكات وخدمات RapidKeyz حسب القسم أو ابحث عن الخدمة اللي محتاجها.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: ShopPage,
 });
 
-type Access = { signedIn: boolean; hasAccess: boolean; staffName: string };
+type CategoryRow = { id: string; slug: string; name_ar: string | null; name_en: string | null };
 
-function StockPage() {
-  const navigate = useNavigate();
-  const access = useQuery({
-    queryKey: ["stock-access"],
-    queryFn: async (): Promise<Access> => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData.user;
-      if (!user) return { signedIn: false, hasAccess: false, staffName: "" };
-      const [{ data: hasAccess }, { data: profile }] = await Promise.all([
-        supabase.rpc("current_user_stock_access"),
-        supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
-      ]);
-      return {
-        signedIn: true,
-        hasAccess: !!hasAccess,
-        staffName: profile?.display_name || user.email || "Staff",
-      };
+function mapProduct(p: any): ProductCardData {
+  const active = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
+  const cheapest = [...active].sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
+  const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
+  const compare = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
+  return {
+    id: p.id,
+    slug: p.slug,
+    name_ar: p.name_ar,
+    name_en: p.name_en,
+    short_description_ar: null,
+    short_description_en: null,
+    description_ar: p.description_ar,
+    description_en: p.description_en,
+    icon_url: p.icon_url,
+    delivery_type: p.delivery_type,
+    account_type: p.account_type,
+    discount_percent: p.discount_percent,
+    minPrice: cheapest ? Number(cheapest.price) : null,
+    cheapestPlanId: cheapest?.id ?? null,
+    planLabel_ar: cheapest?.label_ar ?? null,
+    planLabel_en: cheapest?.label_en ?? null,
+    totalStock,
+    cheapestPlanComparePrice: compare > 0 ? compare : null,
+  };
+}
+
+const PRODUCT_SELECT =
+  "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, category_id, category_ids, sort_order, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)";
+
+function ShopPage() {
+  const { lang } = useApp();
+  const isAr = lang === "ar";
+  const { q, category } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [term, setTerm] = useState(q ?? "");
+
+  useEffect(() => {
+    setTerm(q ?? "");
+  }, [q]);
+
+  const categories = useQuery({
+    queryKey: ["shop-categories"],
+    queryFn: async (): Promise<CategoryRow[]> => {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, slug, name_ar, name_en, sort_order, is_active")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as CategoryRow[];
+    },
+    staleTime: 60_000,
+  });
+
+  const products = useQuery({
+    queryKey: ["shop-products"],
+    queryFn: async (): Promise<any[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(PRODUCT_SELECT)
+        .eq("status", "active")
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
     },
     staleTime: 30_000,
   });
 
-  useEffect(() => {
-    const sub = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        access.refetch();
-      }
+  const activeCategory = useMemo(
+    () => (categories.data ?? []).find((c) => c.slug === category) ?? null,
+    [categories.data, category],
+  );
+
+  const visible = useMemo(() => {
+    const rows = products.data ?? [];
+    const search = (q ?? "").trim().toLowerCase();
+    return rows
+      .filter((p: any) => {
+        if (activeCategory) {
+          const ids: string[] = Array.isArray(p.category_ids) ? p.category_ids : [];
+          if (p.category_id !== activeCategory.id && !ids.includes(activeCategory.id)) return false;
+        } else if (category && !activeCategory) {
+          // Unknown category slug ,  show nothing rather than everything.
+          return false;
+        }
+        if (search) {
+          const hay = [p.name_ar, p.name_en, p.description_ar, p.description_en]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          if (!hay.includes(search)) return false;
+        }
+        return true;
+      })
+      .map(mapProduct);
+  }, [products.data, activeCategory, category, q]);
+
+  const setCategory = (slug?: string) => {
+    navigate({ search: (prev: ShopSearch) => ({ ...prev, category: slug }), replace: true });
+  };
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate({
+      search: (prev: ShopSearch) => ({ ...prev, q: term.trim() || undefined }),
+      replace: true,
     });
-    return () => {
-      sub.data.subscription.unsubscribe();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
-  useEffect(() => {
-    if (access.isLoading || !access.data) return;
-    if (!access.data.signedIn || !access.data.hasAccess) {
-      navigate({ to: "/", replace: true });
-    }
-  }, [access.isLoading, access.data, navigate]);
-
-  const allowed = access.data?.signedIn && access.data?.hasAccess;
+  const loading = products.isLoading || categories.isLoading;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 sm:py-10">
-        {!allowed ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">جارٍ التحويل...</div>
-        ) : (
-          <StockDispenser staffName={access.data!.staffName} />
-        )}
+      <main className="flex-1">
+        <PageHero
+          eyebrow={isAr ? "المتجر" : "Shop"}
+          title={
+            activeCategory
+              ? (isAr ? activeCategory.name_ar : activeCategory.name_en) || activeCategory.slug
+              : isAr
+                ? "كل الاشتراكات"
+                : "All subscriptions"
+          }
+          subtitle={
+            isAr
+              ? "اختار القسم اللي يناسبك أو دوّر على الخدمة بالاسم."
+              : "Pick a category or search for the service you need."
+          }
+        />
+
+        <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-16">
+          <form onSubmit={submitSearch} className="mb-6 flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3 size-4 text-muted-foreground" />
+              <input
+                value={term}
+                onChange={(e) => setTerm(e.target.value)}
+                placeholder={isAr ? "ابحث عن خدمة..." : "Search for a service..."}
+                className="w-full ps-9 pe-9 py-3 rounded-full bg-muted/40 border border-border text-sm outline-none focus:border-brand transition-colors"
+              />
+              {term && (
+                <button
+                  type="button"
+                  aria-label={isAr ? "مسح البحث" : "Clear search"}
+                  onClick={() => {
+                    setTerm("");
+                    navigate({ search: (prev: ShopSearch) => ({ ...prev, q: undefined }), replace: true });
+                  }}
+                  className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="px-5 py-3 rounded-full bg-brand text-brand-foreground text-sm font-bold shadow-lg hover:brand-glow transition-all"
+            >
+              {isAr ? "بحث" : "Search"}
+            </button>
+          </form>
+
+          <div className="mb-8">
+            <CategoriesShowcase compact mini activeSlug={category} />
+            {category && (
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => setCategory(undefined)}
+                  className="px-4 py-2 rounded-full text-xs font-bold border border-border bg-card hover:border-brand hover:text-brand transition-colors"
+                >
+                  {isAr ? "عرض كل الأقسام" : "Show all categories"}
+                </button>
+              </div>
+            )}
+          </div>
+
+
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-64 rounded-2xl bg-muted/40 animate-pulse" />
+              ))}
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="py-16 text-center space-y-3">
+              <p className="text-muted-foreground text-sm">
+                {isAr ? "لا توجد خدمات مطابقة لبحثك." : "No services match your search."}
+              </p>
+              <Link to="/shop" search={{}} className="text-brand font-bold hover:underline text-sm">
+                {isAr ? "عرض كل الخدمات" : "Show all services"}
+              </Link>
+            </div>
+          ) : (
+            <>
+              <p className="mb-4 text-xs text-muted-foreground">
+                {isAr ? `${visible.length} خدمة` : `${visible.length} services`}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                {visible.map((p) => (
+                  <ProductCard key={p.id} p={p} />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
       </main>
       <Footer />
     </div>
-  );
-}
-
-function AccessGate({ title, description, cta }: { title: string; description: string; cta?: React.ReactNode }) {
-  return (
-    <div className="max-w-md mx-auto mt-8 sm:mt-16 px-2">
-      <motion.div
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden bg-card border border-border rounded-3xl p-7 sm:p-9 shadow-2xl text-center"
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 -end-16 w-48 h-48 bg-brand/20 blur-3xl rounded-full"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-16 -start-16 w-48 h-48 bg-blue-500/15 blur-3xl rounded-full"
-        />
-        <div className="relative">
-          <div className="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-brand/10 text-brand">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black">{title}</h1>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{description}</p>
-          {cta ? <div className="mt-5 flex justify-center">{cta}</div> : null}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function StockDispenser({ staffName }: { staffName: string }) {
-  const { notify, confirm } = useApp();
-  const qc = useQueryClient();
-  const fetcher = useServerFn(getStockAppData);
-  const issueFn = useServerFn(issueStock);
-  const revertFn = useServerFn(revertIssue);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      qc.invalidateQueries({
-        queryKey: ["stock-app-data"],
-      });
-    }, 3000);
-
-    return () => clearInterval(timer);
-  }, [qc]);
-
-  const [customerName, setCustomerName] = useState("");
-  const [customerWhatsapp, setCustomerWhatsapp] = useState("");
-  const [productName, setProductName] = useState("");
-  const [qty, setQty] = useState(1);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<IssueResult | null>(null);
-
-  const q = useQuery({
-    queryKey: ["stock-app-data"],
-    queryFn: () => fetcher(),
-
-    // تحديث كل 3 ثواني
-    refetchInterval: 3000,
-
-    refetchIntervalInBackground: true,
-
-    refetchOnWindowFocus: true,
-
-    refetchOnReconnect: true,
-
-    staleTime: 0,
-
-    retry: (count, err: any) => {
-      const msg = String(err?.message ?? "");
-      if (msg.includes(" 429")) return false;
-      return count < 2;
-    },
-  });
-
-  const products = q.data?.products ?? [];
-  const selected = products.find((p) => p.productName === productName);
-
-  useEffect(() => {
-    q.refetch();
-  }, []);
-
-  const stockHealth = useMemo(() => {
-    if (!selected) return { label: "لا يوجد اختيار", tone: "bg-muted text-muted-foreground border-border" };
-    if (selected.availableCount === 0)
-      return { label: "فارغ", tone: "bg-destructive/15 text-destructive border-destructive/30" };
-    if (selected.availableCount <= 3)
-      return { label: "منخفض", tone: "bg-amber-500/15 text-amber-500 border-amber-500/30" };
-    return { label: "جيد", tone: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30" };
-  }, [selected]);
-
-  const availableNow = selected?.availableCount ?? 0;
-  const canDeliver = !busy && customerName.trim() && productName && qty > 0 && qty <= availableNow;
-
-  const doIssue = async () => {
-    if (!canDeliver) return notify("اكمل بيانات التسليم أولاً", "error");
-    setBusy(true);
-    setResult(null);
-    try {
-      const res = await issueFn({
-        data: {
-          customerName: customerName.trim(),
-          customerWhatsapp: customerWhatsapp.trim(),
-          productName,
-          qty,
-        },
-      });
-      setResult(res);
-      notify("تم تسليم الأكواد", "success");
-      setCustomerName("");
-      await qc.invalidateQueries({
-        queryKey: ["stock-app-data"],
-      });
-
-      await q.refetch();
-    } catch (e: any) {
-      notify(e?.message ?? "حصل خطأ", "error");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const doRevert = async () => {
-    if (!result?.orderId) return;
-    const ok = await confirm({
-      title: "إرجاع للمخزون",
-      message: "هل أنت متأكد أن الكود لم يتم استلامه وتريد إرجاع آخر صرف للمخزون؟",
-      tone: "danger",
-      confirmLabel: "أرجِع",
-    });
-    if (!ok) return;
-    setBusy(true);
-    try {
-      await revertFn({ data: { orderId: result.orderId } });
-      notify("تم إرجاع الأكواد للمخزون", "success");
-      setResult(null);
-      q.refetch();
-    } catch (e: any) {
-      notify(e?.message ?? "حصل خطأ", "error");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const copyAll = () => {
-    if (!result?.displayText) return;
-    navigator.clipboard.writeText(result.displayText).then(() => notify("تم نسخ الأكواد", "success"));
-  };
-  const copyOne = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => notify("تم النسخ", "success"));
-  };
-
-  const dec = () => setQty((n: number) => Math.max(1, n - 1));
-  const inc = () => setQty((n: number) => Math.min(Math.max(1, availableNow || 5), n + 1));
-
-  return (
-    <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden rounded-3xl border border-border bg-card p-5 sm:p-7"
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-12 -start-12 w-56 h-56 rounded-full bg-brand/15 blur-3xl"
-        />
-        <div className="relative flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 text-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest mb-2">
-              <Sparkles className="w-3 h-3" /> Live
-              <span className="relative flex h-1.5 w-1.5 ms-1">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand" />
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black">أهلاً {staffName}</h1>
-            <p className="text-sm text-muted-foreground mt-1">تسليم فوري من مخزون الشيت المرتبط</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={async () => {
-                await qc.invalidateQueries({
-                  queryKey: ["stock-app-data"],
-                });
-
-                await q.refetch();
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-background hover:bg-muted text-sm font-bold"
-            >
-              <RefreshCw className={`w-4 h-4 ${q.isFetching ? "animate-spin" : ""}`} />
-              تحديث
-            </button>
-          </div>
-        </div>
-
-        <div className="relative mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-          <KpiTile
-            icon={<Boxes className="w-4 h-4" />}
-            label="إجمالي المتاح"
-            value={q.data?.totalAvailable ?? 0}
-            accent="brand"
-          />
-          <KpiTile icon={<PackageCheck className="w-4 h-4" />} label="المنتجات" value={products.length} />
-          <KpiTile
-            icon={<AlertTriangle className="w-4 h-4" />}
-            label="مخزون منخفض"
-            value={q.data?.lowStockCount ?? 0}
-            accent="amber"
-          />
-          <KpiTile
-            icon={<CheckCircle2 className="w-4 h-4" />}
-            label="جاهز الآن"
-            value={selected ? availableNow : "—"}
-            accent="emerald"
-          />
-        </div>
-      </motion.div>
-
-      <div className="grid lg:grid-cols-5 gap-5">
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, duration: 0.5 }}
-          className="lg:col-span-3 rounded-3xl border border-border bg-card p-5 sm:p-6 space-y-4"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-extrabold">تسليم اشتراك</h2>
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${stockHealth.tone}`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current" /> {stockHealth.label}
-            </span>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-3">
-            <StepField step={1} icon={<UserCircle2 className="w-3.5 h-3.5" />} label="اسم الموظف">
-              <div className="w-full px-3 py-2.5 bg-muted/50 border border-border rounded-xl text-sm font-bold flex items-center justify-between">
-                <span>{staffName}</span>
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">مقفول</span>
-              </div>
-            </StepField>
-
-            <StepField step={2} icon={<UserCircle2 className="w-3.5 h-3.5" />} label="اسم العميل">
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(filterName(e.target.value))}
-                placeholder="اكتب اسم العميل"
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand"
-              />
-            </StepField>
-
-            <StepField step={3} icon={<Phone className="w-3.5 h-3.5" />} label="واتس العميل (اختياري)">
-              <input
-                type="tel"
-                dir="ltr"
-                value={customerWhatsapp}
-                onChange={(e) => setCustomerWhatsapp(filterPhone(e.target.value, 20))}
-                placeholder="+20…"
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand text-start"
-              />
-            </StepField>
-
-            <StepField step={4} icon={<Package className="w-3.5 h-3.5" />} label="المنتج">
-              <select
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                className="w-full px-3 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:border-brand"
-              >
-                <option value="">اختر المنتج</option>
-                {products.map((p) => (
-                  <option key={p.productName} value={p.productName}>
-                    {p.productName} — متاح {p.availableCount}
-                  </option>
-                ))}
-              </select>
-            </StepField>
-
-            <StepField
-              step={5}
-              icon={<Boxes className="w-3.5 h-3.5" />}
-              label={`الكمية${selected ? ` (متاح ${availableNow})` : ""}`}
-            >
-              <div className="flex items-center gap-1.5 bg-background border border-border rounded-xl p-1 w-fit">
-                <button type="button" onClick={dec} className="p-2 rounded-lg hover:bg-muted">
-                  <Minus className="w-4 h-4" />
-                </button>
-                <input
-                  type="number"
-                  min={1}
-                  value={qty}
-                  onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-16 text-center bg-transparent focus:outline-none font-bold tabular-nums"
-                />
-                <button type="button" onClick={inc} className="p-2 rounded-lg hover:bg-muted">
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-            </StepField>
-          </div>
-
-          <button
-            onClick={doIssue}
-            disabled={!canDeliver}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand text-brand-foreground rounded-xl font-extrabold shadow-lg hover:brand-glow disabled:opacity-60 transition"
-          >
-            <Send className="w-4 h-4" />
-            {busy ? "جارٍ التسليم..." : "تسليم الآن"}
-          </button>
-
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-3"
-            >
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2 text-emerald-500 font-extrabold">
-                  <CheckCircle2 className="w-5 h-5" />
-                  تم التسليم — {result.orderId}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={copyAll}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-background border border-border hover:bg-muted"
-                  >
-                    <Copy className="w-3.5 h-3.5" /> نسخ الكل
-                  </button>
-                  <button
-                    onClick={doRevert}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-background border border-border hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <Undo2 className="w-3.5 h-3.5" /> لم يتم الاستلام
-                  </button>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                {result.codes.map((c, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start justify-between gap-2 bg-background border border-border rounded-xl p-3"
-                  >
-                    <pre className="text-xs whitespace-pre-wrap break-all font-mono flex-1 m-0">{c.displayText}</pre>
-                    <button onClick={() => copyOne(c.displayText)} className="p-1.5 rounded-md hover:bg-muted shrink-0">
-                      <Copy className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-
-        <motion.aside
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="lg:col-span-2 space-y-5 h-fit"
-        >
-          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="grid size-10 shrink-0 place-items-center rounded-2xl bg-amber-500/10 text-amber-500">
-                <StickyNote className="size-5" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-lg font-extrabold truncate">ملاحظات المنتج</h3>
-                <p className="text-xs text-muted-foreground truncate">تظهر مع كل تسليم</p>
-              </div>
-            </div>
-            <div className="rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-4 text-sm whitespace-pre-wrap min-h-[100px]">
-              {selected?.notes || (
-                <span className="text-muted-foreground">اختر منتجًا لعرض الملاحظات المرتبطة به.</span>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-border bg-card p-5 sm:p-6 space-y-3">
-            <h3 className="text-lg font-extrabold">تعليمات سريعة</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="mt-1 size-1.5 rounded-full bg-brand shrink-0" /> اكتب اسم العميل ورقم واتس (اختياري)
-                واختر المنتج والكمية.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1 size-1.5 rounded-full bg-brand shrink-0" /> النظام يسحب أول أكواد متاحة تلقائيًا.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="mt-1 size-1.5 rounded-full bg-amber-500 shrink-0" /> لو الكود لم يُسلَّم، اضغط «لم يتم
-                الاستلام» لإرجاعه.
-              </li>
-            </ul>
-          </div>
-        </motion.aside>
-      </div>
-    </div>
-  );
-}
-
-function KpiTile({
-  icon,
-  label,
-  value,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number | string;
-  accent?: "brand" | "amber" | "emerald";
-}) {
-  const tone =
-    accent === "brand"
-      ? "text-brand"
-      : accent === "amber"
-        ? "text-amber-500"
-        : accent === "emerald"
-          ? "text-emerald-500"
-          : "text-foreground";
-  return (
-    <div className="rounded-2xl border border-border bg-background/60 backdrop-blur p-3 sm:p-4">
-      <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
-        <span className={tone}>{icon}</span>
-        <span className="truncate">{label}</span>
-      </div>
-      <div className={`mt-1 text-xl sm:text-2xl font-extrabold tabular-nums ${tone}`}>{value}</div>
-    </div>
-  );
-}
-
-function StepField({
-  step,
-  icon,
-  label,
-  children,
-  className = "",
-}: {
-  step: number;
-  icon: React.ReactNode;
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <label className={`block ${className}`}>
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="inline-flex size-5 items-center justify-center rounded-md bg-brand/10 text-[10px] font-extrabold text-brand">
-          {step}
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground">
-          {icon} {label}
-        </span>
-      </div>
-      {children}
-    </label>
   );
 }
