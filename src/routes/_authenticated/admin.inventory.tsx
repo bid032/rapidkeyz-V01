@@ -476,7 +476,7 @@ function PlanInventoryPanel({
     queryFn: async () => {
       const { data } = await supabase
         .from("account_inventory")
-        .select("*, product_plans(plan_name_ar, plan_name_en, plan_duration_days, plan_type, account_type)")
+        .select("*")
         .eq("plan_id", planId)
         .order("created_at", { ascending: false })
         .limit(100);
@@ -813,13 +813,7 @@ function PlanInventoryPanel({
 
         // إضافة تفاصيل الخطة إذا كانت متاحة
         const hasPlanDetails = (rows.data ?? []).some(
-          (r: any) =>
-            r.product_plans?.plan_name_ar ||
-            r.product_plans?.plan_name_en ||
-            r.product_plans?.plan_duration_days ||
-            r.product_plans?.plan_type ||
-            r.product_plans?.account_type ||
-            r.account_type,
+          (r: any) => r.plan_name_ar || r.plan_name_en || r.plan_duration_days || r.plan_type || r.account_type,
         );
 
         const colSpan = visible.length + 2 + (hasPlanDetails ? 1 : 0);
@@ -848,21 +842,13 @@ function PlanInventoryPanel({
                     ))}
                     {hasPlanDetails && (
                       <td className="p-2 text-xs">
-                        {r.product_plans?.plan_name_ar && (
-                          <div className="font-bold">{r.product_plans.plan_name_ar}</div>
+                        {r.plan_name_ar && <div className="font-bold">{r.plan_name_ar}</div>}
+                        {r.plan_name_en && <div className="text-muted-foreground">{r.plan_name_en}</div>}
+                        {r.plan_duration_days && (
+                          <div className="text-muted-foreground">مدة: {r.plan_duration_days} يوم</div>
                         )}
-                        {r.product_plans?.plan_name_en && (
-                          <div className="text-muted-foreground">{r.product_plans.plan_name_en}</div>
-                        )}
-                        {r.product_plans?.plan_duration_days && (
-                          <div className="text-muted-foreground">مدة: {r.product_plans.plan_duration_days} يوم</div>
-                        )}
-                        {r.product_plans?.plan_type && (
-                          <div className="text-muted-foreground">نوع الخطة: {r.product_plans.plan_type}</div>
-                        )}
-                        {r.product_plans?.account_type && (
-                          <div className="text-muted-foreground">نوع الحساب: {r.product_plans.account_type}</div>
-                        )}
+                        {r.plan_type && <div className="text-muted-foreground">نوع الخطة: {r.plan_type}</div>}
+                        {r.account_type && <div className="text-muted-foreground">نوع الحساب: {r.account_type}</div>}
                       </td>
                     )}
                     <td className="p-2">
