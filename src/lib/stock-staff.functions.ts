@@ -26,6 +26,11 @@ async function requireAdminOrModerator(context: any) {
 }
 
 async function getSpreadsheetId(supabase: any): Promise<string> {
+  try {
+    const { findSheetIntegration } = await import("@/lib/google-sheets-manager.server");
+    const it = (await findSheetIntegration("staff")) ?? (await findSheetIntegration("stock"));
+    if (it?.spreadsheet_id) return it.spreadsheet_id;
+  } catch { /* ignore */ }
   const { data } = await supabase.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
   const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
   if (!cfg.spreadsheet_id) throw new Error("لم يتم ربط شيت الاستوك بعد");

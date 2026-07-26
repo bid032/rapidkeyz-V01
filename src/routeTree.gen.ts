@@ -45,6 +45,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicStockLogoutRouteImport } from './routes/api/public/stock/logout'
 import { Route as ApiPublicStockLoginRouteImport } from './routes/api/public/stock/login'
+import { Route as AuthenticatedAdminSettingsIntegrationsRouteImport } from './routes/_authenticated/admin.settings.integrations'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -235,6 +236,12 @@ const ApiPublicStockLoginRoute = ApiPublicStockLoginRouteImport.update({
   path: '/api/public/stock/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminSettingsIntegrationsRoute =
+  AuthenticatedAdminSettingsIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedAdminSettingsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -262,11 +269,12 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
-  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRouteWithChildren
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/testimonials': typeof AuthenticatedAdminTestimonialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/settings/integrations': typeof AuthenticatedAdminSettingsIntegrationsRoute
   '/api/public/stock/login': typeof ApiPublicStockLoginRoute
   '/api/public/stock/logout': typeof ApiPublicStockLogoutRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -298,11 +306,12 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
-  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRouteWithChildren
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/testimonials': typeof AuthenticatedAdminTestimonialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/settings/integrations': typeof AuthenticatedAdminSettingsIntegrationsRoute
   '/api/public/stock/login': typeof ApiPublicStockLoginRoute
   '/api/public/stock/logout': typeof ApiPublicStockLogoutRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -337,11 +346,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/refunds': typeof AuthenticatedAdminRefundsRoute
   '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
-  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRouteWithChildren
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/testimonials': typeof AuthenticatedAdminTestimonialsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/settings/integrations': typeof AuthenticatedAdminSettingsIntegrationsRoute
   '/api/public/stock/login': typeof ApiPublicStockLoginRoute
   '/api/public/stock/logout': typeof ApiPublicStockLogoutRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/admin/testimonials'
     | '/admin/users'
     | '/admin/'
+    | '/admin/settings/integrations'
     | '/api/public/stock/login'
     | '/api/public/stock/logout'
     | '/lovable/email/auth/preview'
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '/admin/testimonials'
     | '/admin/users'
     | '/admin'
+    | '/admin/settings/integrations'
     | '/api/public/stock/login'
     | '/api/public/stock/logout'
     | '/lovable/email/auth/preview'
@@ -455,6 +467,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/testimonials'
     | '/_authenticated/admin/users'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/settings/integrations'
     | '/api/public/stock/login'
     | '/api/public/stock/logout'
     | '/lovable/email/auth/preview'
@@ -737,8 +750,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStockLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/settings/integrations': {
+      id: '/_authenticated/admin/settings/integrations'
+      path: '/integrations'
+      fullPath: '/admin/settings/integrations'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedAdminSettingsRoute
+    }
   }
 }
+
+interface AuthenticatedAdminSettingsRouteChildren {
+  AuthenticatedAdminSettingsIntegrationsRoute: typeof AuthenticatedAdminSettingsIntegrationsRoute
+}
+
+const AuthenticatedAdminSettingsRouteChildren: AuthenticatedAdminSettingsRouteChildren =
+  {
+    AuthenticatedAdminSettingsIntegrationsRoute:
+      AuthenticatedAdminSettingsIntegrationsRoute,
+  }
+
+const AuthenticatedAdminSettingsRouteWithChildren =
+  AuthenticatedAdminSettingsRoute._addFileChildren(
+    AuthenticatedAdminSettingsRouteChildren,
+  )
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
@@ -750,7 +785,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminRefundsRoute: typeof AuthenticatedAdminRefundsRoute
   AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
-  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRouteWithChildren
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminTestimonialsRoute: typeof AuthenticatedAdminTestimonialsRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
@@ -767,7 +802,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedAdminRefundsRoute: AuthenticatedAdminRefundsRoute,
   AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
-  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRouteWithChildren,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminTestimonialsRoute: AuthenticatedAdminTestimonialsRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,

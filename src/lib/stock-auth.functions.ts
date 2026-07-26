@@ -21,6 +21,12 @@ function authHeaders() {
 }
 
 async function getSpreadsheetId(): Promise<string> {
+  // Prefer the registry (slug = "staff" for the staff sheet, falls back to "stock").
+  try {
+    const { findSheetIntegration } = await import("@/lib/google-sheets-manager.server");
+    const it = (await findSheetIntegration("staff")) ?? (await findSheetIntegration("stock"));
+    if (it?.spreadsheet_id) return it.spreadsheet_id;
+  } catch { /* ignore */ }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
   const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
