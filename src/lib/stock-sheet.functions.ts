@@ -41,16 +41,26 @@ async function getSpreadsheetId(): Promise<string> {
 }
 
 async function getAllSpreadsheetIds(): Promise<string[]> {
+  const ids: string[] = [];
+  // 1) New registry: any integration whose slug starts with "stock"
+  try {
+    const { listSheetIntegrations } = await import("@/lib/google-sheets-manager.server");
+    const rows = await listSheetIntegrations();
+    for (const r of rows) {
+      if (r.enabled && (r.slug === "stock" || r.slug.startsWith("stock-")) && !ids.includes(r.spreadsheet_id)) {
+        ids.push(r.spreadsheet_id);
+      }
+    }
+  } catch { /* ignore */ }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // 2) Legacy site_settings.stock_sheet
   const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
   const cfg = (data?.value ?? {}) as { spreadsheet_id?: string; extra_spreadsheet_ids?: string[] };
-  const ids: string[] = [];
-  if (cfg.spreadsheet_id) ids.push(cfg.spreadsheet_id);
+  if (cfg.spreadsheet_id && !ids.includes(cfg.spreadsheet_id)) ids.push(cfg.spreadsheet_id);
   for (const id of cfg.extra_spreadsheet_ids ?? []) {
     if (id && !ids.includes(id)) ids.push(id);
   }
-  // Auto-include every product-linked spreadsheet from the DB so duplicates
-  // across the main stock sheet and per-product inventory sheets are detected.
+  // 3) Every product-linked spreadsheet
   const { data: prods } = await supabaseAdmin
     .from("products")
     .select("google_spreadsheet_id")
