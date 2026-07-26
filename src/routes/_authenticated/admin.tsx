@@ -78,6 +78,7 @@ function AdminLayout() {
     { to: "/admin/staff", label: "الاستوك", adminOnly: true },
     { to: "/admin/coupons", label: "أكواد الخصم" },
     { to: "/admin/audit", label: "سجل الأعمال", adminOnly: true },
+    { to: "/admin/settings/integrations", label: "التكاملات", adminOnly: true },
     { to: "/admin/settings", label: t.admin.settings, adminOnly: true },
   ];
 
