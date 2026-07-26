@@ -31,42 +31,188 @@ function colIdxToLetter(idx: number): string {
   return s;
 }
 
+/** Normalizes an Arabic/English header cell so different spellings, hamza
+ * variants, diacritics, spaces, underscores and dashes all collapse to the
+ * same key (e.g. "البريد الإلكتروني", "البريد_الالكتروني", "Email " → same). */
+function normalizeHeader(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, "") // strip Arabic diacritics
+    .replace(/[إأآا]/g, "ا")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[\s_\-\.]+/g, "")
+    .trim();
+}
+
+// Order matters: more specific fields are matched first so a generic word
+// (e.g. "حساب") doesn't steal a column meant for another field.
+const FIELD_MATCHERS: Array<{ field: string; matchers: string[] }> = [
+  {
+    field: "key",
+    matchers: [
+      "activationkey",
+      "activation",
+      "licensekey",
+      "license",
+      "licence",
+      "serialkey",
+      "serial",
+      "productkey",
+      "redeemcode",
+      "redeem",
+      "key",
+      "code",
+      "مفتاحالتفعيل",
+      "مفتاح",
+      "كودالتفعيل",
+      "الكود",
+      "كود",
+      "الرمز",
+      "رمز",
+    ],
+  },
+  {
+    field: "password",
+    matchers: [
+      "password",
+      "passwrd",
+      "pass",
+      "pwd",
+      "الباسورد",
+      "باسورد",
+      "كلمهالسر",
+      "كلمهالمرور",
+      "كلمهسر",
+      "كلمهمرور",
+      "السر",
+    ],
+  },
+  {
+    field: "username",
+    matchers: [
+      "username",
+      "user_name",
+      "userid",
+      "user",
+      "login",
+      "account",
+      "اليوزر",
+      "يوزر",
+      "اسمالمستخدم",
+      "المستخدم",
+      "الحساب",
+    ],
+  },
+  {
+    field: "email",
+    matchers: [
+      "email",
+      "e-mail",
+      "mail",
+      "الايميل",
+      "ايميل",
+      "البريدالالكتروني",
+      "بريدالكتروني",
+      "بريد",
+      "جيميل",
+      "gmail",
+    ],
+  },
+  {
+    field: "type",
+    matchers: ["accounttype", "servicetype", "type", "نوعالحساب", "نوعالخدمه", "نوع"],
+  },
+  {
+    field: "notes",
+    matchers: [
+      "notes",
+      "note",
+      "comment",
+      "comments",
+      "remark",
+      "description",
+      "الملاحظات",
+      "ملاحظات",
+      "ملاحظه",
+      "ملحوظه",
+    ],
+  },
+  {
+    field: "status",
+    matchers: ["status", "state", "الحاله", "حاله"],
+  },
+];
+
 function mapSheetRows(values: string[][]) {
   if (!values || values.length === 0) return { records: [], statusColIdx: -1 };
-  const header = (values[0] || []).map((h) => (h || "").trim().toLowerCase());
-  const findIdx = (matchers: string[]) =>
-    header.findIndex((h) => matchers.some((m) => h === m || h.includes(m)));
+  const rawHeader = (values[0] || []).map((h) => (h || "").trim());
+  const header = rawHeader.map(normalizeHeader);
+  const used = new Set<number>();
+  const idx: Record<string, number> = {};
 
-  const iE = findIdx(["email", "mail", "ايميل"]);
-  const iU = findIdx(["username", "user", "login", "يوزر"]);
-  const iP = findIdx(["password", "pass", "pwd", "باسورد", "كلمة"]);
-  const iK = findIdx(["key", "code", "license", "licence", "serial", "product", "مفتاح", "كود"]);
-  const iN = findIdx(["notes", "note", "comment", "remark", "ملاحظ"]);
-  const iType = findIdx(["type", "account_type", "service_type", "نوع", "نوع_الحساب", "نوع_الخدمة"]);
-  const iStatus = findIdx(["status", "state", "حالة"]);
+  for (const { field, matchers } of FIELD_MATCHERS) {
+    let found = -1;
+    for (let i = 0; i < header.length; i++) {
+      if (used.has(i)) continue;
+      const h = header[i];
+      if (!h) continue;
+      if (matchers.some((m) => h === m || h.includes(m))) {
+        found = i;
+        break;
+      }
+    }
+    if (found >= 0) {
+      idx[field] = found;
+      used.add(found);
+    }
+  }
 
-  const used = new Set([iE, iU, iP, iK, iN, iStatus].filter((i) => i >= 0));
-  const iFallback =
-    iE < 0 && iU < 0 && iP < 0 && iK < 0 ? header.findIndex((_, i) => !used.has(i)) : -1;
+  // No recognized identity column at all → fall back to the first unused
+  // column as the username/key, so a completely differently-named sheet
+  // still imports something instead of silently importing nothing.
+  if (idx.key === undefined && idx.username === undefined && idx.email === undefined) {
+    const fallback = header.findIndex((_, i) => !used.has(i));
+    if (fallback >= 0) {
+      idx.username = fallback;
+      used.add(fallback);
+    }
+  }
 
-  const clean = (r: string[], i: number) => (i >= 0 ? (r[i] ?? "").trim() || null : null);
+  // Any column that didn't match a known field is never dropped — fold it
+  // into the notes as "header: value" so no data from the sheet is lost.
+  const extraColIdxs = header.map((_, i) => i).filter((i) => !used.has(i));
+
+  const clean = (r: string[], i: number | undefined) =>
+    i !== undefined && i >= 0 ? (r[i] ?? "").trim() || null : null;
 
   const records = values
     .slice(1)
-    .map((r, idx) => ({
-      account_email: clean(r, iE),
-      account_username: clean(r, iU) ?? clean(r, iK) ?? clean(r, iFallback),
-      account_password: clean(r, iP),
-      account_type: clean(r, iType),
-      extra_notes: clean(r, iN),
-      _srcRowIndex: idx + 2,
-      _statusValue: iStatus >= 0 ? (r[iStatus] ?? "").trim().toLowerCase() : "",
-    }))
-    .filter((rec) =>
-      rec.account_email || rec.account_username || rec.account_password || rec.extra_notes,
-    );
+    .map((r, rIdx) => {
+      const baseNotes = clean(r, idx.notes);
+      const extraParts = extraColIdxs
+        .map((i) => {
+          const label = rawHeader[i] || `col${i + 1}`;
+          const val = (r[i] ?? "").trim();
+          return val ? `${label}: ${val}` : null;
+        })
+        .filter(Boolean);
+      const extra_notes = [baseNotes, ...extraParts].filter(Boolean).join(" | ") || null;
 
-  return { records, statusColIdx: iStatus };
+      return {
+        account_email: clean(r, idx.email),
+        account_username: clean(r, idx.username) ?? clean(r, idx.key),
+        account_password: clean(r, idx.password),
+        account_type: clean(r, idx.type),
+        extra_notes,
+        _srcRowIndex: rIdx + 2,
+        _statusValue: idx.status !== undefined ? (r[idx.status] ?? "").trim().toLowerCase() : "",
+      };
+    })
+    .filter((rec) => rec.account_email || rec.account_username || rec.account_password || rec.extra_notes);
+
+  return { records, statusColIdx: idx.status ?? -1 };
 }
 
 /** Preview: list tabs in the spreadsheet and match each to a plan by label. */
@@ -80,10 +226,9 @@ export const previewProductSheetTabs = createServerFn({ method: "POST" })
     });
     if (!isAdmin) throw new Error("Forbidden");
 
-    const infoRes = await gfetch(
-      `${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`,
-      { headers: authHeaders() },
-    );
+    const infoRes = await gfetch(`${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`, {
+      headers: authHeaders(),
+    });
     if (!infoRes.ok) {
       const t = await infoRes.text();
       throw new Error(`Google Sheets ${infoRes.status}: ${t}`);
@@ -120,11 +265,7 @@ export const previewProductSheetTabs = createServerFn({ method: "POST" })
 export const importAllTabsForProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (d: {
-      productId: string;
-      spreadsheetId: string;
-      overrides?: Array<{ plan_id: string; tab_title: string }>;
-    }) => d,
+    (d: { productId: string; spreadsheetId: string; overrides?: Array<{ plan_id: string; tab_title: string }> }) => d,
   )
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", {
@@ -139,10 +280,9 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       .eq("product_id", data.productId);
     if (pErr) throw pErr;
 
-    const infoRes = await gfetch(
-      `${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`,
-      { headers: authHeaders() },
-    );
+    const infoRes = await gfetch(`${GATEWAY}/spreadsheets/${data.spreadsheetId}?fields=sheets.properties`, {
+      headers: authHeaders(),
+    });
     if (!infoRes.ok) {
       const t = await infoRes.text();
       throw new Error(`Google Sheets ${infoRes.status}: ${t}`);
@@ -172,8 +312,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
 
     for (const pl of plans ?? []) {
       const targets = [normalizeTitle(pl.label_ar), normalizeTitle(pl.label_en)].filter(Boolean);
-      let tabTitle =
-        overrideMap.get(pl.id) ?? tabs.find((t) => targets.includes(normalizeTitle(t))) ?? null;
+      let tabTitle = overrideMap.get(pl.id) ?? tabs.find((t) => targets.includes(normalizeTitle(t))) ?? null;
 
       if (!tabTitle) {
         results.push({
@@ -189,10 +328,9 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
 
       // Fetch that tab's values
       const range = `${tabTitle}!A1:Z10000`;
-      const valuesRes = await gfetch(
-        `${GATEWAY}/spreadsheets/${data.spreadsheetId}/values/${range}`,
-        { headers: authHeaders() },
-      );
+      const valuesRes = await gfetch(`${GATEWAY}/spreadsheets/${data.spreadsheetId}/values/${range}`, {
+        headers: authHeaders(),
+      });
       if (!valuesRes.ok) {
         const t = await valuesRes.text();
         results.push({
@@ -209,9 +347,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
       const { records, statusColIdx } = mapSheetRows(vj.values ?? []);
 
       // Skip rows already sold/delivered on the sheet itself
-      const availableRecords = records.filter(
-        (r) => !r._statusValue || ["available", ""].includes(r._statusValue),
-      );
+      const availableRecords = records.filter((r) => !r._statusValue || ["available", ""].includes(r._statusValue));
 
       if (availableRecords.length === 0) {
         results.push({
@@ -264,15 +400,11 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
         .map((e: any) => e.id);
       let removed = 0;
       if (toDeleteIds.length > 0) {
-        const { error: delErr } = await context.supabase
-          .from("account_inventory")
-          .delete()
-          .in("id", toDeleteIds);
+        const { error: delErr } = await context.supabase.from("account_inventory").delete().in("id", toDeleteIds);
         if (!delErr) removed = toDeleteIds.length;
       }
 
-      const batchId =
-        (globalThis.crypto as any)?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+      const batchId = (globalThis.crypto as any)?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
       const toInsert = availableRecords
         .filter((r) => !existingKeys.has(rowKey(r)))
@@ -293,9 +425,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
 
       let inserted = 0;
       if (toInsert.length > 0) {
-        const { error: insErr } = await context.supabase
-          .from("account_inventory")
-          .insert(toInsert);
+        const { error: insErr } = await context.supabase.from("account_inventory").insert(toInsert);
         if (insErr) {
           results.push({
             plan_id: pl.id,
@@ -327,11 +457,7 @@ export const importAllTabsForProduct = createServerFn({ method: "POST" })
         tab_title: tabTitle,
         inserted,
         skipped_existing: availableRecords.length - toInsert.length,
-        note: canSync
-          ? removed > 0
-            ? `removed_${removed}`
-            : undefined
-          : "no_status_column_no_autosync",
+        note: canSync ? (removed > 0 ? `removed_${removed}` : undefined) : "no_status_column_no_autosync",
       });
     }
 
