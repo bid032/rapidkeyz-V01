@@ -12,7 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // Outside Lovable builds (e.g. Vercel), target Vercel's serverless output.
+  // Outside Lovable builds (self-hosting/cPanel), target a normal Node server.
   // Inside Lovable this override is ignored and Cloudflare is used.
-  nitro: { preset: "vercel" },
+  nitro: { preset: "node-server" },
 });
