@@ -35,14 +35,14 @@ export function FAQ() {
         <h2 id="faq-heading" className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.2] pb-1">
           {lang === "ar" ? (
             <>
-              الأسئلة الشائعة عن اشتراكات
+              الأسئلة الشائعة عن اشتراكات RapidKeyz
               <br />
-              <span className="brand-text">ChatGPT و Midjourney في مصر</span>
+              <span className="brand-text">متجر الاشتراكات الرقمية والذكاء الاصطناعي</span>
             </>
           ) : (
             <>
-              FAQ about{" "}
-              <span className="brand-text">ChatGPT & Midjourney in Egypt</span>
+              FAQ About RapidKeyz{" "}
+              <span className="brand-text">Digital Subscriptions and Artificial Intelligence Store</span>
             </>
           )}
 
