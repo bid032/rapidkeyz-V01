@@ -18,34 +18,25 @@ export function usePublicRealtime() {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const flush = () => {
       timer = null;
-      qc.invalidateQueries({
-        predicate: (q) => {
-          const key = q.queryKey;
-          if (!Array.isArray(key)) return false;
-          const flat = key
-            .map((k) => (typeof k === "string" ? k : JSON.stringify(k)))
-            .join("|")
-            .toLowerCase();
-          return (
-            flat.includes("product") ||
-            flat.includes("related") ||
-            flat.includes("shop") ||
-            flat.includes("seller") ||
-            flat.includes("trending") ||
-            flat.includes("hero") ||
-            flat.includes("cats") ||
-            flat.includes("new-arrivals")
-          );
-        },
-      });
+      // Any admin change (products, plans, settings, testimonials, categories,
+      // FAQs) must show on the public site immediately, so invalidate everything.
+      qc.invalidateQueries();
     };
     const schedule = () => {
       if (timer) return;
-      timer = setTimeout(flush, 250);
+      timer = setTimeout(flush, 200);
     };
 
     const channel = supabase.channel("public-realtime-stock");
-    for (const table of ["product_plans", "products"] as const) {
+    for (const table of [
+      "product_plans",
+      "products",
+      "site_settings",
+      "testimonial_images",
+      "categories",
+      "faqs",
+      "product_reviews",
+    ] as const) {
       channel.on(
         "postgres_changes" as any,
         { event: "*", schema: "public", table },
@@ -53,6 +44,7 @@ export function usePublicRealtime() {
       );
     }
     channel.subscribe();
+
 
     return () => {
       if (timer) clearTimeout(timer);

@@ -24,25 +24,38 @@ function authHeaders() {
 }
 
 async function getSpreadsheetId(): Promise<string> {
-  // Prefer the new `google_sheet_integrations` registry (slug = "stock"),
-  // fall back to the legacy `site_settings.stock_sheet` row for older setups.
+  // The link the admin pastes in Dashboard , Stock settings
+  // (`site_settings.stock_sheet`) is the source of truth: whatever sheet is
+  // saved there is exactly what the app reads. The integrations registry is
+  // only a fallback for setups that never filled that field.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
+  if (cfg.spreadsheet_id?.trim()) return cfg.spreadsheet_id.trim();
+
   try {
     const { findSheetIntegration } = await import("@/lib/google-sheets-manager.server");
     const it = await findSheetIntegration("stock");
     if (it?.spreadsheet_id) return it.spreadsheet_id;
   } catch {
-    /* fall through to legacy */
+    /* ignore , reported below */
   }
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
-  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string };
-  if (!cfg.spreadsheet_id) throw new Error("لم يتم ربط شيت الاستوك بعد");
-  return cfg.spreadsheet_id;
+  throw new Error("لم يتم ربط شيت الاستوك بعد");
 }
+
 
 async function getAllSpreadsheetIds(): Promise<string[]> {
   const ids: string[] = [];
-  // 1) New registry: any integration whose slug starts with "stock"
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // 1) The sheet(s) configured in the dashboard come first , they win on
+  //    conflicts because that is where the admin pastes the live sheet link.
+  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
+  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string; extra_spreadsheet_ids?: string[] };
+  if (cfg.spreadsheet_id?.trim()) ids.push(cfg.spreadsheet_id.trim());
+  for (const id of cfg.extra_spreadsheet_ids ?? []) {
+    if (id && !ids.includes(id)) ids.push(id);
+  }
+  // 2) Registry: any integration whose slug starts with "stock"
   try {
     const { listSheetIntegrations } = await import("@/lib/google-sheets-manager.server");
     const rows = await listSheetIntegrations();
@@ -54,14 +67,7 @@ async function getAllSpreadsheetIds(): Promise<string[]> {
   } catch {
     /* ignore */
   }
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  // 2) Legacy site_settings.stock_sheet
-  const { data } = await supabaseAdmin.from("site_settings").select("value").eq("key", "stock_sheet").maybeSingle();
-  const cfg = (data?.value ?? {}) as { spreadsheet_id?: string; extra_spreadsheet_ids?: string[] };
-  if (cfg.spreadsheet_id && !ids.includes(cfg.spreadsheet_id)) ids.push(cfg.spreadsheet_id);
-  for (const id of cfg.extra_spreadsheet_ids ?? []) {
-    if (id && !ids.includes(id)) ids.push(id);
-  }
+
   // 3) Every product-linked spreadsheet
   const { data: prods } = await supabaseAdmin
     .from("products")

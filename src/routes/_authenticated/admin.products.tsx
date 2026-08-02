@@ -43,7 +43,7 @@ type ProductForm = {
   account_type: AccountType;
   account_types: AccountType[];
   status: "active" | "draft" | "archived";
-  is_featured: boolean;
+  // is_featured: boolean;
   is_bestseller: boolean;
   discount_percent: number;
   plan_variants: string[];
@@ -65,7 +65,7 @@ const emptyForm: ProductForm = {
   account_type: "shared",
   account_types: ["shared"],
   status: "active",
-  is_featured: false,
+  // is_featured: false,
   is_bestseller: false,
   discount_percent: 0,
   plan_variants: [],
@@ -258,7 +258,8 @@ function AdminProducts() {
             category_ids: existingCats,
             delivery_type: p.delivery_type, account_type: p.account_type,
             account_types: initTypes,
-            status: p.status, is_featured: p.is_featured, is_bestseller: (p as any).is_bestseller ?? false,
+            status: p.status, is_bestseller: (p as any).is_bestseller ?? false,
+            // status: p.status, is_featured: p.is_featured, is_bestseller: (p as any).is_bestseller ?? false,
             discount_percent: p.discount_percent ?? 0,
             plan_variants: Array.isArray((p as any).plan_variants) ? ((p as any).plan_variants as string[]) : [],
           });
@@ -711,11 +712,11 @@ function AdminProducts() {
 
                     <section className="space-y-2">
                       <h3 className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">التمييز</h3>
-                      <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
+                      {/* <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
                         <span><b>Featured</b> ، مثبّت في القسم المميز</span>
                         <input type="checkbox" checked={editing.is_featured}
                           onChange={(e) => setEditing({ ...editing, is_featured: e.target.checked })} />
-                      </label>
+                      </label> */}
                       <label className="flex items-center justify-between gap-2 text-xs p-2.5 bg-background border border-border rounded-lg cursor-pointer">
                         <span><b>الأكثر مبيعاً</b></span>
                         <input type="checkbox" checked={editing.is_bestseller}

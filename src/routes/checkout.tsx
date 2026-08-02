@@ -49,8 +49,6 @@ function CheckoutPage() {
     items: { name: string; mode: "instant_delivered" | "instant_pending" | "manual" }[];
   } | null>(null);
   // New state for wallet and instapay numbers
-  const [walletNumber, setWalletNumber] = useState("");
-  const [instapayNumber, setInstapayNumber] = useState("");
   const [walletCopied, setWalletCopied] = useState(false);
   const [instapayCopied, setInstapayCopied] = useState(false);
 
@@ -135,6 +133,8 @@ function CheckoutPage() {
   const settings = useQuery({
     queryKey: ["site-settings"],
     queryFn: async () => (await supabase.from("site_settings").select("*")).data ?? [],
+    staleTime: 0,
+    refetchOnMount: "always" as const,
   });
   const checkoutSettings = (settings.data?.find((s: any) => s.key === "checkout")?.value ?? {}) as any;
   const paymentSettings = (settings.data?.find((s: any) => s.key === "payments")?.value ?? {}) as any;
@@ -142,16 +142,15 @@ function CheckoutPage() {
   // تم إزالة خيار الدفع التجريبي نهائيًا
   const instantPaymentEnabled = false;
 
-  // Get wallet and instapay numbers from settings
-  useEffect(() => {
-    if (settings.data) {
-      const walletNumberSetting = settings.data.find((s: any) => s.key === "wallet_number")?.value;
-      const instapayNumberSetting = settings.data.find((s: any) => s.key === "instapay_number")?.value;
-
-      if (walletNumberSetting) setWalletNumber(String(walletNumberSetting));
-      if (instapayNumberSetting) setInstapayNumber(String(instapayNumberSetting));
-    }
-  }, [settings.data]);
+  // Payment numbers are derived straight from the settings query so a dashboard
+  // save (pushed by realtime invalidation) is reflected immediately, and clearing
+  // a number in the dashboard actually clears it on the site.
+  const settingValue = (key: string) => {
+    const raw = settings.data?.find((s: any) => s.key === key)?.value;
+    return raw == null ? "" : String(raw);
+  };
+  const walletNumber = settingValue("wallet_number");
+  const instapayNumber = settingValue("instapay_number");
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {

@@ -680,6 +680,8 @@ export type Database = {
           name_ar: string
           name_en: string
           plan_variants: string[]
+          short_description_ar: string | null
+          short_description_en: string | null
           slug: string
           sort_order: number
           status: Database["public"]["Enums"]["product_status"]
@@ -705,6 +707,8 @@ export type Database = {
           name_ar: string
           name_en: string
           plan_variants?: string[]
+          short_description_ar?: string | null
+          short_description_en?: string | null
           slug: string
           sort_order?: number
           status?: Database["public"]["Enums"]["product_status"]
@@ -730,6 +734,8 @@ export type Database = {
           name_ar?: string
           name_en?: string
           plan_variants?: string[]
+          short_description_ar?: string | null
+          short_description_en?: string | null
           slug?: string
           sort_order?: number
           status?: Database["public"]["Enums"]["product_status"]

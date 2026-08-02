@@ -181,11 +181,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if('scrollRestoration' in history){history.scrollRestoration='manual';}window.addEventListener('beforeunload',function(){try{window.scrollTo(0,0);}catch(e){}});window.addEventListener('load',function(){try{window.scrollTo(0,0);}catch(e){}});var t=localStorage.getItem('rk-theme');var d=document.documentElement;d.classList.remove('light','dark');d.classList.add(t==='light'?'light':'dark');}catch(e){}})();`,
+            __html: `(function(){try{if('scrollRestoration' in history){history.scrollRestoration='manual';}window.addEventListener('beforeunload',function(){try{window.scrollTo(0,0);}catch(e){}});window.addEventListener('load',function(){try{window.scrollTo(0,0);}catch(e){}});var m=localStorage.getItem('rk-theme-mode');var t=(m==='light'||m==='dark')?m:localStorage.getItem('rk-theme');var d=document.documentElement;d.classList.remove('light','dark');d.classList.add(t==='light'?'light':'dark');}catch(e){}})();`,
           }}
         />
 
@@ -196,7 +196,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var el=document.getElementById('rk-pre-splash');if(!el)return;var t=localStorage.getItem('rk-theme');var isLight=t==='light';var bg=isLight?'#f5f7fb':'#0b1220';var logoSrc=isLight?'/black logo rapid.png':'/white logo rapid.png';var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);el.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden;background:'+bg+';transition:opacity 260ms ease';el.innerHTML='<div style="position:absolute;top:50%;left:50%;width:520px;height:260px;transform:translate(-50%,-50%);border-radius:9999px;background:rgba(34,195,230,0.2);filter:blur(120px);opacity:.7"></div><div style="position:absolute;inset:0;background:radial-gradient(circle at center, transparent 0%, '+bg+' 72%)"></div><div style="position:relative;width:208px;height:208px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;inset:-24px;border-radius:9999px;border:2px solid transparent;border-top-color:#22c3e6;border-right-color:rgba(34,195,230,0.4);animation:rk-pre-spin 1.2s linear infinite"></div><div style="position:absolute;inset:-12px;border-radius:9999px;border:2px solid transparent;border-bottom-color:rgba(34,195,230,0.6);animation:rk-pre-spin 1.8s linear infinite reverse"></div><img src="'+logoSrc+'" alt="RapidKeyz" style="position:relative;width:70%;height:70%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(34,195,230,0.55));animation:rk-pre-pulse 1.8s ease-in-out infinite"/></div>';var hidden=false;var hide=function(){if(hidden)return;hidden=true;var e=document.getElementById('rk-pre-splash');if(!e)return;e.style.display='none';e.innerHTML='';};window.__rkHideSplash=function(){var start=window.__rkSplashStart||Date.now();var elapsed=Date.now()-start;var wait=Math.max(0,300-elapsed);setTimeout(function(){requestAnimationFrame(function(){requestAnimationFrame(hide);});},wait);};window.__rkSplashStart=Date.now();setTimeout(hide,6000);}catch(e){}})();`,
+            __html: `(function(){try{var el=document.getElementById('rk-pre-splash');if(!el)return;var m=localStorage.getItem('rk-theme-mode');var t=(m==='light'||m==='dark')?m:localStorage.getItem('rk-theme');var isLight=t==='light';var bg=isLight?'#f5f7fb':'#0b1220';var logoSrc=isLight?'/black_logo_rapid.png':'/white_logo_rapid.png';var s=document.createElement('style');s.textContent='@keyframes rk-pre-spin{to{transform:rotate(360deg)}}@keyframes rk-pre-pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.04);opacity:1}}';document.head.appendChild(s);el.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;overflow:hidden;background:'+bg+';transition:opacity 260ms ease';el.innerHTML='<div style="position:absolute;top:50%;left:50%;width:520px;height:260px;transform:translate(-50%,-50%);border-radius:9999px;background:rgba(34,195,230,0.2);filter:blur(120px);opacity:.7"></div><div style="position:absolute;inset:0;background:radial-gradient(circle at center, transparent 0%, '+bg+' 72%)"></div><div style="position:relative;width:208px;height:208px;display:flex;align-items:center;justify-content:center"><div style="position:absolute;inset:-24px;border-radius:9999px;border:2px solid transparent;border-top-color:#22c3e6;border-right-color:rgba(34,195,230,0.4);animation:rk-pre-spin 1.2s linear infinite"></div><div style="position:absolute;inset:-12px;border-radius:9999px;border:2px solid transparent;border-bottom-color:rgba(34,195,230,0.6);animation:rk-pre-spin 1.8s linear infinite reverse"></div><img src="'+logoSrc+'" alt="RapidKeyz" style="position:relative;width:70%;height:70%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(34,195,230,0.55));animation:rk-pre-pulse 1.8s ease-in-out infinite"/></div>';var hidden=false;var hide=function(){if(hidden)return;hidden=true;var e=document.getElementById('rk-pre-splash');if(!e)return;e.style.display='none';e.innerHTML='';};window.__rkHideSplash=function(){var start=window.__rkSplashStart||Date.now();var elapsed=Date.now()-start;var wait=Math.max(0,300-elapsed);setTimeout(function(){requestAnimationFrame(function(){requestAnimationFrame(hide);});},wait);};window.__rkSplashStart=Date.now();setTimeout(hide,6000);}catch(e){}})();`,
           }}
         />
 
@@ -214,43 +214,37 @@ function RootComponent() {
   const pathname = router.state.location.pathname;
 
   useEffect(() => {
-    // Hide splash only when: fonts ready + router idle + content painted.
-    let cancelled = false;
+    // Hide the splash as soon as the page is *usable*: hydration done, router
+    // idle, and the above-the-fold queries settled. Below-the-fold sections
+    // keep loading behind their own skeletons , waiting for every single
+    // background query was what made the splash overstay its welcome.
     let hidden = false;
-
-    const doHide = () => {
-      if (cancelled || hidden) return;
+    let raf = 0;
+    const hide = () => {
+      if (hidden) return;
       hidden = true;
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           try { (window as any).__rkHideSplash?.(); } catch {}
-        })
+        }),
       );
     };
 
-    const waitForIdle = () =>
-      new Promise<void>((resolve) => {
-        if (router.state.status === "idle") return resolve();
-        const unsub = router.subscribe("onResolved", () => {
-          if (router.state.status === "idle") {
-            unsub();
-            resolve();
-          }
-        });
-        // Don't let a slow loader hold the splash — cap the wait.
-        setTimeout(() => { try { unsub(); } catch {} resolve(); }, 1200);
-      });
+    const ready = () => router.state.status === "idle" && !router.state.isLoading;
 
-    const fontsReady =
-      (document as any).fonts?.ready as Promise<unknown> | undefined;
+    const check = () => {
+      if (hidden) return;
+      if (ready()) hide();
+      else raf = requestAnimationFrame(check);
+    };
+    // Give the tree two frames to mount before the first check.
+    raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(check);
+    });
 
-    Promise.all([
-      fontsReady ?? Promise.resolve(),
-      waitForIdle(),
-    ]).then(doHide, doHide);
+    // Safety net: never hold the splash for more than 1.2s.
+    const cap = setTimeout(hide, 1200);
 
-    // Safety fallback
-    const fallback = setTimeout(doHide, 2500);
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
@@ -258,8 +252,9 @@ function RootComponent() {
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
     return () => {
-      cancelled = true;
-      clearTimeout(fallback);
+      hidden = true;
+      cancelAnimationFrame(raf);
+      clearTimeout(cap);
       sub.subscription.unsubscribe();
     };
   }, [router, queryClient]);

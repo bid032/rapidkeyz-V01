@@ -22,7 +22,9 @@ export type SheetIntegration = {
   updated_at: string;
 };
 
-const CACHE_TTL_MS = 30_000;
+// No TTL cache: server functions run on stateless workers, so a stale cache on
+// one instance made saved sheet links take minutes to apply. Always read fresh.
+const CACHE_TTL_MS = 0;
 let cache: { rows: SheetIntegration[]; exp: number } | null = null;
 
 async function loadAll(): Promise<SheetIntegration[]> {

@@ -45,7 +45,7 @@ function StockPage() {
         staffName: profile?.display_name || user.email || "Staff",
       };
     },
-    staleTime: 30_000,
+    staleTime: 5_000,
   });
 
   useEffect(() => {
@@ -126,17 +126,37 @@ function StockDispenser({ staffName }: { staffName: string }) {
   const q = useQuery({
     queryKey: ["stock-app-data"],
     queryFn: () => fetcher(),
-    refetchInterval: 60_000,
+    // Near-live: poll every 5s and treat data as immediately stale so a change
+    // in the linked Google Sheet shows up here without a manual refresh.
+    refetchInterval: 5_000,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 45_000,
+    staleTime: 0,
     retry: (count, err: any) => {
       const msg = String(err?.message ?? "");
       if (msg.includes(" 429")) return false;
       return count < 2;
     },
   });
+
+  // Changing the sheet link in the dashboard must switch the displayed data
+  // right away, not on the next natural poll.
+  useEffect(() => {
+    const ch = supabase
+      .channel("stock-settings-watch")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "site_settings" },
+        () => q.refetch(),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(ch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const products = q.data?.products ?? [];
   const selected = products.find((p) => p.productName === productName);

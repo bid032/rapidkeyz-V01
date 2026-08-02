@@ -38,8 +38,8 @@ export function defaultPrivacyText(lang: Lang): string {
 
 export function defaultShopIntro(lang: Lang): string {
   return lang === "ar"
-    ? "تصفّح متجر RapidKeyz لشراء اشتراكات ChatGPT Plus وMidjourney وCanva Pro وأدوات الـ Ai والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
-    : "Browse RapidKeyz to buy ChatGPT Plus, Midjourney, Canva Pro and AI-tool subscriptions in EGP. Every plan is 100% genuine, delivered within minutes and guaranteed for its full duration.";
+    ? "تصفّح متجر RapidKeyz | متجر الاشتراكات الرقمية والذكاء الاصطناعي والترفيه بالجنيه المصري. كل الاشتراكات أصلية 100%، مع تسليم فوري خلال دقائق وضمان طوال مدة الاشتراك."
+    : "Browse RapidKeyz | Your go-to store for digital subscriptions, AI, and entertainment in Egyptian pounds. All subscriptions are 100% genuine, with instant delivery within minutes and a lifetime guarantee.";
 }
 
 export const pageDefaults: Record<

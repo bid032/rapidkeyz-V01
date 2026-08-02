@@ -1,47 +1,74 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
-import { Testimonials } from "@/components/Testimonials";
-import { TrustSection } from "@/components/TrustSection";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
-import { FAQ, FAQ_ITEMS_AR } from "@/components/FAQ";
+import { FAQ_ITEMS_AR } from "@/lib/faq-items";
 import { BrandsStrip } from "@/components/BrandsStrip";
-import { lazyClient } from "@/components/ClientOnly";
+import { HeroGrid, HeroGradients, HeroStaticLogos, heroLogosQuery } from "@/components/HeroDecor";
+import { LazySection } from "@/components/LazySection";
+import {
+  BrandsStripSkeleton,
+  CategoriesSkeleton,
+  CategoryRowsSkeleton,
+  FaqSkeleton,
+  FooterSkeleton,
+  ProductRowSkeleton,
+  TestimonialsSkeleton,
+  TrustSkeleton,
+} from "@/components/SectionSkeletons";
 
-const HeroCanvas = lazyClient(() => import("@/components/HeroCanvas").then((m) => ({ default: m.HeroCanvas })));
-const Logo3D = lazyClient(() => import("@/components/Logo3D").then((m) => ({ default: m.Logo3D })));
-const FloatingLogos = lazyClient(() => import("@/components/FloatingLogos").then((m) => ({ default: m.FloatingLogos })));
 import { CategoryRows } from "@/components/CategoryRows";
+
+// framer-motion-heavy, below-the-fold sections: loaded on demand so the initial
+// home-page bundle stays small.
+const TrustSection = lazy(() => import("@/components/TrustSection").then((m) => ({ default: m.TrustSection })));
+const Testimonials = lazy(() => import("@/components/Testimonials").then((m) => ({ default: m.Testimonials })));
+const FAQ = lazy(() => import("@/components/FAQ").then((m) => ({ default: m.FAQ })));
 import { ProductSlider } from "@/components/ProductSlider";
 import { ViewAllButton } from "@/components/ViewAllButton";
 
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/integrations/supabase/client";
+import { withTimeout, warmInBackground, CRITICAL_LOADER_TIMEOUT_MS } from "@/lib/loader-timeout";
+import { featuredProductsQuery, bestSellersQuery, siteSettingQuery } from "@/lib/home-queries";
+import {
+  brandsStripQuery,
+  categoriesShowcaseQuery,
+  categoryRowsQuery,
+  footerCategoriesQuery,
+  publicFaqsQuery,
+  testimonialImagesQuery,
+} from "@/lib/public-queries";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
+  head: ({ loaderData }: { loaderData?: { heroLogos?: string[] } }) => ({
     meta: [
-      { title: "اشتراكات ChatGPT Plus و Midjourney في مصر | RapidKeyz" },
+      { title: "RapidKeyz | متجر الاشتراكات الرقمية والذكاء الاصطناعي" },
       {
         name: "description",
         content:
           "اشترِ اشتراكات ChatGPT Plus، Midjourney، Office 365 وأدوات الـ Ai بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
       },
       { name: "keywords", content: "شراء ChatGPT Plus مصر, اشتراك Midjourney بالجنيه, Canva Pro اشتراك, Office 365, أدوات ذكاء اصطناعي, RapidKeyz" },
-      { property: "og:title", content: "اشتراكات ChatGPT Plus و Midjourney في مصر | RapidKeyz" },
+      { property: "og:title", content: "RapidKeyz | متجر الاشتراكات الرقمية والذكاء الاصطناعي" },
       {
         property: "og:description",
         content: "اشترِ اشتراكات ChatGPT Plus، Midjourney، Office 365 وأدوات الـ Ai بأسعار مصرية وتسليم فوري خلال دقائق. ضمان 100% ودعم 24/7.",
       },
       { property: "og:url", content: "/" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [
+      { rel: "canonical", href: "/" },
+      // Preload the hero icons so they are decoded before the splash disappears.
+      ...(loaderData?.heroLogos ?? [])
+        .slice(0, 8)
+        .map((href) => ({ rel: "preload", as: "image", href })),
+    ],
     scripts: [
       {
         type: "application/ld+json",
@@ -57,168 +84,75 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  // The loader blocks the SSR response: until it resolves the browser receives
+  // zero bytes (blank tab , the splash isn't even in the DOM yet). So it may
+  // only await the above-the-fold data, and only with a hard deadline.
+  // Everything below the fold is warmed in the background and refetched by the
+  // client if the server didn't finish in time.
+  loader: async ({ context }) => {
+    const qc = context.queryClient;
+
+    // 1) Above the fold , awaited, but never longer than the deadline.
+    const [hero, stats, featured, heroLogos] = await Promise.all([
+      withTimeout(
+        qc.ensureQueryData(siteSettingQuery<Record<string, any>>("hero")),
+        CRITICAL_LOADER_TIMEOUT_MS,
+        null,
+      ),
+      withTimeout(
+        qc.ensureQueryData(siteSettingQuery<Record<string, number>>("stats")),
+        CRITICAL_LOADER_TIMEOUT_MS,
+        null,
+      ),
+      withTimeout(
+        qc.ensureQueryData(featuredProductsQuery()),
+        CRITICAL_LOADER_TIMEOUT_MS,
+        [] as any[],
+      ),
+      // The hero icons are above the fold, so they are awaited with the hero
+      // copy — they must be complete the moment the splash loader hides.
+      withTimeout(qc.ensureQueryData(heroLogosQuery()), CRITICAL_LOADER_TIMEOUT_MS, [] as string[]),
+    ]);
+
+    // 2) Below the fold , fire and forget. Awaiting these was the main reason
+    // the first paint was delayed by 10,20s on shared hosting.
+    warmInBackground(
+      [
+        bestSellersQuery(),
+        brandsStripQuery(),
+        categoriesShowcaseQuery(),
+        categoryRowsQuery(["ai-tools", "design"]),
+        testimonialImagesQuery(),
+        publicFaqsQuery(),
+        footerCategoriesQuery(),
+        siteSettingQuery("brand"),
+        siteSettingQuery("socials"),
+        siteSettingQuery("contact"),
+      ].map((opts) => qc.prefetchQuery(opts as any)),
+    );
+
+    const bestSellers = qc.getQueryData(bestSellersQuery().queryKey) ?? [];
+    return { hero, stats, featured, bestSellers, heroLogos };
+
+  },
   component: HomePage,
 });
 
-async function fetchFeaturedProducts(): Promise<ProductCardData[]> {
-  const fetchWithRetry = async (retryCount: number = 0): Promise<ProductCardData[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("products")
-        .select(
-          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)",
-        )
-        .eq("status", "active")
-        .order("is_featured", { ascending: false })
-        .order("sort_order", { ascending: true })
-        .limit(9);
-      if (error) throw error;
-      return (data ?? []).map((p) => {
-        const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-        const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
-        const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
-        const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-        const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
-
-        return {
-          id: p.id,
-          slug: p.slug,
-          name_ar: p.name_ar,
-          name_en: p.name_en,
-          short_description_ar: null,
-          short_description_en: null,
-          description_ar: p.description_ar,
-          description_en: p.description_en,
-          icon_url: p.icon_url,
-          delivery_type: p.delivery_type,
-          account_type: p.account_type,
-          discount_percent: (p as any).discount_percent ?? 0,
-          minPrice: cheapest ? Number(cheapest.price) : null,
-          cheapestPlanId: cheapest?.id ?? null,
-          planLabel_ar: cheapest?.label_ar ?? null,
-          planLabel_en: cheapest?.label_en ?? null,
-          totalStock,
-          cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
-        };
-      });
-    } catch (error) {
-      // Retry up to 2 times if there's an error
-      if (retryCount < 2) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-        return fetchWithRetry(retryCount + 1);
-      }
-      throw error;
-    }
-  };
-
-  return fetchWithRetry();
-}
-
-async function fetchBestSellers(): Promise<ProductCardData[]> {
-  const fetchWithRetry = async (retryCount: number = 0): Promise<ProductCardData[]> => {
-    try {
-      const mapRow = (p: any): ProductCardData => {
-        const activePlans = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-        const totalStock = activePlans.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
-        const inStock = activePlans.filter((pl: any) => Number(pl.stock ?? 0) > 0);
-        const cheapest = (inStock.length ? inStock : activePlans).sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-        const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
-        return {
-          id: p.id,
-          slug: p.slug,
-          name_ar: p.name_ar,
-          name_en: p.name_en,
-          short_description_ar: null,
-          short_description_en: null,
-          description_ar: p.description_ar,
-          description_en: p.description_en,
-          icon_url: p.icon_url,
-          delivery_type: p.delivery_type,
-          account_type: p.account_type,
-          discount_percent: p.discount_percent ?? 0,
-          minPrice: cheapest ? Number(cheapest.price) : null,
-          cheapestPlanId: cheapest?.id ?? null,
-          planLabel_ar: cheapest?.label_ar ?? null,
-          planLabel_en: cheapest?.label_en ?? null,
-          totalStock,
-          cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
-        };
-      };
-
-      const productSelect =
-        "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, is_bestseller, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)";
-
-      // 1) Manually flagged products by admin
-      const { data: manual } = await supabase
-        .from("products")
-        .select(productSelect)
-        .eq("status", "active")
-        .eq("is_bestseller", true)
-        .order("sort_order", { ascending: true })
-        .limit(12);
-      const manualList = (manual ?? []).map(mapRow);
-      if (manualList.length >= 4) return manualList.slice(0, 8);
-
-      // 2) Fallback: auto-compute from paid/delivered order items
-      const { data: items } = await supabase
-        .from("order_items")
-        .select("product_id, quantity, orders!inner(status)")
-        .in("orders.status", ["paid", "delivered"]);
-      const counts = new Map<string, number>();
-      for (const it of (items ?? []) as any[]) {
-        if (!it.product_id) continue;
-        counts.set(it.product_id, (counts.get(it.product_id) ?? 0) + Number(it.quantity ?? 1));
-      }
-      const excludeIds = new Set(manualList.map((p) => p.id));
-      const topIds = [...counts.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([id]) => id)
-        .filter((id) => !excludeIds.has(id))
-        .slice(0, 8 - manualList.length);
-      if (topIds.length === 0) return manualList;
-      const { data } = await supabase
-        .from("products")
-        .select(productSelect)
-        .in("id", topIds)
-        .eq("status", "active");
-      const byId = new Map((data ?? []).map((p: any) => [p.id, p]));
-      const autoList = topIds.flatMap((id) => {
-        const p: any = byId.get(id);
-        return p ? [mapRow(p)] : [];
-      });
-      return [...manualList, ...autoList];
-    } catch (error) {
-      // Retry up to 5 times if there's an error
-      if (retryCount < 5) {
-        await new Promise(resolve => setTimeout(resolve, 500 * (retryCount + 1)));
-        return fetchWithRetry(retryCount + 1);
-      }
-      throw error;
-    }
-  };
-
-  return fetchWithRetry();
-}
-
 function HomePage() {
   const { t, lang } = useApp();
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => { setHydrated(true); }, []);
+  const initial = Route.useLoaderData();
 
-  const products = useQuery<ProductCardData[]>({
-    queryKey: ["featured-products"],
-    queryFn: fetchFeaturedProducts,
-    retry: 5,
-    retryDelay: 500,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  const products = useQuery({
+    ...featuredProductsQuery(),
+    initialData: initial.featured as ProductCardData[],
   });
-  const bestSellers = useQuery<ProductCardData[]>({
-    queryKey: ["best-sellers"],
-    queryFn: fetchBestSellers,
-    retry: 5,
-    retryDelay: 500,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+  const bestSellers = useQuery({
+    ...bestSellersQuery(),
+    // Only seed when the server actually had the list; an empty seed would
+    // otherwise be treated as fresh data and never refetch.
+    initialData: (initial.bestSellers as ProductCardData[])?.length
+      ? (initial.bestSellers as ProductCardData[])
+      : undefined,
   });
   const priceOf = (p: any) => {
     if (!p || p.minPrice == null) return null;
@@ -250,34 +184,46 @@ function HomePage() {
     }
   };
   const heroSetting = useQuery({
-    queryKey: ["site-setting", "hero"],
-    queryFn: async () => {
-      try {
-        const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
-        return (data?.value as any) ?? {};
-      } catch (error) {
-        // Retry once if there's an error
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const { data } = await supabase.from("site_settings").select("value").eq("key", "hero").maybeSingle();
-        return (data?.value as any) ?? {};
-      }
-    },
-    retry: 5,
-    retryDelay: 500,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    ...siteSettingQuery<Record<string, any>>("hero"),
+    initialData: initial.hero as Record<string, any> | null,
   });
-  const h = hydrated ? (heroSetting.data ?? {}) : {};
-  const pick = (ar: string, en: string, fallback: string) =>
-    (lang === "ar" ? h[ar] : h[en])?.toString().trim() || fallback;
+  // Hero copy is available on first paint (SSR), so render it immediately.
+  const heroReady = true;
+  const h: Record<string, any> = (heroSetting.data as any) ?? {};
+  const pick = (ar: string, en: string, fallback = "") => {
+    const v = (lang === "ar" ? h[ar] : h[en])?.toString().trim();
+    if (v) return v;
+    return heroReady ? fallback : "";
+  };
   const hero = {
-    badge: pick("badge_ar", "badge_en", t.home.badge),
-    title1: pick("title1_ar", "title1_en", t.home.title1),
-    title2: pick("title2_ar", "title2_en", t.home.title2),
-    subtitle: pick("subtitle_ar", "subtitle_en", t.home.subtitle),
+    badge: pick("badge_ar", "badge_en"),
+    title1: pick("title1_ar", "title1_en"),
+    title2: pick("title2_ar", "title2_en"),
+    subtitle: pick("subtitle_ar", "subtitle_en"),
     cta: pick("cta_ar", "cta_en", t.home.cta),
     ctaSecondary: pick("cta_secondary_ar", "cta_secondary_en", t.home.ctaSecondary),
-    trusted: pick("trusted_ar", "trusted_en", t.home.trusted),
+    trusted: pick("trusted_ar", "trusted_en"),
   };
+
+  // Hero numbers come from the dashboard `stats` setting only — never demo values.
+  const statsSetting = useQuery({
+    ...siteSettingQuery<Record<string, number>>("stats"),
+    initialData: initial.stats as Record<string, number> | null,
+  });
+  const statsValues = statsSetting.data ?? {};
+  const fmt = (n: number) => (n >= 1000 ? `+${Math.round(n / 1000)}k` : `+${n}`);
+  const heroStats = (
+    [
+      { key: "customers", l_ar: "عميل سعيد", l_en: "Clients" },
+      { key: "orders", l_ar: "عملية شراء ناجحة", l_en: "Orders" },
+      { key: "services", l_ar: "خدمة رقمية", l_en: "Services" },
+      { key: "years", l_ar: "سنين خبرة", l_en: "Years" },
+      { key: "staff", l_ar: "موظف دعم", l_en: "Support staff" },
+    ] as const
+  )
+    .filter((s) => Number(statsValues[s.key] ?? 0) > 0)
+    .slice(0, 4)
+    .map((s) => ({ n: fmt(Number(statsValues[s.key])), l: lang === "ar" ? s.l_ar : s.l_en }));
 
   // Resolve trending/new cards: admin-selected slugs take priority, then fall back to featured list
   const trendingSlug = (h.trending_slug || "").toString().trim();
@@ -290,7 +236,7 @@ function HomePage() {
       const { data } = await supabase
         .from("products")
         .select(
-          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)",
+          "id, slug, name_ar, name_en, short_description_ar, short_description_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, stock, label_ar, label_en, is_active, sort_order)",
         )
         .in("slug", heroPicksNeeded);
       return (data ?? []).map((p: any) => {
@@ -305,8 +251,8 @@ function HomePage() {
           slug: p.slug,
           name_ar: p.name_ar,
           name_en: p.name_en,
-          short_description_ar: null,
-          short_description_en: null,
+          short_description_ar: p.short_description_ar ?? null,
+          short_description_en: p.short_description_en ?? null,
           description_ar: p.description_ar,
           description_en: p.description_en,
           icon_url: p.icon_url,
@@ -322,9 +268,7 @@ function HomePage() {
         } as ProductCardData;
       });
     },
-    retry: 5,
-    retryDelay: 500,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60_000,
   });
   const featured = products.data ?? [];
   const heroPicksData = heroPicks.data ?? [];
@@ -341,8 +285,9 @@ function HomePage() {
 
       {/* Hero — Balanced Split */}
       <header className="relative overflow-hidden pt-4 pb-6 sm:pt-8 sm:pb-10 lg:pt-10 lg:pb-12">
-        <HeroCanvas />
-        <FloatingLogos />
+        <HeroGradients />
+        <HeroGrid />
+        <HeroStaticLogos initialLogos={(initial.heroLogos ?? []) as string[]} />
 
         {/* Ambient radial glows */}
         <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -355,15 +300,12 @@ function HomePage() {
             {/* Content Side */}
             <div className="md:col-span-7 order-2 md:order-1 flex flex-col items-center md:items-start text-center md:text-start space-y-4 sm:space-y-5" dir={lang === "ar" ? "rtl" : "ltr"}>
 
-              {/* Live pill */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
+              {/* Live pill — only when the dashboard has a badge text */}
+              <div hidden={!hero.badge} className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/10 border border-brand/25">
 
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand" />
-                </span>
+                <span className="inline-flex rounded-full h-2 w-2 bg-brand" />
                 <span className="text-brand text-[10px] sm:text-xs font-bold tracking-[0.2em] uppercase font-mono">
-                  {hero.badge || "INSTANT DELIVERY"}
+                  {hero.badge}
                 </span>
               </div>
 
@@ -448,8 +390,6 @@ function HomePage() {
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto md:self-start md:justify-start">
                 <Link
                   to="/shop"
-                  data-gsap="magnetic"
-                  data-strength="0.3"
                   className="group inline-flex items-center justify-center gap-3 px-7 sm:px-9 py-3.5 sm:py-4 bg-brand text-brand-foreground font-bold rounded-2xl brand-glow hover:shadow-[0_0_60px_-8px_var(--brand-glow)] transition-shadow font-display"
                 >
                     <span>{hero.cta}</span>
@@ -466,14 +406,9 @@ function HomePage() {
                 </a>
               </div>
 
-              {/* Stats Row — divider on top */}
-              <div data-gsap="reveal-stagger" className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-5 sm:pt-6 border-t border-border/40">
-                {[
-                  { n: "24/7", l: lang === "ar" ? "دعم فوري" : "Support" },
-                  { n: "+15k", l: lang === "ar" ? "عميل سعيد" : "Clients" },
-                  { n: "4.9★", l: lang === "ar" ? "تقييم" : "Rating" },
-                  { n: "60s", l: lang === "ar" ? "تسليم آلي" : "Delivery" },
-                ].map((s) => (
+              {/* Stats Row — numbers come straight from dashboard settings */}
+              <div hidden={heroStats.length === 0} className="grid grid-cols-2 sm:grid-cols-4 gap-5 sm:gap-6 w-full pt-5 sm:pt-6 border-t border-border/40">
+                {heroStats.map((s) => (
                   <div key={s.l} className="space-y-1 text-center md:text-start">
                     <div className="text-brand font-display font-bold text-xl sm:text-2xl text-glow">{s.n}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{s.l}</div>
@@ -493,8 +428,7 @@ function HomePage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[1].slug }}
-                    data-gsap="tilt"
-                    className="hidden md:block absolute -top-10 -start-24 w-56 p-3 bg-card/95 backdrop-blur ring-1 ring-border shadow-2xl rounded-2xl -rotate-3 hover:rotate-0 hover:ring-brand/40 hover:brand-glow transition z-10"
+                    className="hidden md:block absolute -top-10 -start-24 w-56 p-3 bg-card/95 backdrop-blur ring-1 ring-border shadow-2xl rounded-2xl hover:ring-brand/40 hover:brand-glow transition z-10"
                   >
                     <div className="flex flex-row-reverse items-center gap-2 sm:gap-2.5">
                       {trending[1].icon_url ? (
@@ -522,8 +456,7 @@ function HomePage() {
                   <Link
                     to="/product/$slug"
                     params={{ slug: trending[0].slug }}
-                    data-gsap="tilt"
-                    className="hidden md:block absolute -bottom-10 -end-24 w-64 p-3.5 bg-card/95 backdrop-blur ring-1 ring-border shadow-2xl rounded-2xl rotate-3 hover:rotate-0 hover:ring-brand/40 hover:brand-glow transition z-10"
+                    className="hidden md:block absolute -bottom-10 -end-24 w-64 p-3.5 bg-card/95 backdrop-blur ring-1 ring-border shadow-2xl rounded-2xl hover:ring-brand/40 hover:brand-glow transition z-10"
                   >
                     <div className="flex flex-row-reverse items-center gap-2 sm:gap-3">
                       {trending[0].icon_url ? (
@@ -547,9 +480,21 @@ function HomePage() {
                 )}
 
                 {/* 3D R Monolith card — on top */}
-                <div className="relative z-20 group w-44 h-44 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 backdrop-blur-xl shadow-2xl flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-500">
-                  <Logo3D className="w-32 sm:w-56 lg:w-64" />
-
+                <div className="relative z-20 w-44 h-44 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-[1.75rem] sm:rounded-[2rem] bg-card/70 border border-border/60 shadow-2xl flex items-center justify-center">
+                  <img
+                    src="/white_logo_rapid.png"
+                    alt="RapidKeyz"
+                    width={320}
+                    height={320}
+                    className="hidden dark:block w-32 sm:w-56 lg:w-64 h-auto object-contain"
+                  />
+                  <img
+                    src="/black_logo_rapid.png"
+                    alt="RapidKeyz"
+                    width={320}
+                    height={320}
+                    className="block dark:hidden w-32 sm:w-56 lg:w-64 h-auto object-contain"
+                  />
                 </div>
 
               </div>
@@ -560,13 +505,25 @@ function HomePage() {
       </header>
 
       {/* Brands strip , auto-scrolling logos of every tool we cover */}
-      <BrandsStrip />
+      <LazySection minHeight={140} fallback={<BrandsStripSkeleton />} prefetch={[brandsStripQuery()]}>
+        <BrandsStrip />
+      </LazySection>
 
       {/* Categories , small 4-across clickable pills */}
-      <CategoriesShowcase compact mini />
+      <LazySection
+        minHeight={180}
+        fallback={<CategoriesSkeleton />}
+        prefetch={[categoriesShowcaseQuery()]}
+      >
+        <CategoriesShowcase compact mini />
+      </LazySection>
 
       {/* Best Sellers — moved BEFORE AI tools row */}
-      {(() => {
+      <LazySection
+        minHeight={420}
+        fallback={<ProductRowSkeleton />}
+        prefetch={[bestSellersQuery()]}
+      >{(() => {
         const list = (bestSellers.data && bestSellers.data.length > 0)
           ? bestSellers.data
           : (products.data ?? []);
@@ -592,10 +549,16 @@ function HomePage() {
             </div>
           </section>
         );
-      })()}
+      })()}</LazySection>
 
       {/* AI Tools + Designers rows */}
-      <CategoryRows slugs={["ai-tools", "design"]} />
+      <LazySection
+        minHeight={520}
+        fallback={<CategoryRowsSkeleton />}
+        prefetch={[categoryRowsQuery(["ai-tools", "design"])]}
+      >
+        <CategoryRows slugs={["ai-tools", "design"]} />
+      </LazySection>
 
       {/* CTA: Browse all subscriptions — hero-style button */}
       <section className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-5 flex justify-center">
@@ -610,13 +573,29 @@ function HomePage() {
         </Link>
       </section>
 
-      <TrustSection />
+      <LazySection minHeight={360} fallback={<TrustSkeleton />}>
+        <Suspense fallback={<TrustSkeleton />}><TrustSection /></Suspense>
+      </LazySection>
 
-      <Testimonials />
+      <LazySection
+        minHeight={420}
+        fallback={<TestimonialsSkeleton />}
+        prefetch={[testimonialImagesQuery()]}
+      >
+        <Suspense fallback={<TestimonialsSkeleton />}><Testimonials /></Suspense>
+      </LazySection>
 
-      <FAQ />
+      <LazySection minHeight={480} fallback={<FaqSkeleton />} prefetch={[publicFaqsQuery()]}>
+        <Suspense fallback={<FaqSkeleton />}><FAQ /></Suspense>
+      </LazySection>
 
-      <Footer />
+      <LazySection
+        minHeight={360}
+        fallback={<FooterSkeleton />}
+        prefetch={[footerCategoriesQuery()]}
+      >
+        <Footer />
+      </LazySection>
 
     </div>
   );

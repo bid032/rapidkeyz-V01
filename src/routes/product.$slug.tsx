@@ -23,7 +23,7 @@ export const Route = createFileRoute("/product/$slug")({
         const { data } = await supabase
           .from("products")
           .select(
-            "slug, name_ar, name_en, description_ar, description_en, icon_url, loading_icon_url, delivery_type, account_type, discount_percent, product_plans(price, compare_price, is_active, label_ar, label_en, stock, duration_days)",
+            "slug, name_ar, name_en, short_description_ar, short_description_en, description_ar, description_en, icon_url, loading_icon_url, delivery_type, account_type, discount_percent, product_plans(price, compare_price, is_active, label_ar, label_en, stock, duration_days)",
           )
           .eq("slug", params.slug)
           .eq("status", "active")
@@ -40,6 +40,8 @@ export const Route = createFileRoute("/product/$slug")({
           slug: string;
           name_ar: string;
           name_en: string;
+          short_description_ar: string | null;
+          short_description_en: string | null;
           description_ar: string | null;
           description_en: string | null;
           icon_url: string | null;
@@ -57,8 +59,8 @@ export const Route = createFileRoute("/product/$slug")({
           slug: productData.slug,
           name_ar: productData.name_ar,
           name_en: productData.name_en,
-          short_description_ar: null,
-          short_description_en: null,
+          short_description_ar: productData.short_description_ar ?? null,
+          short_description_en: productData.short_description_en ?? null,
           description_ar: productData.description_ar,
           description_en: productData.description_en,
           icon_url: productData.icon_url,
@@ -179,7 +181,7 @@ function ProductPage() {
        const p: any = product;
        let q = supabase
          .from("products")
-         .select("id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)")
+         .select("id, slug, name_ar, name_en, short_description_ar, short_description_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)")
          .eq("status", "active")
          .neq("id", p.id)
          .limit(8);
@@ -194,7 +196,7 @@ function ProductPage() {
          const cheapestPlanComparePrice = cheap ? Number(cheap.compare_price ?? 0) : 0;
          return {
            id: r.id, slug: r.slug, name_ar: r.name_ar, name_en: r.name_en,
-           short_description_ar: null, short_description_en: null,
+           short_description_ar: r.short_description_ar ?? null, short_description_en: r.short_description_en ?? null,
            description_ar: r.description_ar, description_en: r.description_en,
            icon_url: r.icon_url, delivery_type: r.delivery_type, account_type: r.account_type,
            discount_percent: r.discount_percent ?? 0,
@@ -425,7 +427,11 @@ function ProductPage() {
   const selectedStock = Number(selected?.stock ?? 0);
   const selectedSoldOut = !!selected && selectedStock <= 0;
   const name = lang === "ar" ? product.name_ar : product.name_en;
-  const shortDesc = loaderData ? (lang === "ar" ? loaderData.short_description_ar : loaderData.short_description_en) : null;
+  const shortDescRaw =
+    lang === "ar"
+      ? ((product as any)?.short_description_ar ?? loaderData?.short_description_ar)
+      : ((product as any)?.short_description_en ?? loaderData?.short_description_en);
+  const shortDesc = (shortDescRaw ?? "").toString().trim() || null;
   const desc = lang === "ar" ? product.description_ar : product.description_en;
   const discount = Number((product as any).discount_percent ?? 0);
   const hasDiscount = discount > 0;

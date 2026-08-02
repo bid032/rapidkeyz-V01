@@ -158,11 +158,24 @@ function AdminSettings() {
         settingsToSave.push({ key: "admin_password", value: adminPassword });
       }
 
-      const { error } = await supabase.from("site_settings").upsert(settingsToSave);
+      // `onConflict: "key"` is explicit on purpose: without it PostgREST can
+      // silently fall back to an INSERT that violates the primary key, so the
+      // save appears to succeed while nothing changes in the database.
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from("site_settings")
+        .upsert(
+          settingsToSave.map((s) => ({ ...s, updated_at: now })),
+          { onConflict: "key" },
+        );
       if (error) throw error;
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["site-settings"] });
+      // Refresh every cached read so the change is live everywhere at once.
+      qc.invalidateQueries();
+      // The public site reads the theme mode from this exact key.
+      qc.invalidateQueries({ queryKey: ["site-settings", "theme_mode"] });
+      settings.refetch();
       notify(lang === "ar" ? "تم حفظ الإعدادات" : "Settings saved", "success");
       // إعادة تعيين حقول الباسورد بعد الحفظ الناجح
       setAdminPassword("");

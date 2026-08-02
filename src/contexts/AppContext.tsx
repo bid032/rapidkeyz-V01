@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { translations, type Lang, type Dict } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 // ---- Cart ----
@@ -59,6 +60,10 @@ const AppContext = createContext<AppState | null>(null);
 
 const isBrowser = typeof window !== "undefined";
 
+/** Keys shared with the pre-paint script in `src/routes/__root.tsx`. */
+export const THEME_KEY = "rk-theme";
+export const THEME_MODE_KEY = "rk-theme-mode";
+
 function getInitialTheme(): Theme {
   // Always return the same value on server and initial client render to
   // avoid hydration mismatches. The real theme is applied in a useEffect
@@ -72,29 +77,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("both");
   const [cartBumpKey, setCartBumpKey] = useState(0);
 
-  // Load admin-forced theme mode
-  useEffect(() => {
-    if (!isBrowser) return;
-    supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "theme_mode")
-      .maybeSingle()
-      .then(({ data }) => {
-        const v = (data?.value as any)?.mode;
-        if (v === "light" || v === "dark" || v === "both") setThemeMode(v);
-      });
-  }, []);
+  // Admin-forced theme mode.
+  // It MUST go through React Query: the dashboard invalidates the cache after
+  // saving and `usePublicRealtime` invalidates on every `site_settings` change,
+  // so the new mode lands on every open tab instantly , no reload needed.
+  const themeModeQuery = useQuery({
+    queryKey: ["site-settings", "theme_mode"],
+    queryFn: async (): Promise<ThemeMode> => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "theme_mode")
+        .maybeSingle();
+      const v = (data?.value as any)?.mode;
+      return v === "light" || v === "dark" || v === "both" ? v : "both";
+    },
+    staleTime: 60_000,
+  });
+  const themeMode: ThemeMode = themeModeQuery.data ?? "both";
 
-  // Enforce forced theme when mode is not "both"
+  // Cache the mode so the pre-paint script in __root.tsx can honour it on the
+  // very first frame of the next visit (no flash, no wrong theme).
   useEffect(() => {
-    if (themeMode === "light" || themeMode === "dark") {
-      setTheme(themeMode);
-    }
-  }, [themeMode]);
+    if (!isBrowser || !themeModeQuery.data) return;
+    localStorage.setItem(THEME_MODE_KEY, themeMode);
+  }, [themeMode, themeModeQuery.data]);
+
+  // Enforce the forced theme. Runs AFTER hydration so the value restored from
+  // localStorage can never win over the admin setting.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (themeMode === "light" || themeMode === "dark") setTheme(themeMode);
+  }, [themeMode, hydrated]);
 
   // ---- Confirm modal ----
   const [confirmState, setConfirmState] = useState<
@@ -119,10 +135,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isBrowser) return;
     const storedLang = localStorage.getItem("rk-lang") as Lang | null;
-    const storedTheme = localStorage.getItem("rk-theme") as Theme | null;
+    const storedTheme = localStorage.getItem(THEME_KEY) as Theme | null;
     const storedCart = localStorage.getItem("rk-cart");
     if (storedLang === "ar" || storedLang === "en") setLangState(storedLang);
-    if (storedTheme === "dark" || storedTheme === "light") setTheme(storedTheme);
+    const cachedMode = localStorage.getItem(THEME_MODE_KEY) as ThemeMode | null;
+    if (cachedMode === "light" || cachedMode === "dark") {
+      // Admin forces a single theme , the user's saved choice is ignored.
+      setTheme(cachedMode);
+    } else if (storedTheme === "dark" || storedTheme === "light") {
+      setTheme(storedTheme);
+    }
     if (storedCart) {
       try {
         setCart(JSON.parse(storedCart));
@@ -144,8 +166,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const html = document.documentElement;
     html.classList.remove("light", "dark");
     html.classList.add(theme);
-    localStorage.setItem("rk-theme", theme);
-  }, [theme, hydrated]);
+    // Only persist a genuine user choice. Persisting a forced theme would
+    // "stick" it after the admin switches back to "User Choice".
+    if (themeMode === "both") localStorage.setItem(THEME_KEY, theme);
+  }, [theme, themeMode, hydrated]);
 
   useEffect(() => {
     if (!isBrowser || !hydrated) return;
@@ -153,7 +177,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [cart, hydrated]);
 
   const setLang = (l: Lang) => setLangState(l);
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {
+    // No-op while the admin forces a single theme.
+    if (themeMode !== "both") return;
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
+  };
 
   const playAddSound = () => {
     if (!isBrowser) return;
@@ -242,7 +270,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (stock != null) {
       if (stock <= 0) {
         setCart((prev) => prev.filter((c) => !(c.productId === productId && c.planId === planId)));
-        notify(lang === "ar" ? "مفيش مخزون تاني فاضل" : "No more stock available", "error");
+        notify(lang === "ar" ? "مفيش مخزون من المنتج ده" : "No more stock available", "error");
         return;
       }
       if (capped > stock) {

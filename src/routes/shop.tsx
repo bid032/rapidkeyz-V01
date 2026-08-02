@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { withTimeout, CRITICAL_LOADER_TIMEOUT_MS } from "@/lib/loader-timeout";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
@@ -10,6 +11,7 @@ import { Footer } from "@/components/Footer";
 import { PageHero } from "@/components/PageHero";
 import { CategoriesShowcase } from "@/components/CategoriesShowcase";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import { queryOptions } from "@tanstack/react-query";
 
 type ShopSearch = { q?: string; category?: string };
 
@@ -36,6 +38,17 @@ export const Route = createFileRoute("/shop")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  // Server-render the catalog so products are visible in the first paint.
+  loader: async ({ context }) => {
+    const qc = context.queryClient;
+    // Deadline-bounded: a slow database must never hold the blank HTML
+    // response hostage. The client refetches whatever didn't make it.
+    const [categories, products] = await Promise.all([
+      withTimeout(qc.ensureQueryData(shopCategoriesQuery()), CRITICAL_LOADER_TIMEOUT_MS, [] as CategoryRow[]),
+      withTimeout(qc.ensureQueryData(shopProductsQuery()), CRITICAL_LOADER_TIMEOUT_MS, [] as any[]),
+    ]);
+    return { categories, products };
+  },
   component: ShopPage,
 });
 
@@ -51,8 +64,8 @@ function mapProduct(p: any): ProductCardData {
     slug: p.slug,
     name_ar: p.name_ar,
     name_en: p.name_en,
-    short_description_ar: null,
-    short_description_en: null,
+    short_description_ar: p.short_description_ar ?? null,
+    short_description_en: p.short_description_en ?? null,
     description_ar: p.description_ar,
     description_en: p.description_en,
     icon_url: p.icon_url,
@@ -69,21 +82,11 @@ function mapProduct(p: any): ProductCardData {
 }
 
 const PRODUCT_SELECT =
-  "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, category_id, category_ids, sort_order, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)";
+  "id, slug, name_ar, name_en, short_description_ar, short_description_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, category_id, category_ids, sort_order, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)";
 
-function ShopPage() {
-  const { lang } = useApp();
-  const isAr = lang === "ar";
-  const { q, category } = Route.useSearch();
-  const navigate = Route.useNavigate();
-  const [term, setTerm] = useState(q ?? "");
-
-  useEffect(() => {
-    setTerm(q ?? "");
-  }, [q]);
-
-  const categories = useQuery({
-    queryKey: ["shop-categories"],
+const shopCategoriesQuery = () =>
+  queryOptions({
+    queryKey: ["shop-categories"] as const,
     queryFn: async (): Promise<CategoryRow[]> => {
       const { data, error } = await supabase
         .from("categories")
@@ -96,8 +99,9 @@ function ShopPage() {
     staleTime: 60_000,
   });
 
-  const products = useQuery({
-    queryKey: ["shop-products"],
+const shopProductsQuery = () =>
+  queryOptions({
+    queryKey: ["shop-products"] as const,
     queryFn: async (): Promise<any[]> => {
       const { data, error } = await supabase
         .from("products")
@@ -107,8 +111,32 @@ function ShopPage() {
       if (error) throw error;
       return data ?? [];
     },
-    staleTime: 30_000,
+    staleTime: 60_000,
   });
+
+function ShopPage() {
+  const { lang } = useApp();
+  const isAr = lang === "ar";
+  const { q, category } = Route.useSearch();
+  const initial = Route.useLoaderData();
+  const navigate = Route.useNavigate();
+  const [term, setTerm] = useState(q ?? "");
+
+  useEffect(() => {
+    setTerm(q ?? "");
+  }, [q]);
+
+  const categories = useQuery({
+    ...shopCategoriesQuery(),
+    initialData: initial.categories,
+  });
+
+  const products = useQuery({
+    ...shopProductsQuery(),
+    initialData: initial.products,
+  });
+
+
 
   const activeCategory = useMemo(
     () => (categories.data ?? []).find((c) => c.slug === category) ?? null,
@@ -174,6 +202,7 @@ function ShopPage() {
         />
 
         <section className="max-w-7xl mx-auto px-3 sm:px-6 pb-16">
+
           <form onSubmit={submitSearch} className="mb-6 flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute top-1/2 -translate-y-1/2 start-3 size-4 text-muted-foreground" />
