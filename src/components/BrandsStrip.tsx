@@ -1,32 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
-
-type BrandItem = {
-  id: string;
-  slug: string;
-  name_ar: string;
-  name_en: string;
-  loading_icon_url: string | null;
-};
-
-async function fetchBrands(): Promise<BrandItem[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("id, slug, name_ar, name_en, loading_icon_url")
-    .eq("status", "active")
-    .not("loading_icon_url", "is", null)
-    .order("is_featured", { ascending: false })
-    .order("sort_order", { ascending: true })
-    .limit(40);
-  if (error) throw error;
-  return (data ?? []) as BrandItem[];
-}
+import { brandsStripQuery } from "@/lib/public-queries";
 
 export function BrandsStrip() {
   const { lang } = useApp();
-  const { data } = useQuery({ queryKey: ["brands-strip"], queryFn: fetchBrands });
+  const { data } = useQuery(brandsStripQuery());
   const items = data ?? [];
   if (items.length === 0) return null;
 

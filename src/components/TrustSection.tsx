@@ -81,11 +81,12 @@ export function TrustSection() {
     },
   });
 
+  // Only numbers saved in the dashboard are shown — no demo placeholders.
   const overrides = settings.data ?? {};
   const stats: StatItem[] = DEFAULT_STATS.map((s) => ({
     ...s,
-    value: Number(overrides[s.key] ?? s.value) || s.value,
-  }));
+    value: Number(overrides[s.key] ?? 0),
+  })).filter((s) => s.value > 0);
 
   const subtitle = lang === "ar" ? "أرقام حقيقية من أرض الواقع، مش مجرد كلام" : "Real numbers from the field , not just words";
 
@@ -119,7 +120,7 @@ export function TrustSection() {
         </div>
 
         {/* Stats row */}
-        <div data-gsap="card-pop" className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div hidden={stats.length === 0} data-gsap="card-pop" className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {stats.map((s) => (
             <div
               key={s.key}

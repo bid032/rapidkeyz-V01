@@ -94,7 +94,7 @@ export function Header() {
       <div className={`max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 transition-all duration-300 ${shrunk ? "h-12 sm:h-14" : "h-14 sm:h-20"}`}>
         <div className="flex items-center gap-4 sm:gap-8 min-w-0">
           <Link to="/" className="flex items-center gap-2 min-w-0">
-            <img src={theme === "dark" ? "/white logo rapid.png" : "/black logo rapid.png"} alt="RapidKeyz" className={`object-contain shrink-0 transition-all duration-300 ${shrunk ? "h-7 w-7 sm:h-8 sm:w-8" : "h-8 w-8 sm:h-10 sm:w-10"}`} />
+            <img src={theme === "dark" ? "/white_logo_rapid.png" : "/black_logo_rapid.png"} alt="RapidKeyz" className={`object-contain shrink-0 transition-all duration-300 ${shrunk ? "h-7 w-7 sm:h-8 sm:w-8" : "h-8 w-8 sm:h-10 sm:w-10"}`} />
             <BrandName className={`truncate transition-all duration-300 ${shrunk ? "text-sm sm:text-lg" : "text-base sm:text-xl"}`} />
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
@@ -213,7 +213,7 @@ export function Header() {
             <SheetContent side={lang === "ar" ? "right" : "left"} className="w-[280px] p-0">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <img src={theme === "dark" ? "/white logo rapid.png" : "/black logo rapid.png"} alt="RapidKeyz" className="h-8 w-8 object-contain" />
+                  <img src={theme === "dark" ? "/white_logo_rapid.png" : "/black_logo_rapid.png"} alt="RapidKeyz" className="h-8 w-8 object-contain" />
                   <BrandName className="text-lg" />
                 </div>
                 <span className="w-6" />

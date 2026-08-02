@@ -27,6 +27,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedAdminTestimonialsRouteImport } from './routes/_authenticated/admin.testimonials'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
@@ -135,6 +136,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/testimonials': typeof AuthenticatedAdminTestimonialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/settings/integrations': typeof AuthenticatedAdminSettingsIntegrationsRoute
   '/api/public/stock/login': typeof ApiPublicStockLoginRoute
@@ -310,6 +317,7 @@ export interface FileRoutesByTo {
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/testimonials': typeof AuthenticatedAdminTestimonialsRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/settings/integrations': typeof AuthenticatedAdminSettingsIntegrationsRoute
   '/api/public/stock/login': typeof ApiPublicStockLoginRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/testimonials': typeof AuthenticatedAdminTestimonialsRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/settings/integrations': typeof AuthenticatedAdminSettingsIntegrationsRoute
   '/api/public/stock/login': typeof ApiPublicStockLoginRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/admin/staff'
     | '/admin/testimonials'
     | '/admin/users'
+    | '/api/public/health'
     | '/admin/'
     | '/admin/settings/integrations'
     | '/api/public/stock/login'
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/admin/staff'
     | '/admin/testimonials'
     | '/admin/users'
+    | '/api/public/health'
     | '/admin'
     | '/admin/settings/integrations'
     | '/api/public/stock/login'
@@ -466,6 +477,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/staff'
     | '/_authenticated/admin/testimonials'
     | '/_authenticated/admin/users'
+    | '/api/public/health'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/settings/integrations'
     | '/api/public/stock/login'
@@ -489,6 +501,7 @@ export interface RootRouteChildren {
   StockRoute: typeof StockRoute
   TermsRoute: typeof TermsRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicStockLoginRoute: typeof ApiPublicStockLoginRoute
   ApiPublicStockLogoutRoute: typeof ApiPublicStockLogoutRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -623,6 +636,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
@@ -851,6 +871,7 @@ const rootRouteChildren: RootRouteChildren = {
   StockRoute: StockRoute,
   TermsRoute: TermsRoute,
   ProductSlugRoute: ProductSlugRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicStockLoginRoute: ApiPublicStockLoginRoute,
   ApiPublicStockLogoutRoute: ApiPublicStockLogoutRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

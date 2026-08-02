@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useApp } from "@/contexts/AppContext";
-import { supabase } from "@/integrations/supabase/client";
-import logoDark from "@/assets/white_logo_rapid.png.asset.json";
-import logoLight from "@/assets/black_logo_rapid.png.asset.json";
+import { useBrandSetting, useSiteSetting } from "@/hooks/useSiteSetting";
+import { footerCategoriesQuery } from "@/lib/public-queries";
+// import logoDark from "@/assets/white_logo_rapid.png.asset.json";
+// import logoLight from "@/assets/black_logo_rapid.png.asset.json";
 import { Phone, Mail, Facebook, Instagram, Youtube, Linkedin } from "lucide-react";
 import { BrandName } from "@/components/BrandName";
 
@@ -52,43 +53,34 @@ const SOCIAL_DEFS = [
 export function Footer() {
   const { t, theme, lang } = useApp();
 
-  const socials = useQuery({
-    queryKey: ["site-settings", "socials"],
-    queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "socials").maybeSingle();
-      return (data?.value as Record<string, string>) ?? {};
-    },
-  });
-  const contact = useQuery({
-    queryKey: ["site-settings", "contact"],
-    queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "contact").maybeSingle();
-      return (data?.value as Record<string, string>) ?? {};
-    },
-  });
-  const categories = useQuery({
-    queryKey: ["footer-categories"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("categories")
-        .select("id, slug, name_ar, name_en")
-        .eq("is_active", true)
-        .order("sort_order")
-        .limit(6);
-      return data ?? [];
-    },
-  });
+  const brand = useBrandSetting();
+  const socials = useSiteSetting<Record<string, string>>("socials");
+  const contact = useSiteSetting<Record<string, string>>("contact");
+  const categories = useQuery(footerCategoriesQuery());
 
-  const phoneRaw = (contact.data?.whatsapp ?? "+201284234815").trim();
+  // Tagline comes from Dashboard , Settings , Brand. i18n text is only a
+  // fallback for a brand new install where nothing was saved yet.
+  const tagline =
+    ((lang === "ar" ? brand.data?.tagline_ar : brand.data?.tagline_en) ||
+      brand.data?.tagline_ar ||
+      brand.data?.tagline_en ||
+      "").trim() || t.footer.tagline;
+
+  const phoneRaw = (contact.data?.whatsapp ?? "").trim();
   const phoneDigits = phoneRaw.replace(/[^\d+]/g, "");
   const phoneWa = phoneDigits.replace(/[^\d]/g, "");
-  const phoneDisplay = "+20 128 423 4815";
-  const email = (contact.data?.email ?? "support@rapidkeyz.com").trim();
+  // Display the saved number itself (grouped for readability) instead of a
+  // hardcoded one, so editing it in the dashboard shows up here.
+  const phoneDisplay = phoneWa
+    ? `+${phoneWa.replace(/^(\d{2})(\d{3})(\d{3})(\d+)$/, "$1 $2 $3 $4")}`
+    : "";
+  const email = (contact.data?.email ?? "").trim();
 
   const activeSocials = SOCIAL_DEFS.filter(({ key }) => {
     const v = socials.data?.[key];
     return typeof v === "string" && v.trim().length > 0;
   });
+
 
   return (
     <footer className="relative bg-card/40 border-t border-border/50 mt-16 sm:mt-24">
@@ -99,13 +91,13 @@ export function Footer() {
             <div className="flex flex-col items-start gap-3">
               <div className="flex items-center gap-2">
                 <img
-                  src={theme === "dark" ? logoDark.url : logoLight.url}
+                  src={theme === "dark" ? "/white_logo_rapid.png" : "/black_logo_rapid.png"}
                   alt="RapidKeyz"
                   className="h-9 w-9 object-contain"
                 />
                 <BrandName className="text-xl" />
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">{t.footer.tagline}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-[280px]">{tagline}</p>
 
               {activeSocials.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -156,29 +148,36 @@ export function Footer() {
         <div className="px-5 sm:px-8 py-8 bg-muted/30 border-t border-border/40">
           <SectionHeader>{t.footer.contact}</SectionHeader>
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-            <ContactRow
-              href={`https://wa.me/${phoneWa}`}
-              external
-              label="WhatsApp"
-              value={phoneDisplay}
-              tone="whatsapp"
-              icon={<WhatsAppIcon className="size-5" />}
-            />
-            <ContactRow
-              href={`tel:${phoneDigits}`}
-              label={lang === "ar" ? "اتصال مباشر" : "Call"}
-              value={phoneDisplay}
-              tone="brand"
-              icon={<Phone className="size-5" />}
-            />
-            <ContactRow
-              href={`mailto:${email}`}
-              label={t.footer.emailLabel}
-              value={email}
-              tone="brand"
-              icon={<Mail className="size-5" />}
-            />
+            {phoneWa && (
+              <ContactRow
+                href={`https://wa.me/${phoneWa}`}
+                external
+                label="WhatsApp"
+                value={phoneDisplay}
+                tone="whatsapp"
+                icon={<WhatsAppIcon className="size-5" />}
+              />
+            )}
+            {phoneDigits && (
+              <ContactRow
+                href={`tel:${phoneDigits}`}
+                label={lang === "ar" ? "اتصال مباشر" : "Call"}
+                value={phoneDisplay}
+                tone="brand"
+                icon={<Phone className="size-5" />}
+              />
+            )}
+            {email && (
+              <ContactRow
+                href={`mailto:${email}`}
+                label={t.footer.emailLabel}
+                value={email}
+                tone="brand"
+                icon={<Mail className="size-5" />}
+              />
+            )}
           </div>
+
         </div>
 
         {/* Bottom Bar */}

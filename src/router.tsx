@@ -6,9 +6,14 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
+        // Data stays fresh for a minute so navigating back to a page paints
+        // instantly from cache instead of showing an empty state again.
+        // Cached data paints instantly, then revalidates in the background so
+        // dashboard edits show up without the user hitting refresh.
         staleTime: 30_000,
-        gcTime: 5 * 60_000,
-        refetchOnWindowFocus: false,
+        gcTime: 10 * 60_000,
+        refetchOnWindowFocus: true,
+        refetchOnMount: true,
         retry: 1,
       },
     },

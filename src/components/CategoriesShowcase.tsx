@@ -2,15 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { ArrowUpRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { categoriesShowcaseQuery, type PublicCategory } from "@/lib/public-queries";
 
-type Category = {
-  id: string;
-  slug: string;
-  name_ar: string;
-  name_en: string;
-};
+type Category = PublicCategory;
 
 export function CategoriesShowcase({
   activeSlug,
@@ -24,19 +19,7 @@ export function CategoriesShowcase({
   mini?: boolean;
 }) {
   const { lang } = useApp();
-  const cats = useQuery({
-    queryKey: ["cats-showcase", slugs?.join(",") ?? "all"],
-    queryFn: async () => {
-      let q = supabase
-        .from("categories")
-        .select("id, slug, name_ar, name_en")
-        .eq("is_active", true)
-        .order("sort_order");
-      if (slugs && slugs.length) q = q.in("slug", slugs);
-      const { data } = await q;
-      return (data ?? []) as Category[];
-    },
-  });
+  const cats = useQuery(categoriesShowcaseQuery(slugs));
 
   if (!cats.data || cats.data.length === 0) return null;
 

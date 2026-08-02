@@ -1,25 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
+import { testimonialImagesQuery } from "@/lib/public-queries";
 
 export function Testimonials() {
   const { lang } = useApp();
   const isAr = lang === "ar";
 
-  const { data: images } = useQuery({
-    queryKey: ["testimonial-images"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonial_images")
-        .select("id, image_url")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+  const { data: images } = useQuery(testimonialImagesQuery());
 
   if (!images || images.length === 0) return null;
 

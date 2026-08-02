@@ -37,7 +37,7 @@ export function Logo3D({ className = "" }: { className?: string }) {
   return (
     <div ref={wrapRef} className={`relative transition-transform duration-300 ${className}`}>
       <img
-        src={theme === "dark" ? "/white logo rapid.png" : "/black logo rapid.png"}
+        src={theme === "dark" ? "/white_logo_rapid.png" : "/black_logo_rapid.png"}
         alt="RapidKeyz"
         className="w-full h-full object-contain drop-shadow-[0_0_20px_hsl(var(--brand)/0.5)]"
       />

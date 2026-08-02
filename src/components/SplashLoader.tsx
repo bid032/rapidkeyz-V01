@@ -22,7 +22,7 @@ export function SplashLoader() {
     return () => wrap.removeEventListener("animationend", onAnimationEnd);
   }, []);
 
-  const logo = isDark ? "/white logo rapid.png" : "/black logo rapid.png";
+  const logo = isDark ? "/white_logo_rapid.png" : "/black_logo_rapid.png";
 
   return (
     <div

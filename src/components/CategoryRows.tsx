@@ -1,84 +1,15 @@
 import { useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { ViewAllButton } from "@/components/ViewAllButton";
 import { useApp } from "@/contexts/AppContext";
+import { categoryRowsQuery, type CategoryRow } from "@/lib/public-queries";
 
-
-type CategoryRow = {
-  id: string;
-  slug: string;
-  name_ar: string | null;
-  name_en: string | null;
-  products: ProductCardData[];
-};
-
-async function fetchCategoryRows(slugs?: string[]): Promise<CategoryRow[]> {
-  let q = supabase
-    .from("categories")
-    .select("id, slug, name_ar, name_en, sort_order, is_active")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-  if (slugs && slugs.length) q = q.in("slug", slugs);
-  else q = q.limit(4);
-  const { data: cats, error } = await q;
-  if (error) throw error;
-
-  const rows = await Promise.all(
-    (cats ?? []).map(async (c) => {
-      const { data: prods } = await supabase
-        .from("products")
-        .select(
-          "id, slug, name_ar, name_en, description_ar, description_en, icon_url, delivery_type, account_type, discount_percent, product_plans(id, price, compare_price, label_ar, label_en, is_active, sort_order, stock)",
-        )
-        .eq("status", "active")
-        .or(`category_id.eq.${c.id},category_ids.cs.{${c.id}}`)
-        .order("sort_order", { ascending: true })
-        .limit(8);
-      const mapped: ProductCardData[] = (prods ?? []).map((p: any) => {
-        const active = (p.product_plans ?? []).filter((pl: any) => pl.is_active);
-        const cheapest = active.sort((a: any, b: any) => Number(a.price) - Number(b.price))[0];
-        const totalStock = active.reduce((s: number, pl: any) => s + Math.max(0, Number(pl.stock ?? 0)), 0);
-         const cheapestPlanComparePrice = cheapest ? Number(cheapest.compare_price ?? 0) : 0;
-         return {
-           id: p.id,
-           slug: p.slug,
-           name_ar: p.name_ar,
-           name_en: p.name_en,
-           short_description_ar: null,
-           short_description_en: null,
-           description_ar: p.description_ar,
-           description_en: p.description_en,
-           icon_url: p.icon_url,
-           delivery_type: p.delivery_type,
-           account_type: p.account_type,
-           discount_percent: p.discount_percent,
-           minPrice: cheapest ? Number(cheapest.price) : null,
-           cheapestPlanId: cheapest?.id ?? null,
-           planLabel_ar: cheapest?.label_ar ?? null,
-           planLabel_en: cheapest?.label_en ?? null,
-           totalStock,
-           cheapestPlanComparePrice: cheapestPlanComparePrice > 0 ? cheapestPlanComparePrice : null
-         } as ProductCardData;
-      });
-      return { id: c.id, slug: c.slug, name_ar: c.name_ar, name_en: c.name_en, products: mapped };
-    }),
-  );
-  // Preserve requested slug order if provided
-  const ordered = slugs && slugs.length
-    ? slugs.map((s) => rows.find((r) => r.slug === s)).filter(Boolean) as CategoryRow[]
-    : rows;
-  return ordered.filter((r) => r.products.length > 0);
-}
 
 export function CategoryRows({ slugs }: { slugs?: string[] } = {}) {
   const { lang } = useApp();
-  const { data } = useQuery({
-    queryKey: ["category-rows", slugs?.join(",") ?? "top4"],
-    queryFn: () => fetchCategoryRows(slugs),
-  });
+  const { data } = useQuery(categoryRowsQuery(slugs));
   if (!data || data.length === 0) return null;
 
   return (
